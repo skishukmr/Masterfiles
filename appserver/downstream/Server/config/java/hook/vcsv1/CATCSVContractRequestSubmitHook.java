@@ -1,3 +1,11 @@
+/*
+ *	15/01/2014  IBM Parita Shah	SpringRelease_RSD 111(FDD4.9/TDD1.9) MSC Tax Gaps Correct Legal Entity
+
+
+
+*/
+
+
 package config.java.hook.vcsv1;
 
 import java.io.BufferedReader;
@@ -21,6 +29,9 @@ import ariba.common.core.CommodityExportMapEntry;
 import ariba.common.core.SplitAccounting;
 import ariba.common.core.SplitAccountingCollection;
 import ariba.common.core.SupplierLocation;
+// Starts SpringRelease_RSD 111(FDD4.9/TDD1.9)
+import ariba.base.core.ClusterRoot;
+// Ends SpringRelease_RSD 111(FDD4.9/TDD1.9)
 import ariba.contract.core.ContractRequest;
 import ariba.contract.core.ContractRequestLineItem;
 import ariba.procure.core.LineItemProductDescription;
@@ -59,6 +70,45 @@ public class CATCSVContractRequestSubmitHook
             //int size = lines.size();
             int size = ListUtil.getListSize(lines);
             ContractRequestLineItem mali1 = (ContractRequestLineItem)lines.get(0);
+
+			// Starts SpringRelease_RSD 111(FDD4.9/TDD1.9)
+				Log.customer.debug("CatContractReqSubmitHook AccountingFacilityName RSD111 ");
+				//ReqLineItem reqlifirst = (ReqLineItem)r.getLineItem(1);
+
+				//Log.customer.debug("CatContractReqSubmitHook Requisition line item is:",+reqlifirst.getNumberInCollection());
+
+				if(mali1 != null)
+				{
+					Log.customer.debug("CatContractReqSubmitHook AccountingFacilityName RSD111 ");
+					SplitAccounting reqlisa = (SplitAccounting)mali1.getAccountings().getSplitAccountings().get(0);
+					if (reqlisa != null)
+					{
+						String accfac = (String)reqlisa.getDottedFieldValue("AccountingFacility");
+						if (!StringUtil.nullOrEmptyOrBlankString(accfac))
+						{
+							Log.customer.debug("CatContractReqSubmitHook AccountingFacility is:",accfac );
+
+							ClusterRoot Accfacility = Base.getService().objectMatchingUniqueName("cat.core.Facility", Base.getSession().getPartition(), accfac);
+							if(Accfacility != null)
+							{
+								Log.customer.debug("CatContractReqSubmitHook: Facility Object:", Accfacility.getUniqueName());
+
+								String Acclegalentity = (String)Accfacility.getDottedFieldValue("Name");
+								Log.customer.debug("CatContractReqSubmitHook: Facility Name is:", Acclegalentity);
+
+								mar.setDottedFieldValue("AccountingFacilityName",Acclegalentity);
+
+
+							}
+
+						}
+
+					}
+				}
+
+			// Ends SpringRelease_RSD 111(FDD4.9/TDD1.9)
+
+
 			String settlementLine1 = (String)mali1.getDottedFieldValue("SettlementCode.UniqueName");
 			Log.customer.debug("CatContractReqSubmitHook: line 1 settlement code: "+settlementLine1);
             for(int i = 0; i < size; i++)

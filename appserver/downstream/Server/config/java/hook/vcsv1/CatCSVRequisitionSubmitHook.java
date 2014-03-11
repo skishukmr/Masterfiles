@@ -14,6 +14,7 @@
  *07.01.08 (Kingshuk/Chandra)Issue 725 - commented code fix put for issue 576
  *31.07.08 (Ashwini) Issue 831-Checking for FOBPoint And setting the value
  *04.11.08 (Deepak) Added Far / DFar Condition for the requisition submit.
+ *15/01/2014     IBM Parita Shah	SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8) MSC Tax Gaps Correct Legal Entity
  -------------------------------------------------------------------------------------------------------------------
 
   	Change Author: 	Deepak
@@ -54,6 +55,9 @@ import ariba.util.core.Date;
 import ariba.util.core.FastStringBuffer;
 import ariba.util.core.Fmt;
 import ariba.util.core.ListUtil;
+// Starts SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8)
+import ariba.base.core.ClusterRoot;
+// Ends SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8)
 import ariba.util.core.PropertyTable;
 import ariba.util.core.ResourceService;
 import ariba.util.core.StringUtil;
@@ -216,6 +220,50 @@ public class CatCSVRequisitionSubmitHook implements ApprovableHook {
 			//issue 725 end
 			// issue 576 - end
 
+
+
+			// Starts SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8)
+			Log.customer.debug("CatCSVRequisitionSubmitHook AccountingFacilityName RSD111 ");
+			if (!r.getLineItems().isEmpty())
+			{
+				ReqLineItem reqlifirst = (ReqLineItem)r.getLineItem(1);
+
+				Log.customer.debug("CatCSVRequisitionSubmitHook Requisition line item is:",+reqlifirst.getNumberInCollection());
+
+				if(reqlifirst != null)
+				{
+					Log.customer.debug("CatCSVRequisitionSubmitHook AccountingFacilityName RSD111 ");
+					SplitAccounting reqlisa = (SplitAccounting)reqlifirst.getAccountings().getSplitAccountings().get(0);
+					if (reqlisa != null)
+					{
+						String accfac = (String)reqlisa.getDottedFieldValue("AccountingFacility");
+						if (!StringUtil.nullOrEmptyOrBlankString(accfac))
+						{
+							Log.customer.debug("CatCSVRequisitionSubmitHook AccountingFacility is:",accfac );
+
+							ClusterRoot Accfacility = Base.getService().objectMatchingUniqueName("cat.core.Facility", Base.getSession().getPartition(), accfac);
+							if(Accfacility != null)
+							{
+								Log.customer.debug("CatCSVRequisitionSubmitHook: Facility Object:", Accfacility.getUniqueName());
+
+								String Acclegalentity = (String)Accfacility.getDottedFieldValue("Name");
+								Log.customer.debug("CatCSVRequisitionSubmitHook: Facility Name is:", Acclegalentity);
+								if(!StringUtil.nullOrEmptyOrBlankString(Acclegalentity))
+								{
+									r.setDottedFieldValue("AccountingFacilityName",Acclegalentity);
+								}
+
+
+							}
+
+						}
+
+					}
+				}
+			}
+
+			// Starts SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8)
+
             //Log.customer.debug("CatCSVReqSubmitHook*** starting of the check for active Designated approver");
 			BaseVector lines = r.getLineItems();
 			//List reqli=r.getLineItems();
@@ -226,8 +274,6 @@ public class CatCSVRequisitionSubmitHook implements ApprovableHook {
 				boolean hasBadAcctng = false;
 				boolean hasBadNeedBy = false;
 				ReqLineItem rli = (ReqLineItem)lines.get(i);
-
-
 
 
 	  /* 1st Test - VALIDATE ACCOUNTING */

@@ -3,10 +3,11 @@
     Description: Writing the fileds from the PO to flat file
     ChangeLog:
     Date        Name                       		History
-    22/08/2008 Deepak Sharma	   				Changing: CAPSUOM
-    10/24/2009 PGS kannan                   	//26 PL-Expense-Account-Desc IF PARTITION = EZOPEN THEN blank
-	04/13/2012 Vikram							CR216: Send POs with status, Ordered, Receiving, Received to PDW
-	 15/06/2012 Dharshan   Issue #269	 IsAdHoc - catalog or non catalog,
+    22/08/2008 	Deepak Sharma	   				Changing: CAPSUOM
+    10/24/2009 	PGS kannan                   	//26 PL-Expense-Account-Desc IF PARTITION = EZOPEN THEN blank
+	04/13/2012 	Vikram							CR216: Send POs with status, Ordered, Receiving, Received to PDW
+	15/06/2012 	Dharshan   Issue #269	 		IsAdHoc - catalog or non catalog,
+	01/23/2014	IBM Parita Shah					SpringRelease_RSD (FDD_129_4.3 / TDD_129_1.3) PO Line Item Unit Price should always go as Positive
     --------------------------------------------------------------------------------------------------------------
 *******************************************************************************************************************************************/
 package config.java.schedule;
@@ -48,6 +49,11 @@ import config.java.common.CatEmailNotificationUtil;
 //change made by Soumya begins
 import config.java.schedule.util.CATFaltFileUtil;
 //change made by Soumya ends
+
+// Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+import ariba.util.formatter.BigDecimalFormatter;
+import java.math.BigDecimal;
+// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
 
 public class CATEZOPENDWPOPush_FlatFile  extends ScheduledTask  {
     private Partition p;
@@ -349,12 +355,23 @@ try {
                             Log.customer.debug("%s::pLCurrencyCode:%s",classname,pLCurrencyCode);
                             }
                             else { outPW_FlatFile.write("~|");  }
+
+
                             //17 PL-Unit-Price Description.Price.Amount
-                            if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null) {
-                            String pLUnitPrice = poLineItem.getDottedFieldValue("Description.Price.Amount").toString();
-                            outPW_FlatFile.write(pLUnitPrice + "~|");
-                            Log.customer.debug("%s::pLUnitPrice:%s",classname,pLUnitPrice);
-                            }
+                            // Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+							BigDecimal plUnitPrice=null;
+						 if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null)
+						 {
+							plUnitPrice = (BigDecimal)poLineItem.getDottedFieldValue("Description.Price.Amount");
+							Log.customer.debug("Unit Price without abs method "+plUnitPrice);
+							plUnitPrice = plUnitPrice.abs();
+							//String pLUnitPrice =  BigDecimalFormatter.getStringValue(lipd.getPrice().getAmount().abs());
+							Log.customer.debug("Unit Price with abs method "+plUnitPrice);
+							String strUnitPrice = BigDecimalFormatter.getStringValue(plUnitPrice);
+							outPW_FlatFile.write(strUnitPrice + "~|");
+							Log.customer.debug("%s::pLUnitPrice:%s",classname,strUnitPrice);
+						 }
+							// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
                             else {  outPW_FlatFile.write("~|"); }
 
 

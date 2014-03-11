@@ -33,6 +33,7 @@ Manoj R             28-01-2012   Copying ExchangeRate value from Invoice using T
 08/08/2012      IBM AMS_Manoj     WI 295          Close Order variance is added based on the value of Closed field.
 
 17/10/2013      IBM_AMS_Kalikumar RSD             Fixing Exchange rate not getting populated on IRs Issue.
+01/27/2014  IBM Parita Shah	SpringRelease_RSD (FDD_131_4.5 / TDD_131_1.6) Reject IR if invoice date is greater than current date
 
  */
 
@@ -97,6 +98,9 @@ public class CatMFGInvoiceReconciliationEngine extends
 
 	private static final BigDecimal OneBigDecimal = new BigDecimal("1");
 	private static final BigDecimal OneHundredBigDecimal = new BigDecimal("100");
+	// Start :  SpringRelease_RSD 131 (FDD_131_4.5 / TDD_131_1.6)
+	private static final String StringTable = "cat.java.common";
+	// End :  SpringRelease_RSD 131 (FDD_131_4.5 / TDD_131_1.6)
 
 	public boolean reconcile(Approvable approvable) {
 		if (approvable instanceof InvoiceReconciliation) {
@@ -176,6 +180,22 @@ public class CatMFGInvoiceReconciliationEngine extends
 		// Start Of Issue 241
 		autoRejectIfInvoiceCurrencyDiffFromOrderOrContract(ir);
 		// issue 241 End
+
+		// Start :  SpringRelease_RSD 131 (FDD_131_4.5 / TDD_131_1.6)
+		if (autoRejectInvoiceForFutureDate(ir))
+		{
+		  Log.customer.debug("autoRejectInvoiceForFutureDate():Adding Comments to show the reason");
+		  String rejectionMessage = (String)ResourceService.getString(StringTable, "InvoiceFutureDate");
+		  LongString commentText = new LongString(rejectionMessage);
+		  String commentTitle = "Reason For Invoice Rejection";
+		  Date commentDate = new Date().getNow();
+		  User commentUser = User.getAribaSystemUser(ir.getPartition());
+		  CatTaxUtil.addCommentToIR(ir, commentText, commentTitle, commentDate, commentUser);
+		  Log.customer.debug("autoRejectInvoiceForFutureDate():IR is Auto Rejected");
+		  ir.reject();
+		}
+		// End :  SpringRelease_RSD 131 (FDD_131_4.5 / TDD_131_1.6)
+
 		return super.validateHeader(approvable);
 
 	}

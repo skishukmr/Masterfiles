@@ -4,6 +4,7 @@
  * Handles additional precision for Price fields
  * Other changes inherited from R1/R2 that apply for US (e.g., BillingAddress)
  * Removed R2 changes not applicable for US (e.g., remove Caterpillar, Inc. in addresses)
+ 20/01/2014	IBM Parita Shah	  SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6) MSC Tax Gaps Correct Legal Entity
  */
 package config.java.print.sap;
 
@@ -23,13 +24,31 @@ import ariba.util.core.ResourceService;
 import ariba.util.formatter.BigDecimalFormatter;
 import ariba.util.formatter.DateFormatter;
 import ariba.util.log.Log;
-
+//Starts SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)
+import ariba.util.core.ListUtil;
+import ariba.base.core.BaseObject;
+import ariba.base.core.BaseObject_Print;
+import ariba.common.core.Address;
+import ariba.base.core.Partition;
+import ariba.util.core.StringUtil;
+import ariba.common.core.Address;
+import ariba.common.core.print.Address_Print;
+import ariba.procure.core.ProcureLineItemCollection;
+import ariba.util.core.StringUtil;
+import ariba.base.fields.Print;
+import java.util.Iterator;
+import java.util.List;
+//Ends SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)
 
 
 public class CatSAPInvoiceReconciliationLineItem_Print extends StatementReconciliationLineItem_Print {
 
     private static final String THISCLASS = "CatSAPInvoiceReconciliationLineItem_Print";
     private final int PRECISION = 5;
+    //Starts SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)
+    private String displayCompanyNameFromAddress="DisplayCompanyNameFromAddress";
+    private ProcureLineItem pli=null;
+    //Ends SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)
 
 	/**** 03.20.06 (Chandra)
 	* To print the Price without rounding off and overide the currency presicion
@@ -107,6 +126,92 @@ public class CatSAPInvoiceReconciliationLineItem_Print extends StatementReconcil
         MIME.crlf(out, "%s", HTML.escape(pLineItem.getAmount().asString()));
         printEndCol(out);
     }
+
+
+	//Starts SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)
+
+    public void printShipTo(ProcureLineItem pli, Approvable approvable, PrintWriter out, String group, Locale locale)
+   		{
+   			Log.customer.debug("%s *** STEP 8 - printShipTo!",THISCLASS);
+   			MIME.crlf(out, "<TD COLSPAN=4> <font size=1>");
+   			MIME.crlf(out, "<B>%s</B><BR>", ResourceService.getService().getLocalizedString("resource.ordering", "ShipTo", locale));
+
+   			ProcureLineItemCollection plic = (ProcureLineItemCollection)pli.getLineItemCollection();
+   			if(plic != null && checkForDisplay(pli, displayCompanyNameFromAddress))
+   			{
+   				String companyName = (String)plic.getDottedFieldValue("CompanyCode.Description");
+   				Log.customer.debug("%s *** Inside printCompanyName CompanyCode name is",companyName);
+   				if(!StringUtil.nullOrEmptyOrBlankString(companyName))
+   				{
+   					MIME.crlf(out, "%s", companyName);
+   				}
+   			}
+   			//printCompanyName(approvable.getPartition(), locale, pLineItem.getShipTo(), out);
+   			MIME.crlf(out, "<BR>");
+   			Address shipTo = pli.getShipTo();
+   			if(shipTo != null)
+   			{
+   				Address addr = pli.getShipTo();
+   				((Address_Print)Print.get(addr)).printHTMLAddressInLocale(addr, out, pli, "ShipTo", group, locale);
+   			}
+   			MIME.crlf(out, "</Font></TD>");
+       }
+
+
+   	public boolean checkForDisplay(ProcureLineItem plineitem,String targetfieldName)
+   	{
+   		Log.customer.debug("entered the check method");
+   		Log.customer.debug("%s *** Inside checkForDisplay!",THISCLASS);
+   		Log.customer.debug("*** Inside checkForDisplay targetname is %s:",targetfieldName);
+   		Log.customer.debug("*** Inside checkForDisplay plineitem is:",plineitem);
+
+		ProcureLineItemCollection plic1 = (ProcureLineItemCollection)plineitem.getLineItemCollection();
+   		Log.customer.debug("checkForDisplay ProcureLineItemCollection value is: %s",plic1.getUniqueName());
+
+   		if(plic1.getFieldValue("CompanyCode") != null)
+		{
+
+			List dispoprint = (List)plic1.getDottedFieldValue("CompanyCode.DisplayPOPrintFields");
+			Log.customer.debug("checkForDisplay list the DisplayPOPrintFields values "+dispoprint);
+
+			BaseObject dispo;
+			if(dispoprint != null)
+			{
+				Log.customer.debug("checkForDisplay dispoprint is not null");
+				for(Iterator it = dispoprint.iterator(); it.hasNext(); )
+				{
+					Log.customer.debug("checkForDisplay within for loop");
+					dispo = (BaseObject)it.next();
+					String fieldName = (String)dispo.getDottedFieldValue("FieldName");
+					String display = (String)dispo.getDottedFieldValue("Display");
+
+					Log.customer.debug("checkForDisplay...returning true"+fieldName);
+					Log.customer.debug("checkForDisplay...returning true"+display);
+
+					if(targetfieldName.equalsIgnoreCase(fieldName))
+					{
+						if(display.equalsIgnoreCase("Y"))
+						{
+						  Log.customer.debug("checkForDisplay...returning true"+fieldName);
+						  Log.customer.debug("checkForDisplay...returning true"+display);
+						  return true;
+					  }
+
+					}
+
+				}
+				return false;
+			}
+			else
+			  return false;
+		}
+		else
+		return false;
+
+   	}
+   	//Ends SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)
+
+
 
     public CatSAPInvoiceReconciliationLineItem_Print() {
         super();

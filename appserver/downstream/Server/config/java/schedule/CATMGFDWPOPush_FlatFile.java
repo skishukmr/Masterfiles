@@ -15,8 +15,10 @@
 
    Vikram
    Date: 4/13/2012
-   CR216: Send POs with status, Ordered, Receiving, Received to PDW
-    15/06/2012 Dharshan   Issue #269	 IsAdHoc - catalog or non catalog,
+   CR216: 								Send POs with status, Ordered, Receiving, Received to PDW
+    15/06/2012 	Dharshan   				Issue #269	 IsAdHoc - catalog or non catalog,
+    01/23/2014	IBM Parita Shah			SpringRelease_RSD (FDD_129_4.3 / TDD_129_1.3) PO Line Item Unit Price should always go as Positive
+    01/24/2014   IBM Parita Shah		SpringRelease_RSD (FDD_131_4.6 / TDD_131_1.7) Write Dock Code from ShipTo
 *******************************************************************************************************************************************/
 package config.java.schedule;
 import java.io.File;
@@ -57,6 +59,11 @@ import config.java.common.CatEmailNotificationUtil;
 //change made by Soumya begins
 import config.java.schedule.util.CATFaltFileUtil;
 //change made by Soumya ends
+
+// Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+import ariba.util.formatter.BigDecimalFormatter;
+import java.math.BigDecimal;
+// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
 
 public class CATMGFDWPOPush_FlatFile  extends ScheduledTask  {
     private Partition p;
@@ -368,12 +375,23 @@ public class CATMGFDWPOPush_FlatFile  extends ScheduledTask  {
 							Log.customer.debug("%s::pLCurrencyCode:%s",classname,pLCurrencyCode);
 							}
 							else {	outPW_FlatFile.write("~|");	}
+
+
 							//17 PL-Unit-Price Description.Price.Amount
-							if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null) {
-							String pLUnitPrice = poLineItem.getDottedFieldValue("Description.Price.Amount").toString();
-							outPW_FlatFile.write(pLUnitPrice + "~|");
-							Log.customer.debug("%s::pLUnitPrice:%s",classname,pLUnitPrice);
-							}
+							 // Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+							BigDecimal plUnitPrice=null;
+						 if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null)
+						 {
+							plUnitPrice = (BigDecimal)poLineItem.getDottedFieldValue("Description.Price.Amount");
+							Log.customer.debug("Unit Price without abs method "+plUnitPrice);
+							plUnitPrice = plUnitPrice.abs();
+							//String pLUnitPrice =  BigDecimalFormatter.getStringValue(lipd.getPrice().getAmount().abs());
+							Log.customer.debug("Unit Price with abs method "+plUnitPrice);
+							String strUnitPrice = BigDecimalFormatter.getStringValue(plUnitPrice);
+							outPW_FlatFile.write(strUnitPrice + "~|");
+							Log.customer.debug("%s::pLUnitPrice:%s",classname,strUnitPrice);
+						 }
+							// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
 							else {	outPW_FlatFile.write("~|");	}
 
 
@@ -505,15 +523,43 @@ public class CATMGFDWPOPush_FlatFile  extends ScheduledTask  {
 								isAdHocBoolean = BooleanFormatter.getBooleanValue(isAdHoc);
 								Log.customer.debug("%s::isAdHocBoolean:%s",classname,isAdHocBoolean);
 								if(isAdHocBoolean == false){
-									outPW_FlatFile.write("Catalog Item:");
+									outPW_FlatFile.write("Catalog Item:"+"~|");
 								}
 								else
 								{
-									outPW_FlatFile.write("");
+									outPW_FlatFile.write(""+"~|");
 								    Log.customer.debug("%s::isAdHocBoolean is true, not catalog item",classname);
 							    }
 							}
-							else Log.customer.debug("%s::isAdHocBoolean is null, leave blank",classname);
+							else
+							{
+								outPW_FlatFile.write("~|");
+								Log.customer.debug("%s::isAdHocBoolean is null, leave blank",classname);
+							}
+
+
+							// Writing Dock Code
+							// Start :  SpringRelease_RSD 131 (FDD_131_4.6 / TDD_131_1.7)
+							String noDockCode = "--";
+							if(poLineItem.getDottedFieldValue("ShipTo") != null )
+							{
+								String ilDockCode = (String)poLineItem.getDottedFieldValue("ShipTo.DockCode");
+								if (!StringUtil.nullOrEmptyOrBlankString(ilDockCode))
+								{
+									outPW_FlatFile.write(ilDockCode);
+								}
+								else
+								{
+									outPW_FlatFile.write(noDockCode);
+
+								}
+							}
+							else
+							{
+								outPW_FlatFile.write("~|");
+							}
+						// End :  SpringRelease_RSD 131 (FDD_131_4.6 / TDD_131_1.7)
+
 
 							outPW_FlatFile.write("\n");
 							//Update DWPOFlag in DO based on config

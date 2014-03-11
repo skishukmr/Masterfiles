@@ -14,7 +14,8 @@
  *Issue 299 - IBM_AMS_Lekshmi - Fix to update the WBSElement/IOText and AccountCategory in the header level for all Orders against the Requisition.
  *28.12.2012 (Jayashree) - Issue 293:Singapore Tc's: For Singapore PO's,
  *                    Supplier should be able to view the Terms and Conditions in ASN.
- *30.08.2013  IBM Nandini Q4 2013-RSD119-FDD5.0/TDD1.0  Implementation of OIO program functionality                    
+ *30.08.2013  IBM Nandini Q4 2013-RSD119-FDD5.0/TDD1.0  Implementation of OIO program functionality
+ *01/13/2014  IBM Jayashree B S	 SpringRelease_RSD 109 (FDD_109_4.2 / TDD_109_3.0)  Populate T&C in the comments section on Ariba Network PO(To comment the logic implemented as part for WI 293)
  */
 
 package config.java.ordering;
@@ -76,7 +77,7 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 	private String companyCodeSG_Key = ResourceService.getString("cat.Ordering.FieldsAdded_Country_SG", "SG_CompanyAddRegCountry");
 	private String displayKey = ResourceService.getString("cat.Ordering.FieldsAdded_Country_SG", "SG_DisplayIsY");
 	//private static final String SG_COMPANY_ADDREG_COUNTRY = ResourceService.getString("cat.Ordering.FieldsAdded_Country_SG", "SG_CompanyAddRegCountry");
-	//Start Q4 2013-RSD119-FDD5.0/TDD1.0 
+	//Start Q4 2013-RSD119-FDD5.0/TDD1.0
 	private static String OIOSuplr = ResourceService.getString("cat.java.sap","Req_OIOSuplrUniqueName");
 	//End Q4 2013-RSD119-FDD5.0/TDD1.0
 	public int canProcessLineItem(ReqLineItem lineItem)
@@ -404,7 +405,7 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 			po.setFieldValue("TopicName", "DWPOPush");
 
 
-			
+
 
 
 
@@ -621,11 +622,11 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 						taxTextResourceKey);
 				po.setFieldValue("TaxInstructions", TAX_TEXT);
 			}
-			
+
 			//Start Q4 2013-RSD119-FDD5.0/TDD1.0
 			// RSD 119 - Set PO header OIOAgreement when applicable
 			try {
-				
+
 				SupplierLocation sloc = po.getSupplierLocation();
 				String supplierUniqueName = sloc.getSupplier().getUniqueName();
 
@@ -638,17 +639,17 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 					}
 				}
 
-				
+
 			} catch (Exception e)
 			{
 				Log.customer.debug("Exception Occured : " + e);
 
 				Log.customer.debug("Exception Details :" + ariba.util.core.SystemUtil.stackTrace(e));
-			}    	    	
-			//End Q4 2013-RSD119-FDD5.0/TDD1.0 
-			
-			
-			
+			}
+			//End Q4 2013-RSD119-FDD5.0/TDD1.0
+
+
+
 
 			// ADD Applicable Comments
 			Partition partition = po.getPartition();
@@ -726,12 +727,12 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 				Log.customer.debug("Exception Occured : " + e);
 
 				Log.customer.debug("Exception Details :" + ariba.util.core.SystemUtil.stackTrace(e));
-			} 
-			
+			}
+
 			//End Q4 2013-RSD119-FDD5.0/TDD1.0
-			
-			
-			
+
+
+
 			// Added code for comment on MACH1 POs Issue 1007 start
 			if (hasNotToExceed && !hasNTEComment) {
 				String sub = "\"advise price\"";
@@ -876,14 +877,13 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 					}
 				}
 			}
-
+            // Starts : SpringRelease_RSD 109 (FDD_109_4.2 / TDD_109_3.0) : To comment the logic implemented as part for WI 293
 			/** Starts: Issue 293 -
 			 *          Purpose: 1)To add the Terms and Conditions under comment section for Singapore PO's.
 			 *		             2)Always add Terms & Conditions text As(ONLY on PO Version 1, not
 			 *                     V2+ since already exists)
-			 */
 
-			String companyRegAddCountry = null;
+            String companyRegAddCountry = null;
 			if (po.getFieldValue("CompanyCode") != null){
 				Log.customer.debug("CatSAPAllDirectOrder CompanyCode is not null");
 				if((po.getDottedFieldValue("CompanyCode.RegisteredAddress") != null)){
@@ -921,8 +921,8 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 			}
 
 			Log.customer.debug("%s Either field Name companyRegAddCountry or resource key companyCodeSG_Key is null."+THISCLASS);
-			//Issue 293 Ends:
-
+			//Issue 293 Ends: */
+			//Ends: SpringRelease_RSD 109 (FDD_109_4.2 / TDD_109_3.0)
 			// Added by majid to add Tax instructon on PO Print *** Ends here
 		}
 		// Added by Majid **** Ends here
@@ -1033,13 +1033,12 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 					}
 				}
 
-
+				// Starts: SpringRelease_RSD 109 (FDD_109_4.2 / TDD_109_3.0)
 				/** Starts: Issue 293:
 				 *          Purpose: 1)Below Code, checks null condition for CompanyCode,RegisteredAddress,Country.
 				 *          2)And then it assigns the resourceKey to TnCDHLocal, when CompanyCode's registered country is SG.
 				 *
-				 */
-				String companyRegAddCountry = null;
+				 String companyRegAddCountry = null;
 				if (po.getFieldValue("CompanyCode") != null){
 					Log.customer.debug("CatSAPAllDirectOrder CompanyCode is not null");
 					if((po.getDottedFieldValue("CompanyCode.RegisteredAddress") != null)){
@@ -1065,7 +1064,8 @@ public class CatSAPAllDirectOrder extends AllDirectOrder {
 					}
 				}
 
-				// Ends: Issue 293
+				// Ends: Issue 293 */
+			// Ends: SpringRelease_RSD 109 (FDD_109_4.2 / TDD_109_3.0)
 			}
 		}
 		Log.customer.debug("CatSAPAllDirectOrder : resourceKey =>"

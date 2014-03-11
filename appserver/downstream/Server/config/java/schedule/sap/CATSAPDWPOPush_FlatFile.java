@@ -3,13 +3,15 @@
     Creator: Garima
     Description: Writing the fields from the PO to flat file
     ChangeLog:
-    Date		Name				   History
-    15/05/09  Sudheer K Jain     Issue 958  Removing special charcter single quotes "'".
-    02/11/10  PGS Kannan         Issue # 1054 / CR202  deafult AccFac is 02 if CompanyCode.SAPSource") is CBS 	then AccFac = "86
-	29/11/11  IBM AMS Vikram Singh Filtering non ASCII characters
-	21/03/12  Rajat Bajpai        Changes made to run the task in LSAP partition
-	15/06/2012 Dharshan   Issue #269	 IsAdHoc - catalog or non catalog,
-    --------------------------------------------------------------------------------------------------------------
+    Date		Name					History
+    15/05/09  	Sudheer K Jain    		Issue 958  Removing special charcter single quotes "'".
+    02/11/10  	PGS Kannan        		Issue # 1054 / CR202  deafult AccFac is 02 if CompanyCode.SAPSource") is CBS 	then AccFac = "86
+	29/11/11  	IBM AMS Vikram Singh 	Filtering non ASCII characters
+	21/03/12  	Rajat Bajpai        	Changes made to run the task in LSAP partition
+	15/06/2012 	Dharshan   				Issue #269	 IsAdHoc - catalog or non catalog,
+	01/23/2014	IBM Parita Shah			SpringRelease_RSD (FDD_129_4.3 / TDD_129_1.3) PO Line Item Unit Price should always go as Positive
+	01/24/2014  IBM Parita Shah			SpringRelease_RSD (FDD_131_4.6 / TDD_131_1.7) Write Dock Code from ShipTo
+    -------------------------------------------------------------------------------------------------------------------------------------
 
 *******************************************************************************************************************************************/
 
@@ -23,6 +25,7 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TimeZone;
+import java.math.BigDecimal;
 
 import ariba.approvable.core.LineItem;
 import ariba.base.core.Base;
@@ -49,6 +52,10 @@ import ariba.util.scheduler.Scheduler;
 //change made by Soumya begins
 import config.java.schedule.util.CATFaltFileUtil;
 //change made by Soumya ends
+// Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+import ariba.util.formatter.BigDecimalFormatter;
+import ariba.procure.core.LineItemProductDescription;
+// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
 
 public class CATSAPDWPOPush_FlatFile  extends ScheduledTask  {
     private Partition p;
@@ -575,12 +582,20 @@ public class CATSAPDWPOPush_FlatFile  extends ScheduledTask  {
 
 
 							//PL-Unit-Price -19
-
-							if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null) {
-							String pLUnitPrice = poLineItem.getDottedFieldValue("Description.Price.Amount").toString();
-							outPW_FlatFile.write(pLUnitPrice + "~|");
-							Log.customer.debug("%s::pLUnitPrice:%s",classname,pLUnitPrice);
-							}
+							// Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+								BigDecimal plUnitPrice=null;
+							 if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null)
+							 {
+								plUnitPrice = (BigDecimal)poLineItem.getDottedFieldValue("Description.Price.Amount");
+								Log.customer.debug("Unit Price without abs method "+plUnitPrice);
+								plUnitPrice = plUnitPrice.abs();
+								//String pLUnitPrice =  BigDecimalFormatter.getStringValue(lipd.getPrice().getAmount().abs());
+								Log.customer.debug("Unit Price with abs method "+plUnitPrice);
+								String strUnitPrice = BigDecimalFormatter.getStringValue(plUnitPrice);
+								outPW_FlatFile.write(strUnitPrice + "~|");
+								Log.customer.debug("%s::pLUnitPrice:%s",classname,strUnitPrice);
+							 }
+							// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
 							else { outPW_FlatFile.write("~|");	}
 
 //**********************AddedBy Deepak**********
@@ -825,22 +840,57 @@ public class CATSAPDWPOPush_FlatFile  extends ScheduledTask  {
 							// Issue #269 - Dharshan
 							isAdHocBoolean = true;
 							isAdHoc = null;
-							if (poLineItem.getDottedFieldValue("IsAdHoc") != null) {
+							if (poLineItem.getDottedFieldValue("IsAdHoc") != null)
+							{
 								isAdHoc = (Boolean) poLineItem.getDottedFieldValue("IsAdHoc");
 								isAdHocBoolean = BooleanFormatter.getBooleanValue(isAdHoc);
 								Log.customer.debug("%s::isAdHocBoolean:%s",classname,isAdHocBoolean);
 								if(isAdHocBoolean == false){
-									outPW_FlatFile.write("Catalog Item:");
+									outPW_FlatFile.write("Catalog Item:"+"~|");
 								}
 								else
 								{
+									outPW_FlatFile.write("~|");
 								    Log.customer.debug("%s::isAdHocBoolean is true, not catalog item",classname);
 							    }
 							}
-							else Log.customer.debug("%s::isAdHocBoolean is null, leave blank",classname);
+							else
+							{
+								outPW_FlatFile.write("~|");
+								Log.customer.debug("%s::isAdHocBoolean is null, leave blank",classname);
+							}
+
+
+
+							// Writing Dock Code
+							// Start :  SpringRelease_RSD 131 (FDD_131_4.6 / TDD_131_1.7)
+							String noDockCode = "--";
+							if(poLineItem.getDottedFieldValue("ShipTo") != null )
+							{
+								String ilDockCode = (String)poLineItem.getDottedFieldValue("ShipTo.DockCode");
+								if (!StringUtil.nullOrEmptyOrBlankString(ilDockCode))
+								{
+									outPW_FlatFile.write(ilDockCode);
+								}
+								else
+								{
+									outPW_FlatFile.write(noDockCode);
+
+								}
+							}
+							else
+							{
+								outPW_FlatFile.write("~|");
+							}
+						// End :  SpringRelease_RSD 131 (FDD_131_4.6 / TDD_131_1.7)
+
+
+
 
                            // Change the line after printing each record
                            outPW_FlatFile.write("\n");
+
+
 
 							// Update DWPOFlag in DO based on config
 							if(isCompletedFlgUpdate) {

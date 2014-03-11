@@ -1,3 +1,5 @@
+/* 15/01/2014	IBM Parita Shah	  SpringRelease_RSD 111(FDD4.1,4.2/TDD1.1,1.2) MSC Tax Gaps Correct Legal Entity    */
+
 package config.java.print.sap;
 
 import java.io.PrintWriter;
@@ -24,6 +26,9 @@ import ariba.util.core.ListUtil;
 import ariba.util.core.MIME;
 import ariba.util.core.ResourceService;
 import ariba.util.log.Log;
+//Start SpringRelease_RSD 111(FDD4.1,4.2/TDD1.1,1.2)
+import ariba.util.core.StringUtil;
+//End SpringRelease_RSD 111(FDD4.1,4.2/TDD1.1,1.2)
 import config.java.condition.sap.CatSAPAdditionalChargeLineItem;
 
 public class CatSAPProcureLineItem_Print extends ProcureLineItem_Print {
@@ -351,11 +356,25 @@ public class CatSAPProcureLineItem_Print extends ProcureLineItem_Print {
     }
 	public void printCompanyName(Partition partition, Locale locale, Address address, PrintWriter out)
 	{
-		if(pli!=null && checkForDisplay(pli, displayCompanyNameFromAddress)){
-			if(address != null)
-				MIME.crlf(out, "%s", address.getName());
+		Log.customer.debug("%s *** Inside printCompanyName!",THISCLASS);
+		if(pli!=null && checkForDisplay(pli, displayCompanyNameFromAddress))
+		{
+			 //Start SpringRelease_RSD 111(FDD4.1,4.2/TDD1.1,1.2)
+			Log.customer.debug("%s *** Inside printCompanyName..printing CompanyCode",THISCLASS);
+			String companyName = (String)pli.getDottedFieldValue("LineItemCollection.CompanyCode.Description");
+			Log.customer.debug("%s *** Inside printCompanyName..CompanyCode name is",companyName);
+			if(!StringUtil.nullOrEmptyOrBlankString(companyName))
+			{
+				MIME.crlf(out, "%s", companyName);
+			}
+
+			 //Ends SpringRelease_RSD 111(FDD4.1,4.2/TDD1.1,1.2)
+
+			//if(address != null)
+				//MIME.crlf(out, "%s", address.getName());
 		}
-		else{
+		else
+		{
 			super.printCompanyName(partition, locale, address, out);
 		}
 	}

@@ -11,10 +11,10 @@
 		08/13/2009		Vikram	   CR189	Auto-Reject
 		19/10/2009      Vikram 	   CR189    Allow credit invoices
 		12/11/2009      Vikram     CR189    Added extra check for contract close variance
-		190  IBM AMS_Lekshmi  Auto Rejecting InvoiceReconciliation if the Order/Contract Currency different from Invoice Currency	
+		190  IBM AMS_Lekshmi  Auto Rejecting InvoiceReconciliation if the Order/Contract Currency different from Invoice Currency
 		287  IBM AMS_Rahul- 15/01/2013  Auto Rejecting InvoiceReconciliation if the Invoice Date is Future Date.
 		02/21/2013  IBM Niraj Mach1 R5.5 (FRD1.5/TD1.3) Commented to allow multiple tax line for MACH1 R5.5 Release
-
+		01/17/2014  IBM Parita Shah	 SpringRelease_RSD (FDD_111_4.11 / TDD_111_1.11) Copy AccountingFacilityName from Invoice to IR
 *******************************************************************************************************************************************/
 
 package config.java.invoicing.vcsv1;
@@ -155,15 +155,15 @@ public class CatCSVInvoiceReconciliationEngine extends CatInvoiceReconciliationE
                 // Reject invoices with more than one header level tax
                 // Reject invoices with any line level taxes charged
                 checkIfIRToBeRejected(ir);
-                
+
             	// Start Of Issue 190
         		autoRejectInvoiceCurrencyDiffFromOrderOrContract(ir);
         		// issue 190 End
-        		
+
         		//Start of Issue 287
         		if (autoRejectInvoiceForFutureDate(ir))
         		{
-        		  	Log.customer.debug("autoRejectInvoiceForFutureDate():Adding Comments to show the reason");	
+        		  	Log.customer.debug("autoRejectInvoiceForFutureDate():Adding Comments to show the reason");
 				  String rejectionMessage = (String)ResourceService.getString(StringTable, "InvoiceFutureDate");
 				  LongString commentText = new LongString(rejectionMessage);
 				  String commentTitle = "Reason For Invoice Rejection";
@@ -174,11 +174,13 @@ public class CatCSVInvoiceReconciliationEngine extends CatInvoiceReconciliationE
 				  ir.reject();
         		}
         		//End of Issue 287
-        		
+
+
                 return super.validateHeader(approvable);
         }
 
-        
+
+
         protected List generateExceptions(BaseObject parent, List typesToValidate) {
                 List exceptions = super.generateExceptions(parent, typesToValidate);
 
@@ -467,9 +469,9 @@ BigDecimal Amtleft1 = null;
   		         Log.customer.debug("Final Amt after adding Tolerance" +Amtleft);
 
   		       // Close order variance code
-                      // if Closed = 1 then its open, if Closed = 5 then its closed               				
+                      // if Closed = 1 then its open, if Closed = 5 then its closed
                       // Changed by Sandeep as 9r updates this field for Close and Open orders
-                                                     
+
                                                  Integer closeOrder = (Integer) irOrder.getFieldValue("Closed");
                                                 int closeState = closeOrder.intValue();
 //		                   		Boolean closeOrder = (Boolean)irOrder.getFieldValue("CloseOrder");
@@ -1324,6 +1326,14 @@ BigDecimal Amtleft1 = null;
                 ir.setFieldValue("BlockStampDate", (Date) invoice.getFieldValue("BlockStampDate"));
                 ir.setFieldValue("TermsDiscount", betterTermsDisc);
                 ir.setFieldValue("SettlementCode", (ClusterRoot) invoice.getFieldValue("SettlementCode"));
+
+				// Start :  SpringRelease_RSD 111 (FDD_111_4.11 / TDD_111_1.11)
+                String accfacname = (String)invoice.getFieldValue("AccountingFacilityName");
+                Log.customer.debug("copyFieldsFromInvoice AccountingFacilityName on IR",accfacname);
+                ir.setFieldValue("AccountingFacilityName",accfacname);
+
+                // End :  SpringRelease_RSD 111 (FDD_111_4.11 / TDD_111_1.11)
+
 
                 BaseVector irLineItems = ir.getLineItems();
                 InvoiceReconciliationLineItem irli = null;

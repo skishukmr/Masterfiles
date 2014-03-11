@@ -19,9 +19,10 @@
 
    Vikram
    Date: 4/13/2012
-   CR216: Send POs with status, Ordered, Receiving, Received to PDW
-    15/06/2012 Dharshan   Issue #269	 IsAdHoc - catalog or non catalog,
-
+   CR216: 								Send POs with status, Ordered, Receiving, Received to PDW
+   15/06/2012 	Dharshan   Issue #269	IsAdHoc - catalog or non catalog,
+   01/23/2014	IBM Parita Shah			SpringRelease_RSD (FDD_129_4.3 / TDD_129_1.3) PO Line Item Unit Price should always go as Positive
+   01/24/2014   IBM Parita Shah			SpringRelease_RSD (FDD_131_4.6 / TDD_131_1.7) Write Dock Code from ShipTo
 *******************************************************************************************************************************************/
 
 package config.java.schedule;
@@ -65,6 +66,11 @@ import config.java.common.CatEmailNotificationUtil;
 //change made by Soumya begins
 import config.java.schedule.util.CATFaltFileUtil;
 //change made by Soumya ends
+
+// Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+import ariba.util.formatter.BigDecimalFormatter;
+import java.math.BigDecimal;
+// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
 
 public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
     private Partition p;
@@ -409,11 +415,20 @@ public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
 
 							//17 PL-Unit-Price Description.Price.Amount
 
-							if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null) {
-							String pLUnitPrice = poLineItem.getDottedFieldValue("Description.Price.Amount").toString();
-							outPW_FlatFile.write(pLUnitPrice + "~|");
-							Log.customer.debug("%s::pLUnitPrice:%s",classname,pLUnitPrice);
-							}
+							 // Start :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
+							BigDecimal plUnitPrice=null;
+						 if ( poLineItem.getDottedFieldValue("Description.Price.Amount") != null)
+						 {
+							plUnitPrice = (BigDecimal)poLineItem.getDottedFieldValue("Description.Price.Amount");
+							Log.customer.debug("Unit Price without abs method "+plUnitPrice);
+							plUnitPrice = plUnitPrice.abs();
+							//String pLUnitPrice =  BigDecimalFormatter.getStringValue(lipd.getPrice().getAmount().abs());
+							Log.customer.debug("Unit Price with abs method "+plUnitPrice);
+							String strUnitPrice = BigDecimalFormatter.getStringValue(plUnitPrice);
+							outPW_FlatFile.write(strUnitPrice + "~|");
+							Log.customer.debug("%s::pLUnitPrice:%s",classname,strUnitPrice);
+						 }
+							// End :  SpringRelease_RSD 129 (FDD_129_4.3 / TDD_129_1.3)
 							else { outPW_FlatFile.write("~|");	}
 
 //**********************AddedBy Deepak**********
@@ -551,11 +566,44 @@ public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
 								isAdHocBoolean = BooleanFormatter.getBooleanValue(isAdHoc);
 								Log.customer.debug("%s::isAdHocBoolean:%s",classname,isAdHocBoolean);
 								if(isAdHocBoolean == false){
-									outPW_FlatFile.write("Catalog Item:");
+									outPW_FlatFile.write("Catalog Item:"+"~|");
 								}
-								else Log.customer.debug("%s::isAdHocBoolean is true, not catalog item",classname);
+								else
+								{
+									outPW_FlatFile.write("~|");
+									Log.customer.debug("%s::isAdHocBoolean is true, not catalog item",classname);
+								}
 							}
-							else Log.customer.debug("%s::isAdHocBoolean is null, leave blank",classname);
+							else
+							{
+								outPW_FlatFile.write("~|");
+								Log.customer.debug("%s::isAdHocBoolean is null, leave blank",classname);
+							}
+
+
+							// Writing Dock Code
+							// Start :  SpringRelease_RSD 131 (FDD_131_4.6 / TDD_131_1.7)
+							String noDockCode = "--";
+							if(poLineItem.getDottedFieldValue("ShipTo") != null )
+							{
+								String ilDockCode = (String)poLineItem.getDottedFieldValue("ShipTo.DockCode");
+								if (!StringUtil.nullOrEmptyOrBlankString(ilDockCode))
+								{
+									outPW_FlatFile.write(ilDockCode);
+								}
+								else
+								{
+									outPW_FlatFile.write(noDockCode);
+
+								}
+							}
+							else
+							{
+								outPW_FlatFile.write("~|");
+							}
+						// End :  SpringRelease_RSD 131 (FDD_131_4.6 / TDD_131_1.7)
+
+
 
 							outPW_FlatFile.write("\n");
 							//pushedCount++;
@@ -573,20 +621,20 @@ public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
 							/* Removing the DWFlag from Setting in Split level
 							Update DWPOFlag in DO based on config
 							if(isCompletedFlgUpdate) {
-								
+
 								Log.customer.debug("%s::usPOFlagAction is Completed setting DWPOFlag for...:%s", classname,(String)directOrder.getFieldValue("UniqueName"));
 								Change made by Soumya begins 01.06.2011
 								String tmpDWPOFlag1 = (java.lang.String)directOrder.getFieldValue("DWPOFlag");
 								Log.customer.debug("%s::setting DWPOFlag to Processing from :%s", classname,tmpDWPOFlag1);
 								Change made by Soumya ends 01.06.2011
- 
+
 								directOrder.setFieldValue("DWPOFlag", "Processing");
-								
+
 								Change made by Soumya begins 01.06.2011
 								tmpDWPOFlag1 = (java.lang.String)directOrder.getFieldValue("DWPOFlag");
 								Log.customer.debug("%s::After setting for Process DWPOFlag set to :%s", classname,tmpDWPOFlag1);
 								Change made by Soumya begins 01.06.2011
-								
+
 							}
 							else {
 								Log.customer.debug("%s::usPOFlagAction is None no action req DWPOFlag ...", classname);
@@ -602,27 +650,27 @@ public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
 						 // Change made by Soumya begins 01.06.2011
 						 // Update DWPOFlag in DO based on config
 						 if(isCompletedFlgUpdate) {
-								
+
 							 Log.customer.debug("%s::usPOFlagAction is Completed setting DWPOFlag for...:%s", classname,(String)directOrder.getFieldValue("UniqueName"));
-							 
+
 							 String tmpDWPOFlag1 = (java.lang.String)directOrder.getFieldValue("DWPOFlag");
-							 
+
 							 Log.customer.debug("%s::setting DWPOFlag to Processing from :%s", classname,tmpDWPOFlag1);
-							  
+
 							 directOrder.setFieldValue("DWPOFlag", "Processing");
-														 
+
 							 tmpDWPOFlag1 = (java.lang.String)directOrder.getFieldValue("DWPOFlag");
-							 
+
 							 Log.customer.debug("%s::After setting for Process DWPOFlag set to :%s", classname,tmpDWPOFlag1);
-							 
-								
+
+
 						 }
 						 else {
 							 Log.customer.debug("%s::usPOFlagAction is None no action req DWPOFlag ...", classname);
 							 //splitAccounting = false;
 							 //continue;
-						 }						 
-						 				 
+						 }
+
 						 String tmpDWPOFlag = (java.lang.String)directOrder.getFieldValue("DWPOFlag");
 						 Log.customer.debug("%s::DWPOFlag is before setting to Completed is :%s", classname,tmpDWPOFlag);
 						 Log.customer.debug("%s::DWPOFlag is getting set to Completed for:%s", classname,(String)directOrder.getFieldValue("UniqueName"));
@@ -632,15 +680,15 @@ public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
 							directOrder.setFieldValue("DWPOFlag", "Completed");
 							String tmpDWPOFlag2 = (java.lang.String)directOrder.getFieldValue("DWPOFlag");
 							Log.customer.debug("%s::After setting for Completed DWPOFlag in loop set to :%s", classname,tmpDWPOFlag2);
-							
+
 						 }
 						 else
 						 {
 							Log.customer.debug("%s::The DWPOFlag is not Processing so not updated", classname);
 						 }
-						 
+
 						Log.customer.debug("%s::After setting DWPOFlag to completed transaction commiting", classname);
-						 
+
 						 count++;
 						 Log.customer.debug("%s::Count for commiting:%s", classname,count);
 						 if(count == 25)
@@ -649,11 +697,11 @@ public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
 							 Base.getSession().transactionCommit();
 							 count = 0;
 						 }
-						 
-						 
+
+
 						 Log.customer.debug("%s::transaction committed as count is greater than 24", classname);
 						 // Change made by Soumya ends 01.06.2011
-						 
+
 							}
                            else {
 							Log.customer.debug("DO Line Item Count 0 ");
@@ -671,7 +719,7 @@ public class CATUSDWPOPush_FlatFile  extends ScheduledTask  {
 
                     Log.customer.debug("Ending DWPOPush program .....");
                     }// while ends
-                    
+
 				   // Change made by Soumya begins 01.06.2011
 				   Log.customer.debug("%s::transaction committed after while as count less than 25", classname);
 				   Base.getSession().transactionCommit();

@@ -32,6 +32,7 @@ Change Log:
 02/21/2013      IBM Niraj  Mach1 R5.5 (FRD2.8/TD2.8) Logic added to allow new marca da bollo line for invoice eform.
 08/22/2013	Parita Shah Q4 2013 - RSD111 - FDD 3.0/TDD 1.1 Logic added to auto reject IRs if Invoice shipto does not match PO/Contract Shipto
 30/08/2013	IBM Nandini  Q4 2013-RSD119-FDD5.0/TDD1.0 Logic added to reject Invoices that were raised against OIO enabled POs.
+01/27/2014  IBM Parita Shah	SpringRelease_RSD (FDD_131_4.5 / TDD_131_1.6) Reject IR if invoice date is greater than current date
 */
 
 package config.java.invoicing.sap;
@@ -337,6 +338,22 @@ public class CatSAPInvoiceReconciliationEngine extends CatInvoiceReconciliationE
 		checkIfIRHasInvalidTaxAmount(ir);
 		}
 		//End of Vertex change for tax code exception handler
+
+		// Start :  SpringRelease_RSD 131 (FDD_131_4.5 / TDD_131_1.6)
+		if (autoRejectInvoiceForFutureDate(ir))
+		{
+		  Log.customer.debug("autoRejectInvoiceForFutureDate():Adding Comments to show the reason");
+		  String rejectionMessage = (String)ResourceService.getString(StringTable, "InvoiceFutureDate");
+		  LongString commentText = new LongString(rejectionMessage);
+		  String commentTitle = "Reason For Invoice Rejection";
+		  Date commentDate = new Date().getNow();
+		  User commentUser = User.getAribaSystemUser(ir.getPartition());
+		  CatTaxUtil.addCommentToIR(ir, commentText, commentTitle, commentDate, commentUser);
+		  Log.customer.debug("autoRejectInvoiceForFutureDate():IR is Auto Rejected");
+		  ir.reject();
+		}
+		// End :  SpringRelease_RSD 131 (FDD_131_4.5 / TDD_131_1.6)
+
 
 
 		return super.validateHeader(approvable);

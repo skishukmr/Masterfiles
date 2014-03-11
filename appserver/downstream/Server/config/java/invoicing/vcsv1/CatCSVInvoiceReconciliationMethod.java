@@ -15,11 +15,17 @@ Change History
 								For more details please review the design doc:
 								Caterpillar Invoicing Enhancement Design.doc
 
-4. Sudheer k Jain  08/27/08  Issue 850 --Copying buyer code value from MS or Order to Invocie Line item
+5. Sudheer k Jain  08/27/08  Issue 850 --Copying buyer code value from MS or Order to Invocie Line item
 6. Nandini Bheemaiah 20/01/12  Issue 229 : Modified the file to override the coding done earlier by F.Al-Nouri
                                As per the new functionality for contract with no release, copy contract accounting
-							   by default always ti invoice that is loaded thru ASN. Copy ASN accounting to invoice 
+							   by default always ti invoice that is loaded thru ASN. Copy ASN accounting to invoice
 							   only when Contract accounting is empty.
+7. Manoj Rajarajan 01/05/2013 WI 233 - VAT tax added in ASN invoices came into MSC as sales tax.
+8. Parita Shah	01/12/104 RSD133 VAT tax coming as Sales Tax in MSC
+9. Parita Shah	17/01/2014 AccountingFacilityName field defaulted from PO header
+01/17/2014  IBM Parita Shah	 SpringRelease_RSD (FDD_133_4.1 / TDD_133_1.1) Incorrect Tax code being set
+01/17/2014  IBM Parita Shah	 SpringRelease_RSD (FDD_111_4.11 / TDD_111_1.11) Copy AccountingFacilityName from PO/Contract on Invoice
+
 ***************************************************************************************** */
 
 package config.java.invoicing.vcsv1;
@@ -58,6 +64,7 @@ import ariba.util.core.Date;
 import ariba.util.core.ResourceService;
 import ariba.util.core.StringUtil;
 import config.java.invoicing.CatInvoiceReconciliationMethod;
+import ariba.statement.core.VATTaxDetails;
 
 public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationMethod {
 	public static final String ClassName = "CatCSVInvoiceReconciliationMethod";
@@ -81,6 +88,7 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 				ClassName);
 		}
 
+
 		if (!invoice.isCreditMemo() && !invoice.isDebitMemo()) {
 			if ((invLoadingCat == Invoice.LoadedFromACSN) || (invLoadingCat == Invoice.LoadedFromFile)) {
 				//if (Log.customer.debugOn)
@@ -91,8 +99,36 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 			Supplier invSupplier = invoice.getSupplier();
 			SupplierLocation invSuppLocation = invoice.getSupplierLocation();
 			ReceivableLineItemCollection appr = null;
+			DirectOrder order1 = null;
+			Contract ma1 = null;
 			appr = invoice.getOrder();
 			if (appr == null) appr = invoice.getMasterAgreement();
+
+
+			// Start :  SpringRelease_RSD 111 (FDD_111_4.11 / TDD_111_1.11)
+
+			if(appr != null)
+			{
+				if (appr instanceof DirectOrder) order1 = (DirectOrder) appr;
+				else if (appr instanceof Contract) ma1 = (Contract) appr;
+
+				Log.customer.debug("%s ::: Setting the AccountingFacilityName on Invoice", ClassName);
+
+				String FacilityNameOnPO = null;
+				FacilityNameOnPO = (order1 !=null)?(String) order1.getFieldValue("AccountingFacilityName"):(String) ma1.getFieldValue("AccountingFacilityName");
+
+				Log.customer.debug("the AccountingFacilityName on PO/MA is", FacilityNameOnPO);
+				if (!StringUtil.nullOrEmptyOrBlankString(FacilityNameOnPO))
+					{
+						invoice.setFieldValue("AccountingFacilityName",FacilityNameOnPO);
+					}
+			}
+
+
+
+			// End :  SpringRelease_RSD 111 (FDD_111_4.11 / TDD_111_1.11)
+
+
 
 			if(invoice != null)
 			    {
@@ -694,7 +730,7 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 			flag = false; // To reset the value of flag to false for every new LineItem under check.
 
 				Log.customer.debug("%s ::: Displaying Accounting distribution Before SetSuppAcctDist - Start", ClassName);
-				for (int j = 0; j < invLineItem.getAccountings().getSplitAccountings().size(); j++) 
+				for (int j = 0; j < invLineItem.getAccountings().getSplitAccountings().size(); j++)
 				{
 					SplitAccounting sa2 = (SplitAccounting)invLineItem.getAccountings().getSplitAccountings().get(j);
 					Log.customer.debug("%s ::: Displaying Accounting distribution - AccountingFacility: %s", ClassName, sa2.getFieldValue("AccountingFacility"));
@@ -704,23 +740,23 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 					Log.customer.debug("%s ::: Displaying Accounting distribution - ExpenseAccount: %s", ClassName, sa2.getFieldValue("ExpenseAccount"));
 					Log.customer.debug("%s ::: Displaying Accounting distribution - Order: %s", ClassName, sa2.getFieldValue("Order"));
 					Log.customer.debug("%s ::: Displaying Accounting distribution - Misc: %s", ClassName, sa2.getFieldValue("Misc"));
-				 
+
 					//Code Begins : Nandini : Issue 229
 					// Code to check for null Accountings in the invoices or Contract. At this point the Accounting is defaulted from Contract.
-					
+
 					if((StringUtil.nullOrEmptyOrBlankString((String)(sa2.getFieldValue("AccountingFacility"))))||(StringUtil.nullOrEmptyOrBlankString((String)(sa2.getFieldValue("Department"))))||(StringUtil.nullOrEmptyOrBlankString((String)(sa2.getFieldValue("Division"))))||(StringUtil.nullOrEmptyOrBlankString((String)(sa2.getFieldValue("Section"))))||(StringUtil.nullOrEmptyOrBlankString((String)(sa2.getFieldValue("ExpenseAccount")))))
 					{
 					    flag = true;
 					}
-				
+
 				}
 				Log.customer.debug("%s ::: Displaying Accounting distribution Before SetSuppAcctDist - End", ClassName);
-			
+
 				if(flag == true)
 				{
 					Log.customer.debug("One or more fields in Account Distribution is empty.. Considering ASN Accounting now", ClassName);
-			
-				
+
+
 						if ((!StringUtil.nullOrEmptyOrBlankString((String)invLineItem.getFieldValue("SuppAcctDistAccountingFacility")))
 							|| (!StringUtil.nullOrEmptyOrBlankString((String)invLineItem.getFieldValue("SuppAcctDistDepartment")))
 							|| (!StringUtil.nullOrEmptyOrBlankString((String)invLineItem.getFieldValue("SuppAcctDistDivision")))
@@ -728,7 +764,7 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 							|| (!StringUtil.nullOrEmptyOrBlankString((String)invLineItem.getFieldValue("SuppAcctDistExpenseAccount")))
 							|| (!StringUtil.nullOrEmptyOrBlankString((String)invLineItem.getFieldValue("SuppAcctDistOrder")))
 							|| (!StringUtil.nullOrEmptyOrBlankString((String)invLineItem.getFieldValue("SuppAcctDistMisc")))) {
-			
+
 							SplitAccounting sa = (SplitAccounting)invLineItem.getAccountings().getSplitAccountings().get(0);
 							Log.customer.debug("%s ::: Setting ASN Accounting to Invoice as Contract Accountings are null", ClassName);
 							sa.setFieldValue("AccountingFacility", invLineItem.getFieldValue("SuppAcctDistAccountingFacility"));
@@ -738,19 +774,19 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 							sa.setFieldValue("ExpenseAccount", invLineItem.getFieldValue("SuppAcctDistExpenseAccount"));
 							sa.setFieldValue("Order", invLineItem.getFieldValue("SuppAcctDistOrder"));
 							sa.setFieldValue("Misc", invLineItem.getFieldValue("SuppAcctDistMisc"));
-			
+
 							sa.setPercentage(invLineItem.getAccountings().getTotalPercentage());
 							sa.setQuantity(invLineItem.getAccountings().getTotalQuantity());
 							sa.setAmount(invLineItem.getAccountings().getTotalAmount());
-			
+
 							Log.customer.debug("%s ::: totals are set to first split accounting", ClassName);
-			
+
 							invLineItem.getAccountings().getSplitAccountings().clear();
 							Log.customer.debug("%s :::: Removed all splits from the collection", ClassName);
-			
+
 							invLineItem.getAccountings().getSplitAccountings().add(0, sa);
 							Log.customer.debug("%s ::: Added the new split accounting", ClassName);
-			
+
 							//if (Log.customer.debugOn) {
 								Log.customer.debug("%s ::: Displaying Accounting distribution After SetSuppAcctDist - Start", ClassName);
 								for (int j = 0; j < invLineItem.getAccountings().getSplitAccountings().size(); j++) {
@@ -766,9 +802,9 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 								Log.customer.debug("%s ::: Displaying Accounting distribution After SetSuppAcctDist - End", ClassName);
 							//}
 						}
-						
+
 				}
-				
+
 		}//Code Ends : Nandini : Issue 229
 	}
 	/**	End of code by F.Al-Nouri */
@@ -830,6 +866,11 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 			invLineItem = (InvoiceLineItem) invLineItems.get(i);
 			ProcureLineType plt = invLineItem.getLineType();
 
+			// Start :  SpringRelease_RSD 133 (FDD_133_4.1 / TDD_131_1.1)
+			TaxDetail taxdt = invLineItem.getTaxDetail();
+			Log.customer.debug("%s ::: In setCAPSChargeCodesOnLines TaxDetail object is ="+taxdt, ClassName);
+			// End :  SpringRelease_RSD 133 (FDD_133_4.1 / TDD_131_1.1)
+
 			Log.customer.debug("%s ::: In setCAPSChargeCodesOnLines ProcureLineType="+plt, ClassName);
 			//Some of the invoices have null line type - continue if null
 			if (plt == null) {
@@ -837,99 +878,121 @@ public class CatCSVInvoiceReconciliationMethod extends CatInvoiceReconciliationM
 				continue;
 			}
 
-			if (plt.getCategory() == 2) {
-				BaseVector taxDetails = invoice.getTaxDetails();
-				String capsChargeCode = null;
-				String procureLineType = null;
 
-				if (taxDetails != null && taxDetails.size() != 0) {
-					String taxType = ((TaxDetail) (taxDetails.get(0))).getCategory();
+			// Start :  SpringRelease_RSD 133 (FDD_133_4.1 / TDD_131_1.1) - Added plt null check
+			if(plt != null)
+			{
 
-					if (taxType.equals("sales")) {
-						capsChargeCode = "002";
-						procureLineType = "SalesTaxCharge";
+					if (plt.getCategory() == 2) {
+
+						//BaseVector taxDetails = invoice.getTaxDetails();
+						  VATTaxDetails vatTaxDetails = invoice.getVATTaxDetails(); //WI 233
+						String capsChargeCode = null;
+						String procureLineType = null;
+
+						//if (taxDetails != null && taxDetails.size() != 0) {
+							// Start :  SpringRelease_RSD 133 (FDD_133_4.1 / TDD_131_1.1)
+							if (taxdt != null)
+							{
+								//String taxType = ((TaxDetail) (taxDetails.get(0))).getCategory();
+								String taxType = taxdt.getCategory();
+								Log.customer.debug("%s ::: In setCAPSChargeCodesOnLines taxType is ="+taxType, ClassName);
+								// End :  SpringRelease_RSD 133 (FDD_133_4.1 / TDD_131_1.1)
+
+								if (taxType.equals("sales")) {
+									capsChargeCode = "002";
+									procureLineType = "SalesTaxCharge";
+								}
+								if (taxType.equals("usage")) {
+									capsChargeCode = "003";
+									procureLineType = "ServiceUseTax";
+								}
+								if ((taxType.equals("vat"))
+									|| (taxType.equals("gst"))
+									|| (taxType.equals("pst"))
+									|| (taxType.equals("qst"))
+									|| (taxType.equals("hst"))) {
+									capsChargeCode = "096";
+									procureLineType = "VATCharge";
+								}
+						}
+										  //WI 233 starts
+										 else if  (vatTaxDetails != null)
+										{
+												capsChargeCode = "096";
+												procureLineType = "VATCharge";
+										}
+										 //WI 233 ends
+						else {
+							capsChargeCode = "002";
+							procureLineType = "SalesTaxCharge";
+						}
+						ClusterRoot capsCCObj = null;
+						if (capsChargeCode != null) {
+							capsCCObj =
+								Base.getService().objectMatchingUniqueName("cat.core.CAPSChargeCode", Base.getSession().getPartition(), capsChargeCode);
+						}
+
+						ProcureLineType procureLTObj = null;
+						if (procureLineType != null) {
+							procureLTObj = ProcureLineType.lookupByUniqueName(procureLineType, invoice.getPartition());
+							//procureLTObj = Base.getService().objectMatchingUniqueName("ariba.procure.core.ProcureLineType",Base.getSession().getPartition(),procureLineType);
+						}
+
+						invLineItem.setDottedFieldValue("CapsChargeCode", capsCCObj);
+						invLineItem.setDottedFieldValue("ReferenceLineNumber", new Integer(0));
+						invLineItem.getDescription().setFieldValue("CAPSChargeCode",capsCCObj);
+						invLineItem.getDescription().setFieldValue("CAPSChargeCodeID",capsChargeCode);
+						invLineItem.setLineType(procureLTObj);
+						//invLineItem.setDottedFieldValue("LineType",procureLTObj);
 					}
-					if (taxType.equals("usage")) {
-						capsChargeCode = "003";
-						procureLineType = "ServiceUseTax";
+					else if (plt.getCategory() == 16) {
+						String capsChargeCode = null;
+						String procureLineType = null;
+						capsChargeCode = "007";
+						procureLineType = "SpecialCharge";
+
+						InvoiceLineItem parentInvLine = (InvoiceLineItem) invLineItem.getParent();
+						if (parentInvLine != null) {
+							Log.customer.debug("%s ::: setCAPSChargeCodesOnLines: Added For Reference : rli1 is %s",	ClassName,parentInvLine.getNumberInCollection());
+							invLineItem.setDottedFieldValue("ReferenceLineNumber", new Integer(parentInvLine.getNumberInCollection()));
+						}
+						ClusterRoot capsCCObj =
+							Base.getService().objectMatchingUniqueName("cat.core.CAPSChargeCode", Base.getSession().getPartition(), capsChargeCode);
+						ProcureLineType procureLTObj = ProcureLineType.lookupByUniqueName(procureLineType, invoice.getPartition());
+						invLineItem.setDottedFieldValue("CapsChargeCode", capsCCObj);
+						invLineItem.setLineType(procureLTObj);
+						//invLineItem.getDescription().setFieldValue("CAPSChargeCode",capsCCObj);
+						//invLineItem.getDescription().setFieldValue("CAPSChargeCodeID","007");
 					}
-					if ((taxType.equals("vat"))
-						|| (taxType.equals("gst"))
-						|| (taxType.equals("pst"))
-						|| (taxType.equals("qst"))
-						|| (taxType.equals("hst"))) {
-						capsChargeCode = "096";
-						procureLineType = "VATCharge";
+					//Code for Dell Freight Charges Exception
+		//			/*
+					else if (plt.getCategory() == 4) {
+						//if (Log.customer.debugOn)
+							Log.customer.debug("%s ::: In setCAPSChargeCodesOnLines populating CAPSChargeCode for FreightCharge...", ClassName);
+						String capsChargeCode = null;
+						capsChargeCode = "019";
+						ClusterRoot capsCCObj =
+											Base.getService().objectMatchingUniqueName("cat.core.CAPSChargeCode", Base.getSession().getPartition(), capsChargeCode);
+						invLineItem.setDottedFieldValue("CapsChargeCode", capsCCObj);
+						invLineItem.setDottedFieldValue("ReferenceLineNumber", new Integer(0));
 					}
-				}
-				else {
-					capsChargeCode = "002";
-					procureLineType = "SalesTaxCharge";
-				}
-				ClusterRoot capsCCObj = null;
-				if (capsChargeCode != null) {
-					capsCCObj =
-						Base.getService().objectMatchingUniqueName("cat.core.CAPSChargeCode", Base.getSession().getPartition(), capsChargeCode);
-				}
+					/*
+					else {
+						if (order != null)
+							pli = invLineItem.getOrderLineItem();
+						else if (ma != null)
+							pli = invLineItem.getMALineItem();
 
-				ProcureLineType procureLTObj = null;
-				if (procureLineType != null) {
-					procureLTObj = ProcureLineType.lookupByUniqueName(procureLineType, invoice.getPartition());
-					//procureLTObj = Base.getService().objectMatchingUniqueName("ariba.procure.core.ProcureLineType",Base.getSession().getPartition(),procureLineType);
+						if (pli != null) {
+							invLineItem.setFieldValue("CapsChargeCode", (ClusterRoot) pli.getDescription().getFieldValue("CAPSChargeCode"));
+							invLineItem.setFieldValue("ReferenceLineNumber", (Integer) pli.getFieldValue("ReferenceLineNumber"));
+						}
+					}
+					*/
 				}
-
-				invLineItem.setDottedFieldValue("CapsChargeCode", capsCCObj);
-				invLineItem.setDottedFieldValue("ReferenceLineNumber", new Integer(0));
-				invLineItem.getDescription().setFieldValue("CAPSChargeCode",capsCCObj);
-				invLineItem.getDescription().setFieldValue("CAPSChargeCodeID",capsChargeCode);
-				invLineItem.setLineType(procureLTObj);
-				//invLineItem.setDottedFieldValue("LineType",procureLTObj);
-			}
-			else if (plt.getCategory() == 16) {
-				String capsChargeCode = null;
-				String procureLineType = null;
-				capsChargeCode = "007";
-				procureLineType = "SpecialCharge";
-
-				InvoiceLineItem parentInvLine = (InvoiceLineItem) invLineItem.getParent();
-				if (parentInvLine != null) {
-					Log.customer.debug("%s ::: setCAPSChargeCodesOnLines: Added For Reference : rli1 is %s",	ClassName,parentInvLine.getNumberInCollection());
-					invLineItem.setDottedFieldValue("ReferenceLineNumber", new Integer(parentInvLine.getNumberInCollection()));
-				}
-				ClusterRoot capsCCObj =
-					Base.getService().objectMatchingUniqueName("cat.core.CAPSChargeCode", Base.getSession().getPartition(), capsChargeCode);
-				ProcureLineType procureLTObj = ProcureLineType.lookupByUniqueName(procureLineType, invoice.getPartition());
-				invLineItem.setDottedFieldValue("CapsChargeCode", capsCCObj);
-				invLineItem.setLineType(procureLTObj);
-				//invLineItem.getDescription().setFieldValue("CAPSChargeCode",capsCCObj);
-				//invLineItem.getDescription().setFieldValue("CAPSChargeCodeID","007");
-			}
-			//Code for Dell Freight Charges Exception
-//			/*
-			else if (plt.getCategory() == 4) {
-				//if (Log.customer.debugOn)
-					Log.customer.debug("%s ::: In setCAPSChargeCodesOnLines populating CAPSChargeCode for FreightCharge...", ClassName);
-				String capsChargeCode = null;
-				capsChargeCode = "019";
-				ClusterRoot capsCCObj =
-									Base.getService().objectMatchingUniqueName("cat.core.CAPSChargeCode", Base.getSession().getPartition(), capsChargeCode);
-				invLineItem.setDottedFieldValue("CapsChargeCode", capsCCObj);
-				invLineItem.setDottedFieldValue("ReferenceLineNumber", new Integer(0));
-			}
-			/*
-			else {
-				if (order != null)
-					pli = invLineItem.getOrderLineItem();
-				else if (ma != null)
-					pli = invLineItem.getMALineItem();
-
-				if (pli != null) {
-					invLineItem.setFieldValue("CapsChargeCode", (ClusterRoot) pli.getDescription().getFieldValue("CAPSChargeCode"));
-					invLineItem.setFieldValue("ReferenceLineNumber", (Integer) pli.getFieldValue("ReferenceLineNumber"));
-				}
-			}
-			*/
 		}
+		// End :  SpringRelease_RSD 133 (FDD_133_4.1 / TDD_131_1.1) - Added plt null check
 	}
 
 	public static List reorderINVLineItems(List lines) {

@@ -9,17 +9,20 @@
    Deepak Sharma
    Date : 22/08/2008
    Changing: CAPSUOM
-	
+
    Issue 215
    Vikram Singh
    Date: 22/09/2011
    Change: IhBookdate changed from ControlDate to ApprovedDate
 
-   29/11/2011 IBM AMS Vikram Singh				Filtering non ASCII characters
-   15/06/2012 Dharshan   Issue #269	 IsAdHoc - catalog or non catalog,
-   10/07/2013 IBM AMS Vikram Singh	 Q4 2013 - RSD117 - FDD 2/TDD 2 - Modify IR uniqueName when sending the IR number to PDW
-
-
+   29/11/2011 	IBM AMS Vikram Singh	Filtering non ASCII characters
+   15/06/2012 	Dharshan   Issue #269	IsAdHoc - catalog or non catalog,
+   10/07/2013 	IBM AMS Vikram Singh	Q4 2013 - RSD117 - FDD 2/TDD 2 - Modify IR uniqueName when sending the IR number to PDW
+   01/23/2014	IBM Parita Shah			SpringRelease_RSD (FDD_129_4.2 / TDD_129_1.2) Filtering >1 byte characters in description
+   01/23/2014	IBM Parita Shah			SpringRelease_RSD (FDD_129_4.1 / TDD_129_1.1) Use Supplier Unique Id instead of SupplierLocation
+   01/23/2014	IBM Parita Shah			SpringRelease_RSD (FDD_129_4.4 / TDD_129_1.4) LI Unit price always a positive no and incase LI Amount is negative LI Quantity should also be sent negatives
+   01/24/2014   IBM Parita Shah			SpringRelease_RSD (FDD_131_4.4 / TDD_131_1.5) For tax line items always send UOM as LOT and Quantity as 1
+   01/29/2014  	IBM Parita Shah			SpringRelease_RSD (FDD_131_4.1,4.2 / TDD_131_1.1,1.2) Change in Query
 *******************************************************************************************************************************************/
 
 package config.java.schedule;
@@ -139,6 +142,9 @@ private String descDescription = null;
 private String descDescription_temp = null;
 private String irDescriptionStripped = null;
 private CommodityCode irCommodityCode = null;
+// Start :  SpringRelease_RSD 129 (FDD_129_4.2 / TDD_129_1.2)
+private CommodityCode commonCC = null;
+// End :  SpringRelease_RSD 129 (FDD_129_4.2 / TDD_129_1.2)
 private String ccUniqueName = null;
 private String descSupplierPartNumber = null;
 private ProcureLineType IrLineType = null;
@@ -175,6 +181,11 @@ private ClusterRoot irPOLineBuyerCode = null;
 private String irPOlinebuyercc = null;
 private Boolean isAdHoc;
 private boolean isAdHocBoolean;
+private String irdecsPrice  = null;
+// Start :  SpringRelease_RSD 131 (FDD_131_4.4 / TDD_131_1.5)
+private String irUOM_UniqueName = "LOT";
+private String taxLineQuantity = "01";
+// End :  SpringRelease_RSD 131 (FDD_131_4.4 / TDD_131_1.5)
 
 /*
  * AUL, sdey 	: Moved the hardcoded values to schedule task parameter.
@@ -228,7 +239,13 @@ public void run()
 		 try
 		 {
 		  isHeader = false;
-		  query = "select from ariba.invoicing.core.InvoiceReconciliation where DWInvoiceFlag = 'InProcess'";
+		  // Start :  SpringRelease_RSD 129 (FDD_131_4.1,4.2 / TDD_131_1.1,1.2)
+		  					query = "select from ariba.invoicing.core.InvoiceReconciliation"
+		  					+ " where (DWInvoiceFlag = 'InProcess' or DWInvoiceFlag = 'Processing') "
+		  					+ "AND this NOT IN (select this from ariba.invoicing.core.InvoiceReconciliation "
+		  					+ "where (LineItems.Amount.Amount = 0 OR LineItems.Quantity = 0) "
+		  					+ "AND LineItems.LineType.Category = 1) ";
+ 					 // End :  SpringRelease_RSD 129 (FDD_131_4.1,4.2 / TDD_131_1.1,1.2)
 		  Log.customer.debug(query);
           AQLQuery aqlquery = null;
 		  AQLOptions options = null;
@@ -291,13 +308,13 @@ public void run()
 								irUniqueName = (String)invrecon.getFieldValue("UniqueName");
 								Log.customer.debug("%s::irUniqueName: %s",classname,irUniqueName);
 								//Start: Q4 2013 - RSD117 - FDD 2/TDD 2
-								//outPW_FlatFile.write(irUniqueName+"~|");								
-										
+								//outPW_FlatFile.write(irUniqueName+"~|");
+
 								String SupInvNumber = (String)invrecon.getDottedFieldValue("Invoice.InvoiceNumber");
 								Log.customer.debug("CATMFGDWInvoicePush_FlatFile: SupInvNumber: "+ SupInvNumber);
 								int invleng = SupInvNumber.length();
 								if (invleng > 35)
-								{	
+								{
 									String SupInvNumber1 = getFormatattedTxt(SupInvNumber);
 									int invleng1 = SupInvNumber1.length();
 									Log.customer.debug("CATMFGDWInvoicePush_FlatFile: invleng1: "+ invleng1);
@@ -315,17 +332,28 @@ public void run()
 									// Writing IH-Invoice-No - 4
 									outPW_FlatFile.write(FormattedirUniqueName+"~|");
 
-								}										
+								}
 								//End: Q4 2013 - RSD117 - FDD 2/TDD 2
 
-								irSupplierLocation = (String)invrecon.getDottedFieldValue("SupplierLocation.UniqueName");
-								if (irSupplierLocation != null){
-									Log.customer.debug("%s::irSupplierLocation:%s",classname,irSupplierLocation);
-									outPW_FlatFile.write(irSupplierLocation+"~|");
+								// Start :  SpringRelease_RSD 129 (FDD_129_4.1 / TDD_129_1.1)
+								if(invrecon.getFieldValue("Supplier") != null)
+								{
+									irSupplierLocation = (String)invrecon.getDottedFieldValue("Supplier.UniqueName");
+									// End :  SpringRelease_RSD 129 (FDD_129_4.1 / TDD_129_1.1)
+									if (irSupplierLocation != null){
+										Log.customer.debug("%s::irSupplierLocation:%s",classname,irSupplierLocation);
+										outPW_FlatFile.write(irSupplierLocation+"~|");
+									}
+									else{
+										outPW_FlatFile.write("~|");
+									}
 								}
 								else{
-									outPW_FlatFile.write("~|");
-								}
+										outPW_FlatFile.write("~|");
+									}
+
+
+
 								Date Ir_invDate = (Date)invrecon.getFieldValue("InvoiceDate");
 								if (Ir_invDate!=null){
 									Irinvdateyymmdd = DateFormatter.toYearMonthDate(Ir_invDate);
@@ -420,18 +448,79 @@ public void run()
 											outPW_FlatFile.write("~|");
 											outPW_FlatFile.write("0"+"~|");
 										}
-										// Filtering Non-ASCII characters
+
+										//Writing item desc-15
+										// Start :  SpringRelease_RSD 129 (FDD_129_4.2 / TDD_129_1.2)
 										String descDescription = "";
+										String commonCCId = "";
 										descDescription_temp = (String)IrLineDescritpiton.getFieldValue("Description");
-										descDescription = descDescription_temp.replaceAll("[^\\p{ASCII}]", "");
-										if (!StringUtil.nullOrEmptyOrBlankString(descDescription)){
-											descDescription = StringUtil.replaceCharByChar(descDescription,'\r',' ');
-											descDescription = StringUtil.replaceCharByChar(descDescription,'\t',' ');
-											descDescription = StringUtil.replaceCharByChar(descDescription,'\n',' ');
-											Log.customer.debug("%s::Description:%s",classname,descDescription);
-											outPW_FlatFile.write(descDescription+"~|");
+										commonCC = IrLineDescritpiton.getCommonCommodityCode();
+										if (commonCC!=null)
+										{
+											commonCCId = (String)commonCC.getName().getPrimaryString();
+											Log.customer.debug("%s::IR Description CommodityCode UniqueName:%s",classname,commonCCId);
 										}
-										else{
+										Log.customer.debug("%s::CommonCommdityCode:%s",classname,commonCCId);
+
+
+										if (!StringUtil.nullOrEmptyOrBlankString(descDescription_temp))
+										{
+										 Log.customer.debug("%s::itemDescription array is:%s",classname,descDescription_temp);
+
+										  char[] c_array;
+										  String c_string;
+										  byte[] c_byte_array;
+										  c_array = descDescription_temp.toCharArray();
+
+										  Log.customer.debug("%s::itemDescription:%s",classname,c_array);
+										  for (char c : c_array)
+										  {
+											   c_string = Character.toString(c);
+
+											   Log.customer.debug("%s::itemDescription:%s",classname,c_string);
+
+											   System.out.print(c_string);
+											   c_byte_array = c_string.getBytes();
+
+											   Log.customer.debug("%s::itemDescription byte array:%s",classname,c_byte_array);
+											   Log.customer.debug("%s::itemDescription byte array length:%s",classname,c_byte_array.length);
+
+											   if (c_byte_array.length > 1)
+											   {
+													Log.customer.debug("%s::itemDescription byte array length > 1",classname);
+													Log.customer.debug("%s::itemDescription:%s",classname,c_byte_array);
+													Log.customer.debug("%s::itemDescription:%s",classname,c_string);
+													descDescription_temp = commonCCId;
+													Log.customer.debug("%s::Setting Description as Common commodity code:%s",classname,descDescription_temp);
+													break;
+
+
+												}
+										   }
+											// End :  SpringRelease_RSD 129 (FDD_129_4.2 / TDD_129_1.2)
+
+											// Filtering Non-ASCII characters
+											Log.customer.debug("%s::Description after checking bytes is:%s",classname,descDescription_temp);
+
+
+											if (!StringUtil.nullOrEmptyOrBlankString(descDescription_temp))
+											{
+												descDescription = descDescription_temp.replaceAll("[^\\p{ASCII}]", "");
+												descDescription = StringUtil.replaceCharByChar(descDescription,'\r',' ');
+												descDescription = StringUtil.replaceCharByChar(descDescription,'\t',' ');
+												descDescription = StringUtil.replaceCharByChar(descDescription,'\n',' ');
+												descDescription = StringUtil.replaceCharByChar(descDescription,'\'',' ');
+												Log.customer.debug("%s::Description:%s",classname,descDescription);
+												outPW_FlatFile.write(descDescription+"~|");
+											}
+											else
+											{
+												outPW_FlatFile.write("~|");
+											}
+
+										}
+										else
+										{
 											outPW_FlatFile.write("~|");
 										}
 										irCommodityCode = IrLineDescritpiton.getCommonCommodityCode();
@@ -529,49 +618,109 @@ public void run()
 									}
 									*/
 
-									IrLineQuantity = BigDecimalFormatter.getStringValue(IrLineItem2.getQuantity());
-									if (!StringUtil.nullOrEmptyOrBlankString(IrLineQuantity)){
-											Log.customer.debug("%s::IR LineQuantity:%s",classname,IrLineQuantity);
-											outPW_FlatFile.write(IrLineQuantity+"~|");
-									}
-									else {
+
+									// Start :  SpringRelease_RSD 129/131 (FDD_129_4.4 / TDD_129_1.4 / FDD_131_4.4/TDD_131_1.5)
+									 //BigDecimal irliAmount = IrLineItem2.getAmount().getAmount();
+									 BigDecimal IrLineQuantity1 = IrLineItem2.getQuantity();
+									 Log.customer.debug("::IR LineQuantity:" +IrLineQuantity1);
+									 String irliQuantity = "";
+
+									 // Writing IL-Bill-Qty-20
+									 if (IrLineQuantity1 != null)
+									 {
+										if(IrLineType!=null && IrLineType.getCategory()== 2)
+										{
+											Log.customer.debug("Its Tax line item passing Quantity as 1: "+taxLineQuantity);
+											outPW_FlatFile.write(taxLineQuantity+"~|");
+
+										}
+										else if (IrLineItem2.getAmount().isNegative())
+										{
+											if(IrLineQuantity1.intValue() < 0)
+											{
+												Log.customer.debug("IR LineAmount is negative and quantity is also negative no change required:" +IrLineQuantity1);
+												irliQuantity = BigDecimalFormatter.getStringValue(IrLineQuantity1);
+												Log.customer.debug("%s::IR LineQuantity:%s",classname,irliQuantity);
+												outPW_FlatFile.write(irliQuantity+"~|");
+
+											}
+											else
+											{
+												IrLineQuantity1 = IrLineQuantity1.multiply(new BigDecimal(-1));
+												Log.customer.debug("IR LineAmount is negative hence setting LI Quantity as negative:" +IrLineQuantity1);
+												irliQuantity = BigDecimalFormatter.getStringValue(IrLineQuantity1);
+												Log.customer.debug("%s::IR LineQuantity:%s",classname,irliQuantity);
+												outPW_FlatFile.write(irliQuantity+"~|");
+											}
+										}
+										else
+										{
+											irliQuantity = BigDecimalFormatter.getStringValue(IrLineQuantity1);
+											Log.customer.debug("%s::IR LineQuantity:%s",classname,irliQuantity);
+											outPW_FlatFile.write(irliQuantity+"~|");
+										}
+									 }
+									 else
+									 {
 										outPW_FlatFile.write("~|");
-									}
+									 }
+
+									 //End :  SpringRelease_RSD 129/131 (FDD_129_4.4 / TDD_129_1.4 / FDD_131_4.4/TDD_131_1.5)
+
 
 
 									//IrUOM = (UnitOfMeasure)IrLineDescritpiton.getUnitOfMeasure();
-									String irUOM_UniqueName = null;
-									if (IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure") !=null){
-										String uOMUniqueName = (String)IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure.UniqueName");
-										//irUOMUniqueName = 	IrUOM.getUniqueName();
-										// irUOMUniqueName = 	IrUOM.getFieldValue("CAPSUnitOfMeasure").toString();
-										// irUOMUniqueName = 	IrUOM.getFieldValue("CAPSUnitOfMeasure");
-										//Object irUOM_object = 	IrUOM.getFieldValue("CAPSUnitOfMeasure");
-										Object irUOM_object = 	IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure.CAPSUnitOfMeasure");
-										 if(irUOM_object != null)	{
-							                  irUOM_UniqueName = irUOM_object.toString();
-										Log.customer.debug("%s::IR Desc UOM:%s",classname,irUOM_UniqueName);
-										if (!StringUtil.nullOrEmptyOrBlankString(irUOM_UniqueName)){
-											outPW_FlatFile.write(irUOM_UniqueName+"~|");
-										}
-										else {
-											//	 IF CAPSUnitOfMeasure = Empty  THEN LineItems.Description.UnitOfMeasure.UniqueName
-											if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueName))
-											outPW_FlatFile.write(uOMUniqueName+"~|");
-										}
-									}
 
-										else {
-											//outPW_FlatFile.write("~|");
-											// IF CAPSUnitOfMeasure = NULL  THEN LineItems.Description.UnitOfMeasure.UniqueName
-											if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueName))
-											outPW_FlatFile.write(uOMUniqueName+"~|");
-										}
-									}
+									// Start :  SpringRelease_RSD 131 (FDD_131_4.4 / TDD_131_1.5)
 
-									else {
+									 // Writing IL-Bill-Qty-Unit-Of-Measure-21
+									 //IrUOM = (UnitOfMeasure)IrLineDescritpiton.getUnitOfMeasure();
+									 String irUOM_UniqueName1 = "";
+
+								  	if(IrLineType!=null && IrLineType.getCategory()== 2)
+								 	{
+										 Log.customer.debug("Its Tax line item passing UOM as LOT: ");
+										 outPW_FlatFile.write(irUOM_UniqueName+"~|");
+									}
+									else if ( IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure") != null)
+									 {
+											// End :  SpringRelease_RSD 131 (FDD_131_4.4 / TDD_131_1.5)
+											Log.customer.debug("Not tax line item");
+											String uOMUniqueName = (String)IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure.UniqueName");
+											 Log.customer.debug("%s::uOMUniqueName 1 %s",classname,uOMUniqueName);
+											 Object irUOM_object = 	IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure.CAPSUnitOfMeasure");
+											 Log.customer.debug("%s::irUOM_object 2 %s",classname,irUOM_object);
+											 if(irUOM_object != null)
+											 {
+												irUOM_UniqueName1 = irUOM_object.toString();
+												Log.customer.debug("%s::IR Desc UOM 3:%s",classname,irUOM_UniqueName1);
+												if (!StringUtil.nullOrEmptyOrBlankString(irUOM_UniqueName1))
+												{
+													outPW_FlatFile.write(irUOM_UniqueName1+"~|");
+													Log.customer.debug("%s::irUOM_UniqueName writen ti file  4 %s",classname,irUOM_UniqueName1);
+												}
+												else
+												{
+	//													 IF CAPSUnitOfMeasure = Enpty  THEN LineItems.Description.UnitOfMeasure.UniqueName
+													if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueName))
+													outPW_FlatFile.write(uOMUniqueName+"~|");
+													Log.customer.debug("%s::CAPSUnitOfMeasure = Enpty 5 %s",classname,uOMUniqueName);
+												}
+											}
+											else
+											{
+												// IF CAPSUnitOfMeasure = NULL  THEN LineItems.Description.UnitOfMeasure.UniqueName
+												if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueName))
+												outPW_FlatFile.write(uOMUniqueName+"~|");
+												Log.customer.debug("%s::CAPSUnitOfMeasure = Enpty 6 %s",classname,uOMUniqueName);
+											}
+									}
+									else
+									{
 										outPW_FlatFile.write("~|");
 									}
+
+
 									if (IrTotalcost!=null){
 										irTotalCostCurrency = IrTotalcost.getCurrency().getUniqueName();
 										if (!StringUtil.nullOrEmptyOrBlankString(irTotalCostCurrency)){
@@ -585,44 +734,70 @@ public void run()
 									 else {
 									 	outPW_FlatFile.write("~|");
 									 }
-									 IrdecsPrice =  BigDecimalFormatter.getStringValue(IrLineDescritpiton.getPrice().getAmount());
-									 Log.customer.debug("%s::Ir desc Price:%s",classname,IrdecsPrice);
-									 if (!StringUtil.nullOrEmptyOrBlankString(IrdecsPrice)){
-									 	outPW_FlatFile.write(IrdecsPrice+"~|");
+
+
+									// Start :  SpringRelease_RSD 129 (FDD_129_4.4 / TDD_129_1.4)
+									irdecsPrice =  BigDecimalFormatter.getStringValue(IrLineDescritpiton.getPrice().getAmount().abs());
+									 // End :  SpringRelease_RSD 129 (FDD_129_4.4 / TDD_129_1.4)
+									 Log.customer.debug("%s::Ir desc Price:%s",classname,irdecsPrice);
+									 if (!StringUtil.nullOrEmptyOrBlankString(irdecsPrice)){
+									 	outPW_FlatFile.write(irdecsPrice+"~|");
 									 }
 									 else {
 									 	outPW_FlatFile.write("~|");
 									 }
-									 String irUOM_UniqueName2 = null;
-									// IrUOM = (UnitOfMeasure)IrLineDescritpiton.getUnitOfMeasure();
-									 if (IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure") != null){
-										 String uOMUniqueNameLi = (String)IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure.UniqueName");
-									 	//irUOMUniqueName = 	IrUOM.getUniqueName();
-										 //String irUOMUniqueName = 	IrUOM.getFieldValue("CAPSUnitOfMeasure").toString();
+
+
+									 // Start :  SpringRelease_RSD 131 (FDD_131_4.4 / TDD_131_1.5)
+									String irUOM_UniqueName2 = "";
+
+								 if ( IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure") != null)
+								 {
+									 if(IrLineType!=null && IrLineType.getCategory()== 2)
+									 {
+
+											 Log.customer.debug("Its Tax line item passing UOM as LOT: ");
+											 outPW_FlatFile.write(irUOM_UniqueName+"~|");
+									}
+									else
+									{
+										// End :  SpringRelease_RSD 131 (FDD_131_4.4 / TDD_131_1.5)
+										Log.customer.debug("Not tax line item");
+										String uOMUniqueName = (String)IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure.UniqueName");
+										 Log.customer.debug("%s::uOMUniqueName 1 %s",classname,uOMUniqueName);
 										 Object irUOM_object = 	IrLineItem2.getDottedFieldValue("Description.UnitOfMeasure.CAPSUnitOfMeasure");
-										 if(irUOM_object != null) {
-							                  irUOM_UniqueName2 = irUOM_object.toString();
-										Log.customer.debug("%s::IR Desc UOM:%s",classname,irUOM_UniqueName2);
-										if (!StringUtil.nullOrEmptyOrBlankString(irUOM_UniqueName2)){
-											outPW_FlatFile.write(irUOM_UniqueName2+"~|");
-										 }
-										 else {
-											 //	 IF CAPSUnitOfMeasure = NULL  THEN LineItems.Description.UnitOfMeasure.UniqueName
-											 if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueNameLi))
-												outPW_FlatFile.write(uOMUniqueNameLi+"~|");
+										 Log.customer.debug("%s::irUOM_object 2 %s",classname,irUOM_object);
+										 if(irUOM_object != null)
+										 {
+											irUOM_UniqueName2 = irUOM_object.toString();
+											Log.customer.debug("%s::IR Desc UOM 3:%s",classname,irUOM_UniqueName2);
+											if (!StringUtil.nullOrEmptyOrBlankString(irUOM_UniqueName2))
+											{
+												outPW_FlatFile.write(irUOM_UniqueName2+"~|");
+												Log.customer.debug("%s::irUOM_UniqueName writen ti file  4 %s",classname,irUOM_UniqueName2);
+											}
+											else
+											{
+//													 IF CAPSUnitOfMeasure = Enpty  THEN LineItems.Description.UnitOfMeasure.UniqueName
+												if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueName))
+												outPW_FlatFile.write(uOMUniqueName+"~|");
+												Log.customer.debug("%s::CAPSUnitOfMeasure = Enpty 5 %s",classname,uOMUniqueName);
+											}
+										}
+										else
+										{
+											// IF CAPSUnitOfMeasure = NULL  THEN LineItems.Description.UnitOfMeasure.UniqueName
+											if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueName))
+											outPW_FlatFile.write(uOMUniqueName+"~|");
+											Log.customer.debug("%s::CAPSUnitOfMeasure = Enpty 6 %s",classname,uOMUniqueName);
 										}
 									 }
-										 else {
-										 	//outPW_FlatFile.write("~|");
-										 	// IF CAPSUnitOfMeasure = NULL  THEN LineItems.Description.UnitOfMeasure.UniqueName
-											 if (!StringUtil.nullOrEmptyOrBlankString(uOMUniqueNameLi))
-												outPW_FlatFile.write(uOMUniqueNameLi+"~|");
 
-										 }
 									 }
 									 else {
 									 	outPW_FlatFile.write("~|");
 									 }
+
 									 outPW_FlatFile.write("1.0"+"~|");
 									 irLineAmount = BigDecimalFormatter.getStringValue(IrLineItem2.getAmount().getAmount());
 									 if (!StringUtil.nullOrEmptyOrBlankString(irLineAmount)) {
@@ -675,6 +850,8 @@ public void run()
 									 else {
 									 	outPW_FlatFile.write("N"+"~|");
 									 }
+
+
 									 int partitionNumber_2 = invrecon.getPartitionNumber();
 									 Log.customer.debug("%s::partiton number 2nd place:%s",classname,partitionNumber_2);
 									 if (partitionNumber_2==2){
@@ -869,7 +1046,11 @@ public void run()
 										outPW_FlatFile.write("~|");
 										}
 
-										outPW_FlatFile.write("\n");
+									outPW_FlatFile.write("\n");
+
+
+
+
 									 }
 									 totalNumberOfIrWritten++;
 									 if(isCompletedFlgUpdate) {
