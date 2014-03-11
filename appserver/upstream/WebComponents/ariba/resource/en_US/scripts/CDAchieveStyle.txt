@@ -1,0 +1,123 @@
+Dim app
+Dim agreement
+Dim StyleContentKey
+Dim StyleSeparator
+
+StyleContentKey = "styleContent"
+StyleSeparator = "********"
+
+Sub cleanup ()
+    On Error Resume Next
+
+    If (not (app is Nothing)) Then
+        app.Visible = false
+        document.body.style.cursor = "wait"
+        app.NormalTemplate.Saved = True
+        app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+End Sub
+
+Function logError (message)
+    logError = false
+    If Err.number <> 0 Then
+        globalError = true
+        ScriptError.innerHTML = message
+        ActiveXError.style.display = ""
+        cleanup
+        logError = true
+    End If
+End Function
+
+Sub contactApp ()
+    On Error Resume Next
+
+    '// TODO Why isn't this using the normal contactApp in CDGenerate, and why is the
+    '// code different?  There should be one contactApp method that everyone uses.
+    '// -rwells, 2006.6.17.
+
+        'launch app
+    set app = CreateObject("Word.Application")
+    If logError(GeneratingErr.contactApplicationErrorMessage) Then
+        Exit Sub
+    End If
+    app.Visible = false
+    document.body.style.cursor = "wait"
+End Sub
+
+Sub retrieveStyle (documentLocation, strUrl)
+    On Error Resume Next
+
+    Dim agreement
+
+        'get file name and open file in Word
+    openDocumentInWord app, documentLocation, True
+
+    Dim value
+    If (Err.Number <> 0) Then
+        Err.Clear
+            ' syncup then reopen
+        value = SmartClientScriptUtil.saveFileToClient(documentLocation)
+        openDocumentsInWord app, documentLocation, True
+    End If
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+    Set agreement = app.ActiveDocument
+    Dim styleContent
+    styleContent = ""
+    Dim aStyle
+    Dim i
+    i = 0
+
+    For Each aStyle In agreement.Styles
+        If (1000 > i) Then
+            styleContent = styleContent & StyleSeparator & aStyle.NameLocal
+        End If
+        i = i + 1
+    Next
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        Exit Sub
+    End If
+
+    If (Not styleContent = "") Then
+        strUrl = strUrl & "&" & StyleContentKey & "=yes"
+    End If
+
+    xmlhttp.Open "POST", strUrl, false
+    xmlhttp.Send styleContent
+    Set xmlhttp = Nothing
+
+    ' app.Documents.Close wdDoNotSaveChanges
+End Sub
+
+Sub startAchieveStyleHandler (keyValues)
+    On Error Resume Next
+
+    If logError("") Then
+        Exit Sub
+    End If
+    globalError = false
+
+    Dim doneUrl
+    doneUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "doneUrl"))
+
+    contactApp
+
+    retrieveStyle awxsGetValue(keyValues, "documentLocation"), ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl"))
+
+    cleanup
+
+    ariba.Request.setWindowLocation(doneUrl)
+End Sub
+
+Dim eventStartAchieveStyle
+Set eventStartAchieveStyle = awxsCreateEvent("startAchieveStyle", GetRef("startAchieveStyleHandler"))
+awxsRegisterEvent "startAchieveStyle", eventStartAchieveStyle
+
+

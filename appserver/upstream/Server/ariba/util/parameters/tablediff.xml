@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE diff SYSTEM "../xmldiffer/XMLDiff.dtd">
+<diff>
+  <node name="table" processAsRecord="true" strictlyOrdered="true">
+    <diffChild name="hash" orderMatters="true"/>
+    <diffChild name="vector" orderMatters="true"/>
+    <diffChild name="string" orderMatters="true"/>
+  </node>
+        
+  <node name="hash">
+    <diffChild name="hashElement"/>
+  </node>
+
+  <node name="hashElement">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="hash" singleton="true"/>
+    <diffChild name="vector" singleton="true"/>
+    <diffChild name="string" singleton="true"/>
+  </node>
+
+  <node name="vector">
+    <diffChild name="hash" orderMatters="true"/>
+    <diffChild name="vector" orderMatters="true"/>
+    <diffChild name="string" orderMatters="true"/>
+  </node>
+
+  <node name="string">
+    <diffAttribute name="value"/>
+  </node>
+
+</diff>

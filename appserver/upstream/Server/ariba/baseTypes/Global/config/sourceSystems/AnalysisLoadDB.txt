@@ -1,0 +1,122 @@
+/* SECTION: PRE DIMENSION TASKS - DO NOT TOUCH */
+Task.TimeSetup
+Task.LoadSourceSystems
+
+/* SECTION: PRE DIMENSION DATALOADS - DO NOT TOUCH */
+Default.DataLoad.DefaultOpportunitySearchRange-Initial
+Default.DataLoad.DefaultOpportunitySearchRangeMapping-Initial
+Default.DataLoad.OpportunitySearchRangeDelete
+Default.DataLoad.OpportunitySearchRange
+Default.DataLoad.OpportunitySearchRangeMapping
+
+/* SECTION: DIMENSION DATALOADS - DO NOT TOUCH */
+Default.DataLoad.AmountRangeLoad-Initial
+Default.DataLoad.PercentRangeLoad-Initial
+Default.DataLoad.TimeRangeLoad-Initial
+Default.DataLoad.NumberLinesRangeLoad-Initial
+Default.DataLoad.ProcurementSystemLoad-Initial
+Default.DataLoad.StandardActCode-Initial
+Default.DataLoad.UNSPSCLoad-Initial
+Default.DataLoad.UNSPSCFrenchLoad
+Default.DataLoad.UNSPSCGermanLoad
+Default.DataLoad.UNSPSCSimplifiedChineseLoad
+Default.DataLoad.UNSPSCJapaneseLoad
+Default.DataLoad.UNSPSCSpanishLoad
+Default.DataLoad.UNSPSCDutchLoad
+Default.DataLoad.UNSPSCBrazilianPortugueseLoad
+Default.DataLoad.UNSPSCItalianLoad
+Default.DataLoad.FiscalTime
+Default.DataLoad.ActCode
+Default.DataLoad.ActUNSPSC
+Default.DataLoad.ActCustomCategory
+Default.DataLoad.SupplierFlexFields
+Default.DataLoad.CompanySiteFlexFields
+Default.DataLoad.DS_Dim_Location
+Default.DataLoad.DS_Dim_Region
+Default.DataLoad.DS_Dim_Organization
+Default.DataLoad.DS_Dim_ProcurementSystem
+Default.DataLoad.DS_Dim_SourceSystem
+Default.DataLoad.DS_Dim_Contract
+Default.DataLoad.DS_Dim_Part
+Default.DataLoad.DS_Dim_UOM
+Default.DataLoad.DS_Dim_Account
+Default.DataLoad.DS_Dim_UserData
+Default.DataLoad.DS_Dim_CostCenter
+Default.DataLoad.DS_Dim_Supplier
+Default.DataLoad.DS_Dim_UNSPSC
+Default.DataLoad.DS_Dim_Commodity
+Default.DataLoad.DS_Dim_ERPCommodity
+Default.DataLoad.DS_Dim_CompanySite
+Default.DataLoad.DS_Dim_AmountRange
+Default.DataLoad.DS_Dim_TimeRange
+Default.DataLoad.DS_Dim_NumberLinesRange
+Default.DataLoad.DS_Dim_Time
+Default.DataLoad.DS_Dim_FlexDimension1
+Default.DataLoad.DS_Dim_FlexDimension2
+Default.DataLoad.DS_Dim_FlexDimension3
+Default.DataLoad.DS_Dim_FlexDimension4
+Default.DataLoad.DS_Dim_FlexDimension5
+Default.DataLoad.DS_Dim_FlexDimension6
+
+/* SECTION: POST DIMENSION DATALOADS - DO NOT TOUCH */
+Default.DataLoad.SupplierDE
+Task.ApplyDataSources
+
+/* SECTION: POST DIMENSION TASKS - DO NOT TOUCH */
+Task.ContractGroupSetup
+Task.UserManagementGroupSetup
+Task.ACTVersionSetup
+Task.AribaCategoryGroupSetup
+Task.UNSPSCCategoryGroupSetup
+Task.CommodityCategoryGroupSetup
+Task.RegionGroupSetup
+Task.OrganizationGroupSetup
+Task.ActUnspscDefaultMappingSetup
+Task.ActCustomCategoryDefaultMappingSetup
+Task.CopyUNSPSCToCommodityDim
+
+/* SECTION: LAST POST DIMENSION TASK - DO NOT TOUCH */
+Task.LoadFromStaging
+
+/* SECTION: PRE FACT TASKS - DO NOT TOUCH */
+
+/* SECTION: PRE FACT DATALOADS - DO NOT TOUCH */
+
+/* SECTION: FACT DATALOADS - DO NOT TOUCH */
+Default.DataLoad.DS_Fact_InvoiceLineItem
+Default.DataLoad.DS_Fact_POLineItem
+Default.DataLoad.SupplierDiversity
+Default.DataLoad.SupplierDiversityDelete
+
+/* SECTION: POST FACT DATALOADS - DO NOT TOUCH */
+Task.ComputeDBStats
+Task.ApplyExistingEnrichmentDataTask
+Default.DataLoad.InvoiceDE
+
+/* SECTION: POST FACT TASKS - DO NOT TOUCH */
+Task.MissingDESupplierSetup
+Task.SetupDESupplierNameOnDiversityFact
+Task.PassiveComplianceContractMatching-PostProcess
+Task.SetUpEffectiveVariances
+Task.ComputePOCount-PostProcess
+Task.ComputePOLineCount-PostProcess
+Task.ComputeInvoiceCount-PostProcess
+Task.ComputeInvoiceLineCount-PostProcess
+Task.ComputeSupplierOptCost-PostProcess
+Task.ComputePriceAlignCost-PostProcess
+Task.ComputePriceVarCostInv-PostProcess
+Task.ComputeInvStdCostVar-PostProcess
+Task.ResetUNSPSCFormulaFields
+Task.ComputeUNSPSCFormulaFields
+Task.ComputeUNSPSCVarianceFields
+Task.ComputeUNSPSCPercentileFields
+Task.ResetSupplierRank
+Task.SupplierRankByAmount
+Task.SupplierRankByLineCount
+Task.ResetAccountRank
+Task.AccountRankByAmount
+Task.AccountRankByLineCount
+
+/* SECTION: POST DATA LOADING TASKS - DO NOT TOUCH */
+Task.DBOLAPProcessing
+

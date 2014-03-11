@@ -1,0 +1,124 @@
+var aClientVaultPath;
+
+function setStep (name) {
+    step_test_word.className = "inactiveStep";
+    step_test_excel.className = "inactiveStep";
+    step_test_msxml.className = "inactiveStep";
+    step_test_ado.className = "inactiveStep";
+    step_test_wshshell.className = "inactiveStep";
+    step_check_client_vault.className = "inactiveStep";
+    step_setup_succeed.className = "inactiveStep";
+    document.all(name).className = "activeStep";
+    // window.setTimeout(name + "_sub()", 1);
+}
+
+function step_test_word_sub () {
+    try {
+        var word = new ActiveXObject("Word.Application");
+        word.NormalTemplate.Saved = true;
+        word.quit(0); // wdDoNotSaveChanges = 0
+        word = null;
+        setStep("step_test_excel");
+        step_test_excel_sub();
+        // window.setTimeout("setStep(\"step_test_excel\")", 1);
+    } catch (ex) {
+        logError("AA" + msg1);
+    }
+}
+
+function step_test_excel_sub () {
+    try {
+        var excel = new ActiveXObject("Excel.Application");
+        setStep("step_test_msxml");
+        step_test_msxml_sub();
+        // window.setTimeout("setStep(\"step_test_msxml\")", 1);
+    } catch (ex) {
+        logError("AA" + msg2);
+    }
+}
+
+function step_test_msxml_sub () {
+    try {
+        var msxml = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+        setStep("step_test_ado");
+        step_test_ado_sub();
+        // window.setTimeout("setStep(\"step_test_ado\")", 1);
+    } catch (ex) {
+        logError("AA" + msg3 + " <a href=\"http://www.microsoft.com/downloads/release.asp?ReleaseID=32833\" target=\"_new\">http://www.microsoft.com/downloads/release.asp?ReleaseID=32833</a>");
+    }
+}
+
+function step_test_ado_sub () {
+    try {
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var ado = new ActiveXObject("ADODB.Stream");
+        setStep("step_test_wshshell");
+        step_test_wshshell_sub();
+        // window.setTimeout("setStep(\"step_test_wshshell\")", 1);
+    } catch (ex) {
+        logError("AA" + msg4 + " <a href=\"http://www.microsoft.com/data/download_25SP1.htm\" target=\"_new\">http://www.microsoft.com/data/download_25SP1.htm</a>");
+    }
+}
+
+function step_test_wshshell_sub () {
+    try {
+        var wsh = new ActiveXObject("WScript.Shell");
+        setStep("step_check_client_vault");
+        step_check_client_vault_sub();
+        // window.setTimeout("setStep(\"step_check_client_vault\")", 1);
+    } catch (ex) {
+        logError("AA" + msg5);
+    }
+}
+
+function step_check_client_vault_sub () {
+    try {
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var clientVaultPath = aClientVaultPath;
+        if (clientVaultPath.length > 60) {
+            logError(msg9);
+        }
+        else if (fso.FolderExists(clientVaultPath)) {
+            setStep("step_setup_succeed");
+            step_setup_succeed_sub();
+            // window.setTimeout("setStep(\"step_write_registry\")", 1);
+        }
+        else {
+            logError(msg8);
+        }
+    }
+    catch (ex) {
+        logError("AA" + msg6);
+    }
+}
+
+function getComputerName ()
+{
+    try {
+        var wnt = new ActiveXObject("WScript.Network");
+        return wnt.ComputerName;
+    }
+    catch (ex) {
+        logError("AA" + msg10);
+    }
+}
+
+function step_setup_succeed_sub ()
+{
+    var cn = getComputerName();
+    logError("Success" + cn);
+}
+
+function startDFSSubmitSetupHandler () {
+    var e = window.event.srcElement;
+
+    aClientVaultPath = e.getAttribute("clientVaultPath");
+
+    setStep("step_test_word");
+    step_test_word_sub();
+    // window.setTimeout("setStep(\"step_test_word\")", 1);
+}
+
+var DFSSubmitSetupTrigger = document.all("startDFSSubmitSetupTrigger");
+DFSSubmitSetupTrigger.setAttribute("clientVaultPath", "");
+DFSSubmitSetupTrigger.onclick = startDFSSubmitSetupHandler;

@@ -1,0 +1,49 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerPayment" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.payment.core.Payment
+                              LEFT OUTER JOIN ariba.approvable.core.Approvable USING Payment.Payable
+                              LEFT OUTER JOIN ariba.common.core.PaymentAmounts AS ToPayPmtAmt USING Payment.PaymentAmounts
+                              LEFT OUTER JOIN ariba.basic.core.Money AS ToPayAmount USING ToPayPmtAmt.NetAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS ToPayCurrency INCLUDE INACTIVE USING ToPayAmount.Currency
+                              LEFT OUTER JOIN ariba.common.core.PaymentAmounts AS PaidPmtAmt USING Payment.PaidAmounts
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PaidAmount USING PaidPmtAmt.NetAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PaidCurrency INCLUDE INACTIVE USING PaidAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS DiscountAmount USING PaidPmtAmt.DiscountAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS DiscountCurrency INCLUDE INACTIVE USING DiscountAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MaxDiscountAmount USING Payment.MaxDiscountApplicable
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MaxDiscountCurrency INCLUDE INACTIVE USING MaxDiscountAmount.Currency
+                              LEFT OUTER JOIN ariba.common.core.PaymentSchedule USING PaymentSchedules
+                              LEFT OUTER JOIN ariba.payment.core.PaymentTransaction USING PaymentTransaction
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING Payment.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier"
+                  replaceWhereClause="Payment.NextVersion IS NULL"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="InvoiceNumber"/>
+        <deleteField name="DiscountPercent"/>
+        <deleteField name="AdjustmentAmount.Amount"/>
+        <deleteField name="AdjustmentAmount.Currency"/>
+        <deleteField name="AdjustmentAmount.Date"/>
+        <deleteField name="InvoiceAmount.Amount"/>
+        <deleteField name="InvoiceAmount.Currency"/>
+        <deleteField name="InvoiceAmount.Date"/>
+        <deleteField name="ProcurementUnit.UniqueName"/>
+        <deleteField name="DynamicDiscountTaken"/>
+        <deleteField name="EligibleForDynamicDiscount"/>
+        <deleteField name="PaymentSchedulingApplication"/>
+        <deleteField name="PaymentAggregationApplication"/>
+        <deleteField name="PaymentTermsDescription"/>
+        <deleteField name="PaymentMethodType"/>
+        <deleteField name="PaymentStatusString"/>
+        <deleteField name="GrossAmount.Amount"/>
+        <deleteField name="GrossAmount.Currency"/>
+        <deleteField name="GrossAmount.Date"/>
+        <deleteField name="Requester.UserId"/>
+        <deleteField name="Requester.PasswordAdapter"/>        
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

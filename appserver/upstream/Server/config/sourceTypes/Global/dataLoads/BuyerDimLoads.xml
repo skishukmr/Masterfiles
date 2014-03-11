@@ -1,0 +1,170 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerUser" version="8.1,8.2" disableLoad="true"/>
+
+<inDataLoad name="BuyerUserProcurementUnit" version="8.2" disableLoad="true"/>
+
+<inDataLoad name="BuyerInactivateUserAccessConstraints" version="8.2" disableLoad="true"/>
+
+<inDataLoad name="BuyerUserAccessConstraints" version="8.2" disableLoad="true"/>
+
+<inDataLoad name="BuyerSupplier" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.common.core.Supplier INCLUDE INACTIVE
+                              JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING Supplier.Locations
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING Supplier.CommonSupplier
+                              LEFT OUTER JOIN ariba.basic.core.PostalAddress INCLUDE INACTIVE USING SupplierLocation.PostalAddress
+                              LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                  replaceIncrementalClause="((:IncrementalStartDate &lt;= Supplier.TimeUpdated AND Supplier.TimeUpdated &lt; :IncrementalEndDate) OR
+                                     (:IncrementalStartDate &lt;= SupplierLocation.TimeUpdated AND SupplierLocation.TimeUpdated &lt; :IncrementalEndDate))"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="ProcurementUnitParent"/>
+        <deleteField name="NumberOfEmployees"/>
+        <deleteField name="YearFounded"/>
+    </fieldMappings>
+</inDataLoad>
+
+
+<inDataLoad name="BuyerLocationReq" version="8.2" disableLoad="true"/>
+
+<dataLoad name="BuyerLocation">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.Address INCLUDE INACTIVE SUBCLASS NONE
+                              LEFT OUTER JOIN ariba.basic.core.PostalAddress USING Address.PostalAddress
+                              LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                  incrementalClause="(:IncrementalStartDate &lt;= Address.TimeUpdated AND
+                                      Address.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Location"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Location">
+            <aqlMapping selectField="Address.Name"/>
+        </field>
+        <field name="LocationId">
+            <aqlMapping selectField="Address.UniqueName"/>
+        </field>
+        <field name="City">
+            <aqlMapping selectField="Address.PostalAddress.City"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="Address.PostalAddress.State"/>
+        </field>
+        <field name="Country">
+            <aqlMapping selectField="Country.Name"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerLocation" version="8.2" disableLoad="true"/>
+
+<inDataLoad name="BuyerPartRequisition" version="8.2" disableLoad="true"/>
+
+<inDataLoad name="PCardInfo" version="8.2" disableLoad="true"/>
+
+<inDataLoad name="ProcurementUnits" version="8.2" disableLoad="true"/>
+
+
+<!--Derived load BuyerUser load-->
+<derivedDataLoad name="TmpBuyerUser_1" extendsLoad="BuyerUser">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= Requester.TimeUpdated AND
+		                                          Requester.TimeUpdated &lt; Date('2012-08-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpBuyerUser_2" extendsLoad="BuyerUser">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-08-02 12:06:32 CDT') &lt;= Requester.TimeUpdated AND
+		                                          Requester.TimeUpdated &lt; Date('2012-09-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpBuyerUser_3" extendsLoad="BuyerUser">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-09-02 12:06:32 CDT') &lt;= Requester.TimeUpdated AND
+		                                          Requester.TimeUpdated &lt; Date('2012-10-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpBuyerUser_4" extendsLoad="BuyerUser">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-10-02 12:06:32 CDT') &lt;= Requester.TimeUpdated AND
+		                                          Requester.TimeUpdated &lt; Date('2012-11-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpBuyerUser_5" extendsLoad="BuyerUser">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-11-02 12:06:32 CDT') &lt;= Requester.TimeUpdated AND
+		                                          Requester.TimeUpdated &lt; Date('2012-12-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpBuyerUser_6" extendsLoad="BuyerUser">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= Requester.TimeUpdated AND
+		                                          Requester.TimeUpdated &lt; Date('2013-01-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+
+<!--Derived load ERPCommodity load-->
+<derivedDataLoad name="TmpERPCommodity_1" extendsLoad="ERPCommodity">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= Code.TimeUpdated AND
+		                                          Code.TimeUpdated &lt; Date('2012-08-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpERPCommodity_2" extendsLoad="ERPCommodity">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-08-02 12:06:32 CDT') &lt;= Code.TimeUpdated AND
+		                                          Code.TimeUpdated &lt; Date('2012-09-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpERPCommodity_3" extendsLoad="ERPCommodity">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-09-02 12:06:32 CDT') &lt;= Code.TimeUpdated AND
+		                                          Code.TimeUpdated &lt; Date('2012-10-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpERPCommodity_4" extendsLoad="ERPCommodity">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-10-02 12:06:32 CDT') &lt;= Code.TimeUpdated AND
+		                                          Code.TimeUpdated &lt; Date('2012-11-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpERPCommodity_5" extendsLoad="ERPCommodity">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-11-02 12:06:32 CDT') &lt;= Code.TimeUpdated AND
+		                                          Code.TimeUpdated &lt; Date('2012-12-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="TmpERPCommodity_6" extendsLoad="ERPCommodity">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= Code.TimeUpdated AND
+		                                          Code.TimeUpdated &lt; Date('2013-01-02 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+</allDataLoads>

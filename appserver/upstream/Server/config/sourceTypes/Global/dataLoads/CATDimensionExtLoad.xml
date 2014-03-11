@@ -1,0 +1,277 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+	<!-- ************************************************************************************************************ -->
+	<!-- ***************************************** Custom Dimensions ****************************************** -->
+	<!-- ************************************************************************************************************ -->
+	
+	<!-- *********************************** Facility Dimension *********************************** -->
+	
+	<dataLoad name="CATFacility">
+		<loadStages>
+			<aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              		JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              		JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              		JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings" 
+                              	whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               		PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received') AND
+                               		SplitAccounting.AccountingFacility IS NOT NULL" 
+                               	incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 		PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.Facility"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="FacilityID">
+				<aqlMapping selectField="SplitAccounting.AccountingFacility"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** Department Dimension *********************************** -->
+	
+	<dataLoad name="CATDepartment">
+		<loadStages>
+			<aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              		JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              		JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              		JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings" 
+                              	whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               		PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received') AND
+                               		SplitAccounting.Department IS NOT NULL" 
+                               	incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 		PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.Department"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="DepartmentID">
+				<aqlMapping selectField="SplitAccounting.Department"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** Division Dimension *********************************** -->
+	
+	<dataLoad name="CATDivision">
+		<loadStages>
+			<aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              		JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              		JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              		JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings" 
+                              	whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               		PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received') AND
+                               		SplitAccounting.Division IS NOT NULL" 
+                               	incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 		PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.Division"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="DivisionID">
+				<aqlMapping selectField="SplitAccounting.Division"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** Section Dimension *********************************** -->
+	
+	<dataLoad name="CATSection">
+		<loadStages>
+			<aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              		JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              		JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              		JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings" 
+                              	whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               		PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received') AND
+                               		SplitAccounting.Section IS NOT NULL" 
+                               	incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 		PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.Section"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="SectionID">
+				<aqlMapping selectField="SplitAccounting.Section"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** ExpenseAccount Dimension *********************************** -->
+	
+	<dataLoad name="CATExpenseAccount">
+		<loadStages>
+			<aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              		JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              		JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              		JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings" 
+                              	whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               		PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received') AND
+                               		SplitAccounting.ExpenseAccount IS NOT NULL" 
+                               	incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 		PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.ExpenseAccount"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="ExpenseAccountID">
+				<aqlMapping selectField="SplitAccounting.ExpenseAccount"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** Order Dimension *********************************** -->
+	
+	<dataLoad name="CATOrder">
+		<loadStages>
+			<aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              		JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              		JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              		JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings" 
+                              	whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               		PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received') AND
+                               		SplitAccounting.Order IS NOT NULL" 
+                               	incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 		PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.CatOrder"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="CatOrderID">
+				<aqlMapping selectField="SplitAccounting.Order"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** Misc Dimension *********************************** -->
+	
+	<dataLoad name="CATMisc">
+		<loadStages>
+			<aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              		JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              		JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              		JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings" 
+                              	whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               		PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received') AND
+                               		SplitAccounting.Misc IS NOT NULL" 
+                               	incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 		PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.Misc"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="MiscID">
+				<aqlMapping selectField="SplitAccounting.Misc"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** SettlementCode Dimension *********************************** -->
+	
+	<dataLoad name="CATSettlementCode">
+		<loadStages>
+			<aqlStage fromClause="cat.core.SettlementCode" 
+			whereClause="SettlementCode.UniqueName IS NOT NULL" 
+			incrementalClause="(SettlementCode.TimeUpdated &gt;= :IncrementalStartDate AND
+                             	SettlementCode.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.SettlementCode"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="SettlementCodeID">
+				<aqlMapping selectField="SettlementCode.UniqueName"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** BuyerCode Dimension *********************************** -->
+	
+	<dataLoad name="CATBuyerCode">
+		<loadStages>
+			<aqlStage fromClause="cat.core.BuyerCode" 
+			whereClause="BuyerCode.UniqueName IS NOT NULL" 
+			incrementalClause="(BuyerCode.TimeUpdated &gt;= :IncrementalStartDate AND
+                             	BuyerCode.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.BuyerCode"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="BuyerCodeID">
+				<aqlMapping selectField="BuyerCode.UniqueName"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** SiteFacility Dimension *********************************** -->
+	
+	<dataLoad name="CATSiteFacility">
+		<loadStages>
+			<aqlStage fromClause="cat.core.Facility" 
+			whereClause="Facility.UniqueName IS NOT NULL" 
+			incrementalClause="(Facility.TimeUpdated &gt;= :IncrementalStartDate AND
+                             	Facility.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.SiteFacility"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="SiteFacilityID">
+				<aqlMapping selectField="Facility.UniqueName"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- *********************************** VAT Dimension *********************************** -->
+	
+	<dataLoad name="CATVAT">
+		<loadStages>
+			<aqlStage fromClause="cat.core.VATClass" 
+			whereClause="VATClass.UniqueName IS NOT NULL" 
+			incrementalClause="(VATClass.TimeUpdated &gt;= :IncrementalStartDate AND
+                             	VATClass.TimeUpdated &lt; :IncrementalEndDate)"/>
+			<analysisStage destinationName="cat.analytics.dimension.VAT"/>
+		</loadStages>
+		<fieldMappings>
+			<field name="VATID">
+				<aqlMapping selectField="VATClass.UniqueName"/>
+			</field>
+			<field name="VATName">
+				<aqlMapping selectField="VATClass.Name"/>
+			</field>
+		</fieldMappings>
+	</dataLoad>
+	
+	<!-- ************************************************************************************************************ -->
+	<!-- *********************************** Customized OOTB Dimensions *********************************** -->
+	<!-- ************************************************************************************************************ -->
+	
+	<!-- ******************************************** Supplier Dimension **************************************** -->
+	
+	<inDataLoad name="BuyerSupplier">
+	    <fieldMappings>
+	   	<deleteField name="SupplierName"/>
+	        
+	   	<field name="SupplierName">
+            		<aqlMapping selectField="Supplier.UniqueName || ': ' || Supplier.Name"/>
+ 		</field>
+	     	<field name="PrefOrderingMethod">
+	            	<aqlMapping selectField="SupplierLocation.PreferredOrderingMethod"/>
+	    	</field>
+	    </fieldMappings>
+	</inDataLoad>
+	
+	<!-- ************************************** User Dimension **************************************** -->
+	
+	<inDataLoad name="CDSUser">
+	    <fieldMappings>
+	        <field name="PayrollFacility">
+	            <aqlMapping selectField="Requester.PayrollFacility"/>
+	        </field>
+	        <field name="AccountingFacility">
+	            <aqlMapping selectField="Requester.AccountingFacility"/>
+	        </field>
+	        <field name="Department">
+	            <aqlMapping selectField="Requester.Department"/>
+	        </field>
+	        <field name="Division">
+	            <aqlMapping selectField="Requester.Division"/>
+	        </field>
+	        <field name="Section">
+	            <aqlMapping selectField="Requester.Section"/>
+	        </field>
+	        <field name="Email">
+	            <aqlMapping selectField="Requester.EmailAddress"/>
+	        </field>
+	    </fieldMappings>
+	</inDataLoad>
+	
+</allDataLoads>

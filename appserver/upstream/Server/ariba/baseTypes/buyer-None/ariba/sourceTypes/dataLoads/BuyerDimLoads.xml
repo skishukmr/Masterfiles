@@ -1,0 +1,644 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerUser">
+    <loadStages>
+        <aqlStage fromClause="ariba.user.core.User as Requester INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.user.core.User as Supervisor INCLUDE INACTIVE USING Requester.Supervisor"
+                  whereClause="Requester.UniqueName IS NOT NULL"
+                  orderByClause="Requester.UniqueName,Requester.Active"
+                  incrementalClause="(:IncrementalStartDate &lt;= Requester.TimeUpdated AND
+                                      Requester.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.UserData"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UserId">
+            <aqlMapping selectField="Requester.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="UserName">
+            <aqlMapping selectField="Requester.Name"/>
+        </field>
+        <field name="PasswordAdapter">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DefaultPasswordAdapter"/>
+            </analysisMapping>
+        </field>
+        <field name="SupervisorId">
+            <aqlMapping selectField="Supervisor.UniqueName"/>
+        </field>
+        <field name="SupervisorPasswordAdapter">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DefaultPasswordAdapter"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerUserProcurementUnit">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.User as Requester INCLUDE INACTIVE
+                              JOIN ariba.common.core.Accounting as Accounting USING Requester.Accounting
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit as ProcurementUnit INCLUDE INACTIVE USING Accounting.ProcurementUnit"
+                  whereClause="Requester.User.UniqueName IS NOT NULL"
+                  orderByClause="Requester.User.UniqueName,Requester.User.Active"
+                  incrementalClause="(:IncrementalStartDate &lt;= Requester.TimeUpdated AND
+                                      Requester.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.UserData"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UserId">
+            <aqlMapping selectField="Requester.User.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="PasswordAdapter">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DefaultPasswordAdapter"/>
+            </analysisMapping>
+        </field>
+        <field name="ProcurementUnit">
+            <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInactivateUserAccessConstraints">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.User AS US INCLUDE INACTIVE"
+                  orderByClause="US.User.UniqueName, US.User.PasswordAdapter"
+                  incrementalClause="(:IncrementalStartDate &lt;= US.TimeUpdated AND
+                                      US.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage fromClause=":InterfaceTable JOIN DIM_USER_ORG_ACCESS_MAP UOA ON :InterfaceTable.UserId = UOA.USER_ID"/>
+        <analysisStage destinationName="ariba.analytics.dimension.UserOrgAccessMap"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UserId">
+            <aqlMapping selectField="US.User.UniqueName"/>
+        </field>
+        <field name="PasswordAdapter">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DefaultPasswordAdapter"/>
+            </analysisMapping>
+        </field>
+        <field name="ApprovableTypeName">
+            <interfaceSqlMapping selectColumn="UOA.APPROVABLE_TYPE_NAME"/>
+        </field>
+        <field name="ConstraintValue">
+            <interfaceSqlMapping selectColumn="UOA.CONSTRAINT_VALUE"/>
+        </field>
+        <field name="IsActive">
+            <analysisMapping>
+                            <mapValue implementation="ariba.analytics.mapValue.Constant">
+                                <parameter name="Constant" value="false"/>
+                            </mapValue>
+                        </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerUserAccessConstraints">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.User AS US"
+                  orderByClause="US.User.UniqueName, US.User.PasswordAdapter, US.ApprovableResponsible.ApprovableTypeName"
+                  incrementalClause="(:IncrementalStartDate &lt;= US.TimeUpdated AND
+                                      US.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.UserOrgAccessMap"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UserId">
+            <aqlMapping selectField="US.User.UniqueName"/>
+        </field>
+        <field name="PasswordAdapter">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DefaultPasswordAdapter"/>
+            </analysisMapping>
+        </field>
+        <field name="ApprovableTypeName">
+            <aqlMapping selectField="ApprovableResponsible.ApprovableTypeName"/>
+        </field>
+        <field name="ConstraintValue">
+            <aqlMapping selectField="ApprovableResponsible.ResponsibleUnits.UniqueName"/>
+        </field>
+        <field name="IsActive">
+            <analysisMapping>
+                            <mapValue implementation="ariba.analytics.mapValue.Constant">
+                                <parameter name="Constant" value="true"/>
+                            </mapValue>
+                        </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerSupplier">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.SupplierLocation INCLUDE INACTIVE
+                              JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING Supplier.CommonSupplier
+                              LEFT OUTER JOIN ariba.basic.core.PostalAddress INCLUDE INACTIVE USING SupplierLocation.PostalAddress
+                              LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit INCLUDE INACTIVE USING SupplierLocation.ProcurementUnit"
+                  distinctFlag="true"
+                  orderByClause="Supplier.UniqueName,SupplierLocation.UniqueName,SupplierLocation.Active"
+                  incrementalClause="((:IncrementalStartDate &lt;= Supplier.TimeUpdated AND Supplier.TimeUpdated &lt; :IncrementalEndDate) OR
+                                     (Supplier.CommonSupplier IS NOT NULL AND :IncrementalStartDate &lt;= CommonSupplier.TimeUpdated AND CommonSupplier.TimeUpdated &lt; :IncrementalEndDate) OR
+                                     (:IncrementalStartDate &lt;= SupplierLocation.TimeUpdated AND SupplierLocation.TimeUpdated &lt; :IncrementalEndDate))"
+                  sourceLookupClass="ariba.common.core.Supplier"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Supplier"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="SupplierName">
+            <aqlMapping selectField="Supplier.Name"/>
+        </field>
+
+        <field name="CommonSupplierId">
+            <aqlMapping selectField="CASE CommonSupplier.SystemID WHEN NULL THEN 'CSId:' || CommonSupplier.Name ELSE CommonSupplier.SystemID END"/>
+        </field>
+        <field name="CommonSupplierName">
+            <aqlMapping selectField="CommonSupplier.Name"/>
+        </field>
+
+        <field name="StreetAddress">
+            <aqlMapping selectField="SupplierLocation.PostalAddress.Lines"/>
+        </field>
+        <field name="City">
+            <aqlMapping selectField="SupplierLocation.PostalAddress.City"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="SupplierLocation.PostalAddress.State"/>
+        </field>
+        <field name="PostalCode">
+            <aqlMapping selectField="SupplierLocation.PostalAddress.PostalCode"/>
+        </field>
+        <field name="Country">
+            <aqlMapping selectField="Country.UniqueName"/>
+        </field>
+        <field name="ProcurementUnitParent">
+            <aqlMapping selectField="CASE ProcurementUnit.UniqueName WHEN NULL THEN 'All' ELSE ProcurementUnit.UniqueName END"/>
+        </field>
+        <field name="NumberOfEmployees">
+            <aqlMapping selectField="CommonSupplier.NumberOfEmployees"/>
+        </field>
+        <field name="YearFounded">
+            <aqlMapping selectField="CommonSupplier.YearFounded"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ERPCommodity">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.PartitionedCommodityCode AS Code INCLUDE INACTIVE"
+                  whereClause="Code.UniqueName IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Code.TimeUpdated AND
+                                      Code.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="Code.UniqueName,Code.Active"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ERPCommodity"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CommodityId">
+            <aqlMapping selectField="Code.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="CommodityName">
+            <aqlMapping selectField="Code.Name"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerPartPO">
+    <loadStages>
+        <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier"
+                  whereClause = "(POLineItem.PunchOut IS NOT NULL OR
+                                  POLineItem.Description.CatalogItemRef IS NOT NULL)
+                                 AND POLineItem.Description.IsInternalPartId = FALSE"
+                  incrementalClause="(:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"
+                  orderByClause="1,2,3"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Part"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="PartKey1">
+            <aqlMapping selectField="LTRIM(POLineItem.Description.SupplierPartNumber)"/>
+        </field>
+        <field name="PartKey2">
+            <aqlMapping selectField="LTRIM(POLineItem.Description.SupplierPartAuxiliaryID)"/>
+        </field>
+        <field name="PartKey3">
+            <aqlMapping selectField="CommonSupplier.SystemID"/>
+        </field>
+
+        <field name="SupplierPartNumber">
+            <aqlMapping selectField="LTRIM(POLineItem.Description.SupplierPartNumber)"/>
+        </field>
+        <field name="SupplierPartAuxiliaryId">
+            <aqlMapping selectField="LTRIM(POLineItem.Description.SupplierPartAuxiliaryID)"/>
+        </field>
+        <field name="CommonSupplierId">
+            <aqlMapping selectField="CommonSupplier.SystemID"/>
+        </field>
+        <field name="Description1">
+            <aqlMapping selectField="POLineItem.Description.Description"/>
+        </field>
+
+        <field name="PartName">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.PartName">
+                    <parameter name="IdFields">
+                        <vector>
+                            <entry value="SupplierPartNumber"/>
+                            <entry value="SupplierPartAuxiliaryId"/>
+                            <entry value="CommonSupplierId"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="DescriptionField" value="Description1"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="ManPartNumber">
+            <aqlMapping selectField="POLineItem.Description.ManPartNumber"/>
+        </field>
+        <field name="Manufacturer">
+            <aqlMapping selectField="POLineItem.Description.ManName"/>
+        </field>
+        <field name="LeadTime">
+            <aqlMapping selectField="POLineItem.Description.LeadTime"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.StringConcat">
+                    <parameter name="Append" value=" day(s)"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerPartInvoice">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier"
+                  whereClause = "(InvoiceReconciliationLineItem.PunchOut IS NOT NULL OR
+                                  InvoiceReconciliationLineItem.Description.CatalogItemRef IS NOT NULL)
+                                 AND InvoiceReconciliationLineItem.Description.IsInternalPartId = FALSE"
+                  incrementalClause="(:IncrementalStartDate &lt;= InvoiceReconciliation.TimeUpdated AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"
+                  orderByClause="1,2,3"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Part"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="PartKey1">
+            <aqlMapping selectField="LTRIM(InvoiceReconciliationLineItem.Description.SupplierPartNumber)"/>
+        </field>
+        <field name="PartKey2">
+            <aqlMapping selectField="LTRIM(InvoiceReconciliationLineItem.Description.SupplierPartAuxiliaryID)"/>
+        </field>
+        <field name="PartKey3">
+            <aqlMapping selectField="CommonSupplier.SystemID"/>
+        </field>
+
+        <field name="SupplierPartNumber">
+            <aqlMapping selectField="LTRIM(InvoiceReconciliationLineItem.Description.SupplierPartNumber)"/>
+        </field>
+        <field name="SupplierPartAuxiliaryId">
+            <aqlMapping selectField="LTRIM(InvoiceReconciliationLineItem.Description.SupplierPartAuxiliaryID)"/>
+        </field>
+        <field name="CommonSupplierId">
+            <aqlMapping selectField="CommonSupplier.SystemID"/>
+        </field>
+        <field name="Description1">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.Description.Description"/>
+        </field>
+
+        <field name="PartName">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.PartName">
+                    <parameter name="IdFields">
+                        <vector>
+                            <entry value="SupplierPartNumber"/>
+                            <entry value="SupplierPartAuxiliaryId"/>
+                            <entry value="CommonSupplierId"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="DescriptionField" value="Description1"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="ManPartNumber">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.Description.ManPartNumber"/>
+        </field>
+        <field name="Manufacturer">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.Description.ManName"/>
+        </field>
+        <field name="LeadTime">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.Description.LeadTime"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.StringConcat">
+                    <parameter name="Append" value=" day(s)"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+    <dataLoad name="BuyerLocationTimeSheet">
+        <loadStages>
+            <aqlStage fromClause="ariba.workforce.core.TimeSheet
+                                  JOIN ariba.workforce.core.TimeSheetItem USING TimeSheet.ReceiptItems
+                                  LEFT OUTER JOIN ariba.workforce.core.LaborPayCode INCLUDE INACTIVE USING TimeSheetItem.PayCode
+                                  LEFT OUTER JOIN ariba.purchasing.core.POLineItem USING TimeSheetItem.LineItem
+                                  LEFT OUTER JOIN ariba.workforce.core.LaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector
+                                  LEFT OUTER JOIN ariba.common.core.Address INCLUDE INACTIVE USING LaborLineItemDetails.WorkLocation
+                                  LEFT OUTER JOIN ariba.basic.core.PostalAddress USING Address.PostalAddress
+                                  LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                whereClause="TimeSheet.NextVersion IS NULL"
+                incrementalClause="(:IncrementalStartDate &lt;= TimeSheet.TimeUpdated AND
+                                    TimeSheet.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Location"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Location">
+                <aqlMapping selectField="Address.Name"/>
+            </field>
+            <field name="LocationId">
+                <aqlMapping selectField="Address.UniqueName"/>
+            </field>
+            <field name="City">
+                <aqlMapping selectField="PostalAddress.City"/>
+            </field>
+            <field name="State">
+                <aqlMapping selectField="PostalAddress.State"/>
+            </field>
+            <field name="Country">
+                <aqlMapping selectField="Country.Name"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+        <dataLoad name="BuyerLocationInvoice">
+        <loadStages>
+            <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                                  JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                                  LEFT OUTER JOIN ariba.common.core.Address INCLUDE INACTIVE USING InvoiceReconciliationLineItem.ShipTo
+                                  LEFT OUTER JOIN ariba.basic.core.PostalAddress USING Address.PostalAddress
+                                  LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Location"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Location">
+                <aqlMapping selectField="Address.Name"/>
+            </field>
+            <field name="LocationId">
+                <aqlMapping selectField="Address.UniqueName"/>
+            </field>
+            <field name="City">
+                <aqlMapping selectField="PostalAddress.City"/>
+            </field>
+            <field name="State">
+                <aqlMapping selectField="PostalAddress.State"/>
+            </field>
+            <field name="Country">
+                <aqlMapping selectField="Country.Name"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+	
+	<dataLoad name="BuyerShipFromLocationInvoice">
+        <loadStages>
+            <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                                  JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                                  LEFT OUTER JOIN ariba.common.core.Address SUBCLASS (ariba.common.core.SupplierLocation,ariba.common.core.Address) INCLUDE INACTIVE USING InvoiceReconciliationLineItem.ShipFrom
+                                  LEFT OUTER JOIN ariba.basic.core.PostalAddress USING Address.PostalAddress
+                                  LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Location"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Location">
+                <aqlMapping selectField="Address.Name"/>
+            </field>
+            <field name="LocationId">
+                <aqlMapping selectField="Address.UniqueName"/>
+            </field>
+            <field name="City">
+                <aqlMapping selectField="PostalAddress.City"/>
+            </field>
+            <field name="State">
+                <aqlMapping selectField="PostalAddress.State"/>
+            </field>
+            <field name="Country">
+                <aqlMapping selectField="Country.Name"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+	
+
+    <dataLoad name="BuyerLocationPO">
+        <loadStages>
+            <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                                  JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                                  LEFT OUTER JOIN ariba.common.core.Address INCLUDE INACTIVE USING POLineItem.ShipTo
+                                  LEFT OUTER JOIN ariba.basic.core.PostalAddress USING Address.PostalAddress
+                                  LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                whereClause="PurchaseOrder.NextVersion IS NULL AND
+                             PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received')"
+                incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Location"/>
+        </loadStages>
+        <fieldMappings>
+        <field name="Location">
+            <aqlMapping selectField="Address.Name"/>
+        </field>
+        <field name="LocationId">
+            <aqlMapping selectField="Address.UniqueName"/>
+        </field>
+        <field name="City">
+            <aqlMapping selectField="PostalAddress.City"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="PostalAddress.State"/>
+        </field>
+        <field name="Country">
+            <aqlMapping selectField="Country.Name"/>
+        </field>
+    </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerLocationReq">
+        <loadStages>
+            <aqlStage fromClause="ariba.purchasing.core.Requisition
+                                  JOIN ariba.purchasing.core.ReqLineItem USING Requisition.LineItems
+                                  LEFT OUTER JOIN ariba.common.core.Address INCLUDE INACTIVE USING ReqLineItem.ShipTo
+                                  LEFT OUTER JOIN ariba.basic.core.PostalAddress USING Address.PostalAddress
+                                  LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                whereClause="Requisition.NextVersion IS NULL"
+                incrementalClause="(Requisition.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      Requisition.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Location"/>
+        </loadStages>
+        <fieldMappings>
+        <field name="Location">
+            <aqlMapping selectField="Address.Name"/>
+        </field>
+        <field name="LocationId">
+            <aqlMapping selectField="Address.UniqueName"/>
+        </field>
+        <field name="City">
+            <aqlMapping selectField="PostalAddress.City"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="PostalAddress.State"/>
+        </field>
+        <field name="Country">
+            <aqlMapping selectField="Country.Name"/>
+        </field>
+    </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerPartRequisition">
+            <loadStages>
+                <aqlStage fromClause="ariba.purchasing.core.Requisition
+                                      JOIN ariba.purchasing.core.ReqLineItem using Requisition.LineItems
+                                      LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING ReqLineItem .Description
+                                      LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier"
+                    whereClause = "(ReqLineItem.PunchOut IS NOT NULL OR
+                                    ReqLineItem.Description.CatalogItemRef IS NOT NULL)
+                                    AND ReqLineItem.Description.IsInternalPartId = FALSE"
+                    incrementalClause="(:IncrementalStartDate &lt;= Requisition.TimeUpdated AND
+                                        Requisition.TimeUpdated &lt; :IncrementalEndDate)"
+                    distinctFlag="true"
+                    orderByClause="1,2,3"/>
+                <analysisStage destinationName="ariba.analytics.dimension.Part"/>
+            </loadStages>
+            <fieldMappings>
+                <field name="PartKey1">
+                    <aqlMapping selectField="LTRIM(ReqLineItem.Description.SupplierPartNumber)"/>
+                </field>
+                <field name="PartKey2">
+                    <aqlMapping selectField="LTRIM(ReqLineItem.Description.SupplierPartAuxiliaryID)"/>
+                </field>
+                <field name="PartKey3">
+                    <aqlMapping selectField="CommonSupplier.SystemID"/>
+                </field>
+
+                <field name="SupplierPartNumber">
+                    <aqlMapping selectField="LTRIM(ReqLineItem.Description.SupplierPartNumber)"/>
+                </field>
+                <field name="SupplierPartAuxiliaryId">
+                    <aqlMapping selectField="LTRIM(ReqLineItem.Description.SupplierPartAuxiliaryID)"/>
+                </field>
+                <field name="CommonSupplierId">
+                    <aqlMapping selectField="CommonSupplier.SystemID"/>
+                </field>
+                <field name="Description1">
+                    <aqlMapping selectField="ReqLineItem.Description.Description"/>
+                </field>
+
+                <field name="PartName">
+                    <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.PartName">
+                            <parameter name="IdFields">
+                                <vector>
+                                    <entry value="SupplierPartNumber"/>
+                                    <entry value="SupplierPartAuxiliaryId"/>
+                                    <entry value="CommonSupplierId"/>
+                                </vector>
+                            </parameter>
+                            <parameter name="DescriptionField" value="Description1"/>
+                        </mapValue>
+                    </analysisMapping>
+                </field>
+
+                <field name="ManPartNumber">
+                    <aqlMapping selectField="ReqLineItem.Description.ManPartNumber"/>
+                </field>
+                <field name="Manufacturer">
+                    <aqlMapping selectField="ReqLineItem.Description.ManName"/>
+                </field>
+                <field name="LeadTime">
+                    <aqlMapping selectField="ReqLineItem.Description.LeadTime"/>
+                    <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.StringConcat">
+                            <parameter name="Append" value=" day(s)"/>
+                        </mapValue>
+                    </analysisMapping>
+                </field>
+            </fieldMappings>
+        </dataLoad>
+
+<dataLoad name="PCardInfo">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.PCard As PCard INCLUDE INACTIVE
+							  LEFT OUTER JOIN ariba.base.core.EncryptedString As PCardEncrString USING PCard.CardNumber"
+                  whereClause="PCard.CardNumber IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= PCard.TimeUpdated AND
+                                      PCard.TimeUpdated &lt; :IncrementalEndDate)"
+				  orderByClause="PCard.CardNumber,PCard.CardHolder,PCard.Active"/>
+        <analysisStage destinationName="ariba.analytics.dimension.PCard"/>
+    </loadStages>
+
+	<fieldMappings>
+		<field name="CardHolder">
+             <aqlMapping selectField="PCard.CardHolder"/>
+        </field>
+
+		<field name="CardNumber">
+            <aqlMapping selectField="PCard.CardNumber"/>
+        </field>
+
+		<field name="PCardExpirationDate">
+            <aqlMapping selectField="PCard.ExpirationDate"/>
+        </field>
+
+		<field name="EncryptedString">
+            <aqlMapping selectField="PCardEncrString.EncryptedString"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ProcurementUnits">
+    <loadStages>
+        <aqlStage fromClause="ariba.common.core.ProcurementUnit as PU INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit as PPU INCLUDE INACTIVE USING PU.Parent"
+                  incrementalClause="(:IncrementalStartDate &lt;= PU.TimeUpdated AND
+                                      PU.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ProcurementUnit"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UniqueName">
+            <aqlMapping selectField="PU.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="Name">
+            <aqlMapping selectField="PU.Name"/>
+        </field>
+        <field name="Parent">
+            <aqlMapping selectField="PPU.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

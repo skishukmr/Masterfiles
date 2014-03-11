@@ -1,0 +1,348 @@
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JM' AND Department = 'J0980'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '08'
+Inclusion 0 ResultSize =5277
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '40'
+Inclusion 0 ResultSize =1662
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '41'
+Inclusion 0 ResultSize =4437
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '13'
+Inclusion 0 ResultSize =3268
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JA'
+Inclusion 0 ResultSize =1204
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'DQ'
+Inclusion 0 ResultSize =938
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'M5'
+Inclusion 0 ResultSize =200
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'DV' AND Department = 'J0967'
+Inclusion 0 ResultSize =409
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '16'
+Inclusion 0 ResultSize =2275
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'PR'
+Inclusion 0 ResultSize =1490
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'N1'
+Inclusion 0 ResultSize =946
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'CZ'
+Inclusion 0 ResultSize =1451
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'N4'
+Inclusion 0 ResultSize =801
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZA' AND Department = 'J2000' AND Division = '026'
+Inclusion 0 ResultSize =67
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'U6' AND Department = 'J8000' AND Division = '006'
+Inclusion 0 ResultSize =14
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'DX' AND Department = 'E855' AND Division = '000'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'XU' AND Department = 'J0951'
+Inclusion 0 ResultSize =69
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'IK' AND Department = 'J0930'
+Inclusion 0 ResultSize =85
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '88'
+Inclusion 0 ResultSize =2330
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LE'
+Inclusion 0 ResultSize =1135
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'GN' AND Department = 'J0938'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'GN' AND Department = 'J0972'
+Inclusion 0 ResultSize =307
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'GN' AND Department = 'J0983'
+Inclusion 0 ResultSize =17
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'GN' AND Department = 'J0985'
+Inclusion 0 ResultSize =121
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'GN' AND Department = 'J0979'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '14'
+Inclusion 0 ResultSize =1317
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JL' AND Department = 'J0933'
+Inclusion 0 ResultSize =151
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZZ' AND Department = 'J0923'
+Inclusion 0 ResultSize =11
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '03'
+Inclusion 0 ResultSize =298
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JM' AND Department = 'J0960'
+Inclusion 0 ResultSize =758
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JI' AND Department = 'J0944'
+Inclusion 0 ResultSize =221
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '18' AND Department = 'J0933'
+Inclusion 0 ResultSize =46
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '18' AND Department = 'J0944'
+Inclusion 0 ResultSize =9
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'KO' AND Department = 'J0961'
+Inclusion 0 ResultSize =287
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'KO' AND Department = 'J0980'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'KO' AND Department = 'J0990'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '01'
+Inclusion 0 ResultSize =2200
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '61' AND Department = 'J9923'
+Inclusion 0 ResultSize =11
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HO' AND Department = 'J0954'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LU' AND Department = 'J0941'
+Inclusion 0 ResultSize =20
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LU' AND Department = 'J0915'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LU' AND Department = 'J0976'
+Inclusion 0 ResultSize =20
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'MV' AND Department = 'J0900'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0930'
+Inclusion 0 ResultSize =1617
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0932'
+Inclusion 0 ResultSize =109
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0933'
+Inclusion 0 ResultSize =5
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0934'
+Inclusion 0 ResultSize =237
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0938'
+Inclusion 0 ResultSize =11
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0942'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0950'
+Inclusion 0 ResultSize =16
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0952'
+Inclusion 0 ResultSize =27
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0953'
+Inclusion 0 ResultSize =9
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0960'
+Inclusion 0 ResultSize =33
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0970'
+Inclusion 0 ResultSize =146
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0975'
+Inclusion 0 ResultSize =140
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0980'
+Inclusion 0 ResultSize =63
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0990'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0866'
+Inclusion 0 ResultSize =3
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LG' AND Department = 'J0975'
+Inclusion 0 ResultSize =357
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JS' AND Department = 'J0930'
+Inclusion 0 ResultSize =111
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '06'
+Inclusion 0 ResultSize =660
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'PR' AND Department = 'J0906'
+Inclusion 0 ResultSize =151
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '68' AND Department = 'J0906'
+Inclusion 0 ResultSize =1071
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '68' AND Department = 'J0986'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '68' AND Department = 'J0993'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HL' AND Department = 'J0906'
+Inclusion 0 ResultSize =348
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HL' AND Department = 'J0993'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HP' AND Department = 'J0925'
+Inclusion 0 ResultSize =147
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'GZ'
+Inclusion 0 ResultSize =326
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '38'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JI' AND Department = 'J0968'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LU' AND Department = 'J0977'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '68' AND Department = 'J0745'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '68' AND Department = 'J0976'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JI' AND Department = 'J0990'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '68' AND Department = 'J0944'
+Inclusion 0 ResultSize =8
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HL' AND Department = 'J0745'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JM' AND Department = 'J0990'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'DV' AND Department = 'J0980'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JI' AND Department = 'J0980'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HP' AND Department = 'J0926'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0810'
+Inclusion 0 ResultSize =38
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'DV' AND Department = 'J0990'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'GN' AND Department = 'J0957'
+Inclusion 0 ResultSize =4
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'CP'
+Inclusion 0 ResultSize =120
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0936'
+Inclusion 0 ResultSize =168
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZZ' AND Department = 'J0990'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0940'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0900'
+Inclusion 0 ResultSize =2
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'JI' AND Department = 'J0484'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'AE'
+Inclusion 0 ResultSize =99
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'AZ'
+Inclusion 0 ResultSize =52
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'CC'
+Inclusion 0 ResultSize =20
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '49'
+Inclusion 0 ResultSize =286
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '50'
+Inclusion 0 ResultSize =169
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '53'
+Inclusion 0 ResultSize =15
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '55'
+Inclusion 0 ResultSize =100
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '56'
+Inclusion 0 ResultSize =437
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '59'
+Inclusion 0 ResultSize =21
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '60'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'AL'
+Inclusion 0 ResultSize =10
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'FA'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'R2'
+Inclusion 0 ResultSize =393
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'S3'
+Inclusion 0 ResultSize =338
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'WN'
+Inclusion 0 ResultSize =40
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'XA'
+Inclusion 0 ResultSize =176
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'YF'
+Inclusion 0 ResultSize =53
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '94'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '92'
+Inclusion 0 ResultSize =500
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'AS'
+Inclusion 0 ResultSize =67
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'CA'
+Inclusion 0 ResultSize =71
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'DI'
+Inclusion 0 ResultSize =10
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ED'
+Inclusion 0 ResultSize =2
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'KF'
+Inclusion 0 ResultSize =111
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'MQ'
+Inclusion 0 ResultSize =381
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'NY'
+Inclusion 0 ResultSize =446
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'UZ'
+Inclusion 0 ResultSize =527
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZJ'
+Inclusion 0 ResultSize =356
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZT'
+Inclusion 0 ResultSize =113
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZZ' AND Department = 'J0905'
+Inclusion 0 ResultSize =219
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'EZ'
+Inclusion 0 ResultSize =332
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'K8'
+Inclusion 0 ResultSize =60
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HD'
+Inclusion 0 ResultSize =144
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'FS'
+Inclusion 0 ResultSize =45
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LD'
+Inclusion 0 ResultSize =56
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'XN'
+Inclusion 0 ResultSize =946
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'DL'
+Inclusion 0 ResultSize =72
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'FQ'
+Inclusion 0 ResultSize =263
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'EQ'
+Inclusion 0 ResultSize =220
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'XH'
+Inclusion 0 ResultSize =2
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'W7'
+Inclusion 0 ResultSize =337
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'YU'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZS'
+Inclusion 0 ResultSize =389
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'K1'
+Inclusion 0 ResultSize =281
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ND'
+Inclusion 0 ResultSize =122
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'FH'
+Inclusion 0 ResultSize =49
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'K9'
+Inclusion 0 ResultSize =72
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'X0'
+Inclusion 0 ResultSize =7
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'YG'
+Inclusion 0 ResultSize =59
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '1E'
+Inclusion 0 ResultSize =87
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'ZK'
+Inclusion 0 ResultSize =173
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'VF'
+Inclusion 0 ResultSize =234
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0520'
+Inclusion 0 ResultSize =1
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0640'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0670'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0830'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0897'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0971'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0972'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0985'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0989'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0992'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0995'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '12' AND Department = 'J0996'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'SE'
+Inclusion 0 ResultSize =274
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'V1'
+Inclusion 0 ResultSize =77
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'V3'
+Inclusion 0 ResultSize =36
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'V2'
+Inclusion 0 ResultSize =64
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'FM'
+Inclusion 0 ResultSize =29
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'V6'
+Inclusion 0 ResultSize =2065
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'OX'
+Inclusion 0 ResultSize =39
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'OE'
+Inclusion 0 ResultSize =25
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'OU'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'OZ'
+Inclusion 0 ResultSize =36
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'W1'
+Inclusion 0 ResultSize =134
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'V7'
+Inclusion 0 ResultSize =175
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'TT'
+Inclusion 0 ResultSize =104
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'HZ'
+Inclusion 0 ResultSize =1128
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'LS'
+Inclusion 0 ResultSize =291
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = '13' AND Department = 'J0805'
+Exclusion 0 ResultSize =1
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE Department = 'J99XX'
+Exclusion 0 ResultSize =24
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'R8'
+Exclusion 0 ResultSize =1170
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE PayrollFacility = 'UJ'
+Exclusion 0 ResultSize =480

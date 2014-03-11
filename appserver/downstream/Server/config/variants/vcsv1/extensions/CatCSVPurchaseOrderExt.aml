@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE extension SYSTEM "../../../../ariba/base/meta/core/extensions.dtd">
+<extension name="config.variants.vcsv1.extensions.CatCSVPurchaseOrderExt">
+
+<!-- ***************************************************************************************
+Change History
+Change# Change By    	Change Date    	Description
+=============================================================================================
+1   		Rahul Raj 		01-19-05 	  	Initial R1 changes to PurchaseOrder classes & groups
+2		K.Stanley		09-04-05		R4 updates/additions to PO classes & groups
+3.		A.Rao			01-25-05		Added HazmatWeight field to POLineItem for integration purposes
+4.		K.Stanley		03-08-05		Added PurchaseOrderInternalVersion group (fixed probs from ReqExt.aml)
+5.		K.Stanley		03-11-06		CR24 - added OIOAgreement field; CR34 - added SenderMethod field
+6.		K.Stanley		05-09-06		Issue#TBD - changed PO Items table to incl.Reference# (additional charges)
+7.		K.Stanley		06-14-06		CR51 - SupplierQuoteReference
+8.		Kavitha Udayasankar	09-10-07		PO691- Visibility condition is removed for the closeorder field
+9. 		15/01/2014     IBM Parita Shah	SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8) MSC Tax Gaps Correct Legal Entity
+********************************************************************************************************************************************** -->
+
+<import extension="ariba.variants.vcsv1.extensions.CSVRequisitionExt"/>
+<import extension="config.variants.vcsv1.extensions.CatCSVCoreExt"/>
+<import extension="config.variants.vcsv1.extensions.CatCSVProcureExt"/>
+<import extension="config.variants.Plain.extensions.CatCloseOrderEform"/>
+
+<!--import extension="config.variants.vcsv1.extensions.CatCSVIncludeObjectsExt"/-->
+
+    <inModule name="ariba.common.meta.Requisition">
+
+        <!-- ================================================================== -->
+        <!-- inClass: ariba.purchasing.core.PurchaseOrder                       -->
+        <!-- ================================================================== -->
+        <inClass name="ariba.purchasing.core.PurchaseOrder">
+            <inClassVariant name="vcsv1">
+
+     			<!-- ** New Fields for R4 ** -->
+                <field name="LegalEntity">
+                    <type class="java.lang.String" length="55"/>
+                    <properties label="@aml.cat.ui1/LabelLegalEntity"/>
+                </field>
+                <!-- ** use this for CAT migrate - (DEMO only) since field defined in CSVIncludeObjectsExt ** -->
+                <!--inField name="LegalEntity">
+                    <properties label="@aml.cat.ui1/LabelLegalEntity"/>
+                </inField-->
+                <field name="PayTerms">
+                    <type class="java.lang.String" length="55"/>
+                    <properties label="@aml.cat.ui1/LabelPayTerms"/>
+                </field>
+                <field name="FOBPoint">
+                    <type class="java.lang.String" length="85"/>
+                    <properties label="@aml.cat.ui1/LabelFOBPoint"/>
+                </field>
+                <field name="ShippingInstructions">
+                    <type class="java.lang.String" length="155"/>
+                    <properties label="@aml.cat.ui1/LabelShippingInstructions"/>
+                </field>
+                <field name="TaxInstructions">
+                    <type class="java.lang.String" length="85"/>
+                    <properties label="@aml.cat.ui1/LabelTaxInfo"/>
+                </field>
+                <field name="TaxStateAndRate">
+                    <type class="java.lang.String" length="25"/>
+                    <properties hideLabel="true"/>
+                </field>
+                <!--
+			ARajendren Ariba, Inc..
+			Added alternateLength property for DB2 rowlength issue
+                -->
+                <field name="TaxCodeMessage">
+                    <type class="java.lang.String" length="255" alternateLength="255"/>
+                    <properties hideLabel="true"/>
+                </field>
+                <field name="BuyerContact">
+                    <type class="java.lang.String" length="55"/>
+                    <properties label="@aml.cat.ui1/LabelBuyerContact"/>
+                </field>
+                <field name="IsHazmat">
+                    <type class="boolean"/>
+                </field>
+            <!-- 03.11.06 (KS) - CR24 - Added to assist with Invoicing against blanket agreement -->
+                <field name="OIOAgreement">
+                    <type class="boolean"/>
+                	<properties label="@aml.cat.ui1/LabelOIOAgreement"/>
+                </field>
+            <!-- 03.19.06 (KS) - CR34 - Added to assist with Fax/ASN Ordering contingency -->
+                <field name="SendMethod">
+                    <type class="java.lang.String" length="55"/>
+                </field>
+
+                <!-- ** Existing R1 Fields -->
+                <field name="SettlementCode">
+                    <type class="cat.core.SettlementCode"/>
+                    <properties label="@aml.cat.ui/LabelSettlementCode"/>
+                </field>
+                <field name="BuyerCode">
+                    <type class="cat.core.BuyerCode"/>
+                    <properties label="@aml.cat.ui/LabelBuyerCode" metaDataIntegration="Reference"/>
+                </field>
+                <field name="TaxCode">
+                    <type class="cat.core.TaxCode"/>
+                    <properties label="@aml.cat.ui/LabelTaxCode"/>
+                </field>
+                <field name="BlankField1" noPersist="true">
+                    <type class="java.lang.String" length="10"/>
+                    <properties editable="false" label=""/>
+                </field>
+                <field name="BlankField2" noPersist="true">
+                    <type class="java.lang.String" length="10"/>
+                    <properties editable="false" label=""/>
+                </field>
+
+          		<!-- ** No longer used but left in for reporting purposes ** -->
+                <field name="TaxQualifier">
+                    <type class="java.lang.String" length="55"/>
+                    <properties label="@aml.cat.ui/LabelTaxQualifier"/>
+                </field>
+                <field name="LognetPOPrefix">
+                    <type class="java.lang.String" length="20"/>
+                    <properties label="@aml.cat.ui/LabelLognetPOPrefix"/>
+                </field>
+                <field name="LognetPONumber">
+                    <type class="java.lang.String" length="20"/>
+                    <properties label="@aml.cat.ui/LabelLognetPONumber"/>
+                </field>
+                <field name="DockCode">
+                    <type class="java.lang.String" length="10"/>
+                    <properties label="@aml.cat.ui/LabelDockCode"/>
+                </field>
+                <field name="RequesterName">
+                        <type class="java.lang.String"/>
+                        <properties metaDataIntegration="Reference"/>
+                </field>
+            </inClassVariant>
+        </inClass>
+
+    	<!-- ================================================================== -->
+    	<!-- inClass: ariba.purchasing.core.POLineItem                          -->
+    	<!-- ================================================================== -->
+    	<inClass name="ariba.purchasing.core.POLineItem">
+    		<inClassVariant name="vcsv1">
+            	<field name="DerivedTaxSummary">
+                	<type class="java.lang.String" length="55"/>
+                	<properties editable="false" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="@aml.cat.ui1/LabelDerivedTaxSummary"/>
+            	</field>
+            	<field name="DerivedAccountDistribution">
+                	<type class="java.lang.String" length="55"/>
+                	<properties editable="false" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="@aml.cat.ui1/LabelDerivedAccountDistribution"/>
+            	</field>
+				<!-- **AR** added for Hazmat Jan 25 -->
+            	<field name="HazmatWeight" respectable="true">
+                	<type class="java.math.BigDecimal" precision="28" scale="20"/>
+                	<properties charWidth="17" editable="false" emptyIsNull="true" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" formatterClass="ariba.htmlui.fieldsui.core.PercentageFormatter" label="@aml.cat.ui1/LabelHazmatWeight" metaDataIntegration="Reference" precision="15"/>
+	           	</field>
+	           	<!-- CR51 (KS) - Supplier Quote Ref field for inclusion on PO -->
+            	<field name="SupplierQuoteReference">
+                	<type class="java.lang.String" length="55"/>
+                	<properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="@aml.cat.ui1/LabelSupplierQuoteReference"/>
+	           	</field>
+            </inClassVariant>
+        </inClass>
+
+        <!-- ================================================================== -->
+        <!-- inClass: ariba.purchasing.core.DirectOrder                         -->
+        <!-- ================================================================== -->
+	<!-- (ensures Print button displays same PO format as Print Formatter) -->
+        <inClass name="ariba.purchasing.core.DirectOrder">
+            <inClassVariant name="vcsv1">
+	          	<inField name="ClassProperties">
+					<properties printHook="config.java.print.vcsv1.CatCSVApprovablePrintHook"/>
+				</inField>
+        	</inClassVariant>
+        </inClass>
+
+    	<!-- ================================================================== -->
+    	<!-- inGroup: HeaderDetailsNoneditable                                  -->
+    	<!-- ================================================================== -->
+        <inGroup name="HeaderDetailsNoneditable">
+            <inGroupClass name="ariba.purchasing.core.PurchaseOrder">
+                <inGroupClassVariant name="vcsv1">
+
+                    <groupField name="SupplierLocation">
+                        <properties label="@aml.cat.ui1/LabelSupplierLocation" rank="150" titleField="UniqueName"/>
+                    </groupField>
+					<!-- KS 011306 - added LognetPONumber back to viewable fields -->
+                    <groupField name="LognetPONumber">
+                  		<visibility>
+							<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                    	</visibility>
+                        <properties rank="152"/>
+                    </groupField>
+                    <groupField name="SettlementCode">
+                        <properties chooserField="Name" rank="155" titleFormat="%s (%s)" titleGroup="CatChooserTable"/>
+                    </groupField>
+                    <groupField name="BuyerCode">
+                        <properties chooserField="BuyerCode" rank="160" titleFormat="%s (%s)" titleGroup="CatChooserTable"/>
+                    </groupField>
+                    <groupField name="TaxCode">
+                        <properties chooserField="Name" rank="165" titleFormat="%s (%s)" titleGroup="CatChooserTable"/>
+                    </groupField>
+                     <groupField name="FOBPoint">
+                        <properties rank="170"/>
+                    </groupField>
+                     <groupField name="ShippingInstructions">
+                        <properties rank="175"/>
+                    </groupField>
+                    <groupField name="BuyerContact">
+                        <properties rank="180"/>
+                    </groupField>
+                    <groupField name="OIOAgreement">
+                  		<visibility>
+ 	                 	  	<andCondition>
+                            	<condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                            		<parameter name="TestField" value="OIOAgreement"/>
+                            		<parameter name="TestValue" value="true"/>
+                            	</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatPurchasing"/>
+								</condition>
+							</andCondition>
+						</visibility>
+                        <properties rank="185"/>
+                    </groupField>
+               </inGroupClassVariant>
+            </inGroupClass>
+             <inGroupClass name="ariba.purchasing.core.DirectOrder">
+	         <inGroupClassVariant name="vcsv1">
+			<groupField name="CloseOrder">
+			<properties editable="false" label="@aml.cat.ui1/LabelClose" rank="190"/>
+	                </groupField>
+             </inGroupClassVariant>
+            </inGroupClass>
+
+
+        </inGroup>
+
+    	<!-- ================================================================== -->
+    	<!-- inGroup: LineItemSimpleGeneralFields                               -->
+    	<!-- ================================================================== -->
+        <inGroup name="LineItemSimpleGeneralFields">
+            <inGroupClass name="ariba.purchasing.core.POLineItem">
+                <inGroupClassVariant name="vcsv1">
+					<groupField name="SupplierLocation">
+						<properties label="@aml.cat.ui1/LabelSupplierLocation" titleField="UniqueName"/>
+					</groupField>
+					<groupField name="Description.CommonCommodityCode">
+						<properties label="@aml.cat.ui/LabelCommodityCodeName"/>
+					</groupField>
+					<groupField name="DerivedAccountDistribution">
+						<properties rank="37"/>
+					</groupField>
+					<groupField name="TaxUse">
+						<properties rank="38"/>
+					</groupField>
+					<groupField name="DerivedTaxSummary">
+                  		<visibility>
+                  			<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+							</andCondition>
+                    	</visibility>
+						<properties rank="40"/>
+					</groupField>
+			        <!-- **AR** Added by AR Jan 25 for hazmat -->
+					<groupField name="HazmatWeight">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatHazmat"/>
+							</condition>
+						</visibility>
+					</groupField>
+            	</inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+
+    	<!-- ================================================================== -->
+    	<!-- inGroup: AccountingUnsplittableFields                              -->
+    	<!-- ================================================================== -->
+        <inGroup name="AccountingUnsplittableFields">
+            <inGroupClass name="ariba.purchasing.core.POLineItem">
+                <inGroupClassVariant name="vcsv1">
+					<groupField name="CommodityExportMapEntry">
+						<properties hidden="true"/>
+					</groupField>
+					<groupField name="SupplierQuoteReference">
+						<properties editable="false" rank="18"/>
+					</groupField>
+					<groupField name="BillingAddress">
+						<properties editable="false" rank="20"/>
+					</groupField>
+					<groupField name="AccountType">
+						<properties rank="40" required="true"/>
+					</groupField>
+					<groupField name="SettlementCode">
+						<visibility clusterType="ariba.purchasing.core.Requisition">
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatPurchasing"/>
+							</condition>
+						</visibility>
+						<visibility clusterType="ariba.contract.core.ContractCoreApprovable">
+							<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+						</visibility>
+						<properties rank="30" required="true"/>
+					</groupField>
+					<groupField name="ProjectNumber">
+						<properties rank="50"/>
+					</groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+		</inGroup>
+
+	<!-- 05.09.06 (KS) Changed PurchaseOrderDetails group to include Ref. Num & rank of fields -->
+    	<!-- ================================================================== -->
+    	<!-- inGroup: PurchaseOrderDetails (table)                              -->
+    	<!-- ================================================================== -->
+		<inGroup name="PurchaseOrderDetails">
+			<inGroupClass name="ariba.purchasing.core.POLineItem">
+                <inGroupClassVariant name="vcsv1">
+					<groupField name="NumberInCollection">
+						<properties rank="10"/>
+					</groupField>
+					<groupField name="ProcurementTypeInteger">
+						<properties rank="15"/>
+					</groupField>
+					<groupField name="ReferenceLineNumber">
+						<properties label="@aml.cat.ui1/LabelReferenceLineNumShort" rank="20"/>
+					</groupField>
+					<groupField name="Requisition">
+						<properties rank="25"/>
+					</groupField>
+					<groupField name="Description.ShortName">
+						<properties rank="30"/>
+					</groupField>
+					<groupField name="Description.SupplierPartNumber">
+						<properties label="@aml.cat.ui1/LabelSupplierPartNumLong" rank="35"/>
+					</groupField>
+					<groupField name="Quantity">
+						<properties rank="40"/>
+					</groupField>
+					<groupField name="Description.UnitOfMeasure">
+						<properties rank="45"/>
+					</groupField>
+					<groupField name="Description.Price">
+						<properties rank="50"/>
+					</groupField>
+					<groupField name="Amount">
+						<properties rank="55"/>
+					</groupField>
+                </inGroupClassVariant>
+			</inGroupClass>
+	   </inGroup>
+
+    	<!-- ================================================================== -->
+    	<!-- inGroup: PurchaseOrderInternalVersion                              -->
+    	<!-- ================================================================== -->
+		<inGroup name="PurchaseOrderInternalVersion">
+			<inGroupClass name="ariba.purchasing.core.PurchaseOrder">
+				<inGroupClassVariant name="vcsv1">
+					<groupField name="TaxOverrideFlag"/>
+					<groupField name="Comments.Date"/>
+				</inGroupClassVariant>
+			</inGroupClass>
+			<inGroupClass name="ariba.purchasing.core.POLineItem">
+				<inGroupClassVariant name="vcsv1">
+					<groupField name="TaxUse"/>
+					<groupField name="TaxQualifier"/>
+					<groupField name="AccountType"/>
+					<groupField name="ProjectNumber"/>
+					<groupField name="DeliverToPhone"/>
+					<groupField name="TaxApprovalCode"/>
+					<groupField name="TaxApprovalMessage"/>
+					<groupField name="TaxCodeOverride"/>
+					<groupField name="TaxAllFieldsOverride"/>
+					<groupField name="BuyerCode"/>
+					<groupField name="DerivedAccountDistribution"/>
+					<groupField name="DerivedTaxSummary"/>
+					<groupField name="ValidateAccounting"/>
+				</inGroupClassVariant>
+			</inGroupClass>
+		</inGroup>
+
+        <!-- ================================================================== -->
+        <!-- inGroup: DirectOrderPrintHTML                                      -->
+        <!-- ================================================================== -->
+        <group name="DirectOrderPrintHTML">
+            <groupClass name="ariba.purchasing.core.PurchaseOrder">
+                <groupClassVariant name="vcsv1">
+					<!-- AUL,sdey : Make this field not visible as there is a custom code to show payment terms -->
+					<groupField name="LineItems[0].SupplierLocation.PaymentTerms.Description">
+						<visibility>
+							<notCondition>
+							    <condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+							</notCondition>
+						</visibility>
+					</groupField>
+					<!-- AUL,sdey : Make this field not visible as there is a custom code to show payment terms -->
+		
+		<!-- Starts SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8)-->
+                   <remove>
+                   <groupField name="LegalEntity">
+                        <properties rank="155"/>
+                    </groupField>
+                    </remove>
+                    
+                    <groupField name="AccountingFacilityName">
+			 <properties rank="155"/>
+                    </groupField>
+                <!-- Ends SpringRelease_RSD 111(FDD4.7,4.8/TDD1.7,1.8)-->
+                
+                    <groupField name="SupplierLocation.UniqueName">
+                        <properties label="@aml.cat.ui/LabelSupplierCode" rank="160"/>
+                    </groupField>
+                    <groupField name="PayTerms">
+                        <properties rank="165"/>
+                    </groupField>
+                    <groupField name="SettlementCode.Description">
+                        <properties label="@aml.cat.ui1/LabelSettlementCodeText" rank="170"/>
+                    </groupField>
+                     <groupField name="FOBPoint">
+                        <properties rank="175"/>
+                    </groupField>
+                     <groupField name="ShippingInstructions">
+                        <properties rank="180"/>
+                    </groupField>
+                    <groupField name="TaxInstructions">
+                        <properties rank="190"/>
+                    </groupField>
+                    <groupField name="TaxStateAndRate">
+                        <properties label="" rank="195"/>
+                    </groupField>
+                    <groupField name="TaxCodeMessage">
+                        <properties label="" rank="200"/>
+                    </groupField>
+                    <groupField name="BlankField1">
+                        <properties rank="210"/>
+                    </groupField>
+                    <groupField name="BuyerContact">
+                        <properties rank="220"/>
+                    </groupField>
+			<!-- Commented since now handled in custom Formatters and cXML template -->
+                    <!--remove>
+	            		<groupField name="LineItems[0].Accountings"/>
+					</remove-->
+                </groupClassVariant>
+            </groupClass>
+        </group>
+
+        <!-- ================================================================== -->
+        <!-- inGroup: LineItemPrint                                             -->
+        <!-- ================================================================== -->
+        <inGroup name="LineItemPrint">
+            <inGroupClass name="ariba.purchasing.core.POLineItem">
+                <inGroupClassVariant name="vcsv1">
+                    <groupField name="Form">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <groupField name="Description.ReasonCode">
+						<visibility>
+							<notCondition>
+								<condition implementation="ariba.common.core.condition.NonZeroMoney" testField="Description.Price"/>
+							</notCondition>
+                    		<!--condition implementation="ariba.base.fields.condition.NotEqualTo" testField="this">
+                        		<parameter name="TargetValue" value="(no value)"/>
+                    		</condition-->
+						</visibility>
+                    	<properties label="@aml.cat.ui1/LabelPOReasonCode" rank="150"/>
+                    </groupField>
+				<!-- 05.09.06 (KS) Added Ref# for display on printed PO (for AC lines) -->
+                    <groupField name="ReferenceLineNumber">
+						<!--visibility>
+							<condition implementation="config.java.condition.vcsv1.CatAdditionalChargeLineItem"
+									testField="this"/>
+						</visibility-->
+                    	<properties label="@aml.cat.ui1/LabelReferenceLineNumPO" rank="155"/>
+                    </groupField>
+                      
+			<remove>
+				<groupField name="Accountings"/>
+				<groupField name="Requisition.Requester.Name"/>
+				<groupField name="Requisition.UniqueName"/>
+			</remove>
+			
+		</inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+
+        <!-- ================================================================== -->
+        <!-- inGroup: PurchaseOrderSearchFields                                 -->
+        <!-- ================================================================== -->
+
+		<!-- Moved to CatCSVZSearchExt.aml -->
+
+
+        <!-- ================================================================== -->
+        <!-- group: SearchResultColumns                                         -->
+        <!-- ================================================================== -->
+        <!--inGroup name="SearchResultColumns">
+            <inGroupClass name="ariba.purchasing.core.PurchaseOrder">
+                <inGroupClassVariant name="vcsv1">
+                	<groupField name="LognetPONumber">
+                    	<properties rank="33"
+                          	      noWrap="true"/>
+                	</groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup-->
+
+        <!-- ================================================================== -->
+        <!-- group: ReportFilters                                               -->
+        <!-- ================================================================== -->
+        <inGroup name="ReportFilters">
+            <inGroupClass name="ariba.purchasing.core.Requisition">
+                <inGroupClassVariant name="vcsv1">
+               	    <groupField name="Requester">
+                    	<properties chooserGroup="CatChooserTable" chooserSearchGroup="CatGloablUserSearch"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+            <inGroupClass name="ariba.purchasing.core.PurchaseOrder">
+	    		<inGroupClassVariant name="vcsv1">
+				<groupField name="Supplier"/>
+				<groupField name="OrderedDate"/>
+				<groupField name="LineItems.Description.SupplierPartNumber"/>
+				<groupField name="LineItems.Description.CommonCommodityCode.UniqueName">
+				<properties label="Item Category Code"/>
+				</groupField>
+				<groupField name="LineItems.Accountings.SplitAccountings.CostCenter"/>
+			</inGroupClassVariant>
+	    </inGroupClass>
+
+	    <inGroupClass name="ariba.contract.core.Contract">
+			<inGroupClassVariant name="vcsv1">
+				<groupField name="Supplier"/>
+				<groupField name="LineItems.Description.SupplierPartNumber"/>
+				<groupField name="EffectiveDate"/>
+				<groupField name="LineItems.Description.CommonCommodityCode.UniqueName">
+					<properties label="Item Category Code"/>
+				</groupField>
+			</inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+
+    </inModule>
+</extension>

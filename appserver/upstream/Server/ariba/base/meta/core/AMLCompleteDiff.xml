@@ -1,0 +1,616 @@
+<?xml version="1.0"?>
+<!DOCTYPE diff SYSTEM "../../../util/xmldiffer/XMLDiff.dtd">
+<diff>
+<!-- Base.dtd  -->
+  <node name="baseModule" lexicallyOrdered="true" 
+        orderMatters="false" strictlyOrdered="false" processAsRecord="true">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="version"/>
+    <diffAttribute name="tablePrefix"/>
+    <diffChild name="import"/>
+    <diffChild name="class"/>
+    <diffChild name="group"/>
+    <diffChild name="groupViewContents"/>
+    <diffChild name="event"/>
+  </node>
+
+  <node name="import">
+    <lexicalKeyAttribute name="module"/>
+    <lexicalKeyAttribute name="extension"/>
+  </node>
+    
+<!-- Properties.dtd  -->
+  <node name="property">
+    <diffAttribute name="module"/>
+    <diffChild name="table" singleton="true"/>
+    <diffChild name="vector" singleton="true"/>
+  </node>
+    
+  <node name="deleteProperty">
+    <diffAttribute name="name"/>
+  </node>
+
+<!-- table.dtd  -->
+
+  <node name="table">
+    <lexicalKeyAttribute name="entry"/>
+    <diffChild name="entry"/>
+  </node>
+
+  <node name="vector">
+    <lexicalKeyAttribute name="entry"/>
+    <diffChild name="table"/>
+    <diffChild name="vector"/>
+  </node>
+
+  <node name="entry">
+    <lexicalKeyAttribute name="key"/>
+    <diffAttribute name="value"/>
+    <diffChild name="table"/>
+    <diffChild name="vector"/>
+  </node>
+
+<!-- customProperties.dtd  - None -->
+
+<!-- properties.dtd  -->
+
+  <node name="properties">
+    <diffAttribute name="accountingGroup"/>
+    <diffAttribute name="accountingCombination"/>
+    <diffAttribute name="_IFC_action"/>
+    <diffAttribute name="alignmentInTable"/>
+    <diffAttribute name="allowCustomValue"/>
+    <diffAttribute name="allowNoChoice"/>
+    <diffAttribute name="allowNullValue"/>
+    <diffAttribute name="_IFC_alwaysShowButton"/>
+    <diffAttribute name="_approvableAction"/>
+    <diffAttribute name="approveHook"/>
+    <diffAttribute name="auditPolicies"/>
+    <diffAttribute name="blockoutChar"/>
+    <diffAttribute name="_IFC_buttonClass"/>
+    <diffAttribute name="cancelHook"/>
+    <diffAttribute name="_IFC_category"/>
+    <diffAttribute name="_changedFieldClass"/>
+    <diffAttribute name="charWidth"/>
+    <diffAttribute name="charHeight"/>
+    <diffAttribute name="checkinHook"/>
+    <diffAttribute name="_IFC_chooserClass"/>
+    <diffAttribute name="chooserField"/>
+    <diffAttribute name="chooserGroup"/>
+    <diffAttribute name="chooserLimit"/>
+    <diffAttribute name="_classMap"/>
+    <diffAttribute name="classNameIsLeaf"/>
+    <diffAttribute name="clientSubmitHook"/>
+    <diffAttribute name="clientWithdrawHook"/>
+    <diffAttribute name="_IFC_completionDelay"/>
+    <diffAttribute name="contentsIdentifierField"/>
+    <diffAttribute name="controller"/>
+    <diffAttribute name="controllerType"/>
+    <diffAttribute name="copyable"/>
+    <diffAttribute name="customWord"/>
+    <diffAttribute name="dangerousToEdit"/>
+    <diffAttribute name="dateFormat"/>
+    <diffAttribute name="_detailsPage"/>
+    <diffAttribute name="_IFC_dependsOn"/>
+    <diffAttribute name="detailsGroup"/>
+    <diffAttribute name="detailsGroupViewClass"/>
+    <diffAttribute name="detailsLayout"/>
+    <diffAttribute name="_diffClusterRoots"/>
+    <diffAttribute name="_IFC_displayLabelAbove"/>
+    <diffAttribute name="disputeHook"/>
+    <diffAttribute name="_doesntUseRules"/>
+    <diffAttribute name="_dontDiff"/>
+    <diffAttribute name="_dontDiffFields"/>
+    <diffAttribute name="_IFC_editRawCopy"/>
+    <diffAttribute name="editable"/>
+    <diffAttribute name="editableHeaderGroup"/>
+    <diffAttribute name="editableHeaderLayout"/>
+    <diffAttribute name="editableHeaderViewClass"/>
+    <diffAttribute name="fieldList"/>
+    <diffAttribute name="_fieldPropertiesClass"/>
+    <diffAttribute name="_IFC_fontFamily"/>
+    <diffAttribute name="_IFC_fontSize"/>
+    <diffAttribute name="_IFC_fontStyle"/>
+    <diffAttribute name="forceRefresh"/>
+    <diffAttribute name="format"/>
+    <diffAttribute name="groupViewClass"/>
+    <diffAttribute name="_IFC_help"/>
+    <diffAttribute name="helpURL"/>
+    <diffAttribute name="hidden"/>
+    <diffAttribute name="_IFC_hideDateButton"/>
+    <diffAttribute name="_IFC_hideDetails"/>
+    <diffAttribute name="hideLabel"/>
+    <diffAttribute name="icon"/>
+    <diffAttribute name="ignoreQueryCache"/>
+    <diffAttribute name="_includeSubitems"/>
+    <diffAttribute name="includesUserObjects"/>
+    <diffAttribute name="_IFC_inputViewClass"/>
+    <diffAttribute name="label"/>
+    <diffAttribute name="_IFC_labelAlignment"/>
+    <diffAttribute name="_IFC_labelFontFamily"/>
+    <diffAttribute name="_IFC_labelFontSize"/>
+    <diffAttribute name="_IFC_labelFontStyle"/>
+    <diffAttribute name="labelStyle"/>
+    <diffAttribute name="linkTextField"/>
+    <diffAttribute name="mapValueType"/>
+    <diffAttribute name="_IFC_maxInitialWidth"/>
+    <diffAttribute name="_IFC_maxMinSizeWidth"/>
+    <diffAttribute name="metaDataIntegration"/>
+    <diffAttribute name="_IFC_minHeight"/>
+    <diffAttribute name="_IFC_minWidth"/>
+    <diffAttribute name="nameTableClass"/>
+    <diffAttribute name="nameTableFamily"/>
+    <diffAttribute name="noChoiceString"/>
+    <diffAttribute name="nullValueName"/>
+    <diffAttribute name="onClientClass"/>
+    <diffAttribute name="noWrap"/>
+    <diffAttribute name="pickListStyle"/>
+    <diffAttribute name="policies"/>
+    <diffAttribute name="precision"/>
+    <diffAttribute name="prefChoices"/>
+    <diffAttribute name="prefDefault"/>
+    <diffAttribute name="prefHelpURL"/>
+    <diffAttribute name="prefPrompt"/>
+    <diffAttribute name="prefPromptString"/>
+    <diffAttribute name="prefType"/>
+    <diffAttribute name="printable"/>
+    <diffAttribute name="_printConfigurable"/>
+    <diffAttribute name="printHook"/>
+    <diffAttribute name="prototypeValue"/>
+    <diffAttribute name="punchoutkey"/>
+    <diffAttribute name="rank"/>
+    <diffAttribute name="readOnlyHeaderGroup"/>
+    <diffAttribute name="readOnlyHeaderLayout"/>
+    <diffAttribute name="readOnlyHeaderViewClass"/>
+    <diffAttribute name="rejectHook"/>      
+    <diffAttribute name="required"/>
+    <diffAttribute name="searchGroup"/>
+    <diffAttribute name="serverComputedFieldEngine"/>
+    <diffAttribute name="serverComputedFieldParameters"/>
+    <diffAttribute name="shortLabel"/>
+    <diffAttribute name="showByDefaultForSearch"/>
+    <diffAttribute name="skipRecursiveValidation"/>
+    <diffAttribute name="sourceOfTruth"/>
+    <diffAttribute name="_IFC_stringLength"/>
+    <diffAttribute name="submitHook"/>
+    <diffAttribute name="summaryField"/>
+    <diffAttribute name="templateFile"/>
+    <diffAttribute name="textBlock"/>
+    <diffAttribute name="_IFC_textBlockLinesToShow"/>
+    <diffAttribute name="textBlockStyle"/>
+    <diffAttribute name="_IFC_textJustification"/>
+    <diffAttribute name="title"/>
+    <diffAttribute name="titleField"/>
+    <diffAttribute name="titleFormat"/>
+    <diffAttribute name="titleGroup"/>
+    <diffAttribute name="uiName"/>
+    <diffAttribute name="updateForm"/>
+    <diffAttribute name="uploadable"/>
+    <diffAttribute name="uploadGroup"/>
+    <diffAttribute name="uploadProcessor"/>
+    <diffAttribute name="useSortByLanguage"/>
+    <diffAttribute name="_IFC_usePopup"/>
+    <diffAttribute name="validChoices"/>
+    <diffAttribute name="validChoicesOrder"/>
+    <diffAttribute name="validate"/>
+    <diffAttribute name="_IFC_validateIncrementally"/>
+    <diffAttribute name="_IFC_validationParameters"/>
+    <diffAttribute name="_IFC_validator"/>
+    <diffAttribute name="valueStyle"/>
+    <diffAttribute name="vectorContents"/>
+    <diffAttribute name="vendorLabel"/>
+    <diffAttribute name="_IFC_viewCanStretchHorizontally"/>
+    <diffAttribute name="_IFC_viewCanStretchVertically"/>
+    <diffAttribute name="_IFC_viewName"/>
+    <diffAttribute name="_IFC_viewer"/>
+    <diffAttribute name="_IFC_wideColumn"/>
+    <diffAttribute name="_IFC_windowTitle"/>
+    <diffAttribute name="withdrawHook"/>
+    <diffAttribute name="wizardFile"/>
+    <diffAttribute name="_workflowEvent"/>
+    <diffAttribute name="_workflowName"/>
+    <diffAttribute name="zone"/>
+    <diffChild name="property"/>
+  </node>
+
+  <node name="property">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="table"/>
+    <diffChild name="vector"/>
+  </node>
+
+  <node name="deleteProperty">
+    <lexicalKeyAttribute name="name"/>
+  </node>
+
+
+
+
+<!-- action.dtd  -->
+
+  <node name="action">
+    <lexicalKeyAttribute name="implementation"/>
+    <lexicalKeyOffChild name="parameter"/>
+    <diffChild name="parameter"/>
+  </node>
+
+  <node name="condition">
+    <lexicalKeyAttribute name="implementation"/>
+    <lexicalKeyAttribute name="testField"/>
+    <diffAttribute name="nullHandling"/>
+    <diffChild name="parameter"/>
+  </node>
+
+  <node name="andCondition">
+    <diffChild name="condition"/>
+    <diffChild name="andCondition" singleton="true"/>
+    <diffChild name="orCondition" singleton="true"/>
+    <diffChild name="notCondition"/>
+  </node>
+
+  <node name="orCondition">
+    <diffChild name="condition"/>
+    <diffChild name="andCondition" singleton="true"/>
+    <diffChild name="orCondition" singleton="true"/>
+    <diffChild name="notCondition"/>
+  </node>
+
+  <node name="notCondition">
+    <lexicalKeyOffChild name="condition"/>
+    <diffChild name="andCondition" singleton="true"/>
+    <diffChild name="orCondition" singleton="true"/>
+    <diffChild name="notCondition" singleton="true"/>
+  </node>
+
+  <node name="parameter" orderMatters="true">
+    <lexicalKeyAttribute name="name"/>
+    <lexicalKeyAttribute name="inputField"/>
+    <lexicalKeyAttribute name="value"/>
+    <diffAttribute name="value"/>
+    <diffAttribute name="nullValue"/>
+    <diffAttribute name="context"/>
+    <diffAttribute name="inputField"/>
+    <diffAttribute name="nullHandling"/>
+    <diffAttribute name="outputField"/>
+    <diffAttribute name="typeCast"/>
+  </node>
+
+<!-- class.dtd  -->
+
+  <node name="class">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="abstract"/>
+    <diffAttribute name="dbIndexVectorId"/>
+    <diffAttribute name="normalized"/>
+    <diffAttribute name="noSchema"/>
+    <diffAttribute name="orderBy"/>
+    <diffAttribute name="prefix"/>
+    <diffAttribute name="datafile"/>
+    <diffAttribute name="super"/>
+    <diffAttribute name="compatibleWithV4"/>
+    <diffAttribute name="generate"/>
+    <diffAttribute name="partitioned"/>
+    <diffAttribute name="privacy"/>
+    <diffChild name="javadoc" singleton="true"/>
+    <diffChild name="news" singleton="true"/>
+    <diffChild name="methods" singleton="true"/>
+    <diffChild name="indexVectorId" singleton="true"/>
+    <diffChild name="index"/>
+    <diffChild name="searchIndex" singleton="true"/>
+    <diffChild name="lookupKey" singleton="true"/>
+    <diffChild name="field"/>
+    <diffChild name="overrides" singleton="true"/>
+    <diffChild name="derived" singleton="true"/>
+    <diffChild name="trigger"/>
+    <diffChild name="implementerOf"/>
+    <diffChild name="embeddedPrefix"/>
+    <diffChild name="classVariant"/>
+  </node>
+
+  <node name="javadoc">
+    <diffChild name="#PCDATA" singleton="true"/>
+  </node>
+
+  <node name="news">
+    <diffChild name="signature"/>
+  </node>
+
+  <node name="methods">
+    <diffChild name="signature"/>
+  </node>
+
+  <node name="signature">
+    <lexicalKeyAttribute name="name"/>
+    <lexicalKeyAttribute name="resultType"/>
+    <lexicalKeyOffChild name="methodParameter"/>
+  </node>
+
+  <node name="methodParameter">
+    <lexicalKeyAttribute name="name"/>
+    <lexicalKeyAttribute name="type"/>
+    <diffAttribute name="name"/>
+    <diffAttribute name="type"/>
+  </node>
+
+  <node name="index">
+    <lexicalKeyAttribute name="fields"/>
+    <diffAttribute name="unique"/>
+  </node>
+
+  <node name="searchIndex">
+    <diffAttribute name="name"/>
+    <diffChild name="search"/>
+  </node>
+
+  <node name="search">
+    <lexicalKeyAttribute name="field"/>
+    <diffAttribute name="unique"/>
+    <diffAttribute name="language"/>
+  </node>
+
+  <node name="indexVectorId">
+  </node>
+
+  <node name="lookupKey">
+    <lexicalKeyAttribute name="fields"/>
+    <diffAttribute name="final"/>
+    <diffAttribute name="unique"/>
+  </node>
+
+  <node name="embeddedPrefix">
+    <lexicalKeyAttribute name="field"/>
+    <diffAttribute name="prefix"/>
+  </node>
+
+  <node name="overrides">
+    <diffChild name="override"/>
+  </node>
+
+  <node name="derived">
+    <diffChild name="field"/>
+  </node>
+
+  <node name="field">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="crossIndirect"/>
+    <diffAttribute name="indexed"/>
+    <diffAttribute name="graphEdge"/>
+    <diffAttribute name="graphRoot"/>
+    <diffAttribute name="table"/>
+    <diffAttribute name="indirect"/>
+    <diffAttribute name="indirectAccessor"/>
+    <diffAttribute name="indirectElements"/>
+    <diffAttribute name="noPersist"/>
+    <diffAttribute name="normalized"/>
+    <diffAttribute name="sharing"/>
+    <diffAttribute name="orderBy"/>
+    <diffAttribute name="respectable"/>
+    <diffAttribute name="lazyload"/>
+    <diffAttribute name="dontQuery"/>
+    <diffAttribute name="privacy"/>
+    <diffAttribute name="nullAllowed"/>
+    <diffAttribute name="aliasPath"/>
+    <diffChild name="javadoc" singleton="true"/>
+    <diffChild name="type"/>
+    <diffChild name="editability"/>
+    <diffChild name="validity"/>
+    <diffChild name="visibility"/>
+    <diffChild name="properties" singleton="true"/>
+  </node>
+
+  <node name="override">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="type" singleton="true"/>
+    <diffChild name="editability"/>
+    <diffChild name="validity"/>
+    <diffChild name="visibility"/>
+    <diffChild name="deleteProperty"/>
+    <diffChild name="properties" singleton="true"/>
+  </node>
+
+  <node name="type">
+    <lexicalKeyAttribute name="class"/>
+    <diffAttribute name="vector"/>
+    <diffAttribute name="sparseVector"/>
+    <diffAttribute name="abstract"/>
+    <diffAttribute name="length"/>
+    <diffAttribute name="precision"/>
+    <diffAttribute name="scale"/>
+    <diffAttribute name="calendarDate"/>
+  </node>
+
+  <node name="editability">
+    <lexicalKeyAttribute name="clusterType"/>
+    <diffChild name="condition" singleton="true"/>
+    <diffChild name="andCondition" singleton="true"/>
+    <diffChild name="orCondition" singleton="true"/>
+    <diffChild name="notCondition" singleton="true"/>
+  </node>
+
+  <node name="validity">
+    <lexicalKeyAttribute name="clusterType"/>
+    <diffChild name="condition" singleton="true"/>
+    <diffChild name="andCondition" singleton="true"/>
+    <diffChild name="orCondition" singleton="true"/>
+    <diffChild name="notCondition" singleton="true"/>
+  </node>
+
+  <node name="visibility">
+    <lexicalKeyAttribute name="clusterType"/>
+    <diffChild name="condition" singleton="true"/>
+    <diffChild name="andCondition" singleton="true"/>
+    <diffChild name="orCondition" singleton="true"/>
+    <diffChild name="notCondition" singleton="true"/>
+  </node>
+
+  <node name="trigger">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="event"/>
+    <diffAttribute name="field"/>
+    <diffAttribute name="respectUserData"/>
+    <diffAttribute name="clusterType"/>
+    <diffChild name="condition" singleton="true"/>
+    <diffChild name="andCondition" singleton="true"/>
+    <diffChild name="orCondition" singleton="true"/>
+    <diffChild name="notCondition" singleton="true"/>
+    <diffChild name="action" orderMatters="true"/>
+  </node>
+
+  <node name="implementerOf">
+    <lexicalKeyAttribute name="class"/>
+    <diffAttribute name="classVariant"/>
+    <diffAttribute name="field"/>
+  </node>
+
+  <node name="classVariant">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="lookupKey" singleton="true"/>
+    <diffChild name="field"/>
+    <diffChild name="overrides" singleton="true"/>
+    <diffChild name="trigger"/>
+  </node>
+
+  <node name="event">
+    <lexicalKeyAttribute name="name"/>
+  </node>
+
+  <node name="groupViewContents">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="field"/>
+  </node>
+
+
+<!-- groups.dtd  -->
+
+  <node name="group">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="extends"/>
+    <diffChild name="groupClass"/>
+  </node>
+
+  <node name="inGroup">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="extends"/>
+    <diffChild name="groupClass"/>
+    <diffChild name="inGroupClass"/>
+  </node>
+
+  <node name="groupClass">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="groupField"/>
+    <diffChild name="segment"/>
+    <diffChild name="remove"/>
+    <diffChild name="groupClassVariant"/>
+    <diffChild name="inGroupClassVariant"/>
+  </node>
+
+  <node name="inGroupClass">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="groupField"/>
+    <diffChild name="segment"/>
+    <diffChild name="remove"/>
+    <diffChild name="groupClassVariant"/>
+    <diffChild name="inGroupClassVariant"/>
+  </node>
+
+  <node name="groupField">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="editability" singleton="true"/>
+    <diffChild name="validity" singleton="true"/>
+    <diffChild name="visibility" singleton="true"/>
+    <diffChild name="deleteProperty"/>
+    <diffChild name="properties" singleton="true"/>
+    <diffChild name="segment"/>
+  </node>
+
+  <node name="segment">
+    <lexicalKeyAttribute name="name"/>
+    <lexicalKeyAttribute name="class"/>
+    <diffAttribute name="static"/>
+    <diffChild name="groupField"/>
+  </node>
+
+  <node name="remove">
+    <diffChild name="groupField"/>
+    <diffChild name="segment"/>
+  </node>
+
+  <node name="groupClassVariant">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="groupField"/>
+    <diffChild name="segment"/>
+    <diffChild name="remove"/>
+  </node>
+
+  <node name="inGroupClassVariant">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="groupField"/>
+    <diffChild name="segment"/>
+    <diffChild name="remove"/>
+  </node>
+
+<!-- extensions.dtd  -->
+
+  <node name="extension" lexicallyOrdered="true" 
+        orderMatters="false" strictlyOrdered="false" processAsRecord="true">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="neverSave"/>
+    <diffChild name="import"/>
+    <diffChild name="inModule"/>
+  </node>
+
+  <node name="inModule">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="inClass"/>
+    <diffChild name="class"/>
+    <diffChild name="group"/>
+    <diffChild name="inGroup"/>
+    <diffChild name="inGroupViewContents"/>
+    <diffChild name="event"/>
+  </node>
+
+  <node name="inClass">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="datafile"/>
+    <diffChild name="lookupKey"/>
+    <diffChild name="inField"/>
+    <diffChild name="field"/>
+    <diffChild name="derived"/>
+    <diffChild name="searchIndex"/>
+    <diffChild name="trigger"/>
+    <diffChild name="deleteTrigger"/>
+    <diffChild name="classVariant"/>
+    <diffChild name="inClassVariant"/>
+  </node>
+
+  <node name="inClassVariant">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="lookupKey"/>
+    <diffChild name="inField"/>
+    <diffChild name="field"/>
+    <diffChild name="derived"/>
+    <diffChild name="trigger"/>
+    <diffChild name="deleteTrigger"/>
+  </node>
+
+  <node name="deleteTrigger">
+    <lexicalKeyAttribute name="name"/>
+  </node>
+
+  <node name="inGroupViewContents">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="inField"/>
+  </node>
+
+  <node name="inField">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="respectable"/>
+    <diffChild name="editability"/>
+    <diffChild name="validity"/>
+    <diffChild name="visibility"/>
+    <diffChild name="deleteProperty"/>
+    <diffChild name="properties" singleton="true"/>
+  </node>
+    
+
+</diff>

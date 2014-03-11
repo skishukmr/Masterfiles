@@ -1,0 +1,14 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Header>
+        <MessageInfo soap:mustUnderstand="1" xmlns="http://www.cxml.org/ns/cXML/cXMLSOAP1">
+            <PayloadID>@@getPayloadID@@</PayloadID>
+            <Timestamp>@@getFormattedDate@@</Timestamp>
+        </MessageInfo>
+        <Status soap:mustUnderstand="1" xmlns="http://www.cxml.org/ns/cXML/cXMLSOAP1">
+	    <Code>@@getResponseCode@@</Code>
+	    <Message>@@getResponseMessage@@</Message>
+        </Status>
+  </soap:Header>
+  <soap:Body>
+  </soap:Body>
+</soap:Envelope>

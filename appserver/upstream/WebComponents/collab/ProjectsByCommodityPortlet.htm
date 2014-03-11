@@ -1,0 +1,70 @@
+<!--- Title section --->
+<PortletTitle dashboardItem="$^dashboardItem"
+              title="Projects By Category">\
+    <!--- Body section --->
+    <AWConditional ifFalse="$secondLogin">
+        <AWLoadXML filename="DashboardChief/ProjectsByComm.xml"
+                value="$commodityProjs"/>
+    <AWElse />
+        <AWLoadXML filename="DashboardChief/ProjectsByComm_2.xml"
+                value="$commodityProjs"/>
+    </AWConditional>
+    <AWTDataTable multiSelect="$false" singleSelect="$false"
+                list="$commodityProjs.Commodity[]"
+                item="$item"
+                batchSize="6" valign="left">
+        <AWTColumn>
+            <AWImage filename="$alertImage"/>
+        </AWTColumn>
+        <AWTColumn key="name.text" label="Category" align="left">
+            <AWHyperlink action="$gotoSearch">\
+                            $item.name.text (<AWText>$item.projects.text</AWText>)
+            </AWHyperlink>
+        </AWTColumn>
+        <AWTColumn key="scope.text" label="Scope" align="right"/>
+        <AWTColumn key="goal.text" label="Goal" align="right"/>
+    </AWTDataTable>
+</PortletTitle>
+
+<server>
+
+   var item = null;
+   var commodityProjs=null;
+
+   function init () {
+   }
+
+   function gotoSearch () {
+      var searchPage = page("ExploreProjectPage");
+      var commodity = get(item, "name.text");
+      set(searchPage, "Keyword", commodity);
+      return searchPage;
+   }
+
+   function alertImage () {
+      var status = ariba.util.fieldvalue.FieldValue.getFieldValue(item, "status.text");
+      if (status.equals("Red")) {
+         return "resources/phaseAlertRed.gif";
+      }
+      else if (status.equals("Yellow")) {
+         return "resources/phaseAlertYellow.gif";
+      }
+      else {
+         return "resources/cleardot.gif";
+      }
+   }
+
+   function secondLogin () {
+      var user = component.session().getUser();
+      var userName = user.getUniqueName();
+      if (userName.indexOf("2") >= 0) {
+         Log.javascript.debug("Simulating second go around");
+         return true;
+      }
+      else {
+        return false;
+      }
+   }
+
+
+</server>

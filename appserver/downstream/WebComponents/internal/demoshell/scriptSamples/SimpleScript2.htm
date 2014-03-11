@@ -1,0 +1,45 @@
+<!--#include virtual="/DreamWeaver_Templates/MainHeader.htm" -->
+<w:BasicPageWrapper commands="Commands.htm" toc="Toc.htm">
+
+      <h1>JavaScript Test (<a:String value="$session.myVal"></a:String>) </h1>
+
+      <form name="form1" method="post" action="$swap">
+        <p>First Name:
+          <input type="text" value="$firstName">
+        </p>
+        <p>Last Name:
+          <input type="text" value="$lastName">
+        </p>
+        <p>
+          <input type="submit" name="$swap" value="Swap">
+          <input type="submit" name="$submit" value="Submit">
+        </p>
+        <p><b>Message:</b> $message</p>
+        <p><a href="$giveUp">Give up!</a></p>
+      </form>
+      <br/>
+</w:BasicPageWrapper>
+
+<server>
+var firstName="joe", lastName="blow";
+var count = 0, message = "";
+function swap() {
+	var s = firstName;
+	firstName = lastName;
+	lastName = s;
+
+	count++;
+	message = "Executed swap " + count + " times!";
+}
+
+function submit() {
+	message = "Hello " + firstName + " " + lastName + "!";
+}
+
+function giveUp() {
+	message = "You quitter!  Try again!";
+	return null;
+}
+</server>
+<!--#include virtual="/DreamWeaver_Templates/MainFooter.htm" -->
+

@@ -1,0 +1,7 @@
+"Cp1252"
+"Partition"|"CompanyCode"|"PayrollFacility" 
+LSAP|1000|QR
+LSAP|1200|QU
+LSAP|1400|UD
+LSAP|1010|ON
+LSAP|1100|YV

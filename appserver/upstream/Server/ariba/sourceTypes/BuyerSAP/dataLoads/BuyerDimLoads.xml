@@ -1,0 +1,192 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerAccount">
+    <loadStages>
+        <aqlStage fromClause="ariba.core.GeneralLedger INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.core.CompanyCode INCLUDE INACTIVE USING GeneralLedger.CompanyCode"
+                  whereClause="GeneralLedger.UniqueName IS NOT NULL"
+                  orderByClause="GeneralLedger.UniqueName,CompanyCode.UniqueName,GeneralLedger.Active"
+                  incrementalClause="(:IncrementalStartDate &lt;= GeneralLedger.TimeUpdated AND
+                                        GeneralLedger.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Account"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="AccountId">
+            <aqlMapping selectField="GeneralLedger.UniqueName"
+                          sourceLookupField="UniqueName"/>
+        </field>
+        <field name="AccountName">
+            <aqlMapping selectField="GeneralLedger.GeneralLedgerDescription"/>
+        </field>
+        <field name="CompanyCode">
+            <aqlMapping selectField="CompanyCode.UniqueName"
+                        sourceLookupField="CompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerCostCenter">
+    <loadStages>
+        <aqlStage fromClause="ariba.core.CostCenter INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.core.CompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode"
+                  whereClause="CostCenter.UniqueName IS NOT NULL"
+                  orderByClause="CostCenter.UniqueName,CompanyCode.UniqueName,CostCenter.Active"
+                  incrementalClause="(:IncrementalStartDate &lt;= CostCenter.TimeUpdated AND
+                                        CostCenter.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.CostCenter"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"
+                          sourceLookupField="UniqueName"/>
+        </field>
+        <field name="CostCenterName">
+            <aqlMapping selectField="CostCenter.CostCenterDescription"/>
+        </field>
+        <field name="CompanyCode">
+            <aqlMapping selectField="CompanyCode.UniqueName"
+                          sourceLookupField="CompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+    <dataLoad name="BuyerCompany">
+        <loadStages>
+            <aqlStage fromClause="ariba.core.CompanyCode INCLUDE INACTIVE"
+                      whereClause="CompanyCode.UniqueName IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= CompanyCode.TimeUpdated AND
+                                        CompanyCode.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Company"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="CompanyId">
+                <aqlMapping selectField="CompanyCode.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CompanyName">
+                <aqlMapping selectField="CompanyCode.Description"/>
+            </field>
+            <field name="BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerBusinessUnit">
+        <loadStages>
+            <aqlStage fromClause="ariba.core.PurchaseOrg INCLUDE INACTIVE
+                                  LEFT OUTER JOIN ariba.core.CompanyCode INCLUDE INACTIVE USING PurchaseOrg.CompanyCode"
+                      whereClause="PurchaseOrg.UniqueName IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= PurchaseOrg.TimeUpdated AND
+                                        PurchaseOrg.TimeUpdated &lt; :IncrementalEndDate) OR
+                                        (:IncrementalStartDate &lt;= CompanyCode.TimeUpdated AND
+                                        CompanyCode.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Company"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="CompanyId">
+                <aqlMapping selectField="CompanyCode.UniqueName"/>
+            </field>
+            <field name="CompanyName">
+                <aqlMapping selectField="CompanyCode.Description"/>
+            </field>
+            <field name="BusinessUnitId">
+                <aqlMapping selectField="PurchaseOrg.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="PurchaseOrg.Name"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerProject">
+        <loadStages>
+            <aqlStage fromClause="ariba.core.WBSElement INCLUDE INACTIVE"
+                      whereClause="WBSElement.UniqueName IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= WBSElement.TimeUpdated AND
+                                        WBSElement.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.dimension.AccountingProject"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ProjectId">
+                <aqlMapping selectField="WBSElement.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ProjectNumber">
+                <aqlMapping selectField="WBSElement.ProjectNumber"/>
+            </field>
+            <field name="ProjectName">
+                <aqlMapping selectField="WBSElement.Description"/>
+            </field>
+            <field name="CompanyCode">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerInternalOrder">
+        <loadStages>
+            <aqlStage fromClause="ariba.core.InternalOrder INCLUDE INACTIVE"
+                      whereClause="InternalOrder.UniqueName IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= InternalOrder.TimeUpdated AND
+                                        InternalOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.dimension.InternalOrder"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="InternalOrderId">
+                <aqlMapping selectField="InternalOrder.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="InternalOrderName">
+                <aqlMapping selectField="InternalOrder.Description"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerAsset">
+        <loadStages>
+            <aqlStage fromClause="ariba.core.Asset INCLUDE INACTIVE
+                                  LEFT OUTER JOIN ariba.core.CompanyCode INCLUDE INACTIVE USING Asset.CompanyCode"
+                      whereClause="Asset.UniqueName IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Asset.TimeUpdated AND
+                                        Asset.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Asset"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="AssetId">
+                <aqlMapping selectField="Asset.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="AssetName">
+                <aqlMapping selectField="Asset.Name"/>
+            </field>
+            <field name="AssetSubNumber">
+                <aqlMapping selectField="Asset.SubNumber"/>
+            </field>
+            <field name="CompanyCode">
+                <aqlMapping selectField="CompanyCode.UniqueName"
+                            sourceLookupField="CompanyCode.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+</allDataLoads>

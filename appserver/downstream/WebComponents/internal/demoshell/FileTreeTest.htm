@@ -1,0 +1,25 @@
+<w:BasicPageWrapper commands="Commands.htm" hasForm="$false">
+    <div style="float:left">
+        <span class="pageHead">Batch Upload / Download Example</span>
+    </div>
+    <div style="float:right">\
+        <w:TextButton action="$upload">Scan for Files to Upload</w:TextButton>\
+    </div>
+
+    <w:TabSet>
+        <w:Tab label="Download">
+            <a:Form>
+                <w:DownloadTest/>
+            </a:Form>
+        </w:Tab>\
+    </w:TabSet>
+<br/>
+<br/>
+
+</w:BasicPageWrapper>
+
+<server>
+    function upload () {
+        return page("AWXMultiFileUpload");
+    }
+</server>

@@ -1,0 +1,2433 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <!--
+         Update data load operation to pull storage fields into FACT_CONTRACT_WORKSPACE
+
+         NOTE:
+         We need to flat out composite object into fact table primitive columns
+         This implicity result inner join which cause the row not returned if the
+         member object is null.  We need to explicitly do outter join to ensure
+         rows are turned
+    -->
+    <dataLoad name="ACMGeneralContractWorkspaceStorageExt">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.contracts.AbstractContractWorkspace AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.GeneralContractWorkspace"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+
+            <!-- Storage fields -->
+
+            <!--
+                Fix 1-8SK95G: The definition of AbstractContractWorkspace fields
+                needs to be kept identical on each of the three analytics.fact
+                classes: GeneralContractWorkspace, ContractWorkspace, and
+                SalesContractWorkspace.  These analytic classes do not have any
+                inheritance relationship, unlike their transactional counterparts,
+                where AbstractContractWorkspace is the superclass of
+                ContractWorkspace and SalesContractWorkspace.
+            -->
+            <field name="UF_abs_int1">
+                <aqlMapping selectField="Project.UF_abs_int1"/>
+            </field>
+            <field name="UF_abs_int2">
+                <aqlMapping selectField="Project.UF_abs_int2"/>
+            </field>
+            <field name="UF_abs_int3">
+                <aqlMapping selectField="Project.UF_abs_int3"/>
+            </field>
+            <field name="UF_abs_int4">
+                <aqlMapping selectField="Project.UF_abs_int4"/>
+            </field>
+            <field name="UF_abs_int5">
+                <aqlMapping selectField="Project.UF_abs_int5"/>
+            </field>
+            <field name="UF_abs_int6">
+                <aqlMapping selectField="Project.UF_abs_int6"/>
+            </field>
+            <field name="UF_abs_int7">
+                <aqlMapping selectField="Project.UF_abs_int7"/>
+            </field>
+            <field name="UF_abs_int8">
+                <aqlMapping selectField="Project.UF_abs_int8"/>
+            </field>
+            <field name="UF_abs_int9">
+                <aqlMapping selectField="Project.UF_abs_int9"/>
+            </field>
+            <field name="UF_abs_int10">
+                <aqlMapping selectField="Project.UF_abs_int10"/>
+            </field>
+            <field name="UF_abs_int11">
+                <aqlMapping selectField="Project.UF_abs_int11"/>
+            </field>
+            <field name="UF_abs_int12">
+                <aqlMapping selectField="Project.UF_abs_int12"/>
+            </field>
+            <field name="UF_abs_int13">
+                <aqlMapping selectField="Project.UF_abs_int13"/>
+            </field>
+            <field name="UF_abs_int14">
+                <aqlMapping selectField="Project.UF_abs_int14"/>
+            </field>
+            <field name="UF_abs_int15">
+                <aqlMapping selectField="Project.UF_abs_int15"/>
+            </field>
+            <field name="UF_abs_int16">
+                <aqlMapping selectField="Project.UF_abs_int16"/>
+            </field>
+            <field name="UF_abs_int17">
+                <aqlMapping selectField="Project.UF_abs_int17"/>
+            </field>
+            <field name="UF_abs_int18">
+                <aqlMapping selectField="Project.UF_abs_int18"/>
+            </field>
+
+            <field name="UF_abs_string1">
+                <aqlMapping selectField="Project.UF_abs_string1"/>
+            </field>
+            <field name="UF_abs_string2">
+                <aqlMapping selectField="Project.UF_abs_string2"/>
+            </field>
+            <field name="UF_abs_string3">
+                <aqlMapping selectField="Project.UF_abs_string3"/>
+            </field>
+            <field name="UF_abs_string4">
+                <aqlMapping selectField="Project.UF_abs_string4"/>
+            </field>
+            <field name="UF_abs_string5">
+                <aqlMapping selectField="Project.UF_abs_string5"/>
+            </field>
+            <field name="UF_abs_string6">
+                <aqlMapping selectField="Project.UF_abs_string6"/>
+            </field>
+            <field name="UF_abs_string7">
+                <aqlMapping selectField="Project.UF_abs_string7"/>
+            </field>
+            <field name="UF_abs_string8">
+                <aqlMapping selectField="Project.UF_abs_string8"/>
+            </field>
+            <field name="UF_abs_string9">
+                <aqlMapping selectField="Project.UF_abs_string9"/>
+            </field>
+            <field name="UF_abs_string10">
+                <aqlMapping selectField="Project.UF_abs_string10"/>
+            </field>
+            <field name="UF_abs_string11">
+                <aqlMapping selectField="Project.UF_abs_string11"/>
+            </field>
+            <field name="UF_abs_string12">
+                <aqlMapping selectField="Project.UF_abs_string12"/>
+            </field>
+            <field name="UF_abs_string13">
+                <aqlMapping selectField="Project.UF_abs_string13"/>
+            </field>
+            <field name="UF_abs_string14">
+                <aqlMapping selectField="Project.UF_abs_string14"/>
+            </field>
+            <field name="UF_abs_string15">
+                <aqlMapping selectField="Project.UF_abs_string15"/>
+            </field>
+            <field name="UF_abs_string16">
+                <aqlMapping selectField="Project.UF_abs_string16"/>
+            </field>
+            <field name="UF_abs_string17">
+                <aqlMapping selectField="Project.UF_abs_string17"/>
+            </field>
+            <field name="UF_abs_string18">
+                <aqlMapping selectField="Project.UF_abs_string18"/>
+            </field>
+            <field name="UF_abs_string19">
+                <aqlMapping selectField="Project.UF_abs_string19"/>
+            </field>
+            <field name="UF_abs_string20">
+                <aqlMapping selectField="Project.UF_abs_string20"/>
+            </field>
+            <field name="UF_abs_string21">
+                <aqlMapping selectField="Project.UF_abs_string21"/>
+            </field>
+            <field name="UF_abs_string22">
+                <aqlMapping selectField="Project.UF_abs_string22"/>
+            </field>
+            <field name="UF_abs_string23">
+                <aqlMapping selectField="Project.UF_abs_string23"/>
+            </field>
+            <field name="UF_abs_string24">
+                <aqlMapping selectField="Project.UF_abs_string24"/>
+            </field>
+            <field name="UF_abs_string25">
+                <aqlMapping selectField="Project.UF_abs_string25"/>
+            </field>
+            <field name="UF_abs_string26">
+                <aqlMapping selectField="Project.UF_abs_string26"/>
+            </field>
+            <field name="UF_abs_string27">
+                <aqlMapping selectField="Project.UF_abs_string27"/>
+            </field>
+            <field name="UF_abs_string28">
+                <aqlMapping selectField="Project.UF_abs_string28"/>
+            </field>
+            <field name="UF_abs_string29">
+                <aqlMapping selectField="Project.UF_abs_string29"/>
+            </field>
+            <field name="UF_abs_string30">
+                <aqlMapping selectField="Project.UF_abs_string30"/>
+            </field>
+
+            <!-- money objects flatted out on fact table -->
+            <field name="UF_abs_money1_amount">
+                <aqlMapping selectField="Project.UF_abs_money1.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money1_currency">
+                <aqlMapping selectField="Project.UF_abs_money1.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money2_amount">
+                <aqlMapping selectField="Project.UF_abs_money2.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money2_currency">
+                <aqlMapping selectField="Project.UF_abs_money2.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money3_amount">
+                <aqlMapping selectField="Project.UF_abs_money3.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money3_currency">
+                <aqlMapping selectField="Project.UF_abs_money3.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money4_amount">
+                <aqlMapping selectField="Project.UF_abs_money4.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money4_currency">
+                <aqlMapping selectField="Project.UF_abs_money4.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+             <field name="UF_abs_money5_amount">
+                <aqlMapping selectField="Project.UF_abs_money5.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money5_currency">
+                <aqlMapping selectField="Project.UF_abs_money5.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.AbstractContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <field name="UF_abs_time1">
+                <aqlMapping selectField="Project.UF_abs_date1"/>
+            </field>
+            <field name="UF_abs_time2">
+                <aqlMapping selectField="Project.UF_abs_date2"/>
+            </field>
+            <field name="UF_abs_time3">
+                <aqlMapping selectField="Project.UF_abs_date3"/>
+            </field>
+            <field name="UF_abs_time4">
+                <aqlMapping selectField="Project.UF_abs_date4"/>
+            </field>
+            <field name="UF_abs_time5">
+                <aqlMapping selectField="Project.UF_abs_date5"/>
+            </field>
+            <field name="UF_abs_time6">
+                <aqlMapping selectField="Project.UF_abs_date6"/>
+            </field>
+            <field name="UF_abs_time7">
+                <aqlMapping selectField="Project.UF_abs_date7"/>
+            </field>
+
+            <field name="UF_abs_boolean1">
+                <aqlMapping selectField="Project.UF_abs_boolean1"/>
+            </field>
+            <field name="UF_abs_boolean2">
+                <aqlMapping selectField="Project.UF_abs_boolean2"/>
+            </field>
+            <field name="UF_abs_boolean3">
+                <aqlMapping selectField="Project.UF_abs_boolean3"/>
+            </field>
+            <field name="UF_abs_boolean4">
+                <aqlMapping selectField="Project.UF_abs_boolean4"/>
+            </field>
+            <field name="UF_abs_boolean5">
+                <aqlMapping selectField="Project.UF_abs_boolean5"/>
+            </field>
+            <field name="UF_abs_boolean6">
+                <aqlMapping selectField="Project.UF_abs_boolean6"/>
+            </field>
+            <field name="UF_abs_boolean7">
+                <aqlMapping selectField="Project.UF_abs_boolean7"/>
+            </field>
+            <field name="UF_abs_boolean8">
+                <aqlMapping selectField="Project.UF_abs_boolean8"/>
+            </field>
+            <field name="UF_abs_boolean9">
+                <aqlMapping selectField="Project.UF_abs_boolean9"/>
+            </field>
+
+            <field name="UF_abs_bigdecimal1">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal1"/>
+            </field>
+            <field name="UF_abs_bigdecimal2">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal2"/>
+            </field>
+            <field name="UF_abs_bigdecimal3">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal3"/>
+            </field>
+            <field name="UF_abs_bigdecimal4">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal4"/>
+            </field>
+            <field name="UF_abs_bigdecimal5">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal5"/>
+            </field>
+            <field name="UF_abs_bigdecimal6">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal6"/>
+            </field>
+            <field name="UF_abs_bigdecimal7">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal7"/>
+            </field>
+
+        </fieldMappings>
+    </dataLoad>
+    <dataLoad name="ACMContractWorkspaceStorageExt">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.contracts.ContractWorkspace AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+
+            <!-- Storage fields -->
+
+            <!--
+                Fix 1-8SK95G: The definition of AbstractContractWorkspace fields
+                needs to be kept identical on each of the three analytics.fact
+                classes: GeneralContractWorkspace, ContractWorkspace, and
+                SalesContractWorkspace.  These analytic classes do not have any
+                inheritance relationship, unlike their transactional counterparts,
+                where AbstractContractWorkspace is the superclass of
+                ContractWorkspace and SalesContractWorkspace.
+            -->
+            <field name="UF_abs_int1">
+                <aqlMapping selectField="Project.UF_abs_int1"/>
+            </field>
+            <field name="UF_abs_int2">
+                <aqlMapping selectField="Project.UF_abs_int2"/>
+            </field>
+            <field name="UF_abs_int3">
+                <aqlMapping selectField="Project.UF_abs_int3"/>
+            </field>
+            <field name="UF_abs_int4">
+                <aqlMapping selectField="Project.UF_abs_int4"/>
+            </field>
+            <field name="UF_abs_int5">
+                <aqlMapping selectField="Project.UF_abs_int5"/>
+            </field>
+            <field name="UF_abs_int6">
+                <aqlMapping selectField="Project.UF_abs_int6"/>
+            </field>
+            <field name="UF_abs_int7">
+                <aqlMapping selectField="Project.UF_abs_int7"/>
+            </field>
+            <field name="UF_abs_int8">
+                <aqlMapping selectField="Project.UF_abs_int8"/>
+            </field>
+            <field name="UF_abs_int9">
+                <aqlMapping selectField="Project.UF_abs_int9"/>
+            </field>
+            <field name="UF_abs_int10">
+                <aqlMapping selectField="Project.UF_abs_int10"/>
+            </field>
+            <field name="UF_abs_int11">
+                <aqlMapping selectField="Project.UF_abs_int11"/>
+            </field>
+            <field name="UF_abs_int12">
+                <aqlMapping selectField="Project.UF_abs_int12"/>
+            </field>
+            <field name="UF_abs_int13">
+                <aqlMapping selectField="Project.UF_abs_int13"/>
+            </field>
+            <field name="UF_abs_int14">
+                <aqlMapping selectField="Project.UF_abs_int14"/>
+            </field>
+            <field name="UF_abs_int15">
+                <aqlMapping selectField="Project.UF_abs_int15"/>
+            </field>
+            <field name="UF_abs_int16">
+                <aqlMapping selectField="Project.UF_abs_int16"/>
+            </field>
+            <field name="UF_abs_int17">
+                <aqlMapping selectField="Project.UF_abs_int17"/>
+            </field>
+            <field name="UF_abs_int18">
+                <aqlMapping selectField="Project.UF_abs_int18"/>
+            </field>
+
+            <field name="UF_abs_string1">
+                <aqlMapping selectField="Project.UF_abs_string1"/>
+            </field>
+            <field name="UF_abs_string2">
+                <aqlMapping selectField="Project.UF_abs_string2"/>
+            </field>
+            <field name="UF_abs_string3">
+                <aqlMapping selectField="Project.UF_abs_string3"/>
+            </field>
+            <field name="UF_abs_string4">
+                <aqlMapping selectField="Project.UF_abs_string4"/>
+            </field>
+            <field name="UF_abs_string5">
+                <aqlMapping selectField="Project.UF_abs_string5"/>
+            </field>
+            <field name="UF_abs_string6">
+                <aqlMapping selectField="Project.UF_abs_string6"/>
+            </field>
+            <field name="UF_abs_string7">
+                <aqlMapping selectField="Project.UF_abs_string7"/>
+            </field>
+            <field name="UF_abs_string8">
+                <aqlMapping selectField="Project.UF_abs_string8"/>
+            </field>
+            <field name="UF_abs_string9">
+                <aqlMapping selectField="Project.UF_abs_string9"/>
+            </field>
+            <field name="UF_abs_string10">
+                <aqlMapping selectField="Project.UF_abs_string10"/>
+            </field>
+            <field name="UF_abs_string11">
+                <aqlMapping selectField="Project.UF_abs_string11"/>
+            </field>
+            <field name="UF_abs_string12">
+                <aqlMapping selectField="Project.UF_abs_string12"/>
+            </field>
+            <field name="UF_abs_string13">
+                <aqlMapping selectField="Project.UF_abs_string13"/>
+            </field>
+            <field name="UF_abs_string14">
+                <aqlMapping selectField="Project.UF_abs_string14"/>
+            </field>
+            <field name="UF_abs_string15">
+                <aqlMapping selectField="Project.UF_abs_string15"/>
+            </field>
+            <field name="UF_abs_string16">
+                <aqlMapping selectField="Project.UF_abs_string16"/>
+            </field>
+            <field name="UF_abs_string17">
+                <aqlMapping selectField="Project.UF_abs_string17"/>
+            </field>
+            <field name="UF_abs_string18">
+                <aqlMapping selectField="Project.UF_abs_string18"/>
+            </field>
+            <field name="UF_abs_string19">
+                <aqlMapping selectField="Project.UF_abs_string19"/>
+            </field>
+            <field name="UF_abs_string20">
+                <aqlMapping selectField="Project.UF_abs_string20"/>
+            </field>
+            <field name="UF_abs_string21">
+                <aqlMapping selectField="Project.UF_abs_string21"/>
+            </field>
+            <field name="UF_abs_string22">
+                <aqlMapping selectField="Project.UF_abs_string22"/>
+            </field>
+            <field name="UF_abs_string23">
+                <aqlMapping selectField="Project.UF_abs_string23"/>
+            </field>
+            <field name="UF_abs_string24">
+                <aqlMapping selectField="Project.UF_abs_string24"/>
+            </field>
+            <field name="UF_abs_string25">
+                <aqlMapping selectField="Project.UF_abs_string25"/>
+            </field>
+            <field name="UF_abs_string26">
+                <aqlMapping selectField="Project.UF_abs_string26"/>
+            </field>
+            <field name="UF_abs_string27">
+                <aqlMapping selectField="Project.UF_abs_string27"/>
+            </field>
+            <field name="UF_abs_string28">
+                <aqlMapping selectField="Project.UF_abs_string28"/>
+            </field>
+            <field name="UF_abs_string29">
+                <aqlMapping selectField="Project.UF_abs_string29"/>
+            </field>
+            <field name="UF_abs_string30">
+                <aqlMapping selectField="Project.UF_abs_string30"/>
+            </field>
+
+            <!-- money objects flatted out on fact table -->
+            <field name="UF_abs_money1_amount">
+                <aqlMapping selectField="Project.UF_abs_money1.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money1_currency">
+                <aqlMapping selectField="Project.UF_abs_money1.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"                   
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money2_amount">
+                <aqlMapping selectField="Project.UF_abs_money2.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money2_currency">
+                <aqlMapping selectField="Project.UF_abs_money2.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money3_amount">
+                <aqlMapping selectField="Project.UF_abs_money3.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money3_currency">
+                <aqlMapping selectField="Project.UF_abs_money3.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money4_amount">
+                <aqlMapping selectField="Project.UF_abs_money4.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money4_currency">
+                <aqlMapping selectField="Project.UF_abs_money4.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+             <field name="UF_abs_money5_amount">
+                <aqlMapping selectField="Project.UF_abs_money5.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money5_currency">
+                <aqlMapping selectField="Project.UF_abs_money5.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <field name="UF_abs_time1">
+                <aqlMapping selectField="Project.UF_abs_date1"/>
+            </field>
+            <field name="UF_abs_time2">
+                <aqlMapping selectField="Project.UF_abs_date2"/>
+            </field>
+            <field name="UF_abs_time3">
+                <aqlMapping selectField="Project.UF_abs_date3"/>
+            </field>
+            <field name="UF_abs_time4">
+                <aqlMapping selectField="Project.UF_abs_date4"/>
+            </field>
+            <field name="UF_abs_time5">
+                <aqlMapping selectField="Project.UF_abs_date5"/>
+            </field>
+            <field name="UF_abs_time6">
+                <aqlMapping selectField="Project.UF_abs_date6"/>
+            </field>
+            <field name="UF_abs_time7">
+                <aqlMapping selectField="Project.UF_abs_date7"/>
+            </field>
+
+            <field name="UF_abs_boolean1">
+                <aqlMapping selectField="Project.UF_abs_boolean1"/>
+            </field>
+            <field name="UF_abs_boolean2">
+                <aqlMapping selectField="Project.UF_abs_boolean2"/>
+            </field>
+            <field name="UF_abs_boolean3">
+                <aqlMapping selectField="Project.UF_abs_boolean3"/>
+            </field>
+            <field name="UF_abs_boolean4">
+                <aqlMapping selectField="Project.UF_abs_boolean4"/>
+            </field>
+            <field name="UF_abs_boolean5">
+                <aqlMapping selectField="Project.UF_abs_boolean5"/>
+            </field>
+            <field name="UF_abs_boolean6">
+                <aqlMapping selectField="Project.UF_abs_boolean6"/>
+            </field>
+            <field name="UF_abs_boolean7">
+                <aqlMapping selectField="Project.UF_abs_boolean7"/>
+            </field>
+            <field name="UF_abs_boolean8">
+                <aqlMapping selectField="Project.UF_abs_boolean8"/>
+            </field>
+            <field name="UF_abs_boolean9">
+                <aqlMapping selectField="Project.UF_abs_boolean9"/>
+            </field>
+
+            <field name="UF_abs_bigdecimal1">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal1"/>
+            </field>
+            <field name="UF_abs_bigdecimal2">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal2"/>
+            </field>
+            <field name="UF_abs_bigdecimal3">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal3"/>
+            </field>
+            <field name="UF_abs_bigdecimal4">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal4"/>
+            </field>
+            <field name="UF_abs_bigdecimal5">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal5"/>
+            </field>
+            <field name="UF_abs_bigdecimal6">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal6"/>
+            </field>
+            <field name="UF_abs_bigdecimal7">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal7"/>
+            </field>
+
+            <!-- Storage fields for ContractWorkspace (procurement) -->
+            <field name="UF_int1">
+                <aqlMapping selectField="Project.UF_int1"/>
+            </field>
+            <field name="UF_int2">
+                <aqlMapping selectField="Project.UF_int2"/>
+            </field>
+            <field name="UF_int3">
+                <aqlMapping selectField="Project.UF_int3"/>
+            </field>
+            <field name="UF_int4">
+                <aqlMapping selectField="Project.UF_int4"/>
+            </field>
+            <field name="UF_int5">
+                <aqlMapping selectField="Project.UF_int5"/>
+            </field>
+            <field name="UF_int6">
+                <aqlMapping selectField="Project.UF_int6"/>
+            </field>
+            <field name="UF_int7">
+                <aqlMapping selectField="Project.UF_int7"/>
+            </field>
+            <field name="UF_int8">
+                <aqlMapping selectField="Project.UF_int8"/>
+            </field>
+            <field name="UF_int9">
+                <aqlMapping selectField="Project.UF_int9"/>
+            </field>
+            <field name="UF_int10">
+                <aqlMapping selectField="Project.UF_int10"/>
+            </field>
+            <field name="UF_int11">
+                <aqlMapping selectField="Project.UF_int11"/>
+            </field>
+            <field name="UF_int12">
+                <aqlMapping selectField="Project.UF_int12"/>
+            </field>
+            <field name="UF_int13">
+                <aqlMapping selectField="Project.UF_int13"/>
+            </field>
+            <field name="UF_int14">
+                <aqlMapping selectField="Project.UF_int14"/>
+            </field>
+            <field name="UF_int15">
+                <aqlMapping selectField="Project.UF_int15"/>
+            </field>
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_int16">
+                <aqlMapping selectField="Project.UF_int21"/>
+            </field>
+            <field name="UF_int17">
+                <aqlMapping selectField="Project.UF_int22"/>
+            </field>
+            <field name="UF_int18">
+                <aqlMapping selectField="Project.UF_int23"/>
+            </field>
+
+            <field name="UF_string1">
+                <aqlMapping selectField="Project.UF_string1"/>
+            </field>
+            <field name="UF_string2">
+                <aqlMapping selectField="Project.UF_string2"/>
+            </field>
+            <field name="UF_string3">
+                <aqlMapping selectField="Project.UF_string3"/>
+            </field>
+            <field name="UF_string4">
+                <aqlMapping selectField="Project.UF_string4"/>
+            </field>
+            <field name="UF_string5">
+                <aqlMapping selectField="Project.UF_string5"/>
+            </field>
+            <field name="UF_string6">
+                <aqlMapping selectField="Project.UF_string6"/>
+            </field>
+            <field name="UF_string7">
+                <aqlMapping selectField="Project.UF_string7"/>
+            </field>
+            <field name="UF_string8">
+                <aqlMapping selectField="Project.UF_string8"/>
+            </field>
+            <field name="UF_string9">
+                <aqlMapping selectField="Project.UF_string9"/>
+            </field>
+            <field name="UF_string10">
+                <aqlMapping selectField="Project.UF_string10"/>
+            </field>
+            <field name="UF_string11">
+                <aqlMapping selectField="Project.UF_string11"/>
+            </field>
+            <field name="UF_string12">
+                <aqlMapping selectField="Project.UF_string12"/>
+            </field>
+            <field name="UF_string13">
+                <aqlMapping selectField="Project.UF_string13"/>
+            </field>
+            <field name="UF_string14">
+                <aqlMapping selectField="Project.UF_string14"/>
+            </field>
+            <field name="UF_string15">
+                <aqlMapping selectField="Project.UF_string15"/>
+            </field>
+            <field name="UF_string16">
+                <aqlMapping selectField="Project.UF_string16"/>
+            </field>
+            <field name="UF_string17">
+                <aqlMapping selectField="Project.UF_string17"/>
+            </field>
+            <field name="UF_string18">
+                <aqlMapping selectField="Project.UF_string18"/>
+            </field>
+            <field name="UF_string19">
+                <aqlMapping selectField="Project.UF_string19"/>
+            </field>
+            <field name="UF_string20">
+                <aqlMapping selectField="Project.UF_string20"/>
+            </field>
+            <field name="UF_string21">
+                <aqlMapping selectField="Project.UF_string21"/>
+            </field>
+            <field name="UF_string22">
+                <aqlMapping selectField="Project.UF_string22"/>
+            </field>
+            <field name="UF_string23">
+                <aqlMapping selectField="Project.UF_string23"/>
+            </field>
+            <field name="UF_string24">
+                <aqlMapping selectField="Project.UF_string24"/>
+            </field>
+            <field name="UF_string25">
+                <aqlMapping selectField="Project.UF_string25"/>
+            </field>
+            <field name="UF_string26">
+                <aqlMapping selectField="Project.UF_string26"/>
+            </field>
+            <field name="UF_string27">
+                <aqlMapping selectField="Project.UF_string27"/>
+            </field>
+            <field name="UF_string28">
+                <aqlMapping selectField="Project.UF_string28"/>
+            </field>
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_string29">
+                <aqlMapping selectField="Project.UF_string38"/>
+            </field>
+            <field name="UF_string30">
+                <aqlMapping selectField="Project.UF_string39"/>
+            </field>
+
+            <!-- money objects flatted out on fact table -->
+            <field name="UF_money1_amount">
+                <aqlMapping selectField="Project.UF_money1.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money1_currency">
+                <aqlMapping selectField="Project.UF_money1.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money2_amount">
+                <aqlMapping selectField="Project.UF_money2.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money2_currency">
+                <aqlMapping selectField="Project.UF_money2.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money3_amount">
+                <aqlMapping selectField="Project.UF_money3.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money3_currency">
+                <aqlMapping selectField="Project.UF_money3.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money4_amount">
+                <aqlMapping selectField="Project.UF_money4.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money4_currency">
+                <aqlMapping selectField="Project.UF_money4.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+             <!-- these are not mapped to consecutive flex field,  but the one that are create specifically for it -->
+            <field name="UF_money5_amount">
+                <aqlMapping selectField="Project.UF_money7.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+
+            <field name="UF_money5_currency">
+                <aqlMapping selectField="Project.UF_money7.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <field name="UF_time1">
+                <aqlMapping selectField="Project.UF_date1"/>
+            </field>
+            <field name="UF_time2">
+                <aqlMapping selectField="Project.UF_date2"/>
+            </field>
+            <field name="UF_time3">
+                <aqlMapping selectField="Project.UF_date3"/>
+            </field>
+            <field name="UF_time4">
+                <aqlMapping selectField="Project.UF_date4"/>
+            </field>
+            <field name="UF_time5">
+                <aqlMapping selectField="Project.UF_date5"/>
+            </field>
+            <field name="UF_time6">
+                <aqlMapping selectField="Project.UF_date6"/>
+            </field>
+            <field name="UF_time7">
+                <aqlMapping selectField="Project.UF_date7"/>
+            </field>
+
+            <field name="UF_boolean1">
+                <aqlMapping selectField="Project.UF_boolean1"/>
+            </field>
+            <field name="UF_boolean2">
+                <aqlMapping selectField="Project.UF_boolean2"/>
+            </field>
+            <field name="UF_boolean3">
+                <aqlMapping selectField="Project.UF_boolean3"/>
+            </field>
+            <field name="UF_boolean4">
+                <aqlMapping selectField="Project.UF_boolean4"/>
+            </field>
+            <field name="UF_boolean5">
+                <aqlMapping selectField="Project.UF_boolean5"/>
+            </field>
+            <field name="UF_boolean6">
+                <aqlMapping selectField="Project.UF_boolean6"/>
+            </field>
+            <field name="UF_boolean7">
+                <aqlMapping selectField="Project.UF_boolean7"/>
+            </field>
+            <field name="UF_boolean8">
+                <aqlMapping selectField="Project.UF_boolean8"/>
+            </field>
+            <field name="UF_boolean9">
+                <aqlMapping selectField="Project.UF_boolean9"/>
+            </field>
+
+            <field name="UF_bigdecimal1">
+                <aqlMapping selectField="Project.UF_bigdecimal1"/>
+            </field>
+            <field name="UF_bigdecimal2">
+                <aqlMapping selectField="Project.UF_bigdecimal2"/>
+            </field>
+            <field name="UF_bigdecimal3">
+                <aqlMapping selectField="Project.UF_bigdecimal3"/>
+            </field>
+            <field name="UF_bigdecimal4">
+                <aqlMapping selectField="Project.UF_bigdecimal4"/>
+            </field>
+            <field name="UF_bigdecimal5">
+                <aqlMapping selectField="Project.UF_bigdecimal5"/>
+            </field>
+            <field name="UF_bigdecimal6">
+                <aqlMapping selectField="Project.UF_bigdecimal6"/>
+            </field>
+            <field name="UF_bigdecimal7">
+                <aqlMapping selectField="Project.UF_bigdecimal7"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+  <dataLoad name="ACMSalesContractWorkspaceStorageExt">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+           <!-- Storage fields -->
+
+            <!--
+                Fix 1-8SK95G: The definition of AbstractContractWorkspace fields
+                needs to be kept identical on each of the three analytics.fact
+                classes: GeneralContractWorkspace, ContractWorkspace, and
+                SalesContractWorkspace.  These analytic classes do not have any
+                inheritance relationship, unlike their transactional counterparts,
+                where AbstractContractWorkspace is the superclass of
+                ContractWorkspace and SalesContractWorkspace.
+            -->
+            <field name="UF_abs_int1">
+                <aqlMapping selectField="Project.UF_abs_int1"/>
+            </field>
+            <field name="UF_abs_int2">
+                <aqlMapping selectField="Project.UF_abs_int2"/>
+            </field>
+            <field name="UF_abs_int3">
+                <aqlMapping selectField="Project.UF_abs_int3"/>
+            </field>
+            <field name="UF_abs_int4">
+                <aqlMapping selectField="Project.UF_abs_int4"/>
+            </field>
+            <field name="UF_abs_int5">
+                <aqlMapping selectField="Project.UF_abs_int5"/>
+            </field>
+            <field name="UF_abs_int6">
+                <aqlMapping selectField="Project.UF_abs_int6"/>
+            </field>
+            <field name="UF_abs_int7">
+                <aqlMapping selectField="Project.UF_abs_int7"/>
+            </field>
+            <field name="UF_abs_int8">
+                <aqlMapping selectField="Project.UF_abs_int8"/>
+            </field>
+            <field name="UF_abs_int9">
+                <aqlMapping selectField="Project.UF_abs_int9"/>
+            </field>
+            <field name="UF_abs_int10">
+                <aqlMapping selectField="Project.UF_abs_int10"/>
+            </field>
+            <field name="UF_abs_int11">
+                <aqlMapping selectField="Project.UF_abs_int11"/>
+            </field>
+            <field name="UF_abs_int12">
+                <aqlMapping selectField="Project.UF_abs_int12"/>
+            </field>
+            <field name="UF_abs_int13">
+                <aqlMapping selectField="Project.UF_abs_int13"/>
+            </field>
+            <field name="UF_abs_int14">
+                <aqlMapping selectField="Project.UF_abs_int14"/>
+            </field>
+            <field name="UF_abs_int15">
+                <aqlMapping selectField="Project.UF_abs_int15"/>
+            </field>
+            <field name="UF_abs_int16">
+                <aqlMapping selectField="Project.UF_abs_int16"/>
+            </field>
+            <field name="UF_abs_int17">
+                <aqlMapping selectField="Project.UF_abs_int17"/>
+            </field>
+            <field name="UF_abs_int18">
+                <aqlMapping selectField="Project.UF_abs_int18"/>
+            </field>
+
+            <field name="UF_abs_string1">
+                <aqlMapping selectField="Project.UF_abs_string1"/>
+            </field>
+            <field name="UF_abs_string2">
+                <aqlMapping selectField="Project.UF_abs_string2"/>
+            </field>
+            <field name="UF_abs_string3">
+                <aqlMapping selectField="Project.UF_abs_string3"/>
+            </field>
+            <field name="UF_abs_string4">
+                <aqlMapping selectField="Project.UF_abs_string4"/>
+            </field>
+            <field name="UF_abs_string5">
+                <aqlMapping selectField="Project.UF_abs_string5"/>
+            </field>
+            <field name="UF_abs_string6">
+                <aqlMapping selectField="Project.UF_abs_string6"/>
+            </field>
+            <field name="UF_abs_string7">
+                <aqlMapping selectField="Project.UF_abs_string7"/>
+            </field>
+            <field name="UF_abs_string8">
+                <aqlMapping selectField="Project.UF_abs_string8"/>
+            </field>
+            <field name="UF_abs_string9">
+                <aqlMapping selectField="Project.UF_abs_string9"/>
+            </field>
+            <field name="UF_abs_string10">
+                <aqlMapping selectField="Project.UF_abs_string10"/>
+            </field>
+            <field name="UF_abs_string11">
+                <aqlMapping selectField="Project.UF_abs_string11"/>
+            </field>
+            <field name="UF_abs_string12">
+                <aqlMapping selectField="Project.UF_abs_string12"/>
+            </field>
+            <field name="UF_abs_string13">
+                <aqlMapping selectField="Project.UF_abs_string13"/>
+            </field>
+            <field name="UF_abs_string14">
+                <aqlMapping selectField="Project.UF_abs_string14"/>
+            </field>
+            <field name="UF_abs_string15">
+                <aqlMapping selectField="Project.UF_abs_string15"/>
+            </field>
+            <field name="UF_abs_string16">
+                <aqlMapping selectField="Project.UF_abs_string16"/>
+            </field>
+            <field name="UF_abs_string17">
+                <aqlMapping selectField="Project.UF_abs_string17"/>
+            </field>
+            <field name="UF_abs_string18">
+                <aqlMapping selectField="Project.UF_abs_string18"/>
+            </field>
+            <field name="UF_abs_string19">
+                <aqlMapping selectField="Project.UF_abs_string19"/>
+            </field>
+            <field name="UF_abs_string20">
+                <aqlMapping selectField="Project.UF_abs_string20"/>
+            </field>
+            <field name="UF_abs_string21">
+                <aqlMapping selectField="Project.UF_abs_string21"/>
+            </field>
+            <field name="UF_abs_string22">
+                <aqlMapping selectField="Project.UF_abs_string22"/>
+            </field>
+            <field name="UF_abs_string23">
+                <aqlMapping selectField="Project.UF_abs_string23"/>
+            </field>
+            <field name="UF_abs_string24">
+                <aqlMapping selectField="Project.UF_abs_string24"/>
+            </field>
+            <field name="UF_abs_string25">
+                <aqlMapping selectField="Project.UF_abs_string25"/>
+            </field>
+            <field name="UF_abs_string26">
+                <aqlMapping selectField="Project.UF_abs_string26"/>
+            </field>
+            <field name="UF_abs_string27">
+                <aqlMapping selectField="Project.UF_abs_string27"/>
+            </field>
+            <field name="UF_abs_string28">
+                <aqlMapping selectField="Project.UF_abs_string28"/>
+            </field>
+            <field name="UF_abs_string29">
+                <aqlMapping selectField="Project.UF_abs_string29"/>
+            </field>
+            <field name="UF_abs_string30">
+                <aqlMapping selectField="Project.UF_abs_string30"/>
+            </field>
+
+            <!-- money objects flatted out on fact table -->
+            <field name="UF_abs_money1_amount">
+                <aqlMapping selectField="Project.UF_abs_money1.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money1_currency">
+                <aqlMapping selectField="Project.UF_abs_money1.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money2_amount">
+                <aqlMapping selectField="Project.UF_abs_money2.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money2_currency">
+                <aqlMapping selectField="Project.UF_abs_money2.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money3_amount">
+                <aqlMapping selectField="Project.UF_abs_money3.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money3_currency">
+                <aqlMapping selectField="Project.UF_abs_money3.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money4_amount">
+                <aqlMapping selectField="Project.UF_abs_money4.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money4_currency">
+                <aqlMapping selectField="Project.UF_abs_money4.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+             <field name="UF_abs_money5_amount">
+                <aqlMapping selectField="Project.UF_abs_money5.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money5_currency">
+                <aqlMapping selectField="Project.UF_abs_money5.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <field name="UF_abs_time1">
+                <aqlMapping selectField="Project.UF_abs_date1"/>
+            </field>
+            <field name="UF_abs_time2">
+                <aqlMapping selectField="Project.UF_abs_date2"/>
+            </field>
+            <field name="UF_abs_time3">
+                <aqlMapping selectField="Project.UF_abs_date3"/>
+            </field>
+            <field name="UF_abs_time4">
+                <aqlMapping selectField="Project.UF_abs_date4"/>
+            </field>
+            <field name="UF_abs_time5">
+                <aqlMapping selectField="Project.UF_abs_date5"/>
+            </field>
+            <field name="UF_abs_time6">
+                <aqlMapping selectField="Project.UF_abs_date6"/>
+            </field>
+            <field name="UF_abs_time7">
+                <aqlMapping selectField="Project.UF_abs_date7"/>
+            </field>
+
+            <field name="UF_abs_boolean1">
+                <aqlMapping selectField="Project.UF_abs_boolean1"/>
+            </field>
+            <field name="UF_abs_boolean2">
+                <aqlMapping selectField="Project.UF_abs_boolean2"/>
+            </field>
+            <field name="UF_abs_boolean3">
+                <aqlMapping selectField="Project.UF_abs_boolean3"/>
+            </field>
+            <field name="UF_abs_boolean4">
+                <aqlMapping selectField="Project.UF_abs_boolean4"/>
+            </field>
+            <field name="UF_abs_boolean5">
+                <aqlMapping selectField="Project.UF_abs_boolean5"/>
+            </field>
+            <field name="UF_abs_boolean6">
+                <aqlMapping selectField="Project.UF_abs_boolean6"/>
+            </field>
+            <field name="UF_abs_boolean7">
+                <aqlMapping selectField="Project.UF_abs_boolean7"/>
+            </field>
+            <field name="UF_abs_boolean8">
+                <aqlMapping selectField="Project.UF_abs_boolean8"/>
+            </field>
+            <field name="UF_abs_boolean9">
+                <aqlMapping selectField="Project.UF_abs_boolean9"/>
+            </field>
+
+            <field name="UF_abs_bigdecimal1">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal1"/>
+            </field>
+            <field name="UF_abs_bigdecimal2">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal2"/>
+            </field>
+            <field name="UF_abs_bigdecimal3">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal3"/>
+            </field>
+            <field name="UF_abs_bigdecimal4">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal4"/>
+            </field>
+            <field name="UF_abs_bigdecimal5">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal5"/>
+            </field>
+            <field name="UF_abs_bigdecimal6">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal6"/>
+            </field>
+            <field name="UF_abs_bigdecimal7">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal7"/>
+            </field>
+
+            <!-- Storage fields for SalesContractWorkspace -->
+            <field name="UF_int1">
+                <aqlMapping selectField="Project.UF_int1"/>
+            </field>
+            <field name="UF_int2">
+                <aqlMapping selectField="Project.UF_int2"/>
+            </field>
+            <field name="UF_int3">
+                <aqlMapping selectField="Project.UF_int3"/>
+            </field>
+            <field name="UF_int4">
+                <aqlMapping selectField="Project.UF_int4"/>
+            </field>
+            <field name="UF_int5">
+                <aqlMapping selectField="Project.UF_int5"/>
+            </field>
+            <field name="UF_int6">
+                <aqlMapping selectField="Project.UF_int6"/>
+            </field>
+            <field name="UF_int7">
+                <aqlMapping selectField="Project.UF_int7"/>
+            </field>
+            <field name="UF_int8">
+                <aqlMapping selectField="Project.UF_int8"/>
+            </field>
+            <field name="UF_int9">
+                <aqlMapping selectField="Project.UF_int9"/>
+            </field>
+            <field name="UF_int10">
+                <aqlMapping selectField="Project.UF_int10"/>
+            </field>
+            <field name="UF_int11">
+                <aqlMapping selectField="Project.UF_int11"/>
+            </field>
+            <field name="UF_int12">
+                <aqlMapping selectField="Project.UF_int12"/>
+            </field>
+            <field name="UF_int13">
+                <aqlMapping selectField="Project.UF_int13"/>
+            </field>
+            <field name="UF_int14">
+                <aqlMapping selectField="Project.UF_int14"/>
+            </field>
+            <field name="UF_int15">
+                <aqlMapping selectField="Project.UF_int15"/>
+            </field>
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_int16">
+                <aqlMapping selectField="Project.UF_int21"/>
+            </field>
+            <field name="UF_int17">
+                <aqlMapping selectField="Project.UF_int22"/>
+            </field>
+            <field name="UF_int18">
+                <aqlMapping selectField="Project.UF_int23"/>
+            </field>
+
+            <field name="UF_string1">
+                <aqlMapping selectField="Project.UF_string1"/>
+            </field>
+            <field name="UF_string2">
+                <aqlMapping selectField="Project.UF_string2"/>
+            </field>
+            <field name="UF_string3">
+                <aqlMapping selectField="Project.UF_string3"/>
+            </field>
+            <field name="UF_string4">
+                <aqlMapping selectField="Project.UF_string4"/>
+            </field>
+            <field name="UF_string5">
+                <aqlMapping selectField="Project.UF_string5"/>
+            </field>
+            <field name="UF_string6">
+                <aqlMapping selectField="Project.UF_string6"/>
+            </field>
+            <field name="UF_string7">
+                <aqlMapping selectField="Project.UF_string7"/>
+            </field>
+            <field name="UF_string8">
+                <aqlMapping selectField="Project.UF_string8"/>
+            </field>
+            <field name="UF_string9">
+                <aqlMapping selectField="Project.UF_string9"/>
+            </field>
+            <field name="UF_string10">
+                <aqlMapping selectField="Project.UF_string10"/>
+            </field>
+            <field name="UF_string11">
+                <aqlMapping selectField="Project.UF_string11"/>
+            </field>
+            <field name="UF_string12">
+                <aqlMapping selectField="Project.UF_string12"/>
+            </field>
+            <field name="UF_string13">
+                <aqlMapping selectField="Project.UF_string13"/>
+            </field>
+            <field name="UF_string14">
+                <aqlMapping selectField="Project.UF_string14"/>
+            </field>
+            <field name="UF_string15">
+                <aqlMapping selectField="Project.UF_string15"/>
+            </field>
+            <field name="UF_string16">
+                <aqlMapping selectField="Project.UF_string16"/>
+            </field>
+            <field name="UF_string17">
+                <aqlMapping selectField="Project.UF_string17"/>
+            </field>
+            <field name="UF_string18">
+                <aqlMapping selectField="Project.UF_string18"/>
+            </field>
+            <field name="UF_string19">
+                <aqlMapping selectField="Project.UF_string19"/>
+            </field>
+            <field name="UF_string20">
+                <aqlMapping selectField="Project.UF_string20"/>
+            </field>
+            <field name="UF_string21">
+                <aqlMapping selectField="Project.UF_string21"/>
+            </field>
+            <field name="UF_string22">
+                <aqlMapping selectField="Project.UF_string22"/>
+            </field>
+            <field name="UF_string23">
+                <aqlMapping selectField="Project.UF_string23"/>
+            </field>
+            <field name="UF_string24">
+                <aqlMapping selectField="Project.UF_string24"/>
+            </field>
+            <field name="UF_string25">
+                <aqlMapping selectField="Project.UF_string25"/>
+            </field>
+            <field name="UF_string26">
+                <aqlMapping selectField="Project.UF_string26"/>
+            </field>
+            <field name="UF_string27">
+                <aqlMapping selectField="Project.UF_string27"/>
+            </field>
+            <field name="UF_string28">
+                <aqlMapping selectField="Project.UF_string28"/>
+            </field>
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_string29">
+                <aqlMapping selectField="Project.UF_string38"/>
+            </field>
+            <field name="UF_string30">
+                <aqlMapping selectField="Project.UF_string39"/>
+            </field>
+
+            <!-- money objects flatted out on fact table -->
+
+            <field name="UF_money1_amount">
+                <aqlMapping selectField="Project.UF_money1.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money1_currency">
+                <aqlMapping selectField="Project.UF_money1.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money2_amount">
+                <aqlMapping selectField="Project.UF_money2.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money2_currency">
+                <aqlMapping selectField="Project.UF_money2.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money3_amount">
+                <aqlMapping selectField="Project.UF_money3.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money3_currency">
+                <aqlMapping selectField="Project.UF_money3.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money4_amount">
+                <aqlMapping selectField="Project.UF_money4.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money4_currency">
+                <aqlMapping selectField="Project.UF_money4.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+             <!-- these are not mapped to consecutive flex field,  but the one that are create specifically for it -->
+            <field name="UF_money5_amount">
+                <aqlMapping selectField="Project.UF_money7.Amount"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money5_currency">
+                <aqlMapping selectField="Project.UF_money7.Currency"
+                            remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <field name="UF_time1">
+                <aqlMapping selectField="Project.UF_date1"/>
+            </field>
+            <field name="UF_time2">
+                <aqlMapping selectField="Project.UF_date2"/>
+            </field>
+            <field name="UF_time3">
+                <aqlMapping selectField="Project.UF_date3"/>
+            </field>
+            <field name="UF_time4">
+                <aqlMapping selectField="Project.UF_date4"/>
+            </field>
+            <field name="UF_time5">
+                <aqlMapping selectField="Project.UF_date5"/>
+            </field>
+            <field name="UF_time6">
+                <aqlMapping selectField="Project.UF_date6"/>
+            </field>
+            <field name="UF_time7">
+                <aqlMapping selectField="Project.UF_date7"/>
+            </field>
+
+            <field name="UF_boolean1">
+                <aqlMapping selectField="Project.UF_boolean1"/>
+            </field>
+            <field name="UF_boolean2">
+                <aqlMapping selectField="Project.UF_boolean2"/>
+            </field>
+            <field name="UF_boolean3">
+                <aqlMapping selectField="Project.UF_boolean3"/>
+            </field>
+            <field name="UF_boolean4">
+                <aqlMapping selectField="Project.UF_boolean4"/>
+            </field>
+            <field name="UF_boolean5">
+                <aqlMapping selectField="Project.UF_boolean5"/>
+            </field>
+            <field name="UF_boolean6">
+                <aqlMapping selectField="Project.UF_boolean6"/>
+            </field>
+            <field name="UF_boolean7">
+                <aqlMapping selectField="Project.UF_boolean7"/>
+            </field>
+            <field name="UF_boolean8">
+                <aqlMapping selectField="Project.UF_boolean8"/>
+            </field>
+            <field name="UF_boolean9">
+                <aqlMapping selectField="Project.UF_boolean9"/>
+            </field>
+
+            <field name="UF_bigdecimal1">
+                <aqlMapping selectField="Project.UF_bigdecimal1"/>
+            </field>
+            <field name="UF_bigdecimal2">
+                <aqlMapping selectField="Project.UF_bigdecimal2"/>
+            </field>
+            <field name="UF_bigdecimal3">
+                <aqlMapping selectField="Project.UF_bigdecimal3"/>
+            </field>
+            <field name="UF_bigdecimal4">
+                <aqlMapping selectField="Project.UF_bigdecimal4"/>
+            </field>
+            <field name="UF_bigdecimal5">
+                <aqlMapping selectField="Project.UF_bigdecimal5"/>
+            </field>
+            <field name="UF_bigdecimal6">
+                <aqlMapping selectField="Project.UF_bigdecimal6"/>
+            </field>
+            <field name="UF_bigdecimal7">
+                <aqlMapping selectField="Project.UF_bigdecimal7"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <dataLoad name="ACMSalesContractRequestStorageExt">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.contracts.SalesContractRequest AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.SalesContractRequest"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+
+            <!-- Storage fields -->
+
+            <!--
+                Fix 1-8SK95G: The definition of AbstractContractWorkspace fields
+                needs to be kept identical on each of the three analytics.fact
+                classes: GeneralContractWorkspace, ContractWorkspace, and
+                SalesContractWorkspace.  These analytic classes do not have any
+                inheritance relationship, unlike their transactional counterparts,
+                where AbstractContractWorkspace is the superclass of
+                ContractWorkspace and SalesContractWorkspace.
+            -->
+            <field name="UF_abs_int1">
+                <aqlMapping selectField="Project.UF_abs_int1"/>
+            </field>
+            <field name="UF_abs_int2">
+                <aqlMapping selectField="Project.UF_abs_int2"/>
+            </field>
+            <field name="UF_abs_int3">
+                <aqlMapping selectField="Project.UF_abs_int3"/>
+            </field>
+            <field name="UF_abs_int4">
+                <aqlMapping selectField="Project.UF_abs_int4"/>
+            </field>
+            <field name="UF_abs_int5">
+                <aqlMapping selectField="Project.UF_abs_int5"/>
+            </field>
+            <field name="UF_abs_int6">
+                <aqlMapping selectField="Project.UF_abs_int6"/>
+            </field>
+            <field name="UF_abs_int7">
+                <aqlMapping selectField="Project.UF_abs_int7"/>
+            </field>
+            <field name="UF_abs_int8">
+                <aqlMapping selectField="Project.UF_abs_int8"/>
+            </field>
+            <field name="UF_abs_int9">
+                <aqlMapping selectField="Project.UF_abs_int9"/>
+            </field>
+            <field name="UF_abs_int10">
+                <aqlMapping selectField="Project.UF_abs_int10"/>
+            </field>
+            <field name="UF_abs_int11">
+                <aqlMapping selectField="Project.UF_abs_int11"/>
+            </field>
+            <field name="UF_abs_int12">
+                <aqlMapping selectField="Project.UF_abs_int12"/>
+            </field>
+            <field name="UF_abs_int13">
+                <aqlMapping selectField="Project.UF_abs_int13"/>
+            </field>
+            <field name="UF_abs_int14">
+                <aqlMapping selectField="Project.UF_abs_int14"/>
+            </field>
+            <field name="UF_abs_int15">
+                <aqlMapping selectField="Project.UF_abs_int15"/>
+            </field>
+            <field name="UF_abs_int16">
+                <aqlMapping selectField="Project.UF_abs_int16"/>
+            </field>
+            <field name="UF_abs_int17">
+                <aqlMapping selectField="Project.UF_abs_int17"/>
+            </field>
+            <field name="UF_abs_int18">
+                <aqlMapping selectField="Project.UF_abs_int18"/>
+            </field>
+
+            <field name="UF_abs_string1">
+                <aqlMapping selectField="Project.UF_abs_string1"/>
+            </field>
+            <field name="UF_abs_string2">
+                <aqlMapping selectField="Project.UF_abs_string2"/>
+            </field>
+            <field name="UF_abs_string3">
+                <aqlMapping selectField="Project.UF_abs_string3"/>
+            </field>
+            <field name="UF_abs_string4">
+                <aqlMapping selectField="Project.UF_abs_string4"/>
+            </field>
+            <field name="UF_abs_string5">
+                <aqlMapping selectField="Project.UF_abs_string5"/>
+            </field>
+            <field name="UF_abs_string6">
+                <aqlMapping selectField="Project.UF_abs_string6"/>
+            </field>
+            <field name="UF_abs_string7">
+                <aqlMapping selectField="Project.UF_abs_string7"/>
+            </field>
+            <field name="UF_abs_string8">
+                <aqlMapping selectField="Project.UF_abs_string8"/>
+            </field>
+            <field name="UF_abs_string9">
+                <aqlMapping selectField="Project.UF_abs_string9"/>
+            </field>
+            <field name="UF_abs_string10">
+                <aqlMapping selectField="Project.UF_abs_string10"/>
+            </field>
+            <field name="UF_abs_string11">
+                <aqlMapping selectField="Project.UF_abs_string11"/>
+            </field>
+            <field name="UF_abs_string12">
+                <aqlMapping selectField="Project.UF_abs_string12"/>
+            </field>
+            <field name="UF_abs_string13">
+                <aqlMapping selectField="Project.UF_abs_string13"/>
+            </field>
+            <field name="UF_abs_string14">
+                <aqlMapping selectField="Project.UF_abs_string14"/>
+            </field>
+            <field name="UF_abs_string15">
+                <aqlMapping selectField="Project.UF_abs_string15"/>
+            </field>
+            <field name="UF_abs_string16">
+                <aqlMapping selectField="Project.UF_abs_string16"/>
+            </field>
+            <field name="UF_abs_string17">
+                <aqlMapping selectField="Project.UF_abs_string17"/>
+            </field>
+            <field name="UF_abs_string18">
+                <aqlMapping selectField="Project.UF_abs_string18"/>
+            </field>
+            <field name="UF_abs_string19">
+                <aqlMapping selectField="Project.UF_abs_string19"/>
+            </field>
+            <field name="UF_abs_string20">
+                <aqlMapping selectField="Project.UF_abs_string20"/>
+            </field>
+            <field name="UF_abs_string21">
+                <aqlMapping selectField="Project.UF_abs_string21"/>
+            </field>
+            <field name="UF_abs_string22">
+                <aqlMapping selectField="Project.UF_abs_string22"/>
+            </field>
+            <field name="UF_abs_string23">
+                <aqlMapping selectField="Project.UF_abs_string23"/>
+            </field>
+            <field name="UF_abs_string24">
+                <aqlMapping selectField="Project.UF_abs_string24"/>
+            </field>
+            <field name="UF_abs_string25">
+                <aqlMapping selectField="Project.UF_abs_string25"/>
+            </field>
+            <field name="UF_abs_string26">
+                <aqlMapping selectField="Project.UF_abs_string26"/>
+            </field>
+            <field name="UF_abs_string27">
+                <aqlMapping selectField="Project.UF_abs_string27"/>
+            </field>
+            <field name="UF_abs_string28">
+                <aqlMapping selectField="Project.UF_abs_string28"/>
+            </field>
+            <field name="UF_abs_string29">
+                <aqlMapping selectField="Project.UF_abs_string29"/>
+            </field>
+            <field name="UF_abs_string30">
+                <aqlMapping selectField="Project.UF_abs_string30"/>
+            </field>
+
+            <!-- money objects flatted out on fact table -->
+            <field name="UF_abs_money1_amount">
+                <aqlMapping selectField="Project.UF_abs_money1.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money1_currency">
+                <aqlMapping selectField="Project.UF_abs_money1.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money2_amount">
+                <aqlMapping selectField="Project.UF_abs_money2.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money2_currency">
+                <aqlMapping selectField="Project.UF_abs_money2.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money3_amount">
+                <aqlMapping selectField="Project.UF_abs_money3.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money3_currency">
+                <aqlMapping selectField="Project.UF_abs_money3.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_abs_money4_amount">
+                <aqlMapping selectField="Project.UF_abs_money4.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money4_currency">
+                <aqlMapping selectField="Project.UF_abs_money4.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+             <field name="UF_abs_money5_amount">
+                <aqlMapping selectField="Project.UF_abs_money5.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_abs_money5_currency">
+                <aqlMapping selectField="Project.UF_abs_money5.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_abs_money5"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <field name="UF_abs_time1">
+                <aqlMapping selectField="Project.UF_abs_date1"/>
+            </field>
+            <field name="UF_abs_time2">
+                <aqlMapping selectField="Project.UF_abs_date2"/>
+            </field>
+            <field name="UF_abs_time3">
+                <aqlMapping selectField="Project.UF_abs_date3"/>
+            </field>
+            <field name="UF_abs_time4">
+                <aqlMapping selectField="Project.UF_abs_date4"/>
+            </field>
+            <field name="UF_abs_time5">
+                <aqlMapping selectField="Project.UF_abs_date5"/>
+            </field>
+            <field name="UF_abs_time6">
+                <aqlMapping selectField="Project.UF_abs_date6"/>
+            </field>
+            <field name="UF_abs_time7">
+                <aqlMapping selectField="Project.UF_abs_date7"/>
+            </field>
+
+            <field name="UF_abs_boolean1">
+                <aqlMapping selectField="Project.UF_abs_boolean1"/>
+            </field>
+            <field name="UF_abs_boolean2">
+                <aqlMapping selectField="Project.UF_abs_boolean2"/>
+            </field>
+            <field name="UF_abs_boolean3">
+                <aqlMapping selectField="Project.UF_abs_boolean3"/>
+            </field>
+            <field name="UF_abs_boolean4">
+                <aqlMapping selectField="Project.UF_abs_boolean4"/>
+            </field>
+            <field name="UF_abs_boolean5">
+                <aqlMapping selectField="Project.UF_abs_boolean5"/>
+            </field>
+            <field name="UF_abs_boolean6">
+                <aqlMapping selectField="Project.UF_abs_boolean6"/>
+            </field>
+            <field name="UF_abs_boolean7">
+                <aqlMapping selectField="Project.UF_abs_boolean7"/>
+            </field>
+            <field name="UF_abs_boolean8">
+                <aqlMapping selectField="Project.UF_abs_boolean8"/>
+            </field>
+            <field name="UF_abs_boolean9">
+                <aqlMapping selectField="Project.UF_abs_boolean9"/>
+            </field>
+
+            <field name="UF_abs_bigdecimal1">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal1"/>
+            </field>
+            <field name="UF_abs_bigdecimal2">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal2"/>
+            </field>
+            <field name="UF_abs_bigdecimal3">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal3"/>
+            </field>
+            <field name="UF_abs_bigdecimal4">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal4"/>
+            </field>
+            <field name="UF_abs_bigdecimal5">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal5"/>
+            </field>
+            <field name="UF_abs_bigdecimal6">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal6"/>
+            </field>
+            <field name="UF_abs_bigdecimal7">
+                <aqlMapping selectField="Project.UF_abs_bigdecimal7"/>
+            </field>
+
+            <!-- Storage fields for SalesContractWorkspace -->
+            <field name="UF_int1">
+                <aqlMapping selectField="Project.UF_int1"/>
+            </field>
+            <field name="UF_int2">
+                <aqlMapping selectField="Project.UF_int2"/>
+            </field>
+            <field name="UF_int3">
+                <aqlMapping selectField="Project.UF_int3"/>
+            </field>
+            <field name="UF_int4">
+                <aqlMapping selectField="Project.UF_int4"/>
+            </field>
+            <field name="UF_int5">
+                <aqlMapping selectField="Project.UF_int5"/>
+            </field>
+            <field name="UF_int6">
+                <aqlMapping selectField="Project.UF_int6"/>
+            </field>
+            <field name="UF_int7">
+                <aqlMapping selectField="Project.UF_int7"/>
+            </field>
+            <field name="UF_int8">
+                <aqlMapping selectField="Project.UF_int8"/>
+            </field>
+            <field name="UF_int9">
+                <aqlMapping selectField="Project.UF_int9"/>
+            </field>
+            <field name="UF_int10">
+                <aqlMapping selectField="Project.UF_int10"/>
+            </field>
+            <field name="UF_int11">
+                <aqlMapping selectField="Project.UF_int11"/>
+            </field>
+            <field name="UF_int12">
+                <aqlMapping selectField="Project.UF_int12"/>
+            </field>
+            <field name="UF_int13">
+                <aqlMapping selectField="Project.UF_int13"/>
+            </field>
+            <field name="UF_int14">
+                <aqlMapping selectField="Project.UF_int14"/>
+            </field>
+            <field name="UF_int15">
+                <aqlMapping selectField="Project.UF_int15"/>
+            </field>
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_int16">
+                <aqlMapping selectField="Project.UF_int21"/>
+            </field>
+            <field name="UF_int17">
+                <aqlMapping selectField="Project.UF_int22"/>
+            </field>
+            <field name="UF_int18">
+                <aqlMapping selectField="Project.UF_int23"/>
+            </field>
+
+            <field name="UF_string1">
+                <aqlMapping selectField="Project.UF_string1"/>
+            </field>
+            <field name="UF_string2">
+                <aqlMapping selectField="Project.UF_string2"/>
+            </field>
+            <field name="UF_string3">
+                <aqlMapping selectField="Project.UF_string3"/>
+            </field>
+            <field name="UF_string4">
+                <aqlMapping selectField="Project.UF_string4"/>
+            </field>
+            <field name="UF_string5">
+                <aqlMapping selectField="Project.UF_string5"/>
+            </field>
+            <field name="UF_string6">
+                <aqlMapping selectField="Project.UF_string6"/>
+            </field>
+            <field name="UF_string7">
+                <aqlMapping selectField="Project.UF_string7"/>
+            </field>
+            <field name="UF_string8">
+                <aqlMapping selectField="Project.UF_string8"/>
+            </field>
+            <field name="UF_string9">
+                <aqlMapping selectField="Project.UF_string9"/>
+            </field>
+            <field name="UF_string10">
+                <aqlMapping selectField="Project.UF_string10"/>
+            </field>
+            <field name="UF_string11">
+                <aqlMapping selectField="Project.UF_string11"/>
+            </field>
+            <field name="UF_string12">
+                <aqlMapping selectField="Project.UF_string12"/>
+            </field>
+            <field name="UF_string13">
+                <aqlMapping selectField="Project.UF_string13"/>
+            </field>
+            <field name="UF_string14">
+                <aqlMapping selectField="Project.UF_string14"/>
+            </field>
+            <field name="UF_string15">
+                <aqlMapping selectField="Project.UF_string15"/>
+            </field>
+            <field name="UF_string16">
+                <aqlMapping selectField="Project.UF_string16"/>
+            </field>
+            <field name="UF_string17">
+                <aqlMapping selectField="Project.UF_string17"/>
+            </field>
+            <field name="UF_string18">
+                <aqlMapping selectField="Project.UF_string18"/>
+            </field>
+            <field name="UF_string19">
+                <aqlMapping selectField="Project.UF_string19"/>
+            </field>
+            <field name="UF_string20">
+                <aqlMapping selectField="Project.UF_string20"/>
+            </field>
+            <field name="UF_string21">
+                <aqlMapping selectField="Project.UF_string21"/>
+            </field>
+            <field name="UF_string22">
+                <aqlMapping selectField="Project.UF_string22"/>
+            </field>
+            <field name="UF_string23">
+                <aqlMapping selectField="Project.UF_string23"/>
+            </field>
+            <field name="UF_string24">
+                <aqlMapping selectField="Project.UF_string24"/>
+            </field>
+            <field name="UF_string25">
+                <aqlMapping selectField="Project.UF_string25"/>
+            </field>
+            <field name="UF_string26">
+                <aqlMapping selectField="Project.UF_string26"/>
+            </field>
+            <field name="UF_string27">
+                <aqlMapping selectField="Project.UF_string27"/>
+            </field>
+            <field name="UF_string28">
+                <aqlMapping selectField="Project.UF_string28"/>
+            </field>
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_string29">
+                <aqlMapping selectField="Project.UF_string38"/>
+            </field>
+            <field name="UF_string30">
+                <aqlMapping selectField="Project.UF_string39"/>
+            </field>
+
+            <!-- money objects flatted out on fact table -->
+
+            <field name="UF_money1_amount">
+                <aqlMapping selectField="Project.UF_money1.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money1_currency">
+                <aqlMapping selectField="Project.UF_money1.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money2_amount">
+                <aqlMapping selectField="Project.UF_money2.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money2_currency">
+                <aqlMapping selectField="Project.UF_money2.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money3_amount">
+                <aqlMapping selectField="Project.UF_money3.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money3_currency">
+                <aqlMapping selectField="Project.UF_money3.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money4_amount">
+                <aqlMapping selectField="Project.UF_money4.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money4_currency">
+                <aqlMapping selectField="Project.UF_money4.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+             <!-- these are not mapped to consecutive flex field,  but the one that are create specifically for it -->
+            <field name="UF_money5_amount">
+                <aqlMapping selectField="Project.UF_money7.Amount"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money5_currency">
+                <aqlMapping selectField="Project.UF_money7.Currency"
+                            remoteStorageClass="ariba.analytics.fact.SalesContractRequest"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <field name="UF_time1">
+                <aqlMapping selectField="Project.UF_date1"/>
+            </field>
+            <field name="UF_time2">
+                <aqlMapping selectField="Project.UF_date2"/>
+            </field>
+            <field name="UF_time3">
+                <aqlMapping selectField="Project.UF_date3"/>
+            </field>
+            <field name="UF_time4">
+                <aqlMapping selectField="Project.UF_date4"/>
+            </field>
+            <field name="UF_time5">
+                <aqlMapping selectField="Project.UF_date5"/>
+            </field>
+            <field name="UF_time6">
+                <aqlMapping selectField="Project.UF_date6"/>
+            </field>
+            <field name="UF_time7">
+                <aqlMapping selectField="Project.UF_date7"/>
+            </field>
+
+            <field name="UF_boolean1">
+                <aqlMapping selectField="Project.UF_boolean1"/>
+            </field>
+            <field name="UF_boolean2">
+                <aqlMapping selectField="Project.UF_boolean2"/>
+            </field>
+            <field name="UF_boolean3">
+                <aqlMapping selectField="Project.UF_boolean3"/>
+            </field>
+            <field name="UF_boolean4">
+                <aqlMapping selectField="Project.UF_boolean4"/>
+            </field>
+            <field name="UF_boolean5">
+                <aqlMapping selectField="Project.UF_boolean5"/>
+            </field>
+            <field name="UF_boolean6">
+                <aqlMapping selectField="Project.UF_boolean6"/>
+            </field>
+            <field name="UF_boolean7">
+                <aqlMapping selectField="Project.UF_boolean7"/>
+            </field>
+            <field name="UF_boolean8">
+                <aqlMapping selectField="Project.UF_boolean8"/>
+            </field>
+            <field name="UF_boolean9">
+                <aqlMapping selectField="Project.UF_boolean9"/>
+            </field>
+
+            <field name="UF_bigdecimal1">
+                <aqlMapping selectField="Project.UF_bigdecimal1"/>
+            </field>
+            <field name="UF_bigdecimal2">
+                <aqlMapping selectField="Project.UF_bigdecimal2"/>
+            </field>
+            <field name="UF_bigdecimal3">
+                <aqlMapping selectField="Project.UF_bigdecimal3"/>
+            </field>
+            <field name="UF_bigdecimal4">
+                <aqlMapping selectField="Project.UF_bigdecimal4"/>
+            </field>
+            <field name="UF_bigdecimal5">
+                <aqlMapping selectField="Project.UF_bigdecimal5"/>
+            </field>
+            <field name="UF_bigdecimal6">
+                <aqlMapping selectField="Project.UF_bigdecimal6"/>
+            </field>
+            <field name="UF_bigdecimal7">
+                <aqlMapping selectField="Project.UF_bigdecimal7"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <dataLoad name="ACMContractWorkspaceVectorString1Load">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.contracts.ContractWorkspace AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+
+           <!-- Storage fields -->
+            <field name="VUF_1string.VUF_1string" >
+                 <aqlMapping selectField="Project.VUF_1string"
+                    remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                    remoteStorageFieldPath="VUF_1string"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+    <dataLoad name="ACMContractWorkspaceVectorString2Load">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.contracts.ContractWorkspace AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+
+            <!-- Storage fields -->
+            <field name="VUF_2string.VUF_2string" >
+                 <aqlMapping selectField="Project.VUF_2string"
+                    remoteStorageClass="ariba.collaborate.contracts.ContractWorkspace"
+                    remoteStorageFieldPath="VUF_2string"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+
+    <dataLoad name="ACMSalesContractWorkspaceVectorString1Load">
+        <loadStages>
+
+            <aqlStage fromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+        </loadStages>
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+
+           <!-- Storage fields -->
+            <field name="VUF_1string.VUF_1string" >
+                 <aqlMapping selectField="Project.VUF_1string"
+                    remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                    remoteStorageFieldPath="VUF_1string"
+                 />
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+    <dataLoad name="ACMSalesContractWorkspaceVectorString2Load">
+       <loadStages>
+
+            <aqlStage fromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project"
+                      whereClause="Project.WorkspaceType = ''
+                                   AND Project.Status != 'Not Created'
+                                   AND Project.NextVersion IS NULL
+                                   AND Project.ProjectTemplate IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                          Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+        </loadStages>
+        <fieldMappings>
+
+            <!-- Look up key -->
+            <field name="ProjectId">
+                 <aqlMapping selectField="Project.InternalId"
+                             sourceLookupField="InternalId"/>
+            </field>
+
+            <!-- Storage fields -->
+            <field name="VUF_2string.VUF_2string" >
+                 <aqlMapping selectField="Project.VUF_2string"
+                    remoteStorageClass="ariba.collaborate.contracts.SalesContractWorkspace"
+                    remoteStorageFieldPath="VUF_2string"
+                  />
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+</allDataLoads>

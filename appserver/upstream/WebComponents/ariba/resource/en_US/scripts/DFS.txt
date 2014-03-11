@@ -1,0 +1,545 @@
+Dim fso, objWSH, xmlhttp, fileStream, xmlDomDfs
+
+Sub cleanup ()
+    set fso = Nothing
+    set objWSH = Nothing
+    set xmlhttp = Nothing
+    set fileStream = Nothing
+    set xmlDomDfs = Nothing
+End Sub
+
+Sub cleanupHandler ()
+    cleanup
+End Sub
+
+Function logError (message)
+    logError = true
+    If Err.Number <> 0 Then
+        logErrorCheck "logError:=" & message
+        SmartClientScriptError.innerHTML = message
+        cleanup
+    Else
+        logError = false
+    End If
+    '// Note that returning from any Sub or Function always clears Err.
+End Function
+
+Sub logErrorCheck (message)
+    If Err.Number <> 0 Then
+	    logMessage "Error: " & message & " got '" & Err.Description & "' Err.Number=" & Err.Number
+    End If
+    '// Note that returning from any Sub or Function always clears Err.
+End Sub
+
+Function getTempFolderPath ()
+    On Error Resume Next
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If logError(DFSErr.Msg1) Then
+        getTempFolderPath = ""
+        Exit Function
+    End If
+    Dim tfolder
+    ConstTemporaryFolder = 2
+    Set tfolder = fso.GetSpecialFolder(ConstTemporaryFolder)
+    getTempFolderPath = tfolder.Path
+    Set tfolder = Nothing
+    Set fso = Nothing
+End Function
+
+Function getTempFolderPathHandler ()
+    On Error Resume Next
+
+    getTempFolderPathHandler = getTempFolderPath()
+End Function
+
+Function createDirectory (path)
+    On Error Resume Next
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If logError(DFSErr.Msg1) Then
+        createDirectory = -1
+        Exit Function
+    End If
+    If (not (fso.FolderExists (path))) Then
+        fso.CreateFolder path
+        If logError(DFSErr.Msg4 & " '" & path & "'") Then
+            createDirectory = -1
+            Exit Function
+        End If
+    End if
+    createDirectory = 0
+    Set fso = Nothing
+End Function
+
+Function createDirectoryHandler (keyValues)
+    On Error Resume Next
+
+    createDirectoryHandler = createDirectory(awxsGetValue(keyValues, "folderName"))
+End Function
+
+Function clientFileExists (fileFullPath)
+    On Error Resume Next
+    set fso = CreateObject("Scripting.FileSystemObject")
+    If logError(DFSErr.Msg1) Then
+        clientFileExists = -1
+        Exit Function
+    End If
+    If (fso.FileExists(fileFullPath)) Then
+        clientFileExists = 0
+    Else
+        clientFileExists = 1
+    End If
+    set fso = Nothing
+End Function
+
+Function clientFileExistsHandler (keyValues)
+    On Error Resume Next
+
+    clientFileExistsHandler = clientFileExists(awxsGetValue(keyValues, "documentLocation"))
+End Function
+
+Function clientFileTimestamp (fileFullPath)
+    On Error Resume Next
+    logBegin "clientFileTimestamp(fileFullPath='" & fileFullPath & "')"
+    clientFileTimestamp = ""
+    dim success, fileSys, f
+    success = true
+    set fileSys = CreateObject("Scripting.FileSystemObject")
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg1)
+        logMessage "Error: CreateObject(Scripting.FileSystemObject) failed"
+        success = false
+    End If
+    if success then
+        set f = fileSys.GetFile(fileFullPath)       
+    end if
+    If Err.Number <> 0 Then
+        logMessage "Error: fileSys.GetFile(fileFullPath) failed"
+        success = false
+    End If
+    if success then
+        clientFileTimestamp = DFS.toUTCString(f.DateLastModified)
+    end if
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg1)
+        logMessage "Error: clientFileTimestamp = f.DateLastModified failed"
+        success = false
+        clientFileTimestamp = ""
+    End If
+    awDebug("clientFileTimestamp, returns " & clientFileTimestamp)
+End Function
+
+Function clientFileTimestampHandler (keyValues)
+    On Error Resume Next
+
+    clientFileTimestampHandler = clientFileTimestamp(awxsGetValue(keyValues, "documentName"))
+End Function
+
+Function compatibleClientFileTimestamp (fileFullPath)
+    On Error Resume Next
+    awDebug("compatibleClientFileTimestamp(fileFullPath='" & fileFullPath & "')")
+    compatibleClientFileTimestamp = ""
+    dim success, fileSys, f
+    success = true
+    set fileSys = CreateObject("Scripting.FileSystemObject")
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg1)
+        logMessage "Error: compatibleClientFileTimestamp CreateObject(Scripting.FileSystemObject) failed"
+        success = false
+    End If
+    if success then
+        set f = fileSys.GetFile(fileFullPath)
+    end if
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg1)
+        logMessage "Error: compatibleClientFileTimestamp fileSys.GetFile(fileFullPath) failed"
+        success = false
+    End If
+    if success then
+        compatibleClientFileTimestamp = f.DateLastModified
+    end if
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg1)
+        logMessage "Error: compatibleClientFileTimestamp = f.DateLastModified failed"
+        success = false
+        compatibleClientFileTimestamp = ""
+    End If
+    awDebug("compatibleClientFileTimestamp, returns " & clientFileTimestamp)
+End Function
+
+Function compatibleClientFileTimestampHandler (keyValues)
+    On Error Resume Next
+    compatibleClientFileTimestampHandler = compatibleClientFileTimestamp(awxsGetValue(keyValues, "documentName"))
+End Function
+
+Function areTimestampsEqual (fileFullPath, serverTimestamp)
+    On Error Resume Next
+    awDebug("areTimestampsEqual(serverTimestamp=" & serverTimestamp & ")")
+    
+    dim clientTimestamp
+    clientTimestamp = compatibleClientFileTimestamp(fileFullPath)
+    awDebug("areTimestampsEqual, clientTimestamp = " & clientTimestamp & " serverTimestamp = " & serverTimestamp)
+
+    If "" & clientTimestamp <> serverTimestamp Then
+        areTimestampsEqual = false
+    Else
+        areTimestampsEqual = true
+    End If
+    awDebug("areTimestampsEqual, returns " & areTimestampsEqual)
+End Function
+
+Function areTimestampsEqualHandler (keyValues)
+    On Error Resume Next
+    areTimestampsEqualHandler = areTimestampsEqual(awxsGetValue(keyValues, "fileFullPath"), awxsGetValue(keyValues, "serverTimestamp"))
+End Function
+
+'// Returns true if successful, else false if an error occurs.
+Function saveDocumentToClient (documentName, strUrl)
+    On Error Resume Next
+    saveDocumentToClient = true
+	logBegin "saveDocumentToClient(documentName='" & documentName & "', strUrl='" & strUrl & "')"
+    If clientFileExists(documentName) = 0 Then
+        setDocumentAttributes documentName, True
+    End If
+    dim outStream
+    set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If (Err.Number <> 0) Then
+        logError(DFSErr.Msg1)
+        saveDocumentToClient = false
+	    logMessage "Error: saveDocumentToClient, failed in CreateObject XMLHTTP"
+    End If
+    if (saveDocumentToClient) then
+        xmlhttp.Open "Get", strUrl, false
+        xmlhttp.Send
+        set outStream = CreateObject("ADODB.Stream")
+    End If
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg1)
+        saveDocumentToClient = false
+	    logMessage "Error: saveDocumentToClient, failed in Get, Send, or CreateObject ADODB.Stream"
+    End If
+    if (saveDocumentToClient) then
+	    outStream.Type = 1
+	    outStream.Open
+	    while xmlhttp.readyState <> 4
+	    Wend
+    End If
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg2)
+        saveDocumentToClient = false
+	    logMessage "Error: saveDocumentToClient, failed in Open or While not ready spin."
+    End If
+    if (saveDocumentToClient) then
+       outStream.Write xmlhttp.ResponseBody
+    End If
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg2)
+        saveDocumentToClient = false
+	    logMessage "Error: saveDocumentToClient, failed in Write."
+    End If
+    if (saveDocumentToClient) then
+        outStream.saveToFile documentName, 2
+    End If
+    If Err.Number <> 0 Then
+        logError(DFSErr.Msg2)
+        saveDocumentToClient = false
+	    logMessage "Error: saveDocumentToClient, failed in saveToFile."
+    End If
+    outStream.Close
+    set outStream = Nothing
+    document.body.style.cursor = "auto"
+    logEnd "saveDocumentToClient, success=" & saveDocumentToClient
+End Function
+
+Function saveDocumentToClientHandler (keyValues)
+    On Error Resume Next
+
+    saveDocumentToClientHandler = saveDocumentToClient(awxsGetValue(keyValues, "documentName"), ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl")))
+End Function
+
+Function saveSyncHistory (fileTimestamp, strUrl)
+    On Error Resume Next
+    set xmlDomDfs = CreateObject("MSXML2.DOMDocument")
+    If logError(DFSErr.Msg1) Then
+        saveSyncHistory = -1
+        Exit Function
+    End If
+    xmlDomDfs.loadXML("<?xml version=""1.0""?><root/>")
+    Dim tnode
+    set tnode = xmlDomDfs.createTextNode(fileTimestamp)
+    xmlDomDfs.documentElement.appendChild(tnode)
+
+    set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(DFSErr.Msg1) Then
+        saveSyncHistory = -1
+        Exit Function
+    End If
+    xmlhttp.Open "POST", strUrl, false
+    xmlhttp.Send xmlDomDfs.xml
+    If logError(DFSErr.Msg3) Then
+        saveSyncHistory = -1
+        Exit Function
+    End If
+    set xmlhttp = Nothing
+    set xmlDomDfs = Nothing
+    saveSyncHistory = 0
+End Function
+
+Function saveSyncHistoryHandler (keyValues)
+    On Error Resume Next
+
+    Dim fileTimestamp
+    fileTimestamp = awxsGetValue(keyValues, "documentTimestamp")
+    Dim strUrl
+    strUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl"))
+
+    saveSyncHistoryHandler = saveSyncHistory(fileTimestamp, strUrl)
+End Function
+
+Sub setDocumentAttributes (documentLocation, isDocumentEditable)
+    On Error Resume Next
+
+    Dim aDocumentLocation
+    aDocumentLocation = Replace(documentLocation, "/", "\")
+
+    Dim sys
+    Set sys = CreateObject("Scripting.FileSystemObject")
+
+    If logError(DFSErr.Msg1) Then
+        Exit Sub
+    End If
+
+    Dim aDocument
+    Set aDocument = sys.GetFile(aDocumentLocation)
+
+    ' msgbox ("original " & aDocument.attributes)
+
+    If (isDocumentEditable = False) Then
+        If ((aDocument.attributes And 1) = 0) Then ' ReadOnly = 1
+          aDocument.attributes = aDocument.attributes + 1
+          ' msgbox ("readonly " & aDocument.attributes)
+        End If
+    Else
+        If ((aDocument.attributes And 1) = 1) Then ' ReadOnly = 1
+          aDocument.attributes = aDocument.attributes - 1
+          ' msgbox ("editable " & aDocument.attributes)
+        End If
+    End If
+
+    Set sys = nothing
+End Sub
+
+Function openClientFileWithApp (fileFullPath, isDocumentEditable)
+    On Error Resume Next
+
+    setDocumentAttributes fileFullPath, isDocumentEditable
+
+    set objWSH = CreateObject("WScript.Shell")
+    If logError(DFSErr.Msg1) Then
+        openClientFileWithApp = -1
+        Exit Function
+    End If
+
+    Dim filePath
+    filePath = Replace(fileFullPath, "/", "\")
+
+    objWSH.Run """" + filePath + """", 1
+    set objWSH = nothing
+    openClientFileWithApp = 0
+End Function
+
+Function openClientFileWithAppHandler (keyValues)
+    On Error Resume Next
+
+    openClientFileWithAppHandler = openClientFileWithApp(awxsGetValue(keyValues, "documentLocation"), booleanValue(awxsGetValue(keyValues, "isDocumentEditable")))
+End Function
+
+Function booleanValue (value)
+    booleanValue = False
+
+    If ((value = "true") Or (value = "True") Or (value = "TRUE")) Then
+        booleanValue = True
+    End If
+End Function
+
+Function saveFileToClientHandler (keyValues)
+awDebug("---**-- In saveFileToClientHandler!!!!!")
+    On Error Resume Next
+    document.body.style.cursor = "wait"
+
+    Dim folderArray
+    folderArray = Split(awxsGetValue(keyValues, "folderName"), "******")
+    If (createFolderTree(folderArray) = -1) Then
+        saveFileToClientHandler = false
+        Exit Function
+    End If
+
+    saveFileToClientHandler = saveDocumentToClient(awxsGetValue(keyValues, "documentName"), ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl")))
+End Function
+
+Function moveClientFileHandler (keyValues)
+    On Error Resume Next
+
+    Dim folderArray
+    folderArray = Split(awxsGetValue(keyValues, "folderName"), "******")
+    If (createFolderTree(folderArray) = -1) Then
+        moveClientFileHandler = -1
+        Exit Function
+    End If
+
+    Dim oldLocation, newLocation
+
+    oldLocation = awxsGetValue(keyValues, "oldLocation")
+    newLocation = awxsGetValue(keyValues, "newLocation")
+
+    set fso = CreateObject("Scripting.FileSystemObject")
+    If logError(DFSErr.Msg1) Then
+        moveClientFileHandler = -1
+        Exit Function
+    End If
+
+    Dim MyFile
+    If fso.FileExists(newLocation) Then
+        Set MyFile = fso.GetFile(newLocation)
+        MyFile.Delete true
+        If logError(DFSErr.Msg5 & " '" & newLocation & "'") Then
+            moveClientFileHandler = -1
+            Exit Function
+        End If
+    End If
+
+    fso.MoveFile oldLocation, newLocation
+    If logError(DFSErr.Msg6 & " '" & oldLocation & "'" & " '" & newLocation & "'") Then
+        moveClientFileHandler = -1
+        Exit Function
+    End If
+
+    Set fso = Nothing
+
+    moveClientFileHandler = 0
+End Function
+
+Function createFolderTree (folderArray)
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If logError(DFSErr.Msg1) Then
+        createFolderTree = -1
+        Exit Function
+    End If
+
+    Dim aFolder
+
+    For each aFolder in folderArray
+        If ((Len(aFolder) > 0) And (not (fso.FolderExists (aFolder)))) Then
+            fso.CreateFolder aFolder
+            If logError(DFSErr.Msg4 & " '" & aFolder & "'") Then
+                createFolderTree = -1
+                Exit Function
+            End If
+        End If
+    Next
+
+    Set fso = Nothing
+
+    createFolderTree = 0
+End Function
+
+Function openClientDocumentUtil (fileFullPath)
+    Dim objWSH
+    set objWSH = CreateObject("WScript.Shell")
+    If Err.number <> 0 Then
+        logError(DFSErr.Msg1)
+    Else
+        If (InStr(fileFullPath, "//") = 1) Then
+            fileFullPath = Replace(fileFullPath, "/", "\")
+        End If
+        objWSH.Run """" + fileFullPath + """" , 1
+        set objWSH = nothing
+    End If
+End Function
+
+Function openClientDocumentHandler (keyValues)
+    On Error Resume Next
+
+    openClientDocumentUtil(awxsGetValue(keyValues, "documentLocation"))
+End Function
+
+Function getFileBytes (filename)
+    On Error Resume Next
+    tmpFileName = filename & ".tmp"
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    fso.CopyFile filename, tmpFileName
+    set fileStream = CreateObject("ADODB.Stream")
+    fileStream.Type = 1  'adTypeBinary
+    fileStream.Open
+    fileStream.LoadFromFile tmpFileName
+    getFileBytes = fileStream.Read
+    fileStream.Close
+    Set fileStream = Nothing
+    fso.DeleteFile tmpFileName, true
+    Set fso = Nothing
+End Function
+
+Function getFileBytesHandler (keyValues)
+    On Error Resume Next
+
+    getFileBytesHandler = getFileBytes(awxsGetValue(keyValues, "documentName"))
+End Function
+
+Dim DFSTrigger
+
+Dim eventSaveFileToClient
+Set eventSaveFileToClient = awxsCreateEvent("saveFileToClient", GetRef("saveFileToClientHandler"))
+awxsRegisterEvent "saveFileToClient", eventSaveFileToClient
+
+Dim eventSaveSyncHistory
+Set eventSaveSyncHistory = awxsCreateEvent("saveSyncHistory", GetRef("saveSyncHistoryHandler"))
+awxsRegisterEvent "saveSyncHistory", eventSaveSyncHistory
+
+Dim eventGetFileBytes
+Set eventGetFileBytes = awxsCreateEvent("getFileBytes", GetRef("getFileBytesHandler"))
+awxsRegisterEvent "getFileBytes", eventGetFileBytes
+
+Dim eventClientFileTimestamp
+Set eventClientFileTimestamp = awxsCreateEvent("clientFileTimestamp", GetRef("clientFileTimestampHandler"))
+awxsRegisterEvent "clientFileTimestamp", eventClientFileTimestamp
+
+Dim eventCompatibleClientFileTimestamp
+Set eventCompatibleClientFileTimestamp = awxsCreateEvent("compatibleClientFileTimestamp", GetRef("compatibleClientFileTimestampHandler"))
+awxsRegisterEvent "compatibleClientFileTimestamp", eventCompatibleClientFileTimestamp
+
+Dim eventAreTimestampsEqual
+Set eventAreTimestampsEqual = awxsCreateEvent("areTimestampsEqual", GetRef("areTimestampsEqualHandler"))
+awxsRegisterEvent "areTimestampsEqual", eventAreTimestampsEqual
+
+Dim eventMoveClientFile
+Set eventMoveClientFile = awxsCreateEvent("moveClientFile", GetRef("moveClientFileHandler"))
+awxsRegisterEvent "moveClientFile", eventMoveClientFile
+
+Dim eventClientFileExists
+Set eventClientFileExists = awxsCreateEvent("clientFileExists", GetRef("clientFileExistsHandler"))
+awxsRegisterEvent "clientFileExists", eventClientFileExists
+
+Dim eventOpenClientFileWithApp
+Set eventOpenClientFileWithApp = awxsCreateEvent("openClientFileWithApp", GetRef("openClientFileWithAppHandler"))
+awxsRegisterEvent "openClientFileWithApp", eventOpenClientFileWithApp
+
+Dim eventGetTempFolderPath
+Set eventGetTempFolderPath = awxsCreateEvent("getTempFolderPath", GetRef("getTempFolderPathHandler"))
+awxsRegisterEvent "getTempFolderPath", eventGetTempFolderPath
+
+Dim eventCreateDirectory
+Set eventCreateDirectory = awxsCreateEvent("createDirectory", GetRef("createDirectoryHandler"))
+awxsRegisterEvent "createDirectory", eventCreateDirectory
+
+Dim eventSaveDocumentToClient
+Set eventSaveDocumentToClient = awxsCreateEvent("saveDocumentToClient", GetRef("saveDocumentToClientHandler"))
+awxsRegisterEvent "saveDocumentToClient", eventSaveDocumentToClient
+
+Dim eventCleanup
+Set eventCleanup = awxsCreateEvent("cleanup", GetRef("cleanupHandler"))
+awxsRegisterEvent "cleanup", eventCleanup
+
+Dim eventOpenClientDocument
+Set eventOpenClientDocument = awxsCreateEvent("openClientDocument", GetRef("openClientDocumentHandler"))
+awxsRegisterEvent "openClientDocument", eventOpenClientDocument

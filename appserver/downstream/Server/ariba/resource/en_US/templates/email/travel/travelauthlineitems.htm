@@ -1,0 +1,55 @@
+<!-- generic fields related to travel auth -->
+<span style="margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/TravelInformation@@</b></span><br />
+<TABLE width="98%" border=0 margin=0 cellPadding="0" cellSpacing="5" style="font:8pt Verdana, Arial, Helvetica;">
+  <TBODY>
+      <TR>
+        <TD align="left" width="1%" nowrap>@@@ariba.htmlemail/Destination@@:</TD>
+        <TD align="left" width="400">@@Destination@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" width="1%" nowrap>@@@ariba.htmlemail/From@@:</TD>
+        <TD align="left" width="400">@@DFS.StartingDate@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" width="1%" nowrap >@@@ariba.htmlemail/To@@:</TD>
+        <TD align="left" width="400">@@DFS.EndingDate@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" width="1%" nowrap>@@@ariba.htmlemail/TripJustification@@:</TD>
+        <TD align="left" width="400">@@TripJustification@@</TD>
+      </TR>
+    </TBODY>
+</TABLE>
+<br />
+
+<!--Line Items -->
+<span style="margin-top:25px; margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/LineItems@@</b></span>
+    <table width="98%" border=0 margin=0 cellPadding="3" cellSpacing="2">
+      <tr style="border:0px; color:#000; font:8pt Verdana, Arial, Helvetica; font-weight:bold;  background:#E5E5EE;">
+        <th align="left" nowrap>#</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Date@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Type@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Description@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/Amount@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/AdjustedAmount@@</th>
+      </tr>
+      @@StartVector1=LineItems@@
+      <tr style="vertical-align:top; border:0px; color:#000; font:8pt Verdana, Arial, Helvetica;">
+        <td align="left">@@NumberInCollection@@</td>
+        <td align="left">@@DFS.Date@@</td>
+        <td align="left">@@ExpenseType.UniqueName@@</td>
+        <td align="left">@@Description@@</td>
+        <td align="right" nowrap>@@Amount.FCN.getAmount()@@ @@Amount.Currency.UniqueName@@</td>
+		<td align="right" nowrap>@@AdjustedAmount.FCN.getAmount()@@ @@AdjustedAmount.Currency.UniqueName@@</td>
+      </tr>
+      @@EndVector1@@
+    </table>
+<br />
+<table cellSpacing=0 cellPadding=0 border=0 margin=0 width="98%">
+  <tr>
+    <td width="600">&nbsp;</td>
+    <td style="border:1px solid #99C; background:#FFEAAA; font:9pt Verdana, Arial, Helvetica; padding:3px 5px 3px 5px;" noWrap align="right" width="1%">@@@ariba.htmlemail/TotalCost@@:&nbsp;
+    <span style="font:9pt Verdana, Arial, Helvetica; font-weight:bold;">@@TotalCost.FCN.getAmount()@@ @@TotalCost.Currency.UniqueName@@</span>
+    </td>
+  </tr>
+</table><br /><br />

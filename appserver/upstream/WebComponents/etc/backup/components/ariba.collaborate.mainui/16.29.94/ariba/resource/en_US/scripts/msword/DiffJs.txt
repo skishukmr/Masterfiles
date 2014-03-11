@@ -1,0 +1,419 @@
+
+/**
+ ----------------------------------------------------------------------
+ Word2000:
+ "Merge" and "Compare" merges the changes to the current document
+
+ "Merge" will take the track changes from other document and merged in
+  the current.
+
+ "Compare" will track the untracked changes in the current document based
+ on comparing with other document.
+
+ Both apis take only one argument, that is, the target file path
+
+ For Word 2002/2003:
+ The changes can be in current document or target document
+ Merge can merge the changes in either current document or target document.
+ MergeTarget is controlled by the secong argument in the Merge api.
+ -----------------------------------------------------------------------
+*/
+function sfCompatibleCompareOrMergeWithOption (
+    sourceDocument, targetDocumentFileName, wordType, mergeTarget, highlightDiff, useCompare)
+{
+    LoggerUtil.logBegin("In sfCompatibleCompareMergeWithOption ");
+
+    sourceDocument.Activate();
+
+    if (wordType == WordType.Word2000Type) {
+        if (useCompare) {
+            sourceDocument.Compare(targetDocumentFileName);
+        }
+        else {
+            sourceDocument.Merge(targetDocumentFileName);
+        }
+    }
+    else if (wordType == WordType.WordXPType || wordType == WordType.Word07Type){
+
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage("Merging server file into the client file");
+        }
+
+        sourceDocument.Merge(targetDocumentFileName, mergeTarget, false, 0, false);
+    }
+
+    if (highlightDiff) {
+        /* XXX - What does the following do? */
+        sourceDocument.Application.WordBasic.NextChangeOrComment();
+    }
+
+    LoggerUtil.logEnd("In sfCompatibleCompareMergeWithOption ");
+}
+
+/**
+    Merge the changes from the target document into the source document
+    For example, we merge the tmp server file into the client version
+    WdMergeTarget { wdMergeTargetCurrent = 1, wdMergeTargetSelected = 0,  wdMergeTargetNew = 2 }
+*/
+function sfCompatibleCompareMergeTargetWithOption (
+    sourceDocument, targetDocument, wordType, mergeTarget, highlightDiff)
+{
+    sourceDocument.Activate();
+
+    if (wordType == WordType.Word2000Type) {
+        targetDocument.Compare(sourceDocument);
+    }
+    else if (wordType == WordType.WordXPType || wordType == WordType.Word07Type) {
+        sourceDocument.Merge(targetDocument, mergeTarget, false, 0, false);
+    }
+
+    if (highlightDiff) {
+        /* XXX - What does the following do? */
+        sourceDocument.Application.WordBasic.NextChangeOrComment();
+    }
+}
+
+/****************************************************************************************
+          Diff document
+*****************************************************************************************/
+function sfcDiffDocument ()
+{
+    this.tmpTargetFileName = null;
+    this.tmpSourceDocument = null;
+    this.tmpSourceFileName = null;
+    this.priorRSIDValue = false;
+
+    this.diffDocument = function ()
+    {
+        LoggerUtil.logBegin("sfDiffUsingWordWithTrackChangesOn");
+
+        var ec = this;
+
+        sfGetApp(ec);
+
+        // This is necessary for the Word Application to show up
+        ec.wordApp.Visible = true;
+
+        this.prepTargetDocument();
+        this.prepSourceDocument();
+        this.mergeTargetIntoSource();
+        this.mergeSourceIntoTarget();
+
+
+        this.cleanUp();
+
+
+        LoggerUtil.logEnd("sfDiffUsingWordWithTrackChangesOn");
+    }
+
+    /**
+     *  Make a clean copy of the server and save it to a temporary file.
+     *  Why we need this? We first merge target into source and then source to target
+     */
+    this.prepTargetDocument = function ()
+    {
+        LoggerUtil.logMessage("prepTargetDocument");
+
+        var ec = this;
+        sfSetDocumentAttributes(ec.sTargetDocumentLocation, true);
+        /*
+           Track changes in the original doc should be turned off (Defect 1-13XH7)
+           Otherwise, tracked changes in the original doc that are rejected by the
+           external document reappears after external doc is merged.
+           Also, in Word2000, the "Compare" will fail if the original doc has any
+           track changes
+        */
+        var targetDocument = sfOpenDocumentInWord(
+               ec.wordApp, ec.wordType, ec.sTargetDocumentLocation, false);
+        targetDocument.Revisions.AcceptAll();
+
+        /*
+           save the original doc with revisions accepted as temp file
+           because that is used to generate track changes in the modified
+           document. Should not save the original doc with track changes gone
+           because user should have option of backing out of merge with no loss
+           of information.
+        */
+        this.tmpTargetFileName = sfAppendStringToFileLocation(ec.sTargetDocumentLocation, "Temp");
+        targetDocument.SaveAs(this.tmpTargetFileName);
+        targetDocument.Close();
+    }
+
+    /**
+     * Open source document and add it to the app -> result in tmpSourceDocument
+     */
+    this.prepSourceDocument = function ()
+    {
+        LoggerUtil.logMessage("prepSourceDocument");
+
+        var ec = this;
+
+        /*
+            Use "Compare" to make the changes tracked.
+            Note that For Word 2000, the "Merge" fails if there are
+            untracked changes in the modified document. In any case,
+            making all changes tracked fixes interoperability merge
+            issues between different versions of Word.
+        */
+        var sourceDocument = sfOpenDocumentInWord(ec.wordApp,
+                ec.wordType, ec.sSourceDocumentLocation, false);
+        sfSetDocumentViewType(sourceDocument, ViewType.ViewTypeNormal);
+        sourceDocument.Revisions.AcceptAll();
+        sourceDocument.TrackRevisions = false;
+        sourceDocument.Activate();
+
+        // for the modified file save, don't keep around the merge id information
+        this.priorRSIDValue = ec.wordApp.Options.StoreRSIDOnSave;
+
+        ec.wordApp.Options.StoreRSIDOnSave = false;
+
+        // Template:="Normal", NewTemplate:=False, DocumentType:=0
+        this.tmpSourceDocument = ec.wordApp.Documents.Add(
+                ec.sSourceDocumentLocation, false, 0);
+        this.tmpSourceDocument.Activate();
+        sfSetDocumentViewType(this.tmpSourceDocument, ViewType.ViewTypeNormal);
+
+        // clear the clipboard so we don't have a large clipboard
+        var clearRange = this.tmpSourceDocument.Range(0,1);
+        clearRange.Copy();
+
+        this.tmpSourceDocument.Revisions.AcceptAll();
+        sourceDocument.Close();
+    }
+
+    /**
+     * Merge the prepped target documet file into the source docuemnt
+     */
+    this.mergeTargetIntoSource = function ()
+    {
+        LoggerUtil.logMessage("mergeTargetIntoSource");
+        /* old vb code: tempDocument1 is a copy of the source */
+        var ec = this;
+        // Merge the server doc into the modified doc in order to have the merge work correctly for older version of word.
+        // Not needed for Word 2007
+        if (ec.wordType != WordType.Word07Type) {
+            if (ec.wordType != WordType.Word2000Type) {
+                /*
+                    Note that the following call with "DetectFormatChanges=True" params works
+                    correctly when some text is deleted by the modifiedFile. Supplying default
+                    values for all params does not seem to work for deletes - that is, the
+                    original text remains even though deleted in the modifiedFile.
+                    Note that Compare does not work reliably for 2003
+                    Method params:
+                    fileName, wdMergeTargetCurrent=1, DetectFormatChanges=True, useFormattingFromCurrent=0, AddToRecentFiles=False
+                */
+                this.tmpSourceDocument.Merge(this.tmpTargetFileName, 1, true, 0, false);
+            }
+            else {
+                this.tmpSourceDocument.Compare(this.tmpTargetFileName);
+            }
+        }
+
+        /*
+           fix docProps after merge to removed duplications caused by
+           merging docProps in original and textValues in modified document.
+           The modified document will contain text values, if the docProps
+           were removed at time of Review/Negotiation
+        */
+        ec.wordApp.Visible = false;
+        document.body.style.cursor = "wait";
+        this.fixFieldsAfterMerge(this.tmpSourceDocument); // Why?? */
+        ec.wordApp.Visible = true;
+
+        /* we are picking the target document location because it is a dfs file name */
+        this.tmpSourceFileName = sfAppendStringToFileLocation(
+                ec.sTargetDocumentLocation, "Temp2");
+        this.tmpSourceDocument.SaveAs(this.tmpSourceFileName);
+        this.tmpSourceDocument.Close();
+        ec.wordApp.Options.StoreRSIDOnSave = this.priorRSIDValue;
+    }
+
+    /**
+     * Merge the tmp target file created in the previous step back into the source
+     */
+    this.mergeSourceIntoTarget = function ()
+    {
+        LoggerUtil.logMessage("mergeSourceIntoTarget");
+
+        var ec = this;
+        var targetDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType,
+                ec.sTargetDocumentLocation, false);
+        sfSaveWordSettings(ec, targetDocument);
+        sfSetDocumentViewType(targetDocument, ViewType.ViewTypeNormal);
+        targetDocument.Revisions.AcceptAll();
+
+        if (ec.wordType != WordType.Word2000Type) {
+            /*
+                Note that the following call with "DetectFormatChanges=True" params works
+                correctly when some text is deleted by the modifiedFile. Supplying default
+                values for all params does not seem to work for deletes - that is, the
+                original text remains even though deleted in the modifiedFile.
+                Method params:
+                fileName, wdMergeTargetCurrent=1, DetectFormatChanges=True, useFormattingFromCurrent=0, AddToRecentFiles=False
+            */
+            targetDocument.Merge(this.tmpSourceFileName, 1, true, 0, false);
+        }
+        else {
+            targetDocument.Merge(this.tmpSourceFileName);
+        }
+
+        sfRestoreWordSettings(ec, targetDocument);
+    }
+
+    /**
+        If the docProps were removed from the external doc, then
+        after merge, the docProps in the original doc and the textValue
+        in the external doc result in duplication with original prop
+        delered. Run the following method after Merge to keep docProps
+        and removed textValues.
+    */
+    this.fixFieldsAfterMerge = function (aDocument)
+    {
+        this.fixFieldsAfterMergeForType(aDocument, aDocument.FormFields);
+        this.fixFieldsAfterMergeForType(aDocument, aDocument.Fields);
+    }
+
+    this.fixFieldsAfterMergeForType = function (aDocument, fields)
+    {
+        LoggerUtil.logMessage("fixFieldsAfterMergeForType");
+
+        var fieldCount = fields != null ? fields.Count : 0;
+        for (var i = 1; i <= fieldCount; ++i) {
+            var anItem = fields.Item(i);
+            // for deleted props, the getType retunns Unknown, so not use the filter getType=docProps
+            // revsionType = 2 will make sure only deleted props are picked up
+            anItem.Select();
+            var currentSelection = aDocument.ActiveWindow.Selection;
+            var aRange = currentSelection.range;
+            var revisions = aRange.Revisions;
+            var revisionCount = revisions != null ? revisions.Count : 0;
+            for (var j = 1; j <= revisionCount; ++j) {
+                var revision = revisions.Item(j);
+                if ( revision.Type == 2 && revision.range.text == aRange.text ) {
+                    this.rejectInsertedRevision(aDocument.range(revision.range.Start - 1, revision.range.End + 1), revision);
+                    revision.Reject();
+                }
+            }
+        }
+    }
+
+    // Rejects the inserted revision that mathes the rejected one
+    this.rejectInsertedRevision = function(aRange, deletedRevision)
+    {
+        var revisions = aRange.Revisions;
+        var revisionCount = revisions != null ? revisions.Count : 0;
+        for (var j = 1; j <= revisionCount; ++j) {
+            var revision = revisions.Item(j);
+            if (revision.Type == 1 && revision.range.text == deletedRevision.range.text &&
+                (!sfBookmarkIncluded(revision.range, deletedRevision.range))) {
+                revision.Reject();
+                break;
+            }
+        }
+    }
+
+    this.cleanUp = function ()
+    {
+        var ec = this;
+        sfDeleteFile(this.tmpSourceFileName);
+        sfDeleteFile(this.tmpTargetFileName);
+    }
+}
+
+sfcDiffDocument.prototype = new sfcExecutionState;
+
+/**
+    This method is called to merge the source file into the target file
+
+    into server version (in dfs client) with current docume.
+    Specifically, its called by "Merge Document"
+    action on the contract document and also by "Review Change" after
+    in negotiation task after counter proposal is accepted.
+ */
+function siDiffUsingWordWithTrackChangesOn (args)
+{
+    var ec = new sfcDiffDocument();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "sfcDiffDocument", args);
+        ec.diffDocument();
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+/**
+ *  todo doc this
+ */
+function sfPureDiffInMSWord (ec)
+{
+    var aSourceDocument = GetObject(ec.sSourceDocumentLocation);
+    var aTargetDocument = GetObject(ec.sTargetDocumentLocation);
+
+    // For CR 1-ARG27V.  Activate() has to be called before
+    // Revisions.AcceptAll().  Otherwise AcceptAll() will fail for Word07Type.
+    aSourceDocument.Activate();
+    aSourceDocument.Revisions.AcceptAll();
+    aTargetDocument.Activate();
+    aTargetDocument.Revisions.AcceptAll();
+
+    var wordApplication = aSourceDocument.Application;
+    var appVersion = wordApplication.Version;
+    var wordType = sfGetWordType(appVersion);
+
+    wordApplication.Visible = true;
+    wordApplication.NormalTemplate.Saved = true;
+
+    var highlightDiff = ("" == ec.sBookmarkName);
+
+    var mergeTarget = 2; // wdMergeTargetNew = 2
+    // For CR 1-ARG27V.  Word 2007 seems to follow their api definition
+    // for targetFile.merge(sourceFile) more closely and the deleted/added result in 2007
+    // seems to be reversed compared to WordXPType, thus the reverse of order here.
+    if (wordType == WordType.Word07Type) {
+        sfCompatibleCompareOrMergeWithOption(aTargetDocument, ec.sSourceDocumentLocation, wordType,
+                mergeTarget, highlightDiff, true);
+    }
+    else {
+        sfCompatibleCompareOrMergeWithOption(aSourceDocument, ec.sTargetDocumentLocation, wordType,
+                mergeTarget, highlightDiff, true);
+    }
+    
+    if (!highlightDiff) {
+        var aSelection = aTargetDocument.Application.ActiveDocument.ActiveWindow.Selection;
+        var aRange = sfGotoBookmarkName(aSelection, ec.sBbookmarkName);
+        aSelection = aSourceDocument.Application.ActiveDocument.ActiveWindow.Selection;
+        aRange = sfGotoBookmarkName(aSelection, ec.sBbookmarkName);
+    }
+
+    /* close the documents */
+    if (wordType == WordType.WordXPType || wordType == WordType.Word07Type) {
+        aSourceDocument.Close(0); // wdDoNotSaveChanges
+    }
+    aTargetDocument.Close(0); // wdDoNotSaveChanges
+
+}
+
+/**
+ *  public api
+ */
+function siPureDiffInMSWord (args)
+{
+    var ec = new sfcDiffDocument();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siPureDiffInMSWord", args);
+        sfPureDiffInMSWord(ec);
+    }
+    catch (ex) {
+        ec.onErrorExit();        
+    }
+}
+
+sfExportFunctions(
+    new Array (
+        "siDiffUsingWordWithTrackChangesOn", siDiffUsingWordWithTrackChangesOn,
+        "siPureDiffInMSWord", siPureDiffInMSWord
+    )
+);

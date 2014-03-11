@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- #BeginTemplate "/Templates/secondary_template.dwt" --><!-- DW6 -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>Guidelines for entering Excel data</title>
+<meta name="keywords" content="Excel|data entry guidelines,requests|create from Excel,upload|from Excel">
+<!-- #EndEditable --> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../library/ariba.css" type="text/css">
+<script type="text/javaScript" src="../../../../library/help.js"></script>
+<!-- #BeginEditable "comments" --> 
+<!-- $File: //ariba/help/buyer/ariba/resource/en_US/help/content/end_user/common/basics/ref_excel_guidelines.htm $
+	Creator: crhoades
+-->
+
+<!-- #EndEditable --> 
+
+</head>
+<body style="margin-left: 5px"><div id="help">
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr> 
+      <td height="25" colspan="3" class="helpPageTitle">My Supply Cabinet Online Help</td>
+    </tr>
+    <tr> 
+      <td class="helpBody" height="25" colspan="3" align="right"><a href="../help/contents/content_frames.htm">Contents</a> 
+        | <a href="../help/index/index_frames.htm">Index</a> 
+        | <a href="../help/search/search.htm">Search</a> 
+        &nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </table>
+  
+  
+  <!-- #BeginVariableLibraryItem "/library/secondary_template_section.lbi" --> 
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr align="left"> 
+      <th  class="helpTopicTitle"><!-- #BeginEditable "topic_title" -->Guidelines 
+        for entering Excel data<!-- #EndEditable --></th>
+    </tr>
+    <tr> 
+      <td valign="top" class="helpBody"><!-- #BeginEditable "body" --> 
+        <p>For details on using Excel spreadsheets, see the <i>Ariba Contract 
+          Compliance Guide</i>. The following are some specific and general guidelines 
+          for entering data into a Microsoft Excel file for later upload:</p>
+        <ul>
+          <li> To create a contract request from scratch with an Excel spreadsheet, 
+            use the sample Excel files in the buyer/sample/contracts/sample/excelimport 
+            directory as templates for common types of contracts. </li>
+          <li> You cannot import contract requests containing non-catalog items 
+            that use formula pricing.</li>
+          <li>If you specify a non-catalog item with a supplier part number that 
+            already exists for a contract item for which a supplier has not been 
+            defined, then the existing item will be used in the imported Excel 
+            spreadsheet instead of the non-catalog item you defined. </li>
+          <li> You cannot use Excel import to update existing contract requests 
+            that are already submitted or approved.</li>
+        </ul>
+        <p><b>Enter numbers as text format</b> </p>
+        <p>All cell data must be in the Excel text format &#151; even numerical 
+          data &#151; otherwise the data will not be imported correctly. However, 
+          Excel automatically treats any cell entry that starts with a number 
+          as a number format, not as a text format. To force a text format on 
+          a numerical entry, enter an apostrophe before the first number in a 
+          cell. For example, to force a price entry of 119.99 to be formatted 
+          as text, type '119.99 in the cell. </p>
+        <p>Or you may use this alternative method, to change all the cell formats, 
+          which is useful if you've copied and pasted numerical data from another 
+          Excel spreadsheet, or from another application: </p>
+        <ol>
+          <li>Select all cells in the worksheet by clicking the cell in the upper 
+            left-hand corner. </li>
+          <li>Click the <b>Format</b> menu and select the <b>Cells</b> option. 
+          </li>
+          <li>Click the <b>Number</b> tab, and select the <b>Text</b> entry in 
+            the list by highlighting it. </li>
+          <li>Click the <b>OK</b> button to apply the new format to the selected 
+            cells.</li>
+        </ol>
+        <p><b>Do not change column names</b></p>
+        <p>Leave column names unchanged. When the Excel file is uploaded, data 
+          in the columns are mapped into the user interface according to the column 
+          names. If these column names are changed, the data under them will not 
+          be recognized and will be ignored.</p>
+        <p><b>Do not change worksheet names</b></p>
+        <p>The Excel workbook file usually contains multiple worksheets, with 
+          each worksheet containing related data, for example all contract header 
+          information is specified in a Contract Header worksheet. Worksheets 
+          are shown as tabs arranged at the bottom of the workbook. Click a worksheet 
+          tab to show that worksheet and work on it. Do not change the name of 
+          any worksheet, even if you do not enter any data into it. However, you 
+          can completely delete a worksheet if you do not need it.</p>
+        <p><b>Deleting unused columns</b></p>
+        You can remove columns that are not required from the template. If some 
+        are inappropriate for your use, delete them to simplify the template for 
+        you and your team members. If you add columns to the spreadsheet, for 
+        your own records or to store intermediate calculations, they are ignored 
+        when uploaded, as long as they do not duplicate any column names already 
+        used in the template. 
+        <p><b>Excel formulas </b></p>
+        <p>You cannot import worksheets that use Excel formulas to calculate cell 
+          data. Excel formulas are a convenient way of ensuring accurate cell 
+          calculations &#151; especially if you are often adding or deleting cells 
+          while working on the worksheet, or if you are entering prices for large 
+          numbers of items (requiring large numbers of cells). To use the strength 
+          of Excel formulas, and still be able to import their results into your 
+          Ariba module: </p>
+        <ol>
+          <li>Add formulas to the desired cells in your spreadsheet.</li>
+          <li> When you are ready to import the spreadsheet, create a copy of 
+            it. </li>
+          <li>In your original spreadsheet, for each worksheet that uses formulas: 
+          </li>
+          <ol>
+            <li>Select all cells, by clicking the upper left corner of the worksheet. 
+            </li>
+            <li>Copy the cells (click <b>Edit</b> and then <b>Copy</b>, or right-click 
+              your mouse and select <b>Copy</b>).</li>
+            <li>In your copied spreadsheet, go to the same worksheet. </li>
+            <li>Select all cells, by clicking the upper left corner of the worksheet. 
+            </li>
+            <li>Do a special paste (click <b>Edit</b> and then select <b>Paste 
+              Special</b>, or right-click your mouse and select <b>Paste Special</b>). 
+            </li>
+            <li>In the pop-up window, under &quot;Paste,&quot; select the <b>Values</b> 
+              option. </li>
+            <li>Click <b>OK</b>. </li>
+          </ol>
+          <li>After repeating this for all worksheets that use formulas, save 
+            the copied spreadsheet. </li>
+          <li>Import the copied spreadsheet. </li>
+        </ol>
+        <p> For more details about using formulas to calculate values, see the 
+          Excel online help.</p>
+        <p><b>Uploaded Excel data replaces UI data</b></p>
+        <p>After uploading the Excel file, its data replaces any data defined 
+          in the UI for the request. However, after you have imported, you can 
+          still change your request data in the UI before submitting it for approval. 
+        </p>
+        <!-- #EndEditable --> </td>
+    </tr>
+    <tr> 
+      <td class="helpBody" align="center"> 
+        <hr color="#666699" noshade size="1">
+        Copyright 1996 - 2004 Ariba, Inc. <a href="javascript: openLegal('http://www.ariba.com/copyrights.cfm');">Legal 
+        notices</a>. </td>
+    </tr>
+  </table>
+  <!-- #EndVariableLibraryItem --></div>
+</body>
+<!-- #EndTemplate --></html>

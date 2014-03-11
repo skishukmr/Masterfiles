@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!DOCTYPE diff SYSTEM "../../util/xmldiffer/XMLDiff.dtd">
+<diff>
+
+<!-- workflow.dtd -->
+    <node name="workflow" 
+          lexicallyOrdered="true" 
+          orderMatters="false"
+          strictlyOrdered="false"
+          processAsRecord="true">
+        <lexicalKeyAttribute name="name"/>
+        <diffAttribute name="workflowClass"/>
+        <diffChild singleton="true" name="beginState"/>
+        <diffChild name="state"/>
+    </node>
+
+    <node name="beginState"
+          lexicallyOrdered="true">
+        <lexicalKeyAttribute name="name"/>
+        <diffChild name="exit" singleton="true"/>
+        <diffChild name="transition"/>
+    </node>
+
+    <node name="state"
+          lexicallyOrdered="true">
+        <lexicalKeyAttribute name="name"/>
+        <diffChild name="entry" singleton="true"/>
+        <diffChild name="exit" singleton="true"/>
+        <diffChild name="transition"/>
+    </node>
+
+    <node name="entry">
+        <diffChild name="condition"/>
+        <diffChild name="action"/>
+    </node>
+
+    <node name="exit">
+        <diffChild name="condition"/>
+        <diffChild name="action"/>
+    </node>
+
+    <node name="transition" lexicallyOrdered="true">
+        <lexicalKeyAttribute name="name"/>
+        <diffChild name="fromState" singleton="true"/>
+        <diffChild name="event" singleton="true"/>
+        <diffChild name="condition"/>
+        <diffChild name="action"/>
+        <diffChild name="toState" singleton="true"/>
+    </node>
+
+    <node name="event">
+        <diffAttribute name="type"/>
+        <diffChild name="eventSource" singleton="true"/>
+    </node>
+
+    <node name="eventSource">
+        <diffAttribute name="eventSourceClass"/>
+    </node>
+
+    <node name="fromState">
+        <diffAttribute name="name"/>
+    </node>
+
+    <node name="toState">
+        <diffAttribute name="name"/>
+    </node>
+
+<!-- action.dtd -->
+
+    <node name="action">
+      <lexicalKeyAttribute name="implementation"/>
+      <lexicalKeyOffChild name="parameter"/>
+      <diffChild name="parameter"/>
+    </node>
+
+    <node name="condition">
+      <lexicalKeyAttribute name="implementation"/>
+      <lexicalKeyAttribute name="testField"/>
+      <diffAttribute name="nullHandling"/>
+      <diffChild name="parameter"/>
+    </node>
+
+    <node name="andCondition">
+      <diffChild name="condition"/>
+      <diffChild name="andCondition" singleton="true"/>
+      <diffChild name="orCondition" singleton="true"/>
+      <diffChild name="notCondition"/>
+    </node>
+ 
+    <node name="orCondition">
+      <diffChild name="condition"/>
+      <diffChild name="andCondition" singleton="true"/>
+      <diffChild name="orCondition" singleton="true"/>
+      <diffChild name="notCondition"/>
+    </node>
+
+    <node name="notCondition">
+      <lexicalKeyOffChild name="condition"/>
+      <diffChild name="andCondition" singleton="true"/>
+      <diffChild name="orCondition" singleton="true"/>
+      <diffChild name="notCondition"/>
+    </node>
+
+    <node name="parameter" orderMatters="true">
+      <lexicalKeyAttribute name="name"/>
+      <lexicalKeyAttribute name="inputField"/>
+      <lexicalKeyAttribute name="value"/>
+      <diffAttribute name="value"/>
+      <diffAttribute name="nullValue"/>
+      <diffAttribute name="context"/>
+      <diffAttribute name="inputField"/>
+      <diffAttribute name="nullHandling"/>
+      <diffAttribute name="outputField"/>
+      <diffAttribute name="typeCast"/>
+    </node>
+
+</diff>
+

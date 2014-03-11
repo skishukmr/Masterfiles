@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/Catalog.dtd">
+<TypeDefinition>
+<TypeProvider name="System">
+    <OrganizationID>
+      <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+    </OrganizationID>
+</TypeProvider>
+
+<Comments>Ariba internal Kitting type definition 1.0, not to be used in cif/cXML catalog load</Comments>
+<!--
+    Catalog Type Definition for a Kit
+-->
+<Type name="systemkit" extends="System:CatalogItem">
+   <Name xml:lang="en-US">Kit</Name>
+   <Name xml:lang="zh-CN">工具包</Name>
+   <Name xml:lang="ja-JP">キット</Name>
+   <Name xml:lang="pt-BR">Kit</Name>
+   <Name xml:lang="sv-SE">Kit</Name>
+   <Name xml:lang="nl-NL">Kit</Name>
+   <Name xml:lang="it">Kit</Name>
+   <Name xml:lang="fr-CA">Trousse</Name>
+   <Name xml:lang="fr">Kit</Name>
+   <Name xml:lang="es">Equipo</Name>
+   <Name xml:lang="de">Ausrüstung</Name>
+   <Description xml:lang="en-US">Kit type for bundling catalog items</Description>
+   <TypeAttribute name="KitUniqueName"
+                  type="Name"
+                  isInFreeTextSearch="yes"
+                  isRequired="yes">
+      <Name xml:lang="en-US">Kit</Name>
+      <Name xml:lang="zh-CN">工具包</Name>
+      <Name xml:lang="ja-JP">キット</Name>
+      <Name xml:lang="pt-BR">Kit</Name>
+      <Name xml:lang="sv-SE">Kit</Name>
+      <Name xml:lang="nl-NL">Kit</Name>
+      <Name xml:lang="it">Kit</Name>
+      <Name xml:lang="fr-CA">Trousse</Name>
+      <Name xml:lang="fr">Kit</Name>
+      <Name xml:lang="es">Equipo</Name>
+      <Name xml:lang="de">Ausrüstung</Name>
+   </TypeAttribute>
+   <TypeAttribute name="KitClusterRoot"
+                  type="ClusterRoot"
+                  isHidden="yes"
+                  isRequired="yes">
+      <Name xml:lang="en-US">KitClusterRoot</Name>
+   </TypeAttribute></Type>
+</TypeDefinition>

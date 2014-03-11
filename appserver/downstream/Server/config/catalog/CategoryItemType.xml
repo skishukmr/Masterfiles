@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.009/Catalog.dtd">
+<TypeDefinition>
+<TypeProvider name="System">
+    <OrganizationID>
+      <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+    </OrganizationID>
+</TypeProvider>
+
+<Comments>Ariba internal category item type, not to be used in cif/cXML catalog load</Comments>
+<!--
+    Catalog Type Definition for an ACP Category Item
+-->
+<Type name="systemcategoryitem" extends="System:CatalogItem">
+   <Name xml:lang="en-US">Category Item</Name>
+   <Description xml:lang="en-US">Type of category items</Description>
+</Type>
+</TypeDefinition>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Index SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/cXML.dtd">
+
+<Index>
+  <SupplierID domain="duns">611429481</SupplierID>
+  <Comments xml:lang="en-US">
+    Sample cXML/Index
+  </Comments>
+  <IndexItem>
+    <IndexItemPunchout>
+      <ItemID>
+        <SupplierPartID>po123654</SupplierPartID>
+      </ItemID>
+      <PunchoutDetail>
+        <Description xml:lang="en-US">Software House International</Description>
+        <URL>http://www.ariba.shi.com/cXML/PunchoutSetup/Punchoutshop.asp</URL>
+        <Classification domain="UNSPSC">4323</Classification>
+      </PunchoutDetail>
+    </IndexItemPunchout>
+  </IndexItem>
+</Index>

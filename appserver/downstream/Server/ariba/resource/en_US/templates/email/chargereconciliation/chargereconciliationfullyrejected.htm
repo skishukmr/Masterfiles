@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+@@Include=templates/email/common/metalink.htm@@
+</head>
+<body>
+<form name=formPrimary>
+
+<!--header contains message subject, requestor, date. -->
+@@Include=templates/email/common/header.htm@@
+
+<!--top action button -->
+<div style="height:16px;border-top:1px solid #B3B3CC;  margin:0px; background:#E5E5EE;">@@Include=templates/email/common/openbutton.htm@@</div>
+
+<!--message content -->
+<div style="padding:25px 50px 35px 50px; background:#FFF;">
+<table cellSpacing=0 cellPadding=0 border=0>
+  <tr>
+    <td style="border:1px solid #99C; background:#FFEAAA; padding:3px 5px 3px 5px;" noWrap align="left" width="200">@@@ariba.htmlemail/Status@@:&nbsp;<b>@@StatusString@@</b></td>
+    <td width="99%">&nbsp;</td>
+  </tr>
+</table><br /><br />
+
+@@Include=templates/email/chargereconciliation/chargereconciliationlineitems.htm@@
+@@Include=templates/email/common/comments.htm@@
+<br />
+@@Include=templates/email/common/approvalflow.htm@@
+</div>
+
+<!--bottom action button -->
+<div style="height:16px;border-bottom:1px solid #B3B3CC;  background:#E5E5EE;">@@Include=templates/email/common/openbutton.htm@@</div>
+
+<!--footer -->
+<div style="text-align:right; color:#555580; font:normal 7pt Verdana, Arial, Helvetica; padding:0px 10px 0px 0px;">@@Include=templates/email/common/copyright.htm@@</div>
+
+<!--debug. Leave in document. Turn off rendering with display property in email.css -->
+<div style="text-align:left; display:none; color:#555580; font:normal 7pt Verdana; padding:2px 0px 2px 10px; background:#FFF;">Template: chargereconciliationfullyrejected.htm</div>
+</form>
+</body>
+</html>

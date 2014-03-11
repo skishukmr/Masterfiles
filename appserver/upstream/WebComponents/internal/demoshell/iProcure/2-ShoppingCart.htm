@@ -1,0 +1,195 @@
+<w:BasicPageWrapper omitWrapperFrame="$true" hasForm="$true">
+
+    <style>
+        tr.Dark {
+            background-color:#F7F7FF;
+        }
+        tr.Light {
+            background-color:#FFFFFF;
+        }
+
+        th.Head {
+            padding:2px;
+            text-align:left;
+            color:#3a6587;
+            background-color:#d2d9b0;
+            border-right: 1px solid #f2fad3;
+            font:bold 12px Arial, Helvetica, sans-serif;
+        }
+        td.Body {
+            padding:4px 2px 4px 2px;
+            background-color:#f6f7e7;
+            border-top: 1px solid #d4d6c1;
+            border-right: 1px solid #d4d6c1;
+            font: 12px Arial, Helvetica, sans-serif;
+        }
+
+        .bold {
+            font:bold 11px/17px Verdana, Arial, Helvetica, sans-serif;
+        }
+        .lastCol {
+            border-right:0px !important;
+        }
+    </style>
+    <div style="padding-left:5px">
+    <img src="2-CartTop.gif"/>
+
+    <table style="border:1px solid #d4d6c1; margin:4px" width="980px" cellpadding="0" cellspacing="0">
+        <tr>
+            <th class="Head">Line</th>
+            <th class="Head">Item Description</th>
+            <th class="Head">Special Info</th>
+            <th class="Head">Unit</th>
+            <th class="Head" align="right">Quantity</th>
+            <th class="Head" align="right">Price</th>
+            <th class="Head" align="right">Amount (USD)</th>
+            <th class="Head lastCol">Delete</th>
+        </tr>
+
+        <a:For list="$items" item="$item" index="$lineNo">
+            <tr class="$nextRowClass">
+                <td class="Body"><a:String value="${lineNo+1}"/></td>
+                <td class="Body">$item.DESCRIPTION</td>
+                <td class="Body">&nbsp;</td>
+                <td class="Body">EA</td>
+                <td class="Body" align="right">
+                    <a:TextField style="text-align:right" value="$item.QUANTITY"
+                                 formatter="$formatters.xml.integer"size="8"/></td>
+                <td class="Body" align="right">$item.PRICE USD</td>
+                <td class="Body" align="right"><a:String value="${item.PRICE*item.QUANTITY}" formatter="$formatters.money"/></td>
+                <td class="Body lastCol" style="text-align:center"><img src="deleteIcon.gif" alt="delete"></td>
+            </tr>
+        </a:For>
+<!--
+        <tr class="$nextRowClass">
+            <td class="Body bold" colspan="5" align="right">
+                Total Value (Excluding Tax) :
+            </td>
+            <td class="Body bold"  align="right">$computeTotal|$formatters.money</td>
+            <td class="Body bold">USD</td>
+            <td class="Body">&nbsp;</td>
+        </tr>
+        <tr class="$nextRowClass">
+            <td class="Body bold" colspan="5" align="right">
+                Tax Amount :
+            </td>
+            <td class="Body bold"  align="right">$tax|$formatters.money</td>
+            <td class="Body bold" >USD</td>
+            <td class="Body">&nbsp;</td>
+        </tr>
+        -->
+        <tr class="$nextRowClass">
+            <th class="Head" colspan="6" style="text-align:right">
+                Total
+            </th>
+            <th class="Head" style="color:black;text-align:right">$totalWithTax|$formatters.money</th>
+            <th class="Head lastCol">&nbsp;</th>
+        </tr>
+    </table>
+
+    <br/>
+
+    <a:Hyperlink action="$linkOut"><img src="2-CartBottom.gif"/></a:Hyperlink>
+
+    <br/>
+    <a:Hyperlink action="$toggleOptions">Options</a:Hyperlink>
+    <br/>
+    <a:If ifTrue="$showOptions">
+        Items: $items
+        <br/>
+        <br/>
+        FormValues: $formValues;
+    </a:If>
+
+    </div>
+
+</w:BasicPageWrapper>
+<server>
+    var items = null;
+    var item = null;
+    var formValues = null;
+    var darkRow = true;
+    var lineNo = 0;
+    
+    function awake () {
+        if (items) return;
+
+        var itemMap = ariba.util.core.MapUtil.map();
+
+        // if the request is a direct action, then get our form values
+        formValues = component.requestContext().request().formValues();
+        if (!formValues.get("NEW_ITEM-QUANTITY[1]")) {
+            // TEST data
+            formValues = ariba.util.core.MapUtil.map();
+            formValues.put("NEW_ITEM-PRICE[1]", new Array("1.99"));
+            formValues.put("NEW_ITEM-QUANTITY[1]", new Array("1"));
+            formValues.put("NEW_ITEM-MATGROUP[1]", new Array("OFFICE_SUPPLY"));
+            formValues.put("NEW_ITEM-DESCRIPTION[1]", new Array("No. 2 Pencil"));
+            formValues.put("NEW_ITEM-LONGTEXT_1:132[]", new Array("This is item 1 long desc"));
+
+
+            formValues.put("PRICE[2]", new Array("59.99"));
+            formValues.put("QUANTITY[2]", new Array("8"));
+            formValues.put("MATGROUP[2]", new Array("COMP:NETWORKING"));
+            formValues.put("DESCRIPTION[2]", new Array("Wireless ethernet Adapter"));
+            formValues.put("LONGTEXT_2:132[]", new Array("This is item 2 long desc"));
+        }
+
+        var iter = formValues.entrySet().iterator();
+        while (iter.hasNext()) {
+            var entry = iter.next();
+            var key = entry.getKey();
+
+            // Look for "%d:132[]" or [%d]" -- extract number, strip suffix
+            // And strip off "NEW_ITEM-" from Field
+            if (key.match(/(NEW_ITEM\-)?(\w+)\[(\d)+\]/) || key.match(/(NEW_ITEM\-)?(\w+)_(\d)+\:132\[\]/)) {
+                var itemNum = RegExp.\$3;
+                key = RegExp.\$2;
+                var row = itemMap.get(itemNum);
+                if (!row) {
+                    row = ariba.util.core.MapUtil.map();
+                    itemMap.put(itemNum, row);
+                }
+                var val = entry.getValue();
+                val = val[0];
+                row.put(key, val);
+            }
+        }
+        if (!itemMap.isEmpty()) {
+            items = ariba.util.core.MapUtil.elementsList(itemMap);
+        }
+    }
+
+    function computeTotal () {
+        var iter = items.iterator();
+        var total=0.0;
+        while (iter.hasNext()) {
+            var row = iter.next();
+            total += parseFloat(row.get("PRICE")) * parseFloat(row.get("QUANTITY"));
+        }
+        return total;
+    }
+
+    function tax () {
+        return computeTotal() * 0.085;
+    }
+
+    function totalWithTax () {
+        return computeTotal() * 1.085;
+    }
+
+    function linkOut() {
+        return null; // page("3-Checkout.htm");
+    }
+
+    function nextRowClass() {
+        darkRow = !darkRow;
+        return (darkRow) ? "Dark" : "Light";
+    }
+
+    var showOptions = false;
+    function toggleOptions () {
+        showOptions = !showOptions;
+        return null;
+    }
+</server>

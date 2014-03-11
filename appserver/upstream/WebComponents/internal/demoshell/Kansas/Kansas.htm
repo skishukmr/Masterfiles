@@ -1,0 +1,221 @@
+<w:BasicPageWrapper hasForm="$true" hasSidebarNotch="$false">
+
+    <a:Content name="toc">
+        <a:PhaseInvocation append="$checkSelectedOjects"/>
+
+        <b>Project Kansas</b><br/>
+
+<a:Singleton>
+    <style>
+        .dragOn td.tableBody {
+            font:11px/17px Verdana, Arial, Helvetica, sans-serif;
+            padding:2px 5px 2px 0px;
+        }
+
+        .dragOn tr.tableRowDragHover td.tableBody {
+            background-color:#CCCCFF;
+            font:11px/17px Verdana, Arial, Helvetica, sans-serif;
+            padding:2px 5px 2px 0px;
+            border-top:1px solid #CCCCDD;
+        }
+    </style>
+</a:Singleton>
+        <t:DataTable   list="$folders.children" item="$item" children="$folderItems"
+                        displayGroup="$tocDisplayGroup"
+                        singleSelect="$true" showSelectionColumn="$false"
+                        dragAction="$null" dragType="$item.tagName" dropTypes="$dropList"
+                        class="dragOn noBox scrollTableWrapper" showColumnHeader="$false">
+
+            <t:Column label="Icon">\
+                <w:OutlineControl indentationPerLevel="10">\
+                    <a:Content name="icon">\
+                        <a:Image filename="$iconName"/>\
+                    </a:Content>\
+                </w:OutlineControl>\
+            </t:Column>
+            <t:Column label="Title" isValueColumn="$true" nowrap>\
+                $item.id
+            </t:Column>
+            <t:Column label="Amount" nowrap>\
+                <a:If ifTrue="$isFolder">\
+                    ($item.items.children.size)\
+                <a:Else/>\
+                    $currentItemTotal|$formatters.money ($item.items.children.size)\
+                </a:If>
+            </t:Column>
+            <t:RowDetail isVisible="$showDetail">
+                <i><w:TruncateString size="25" value="$item.name.text"/></i>
+            </t:RowDetail>
+        </t:DataTable>
+    </a:Content>
+
+    <a:Content name="body">
+        <t:DataTable multiSelect="$true" list="$selectedObjectList" item="$item" children="$item.items.children"
+                showOptionsMenu="$true" displayGroup="$displayGroup" enableScrolling="$true"
+                dragAction="$itemDragged" dragType="$item.tagName"
+                title="$itemLongTitle">
+
+            <!-- use bogus label to match with parent -->
+            <t:Column key="id" label="Num" valign="bottom" wantsSpan="$true" valign="top">\
+                <w:OutlineControl title="$item.id">
+                    <a:Content name="icon">\
+                        <a:ActiveImage filename="$iconName" action="$selectItem"/>\
+                    </a:Content>
+                </w:OutlineControl>\
+            </t:Column>
+
+            <t:Column key="name.text" label="Name" wantsSpan="$true" valign="top">
+                <a:If ifTrue="$isFolder">
+                    <w:PopupMenuLink menuId="MyMenu" position="this" class="awmenuLink hoverLink hoverArrow">\
+                        <b>$item.name.text: </b>\
+                    </w:PopupMenuLink>
+                    $item.description.text
+                <a:Else/>
+                    $item.name.text $item.description.text
+                </a:If>
+            </t:Column>
+
+            <t:Column label="Value" isBlank="$isFolder" valign="top" width="30%">
+                <a:If ifTrue="$isQuestion">
+                    <a:TextField value="$item.value.text"/>
+                <a:Else/>
+                    &nbsp;
+                </a:If>
+            </t:Column>
+            <t:RowDetail isVisible="$isItem" nestedTableLayout="$true">
+                <t:DataTable list="$item.attributes.children" item="$attribute" useParentLayout="$true"
+                        batchSize="1000">
+                    <t:Column key="name" label="Name"/>
+
+                    <t:Column label="Value">
+                        <a:TextField value="$attribute.text"/>
+                    </t:Column>
+                </t:DataTable>
+            </t:RowDetail>
+
+            <t:ButtonArea isVisible="$true">
+                <w:PulldownButton menuId="MyMenu">Move to Req...</w:PulldownButton>
+                <w:TextButton action="$null">Delete</w:TextButton>
+            </t:ButtonArea>
+        </t:DataTable>
+     </a:Content>
+
+</w:BasicPageWrapper>
+
+<w:PopupMenu menuId="MyMenu">
+    <w:PopupMenuHeading showSeparator="$false">\
+        Action\
+    </w:PopupMenuHeading>
+
+        <w:PopupMenuItem action="$null">\
+                Edit\
+        </w:PopupMenuItem>
+        <w:PopupMenuItem action="$null">\
+                Move\
+        </w:PopupMenuItem>
+        <w:PopupMenuItem action="$null">\
+                Copy\
+        </w:PopupMenuItem>
+        <w:PopupMenuItem action="$null">\
+                Delete\
+        </w:PopupMenuItem>
+
+</w:PopupMenu>\
+
+<server>
+    var selectionPath = null, selectedObject = null;
+    var item = null;
+    var attribute = null;
+    var tocDisplayGroup = null;
+    var displayGroup = null;
+    var folders = null;
+    var selectedObjectList = null;
+    var draggedItem = null;
+    var counter=0;
+    var dropListOptions = ariba.util.core.ListUtil.list("Folder", "Requisition");
+
+    function init () {
+        folders = ariba.ui.demoshell.XMLFactory.xmlNamed("ARs.xml", component);
+        // setSelectedObject(get(folders, "Content"));
+    }
+
+    function itemDragged () {
+        draggedItem = displayGroup.currentItem();
+        return null;
+    }
+
+    function itemDropped () {
+        var v = displayGroup.allObjects();
+        ariba.util.core.ListUtil.removeElementIdentical(v, draggedItem);
+        displayGroup.setObjectArray(v);
+        return null;
+    }
+
+    function selectItem () {
+        // NOTE: need to set selectionPath by walking up parent chain...
+        tocDisplayGroup.setSelectedObject(item);
+        return null;
+    }
+
+    function iconName () {
+        return isFolder() ? "AWXFolderIcon.gif" : ((isQuestion()) ? "profile.gif" : "request.gif");
+    }
+
+    function isFolder () {
+        var tag = get(item, "tagName");
+        return tag == "Folder";
+    }
+
+    function isQuestion () {
+        var tag = get(item, "tagName");
+        return tag == "LineItem";
+    }
+
+    function isItem () {
+        var tag = get(item, "tagName");
+        return tag == "Requisition";
+    }
+
+    function dropList () {
+        return (isFolder()) ? dropListOptions : null;
+    }
+
+    function showDetail () {
+        return isItem() && (get(item, "name.text") != null);
+    }
+
+    function toStr(o) {
+        return (o != null) ? o : "";
+    }
+
+    function itemLongTitle () {
+        if (selectedObject == null) return null;
+        return toStr(get(selectedObject, "id")) + " " + toStr(get(selectedObject,"name.text"));
+    }
+
+    function currentItemTotal () {
+        var total = 0.0;
+        var lines = get(item, "items.LineItem[]");
+        if (lines) {
+            i = lines.length;
+            while (i--) {
+                total += parseFloat(get(lines[i], "amount.text"));
+            }
+        }
+        return total;
+    }
+
+    function folderItems () {
+        return (isFolder()) ? get(item, "items.children") : null;
+    }
+
+    function checkSelectedOjects () {
+        if (tocDisplayGroup == null) return null;
+        selectedObject = tocDisplayGroup.selectedObject();
+        selectedObjectList = (selectedObject) ? get(selectedObject, "items.children") : null;
+        if (selectedObjectList == null || selectedObjectList.length == 0) {
+            selectedObjectList = new Array();
+        }
+        return null
+    }
+</server>

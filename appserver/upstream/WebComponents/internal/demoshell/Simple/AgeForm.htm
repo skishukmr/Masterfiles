@@ -1,0 +1,23 @@
+<w:ModalPageWrapper>
+    <br/>
+    How old are you?  <a:TextField value="$age" formatter="$formatters.integer"/>
+
+    <w:TextButton action="$computeFutureAge">Submit</w:TextButton>
+
+    <a:If ifTrue="${futureAge > 0}">
+        <br/><br/><br/><br/>
+        In 10 years you'll be <a:String value="$futureAge"/>
+    </a:If>
+
+    <br/>
+    <br/>
+</w:ModalPageWrapper>
+<groovy>
+    def age = 0, futureAge = 0;
+
+    def computeFutureAge () {
+        futureAge = age + 10;
+        return null;  // stay on this page
+    }
+</groovy>
+        

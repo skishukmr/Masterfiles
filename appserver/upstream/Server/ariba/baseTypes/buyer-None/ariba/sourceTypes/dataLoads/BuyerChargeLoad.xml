@@ -1,0 +1,325 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+    <!-- This load pulls only the charges consumed by procure, unconsumed charges will be done by T&E pull -->
+    <dataLoad name="BuyerProcureCharge">
+        <loadStages>
+            <aqlStage fromClause="ariba.charge.core.ChargeReconciliation
+                                  JOIN ariba.charge.core.ChargeReconciliationLineItem USING ChargeReconciliation.LineItems
+                                  JOIN ariba.charge.core.Charge USING ChargeReconciliation.Charge
+                                  JOIN ariba.common.core.SplitAccountingCollection USING ChargeReconciliationLineItem.Accountings
+                                  JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                                  LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder USING ChargeReconciliation.Order
+                                  LEFT OUTER JOIN ariba.common.core.PCard USING Charge.PCard
+                                  LEFT OUTER JOIN ariba.base.core.EncryptedString As PCardEncrString USING PCard.CardNumber
+                                  LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ChargeReconciliation.Requester
+                                  LEFT OUTER JOIN ariba.basic.core.Money AS PCCRLIAmountCharged INCLUDE INACTIVE USING ChargeReconciliationLineItem.Amount
+                                  LEFT OUTER JOIN ariba.basic.core.Currency AS PCCRLIAmountChargedCurr INCLUDE INACTIVE USING PCCRLIAmountCharged.Currency
+                                  LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING ChargeReconciliationLineItem.Description
+                                  LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING ChargeReconciliationLineItem.LineType
+                                  LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ChargeReconciliation.ProcurementUnit"
+                      incrementalClause="(ChargeReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    ChargeReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                      sourceLookupClass="ariba.charge.core.Charge"/>
+            <analysisStage destinationName="ariba.analytics.fact.Charge"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ChargeId">
+                <aqlMapping selectField="Charge.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ReconcileApprovableId">
+                <aqlMapping selectField="ChargeReconciliation.UniqueName"/>
+            </field>
+            <field name="RALineNumber">
+                <aqlMapping selectField="ChargeReconciliationLineItem.NumberInCollection"/>
+            </field>
+
+            <field name="TransactionDate">
+                <aqlMapping selectField="ChargeReconciliation.InvoiceDate"/>
+            </field>
+            <field name="LoadedDate">
+                <aqlMapping selectField="Charge.ImportDate"/>
+            </field>
+
+            <!-- The SupplierName that we are pulling is not the Buyer supplier. It is just 
+            a string that we get during charge load that we cannot match to the Buyer 
+            supplier, but still something we need to report on. -->
+            <field name="SupplierName">
+                <aqlMapping selectField="Charge.SupplierName"/>
+            </field>
+
+            <field name="Description">
+                <aqlMapping selectField="LineItemProductDescription.Description"/>
+            </field>
+
+            <!-- ER's need the BaseAmount and Amount separately, since they are picking the reportingCurrency from the ER and not from the charge.
+ The Procurement Charge rows will store the same Amount in both -->
+            <field name="BaseAmount.Amount">
+                <aqlMapping selectField="CASE ChargeReconciliationLineItem.LineType WHEN NULL THEN PCCRLIAmountCharged.Amount ELSE (CASE ProcureLineType.Category WHEN 1 THEN PCCRLIAmountCharged.Amount ELSE 0.0 END) END"/>
+            </field>
+            <field name="BaseAmount.Currency">
+                <aqlMapping selectField="PCCRLIAmountChargedCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="Amount.Amount">
+                <aqlMapping selectField="CASE ChargeReconciliationLineItem.LineType WHEN NULL THEN PCCRLIAmountCharged.Amount ELSE (CASE ProcureLineType.Category WHEN 1 THEN PCCRLIAmountCharged.Amount ELSE 0.0 END) END"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="PCCRLIAmountChargedCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="PCCRLIAmountCharged.ConversionDate"/>
+            </field>
+
+            <field name="TaxAmount.Amount">
+                <aqlMapping selectField="CASE ChargeReconciliationLineItem.LineType WHEN NULL THEN 0.0 ELSE (CASE ProcureLineType.Category WHEN 2 THEN PCCRLIAmountCharged.Amount ELSE 0.0 END) END"/>
+            </field>
+            <field name="TaxAmount.Currency">
+                <aqlMapping selectField="PCCRLIAmountChargedCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TaxAmount.Date">
+                <aqlMapping selectField="PCCRLIAmountCharged.ConversionDate"/>
+            </field>
+
+            <field name="Quantity">
+                <aqlMapping selectField="ChargeReconciliationLineItem.Quantity"/>
+            </field>
+
+            <field name="ReconcileStatus">
+                <aqlMapping selectField="ChargeReconciliation.StatusString"/>
+            </field>
+            <field name="PCardOrderNumber">
+                <aqlMapping selectField="PurchaseOrder.UniqueName"/>
+            </field>
+            <field name="PCard.EncryptedString">
+                <aqlMapping selectField="PCardEncrString.EncryptedString"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ChargeStatus">
+                <aqlMapping selectField="Charge.StatusString"/>
+            </field>
+            <field name="ApprovableType">
+                <aqlMapping selectField="Charge.ChargeType"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="0"/>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                                <entry value="3"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Unset"/>
+                                <entry value="Expense"/>
+                                <entry value="Procure"/>
+                                <entry value="NonBuyer"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="PaymentDueDate">
+                <aqlMapping selectField="ChargeReconciliation.PaymentDueDate"/>
+            </field>
+            <field name="RejectReasonCode">
+                <aqlMapping selectField="ChargeReconciliation.RejectReasonCode"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <!--Delete old rows in the following cases.
+        1) Charge is assigned to ER/PCCR.
+        2) Charge is unassigned from an ER.
+        3) Charge is assigned to a differant ER.
+
+        This is accomplished by deleting rows with either of the following conditions:
+        - If the charge is updated AND it is not a Procure charge OR (for procure charges)
+        - If the charge is updated AND the ChargeReconciliation object is also updated. 
+          (This is to delete records without ReconcileApprovableId and not delete the existing
+           record if a new Reconciliation object is associated with the same charge.)-->
+    <dataLoad name="BuyerChargeDelete">
+        <loadStages>
+            <aqlStage fromClause="ariba.charge.core.Charge INCLUDE INACTIVE
+                                  JOIN ariba.charge.core.ChargeLineItem USING Charge.LineItems
+                                  LEFT OUTER JOIN ariba.charge.core.ChargeReconciliation USING Charge.ChargeReconciliations"
+                      whereClause="ChargeLineItem.Parent IS NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Charge.TimeUpdated AND
+                                   Charge.TimeUpdated &lt; :IncrementalEndDate) AND
+                                   (Charge.ChargeType != 2 OR 
+                                     (ChargeReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                       ChargeReconciliation.TimeUpdated &lt; :IncrementalEndDate))"/>
+            <interfaceSqlStage fromClause=":InterfaceTable JOIN FACT_CHARGE C ON :InterfaceTable.ChargeId = C.CHARGE_ID"/>
+            <analysisStage destinationName="ariba.analytics.fact.Charge"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ChargeId">
+                <aqlMapping selectField="Charge.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ReconcileApprovableId">
+                <interfaceSqlMapping selectColumn="C.RECONCILE_APPROVABLE_ID"/>
+            </field>
+            <field name="RALineNumber">
+                <interfaceSqlMapping selectColumn="C.RA_LINE_NUMBER"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <!--Load all unconsumed charges and Charges consumed in ExpenseReports.
+        Procure Charges are pulled only if they are in Loaded state.
+        Charge.ChargeType 2 indicates procure charge
+        Charge.InvoiceState 1 indicates "Loaded"-->
+    <dataLoad name="BuyerERCharge">
+        <loadStages>
+            <aqlStage fromClause="ariba.charge.core.Charge
+                                  JOIN ariba.charge.core.ChargeLineItem USING Charge.LineItems
+                                  LEFT OUTER JOIN ariba.common.core.PCard USING Charge.PCard
+                                  LEFT OUTER JOIN ariba.expense.core.ExpenseReport USING Charge.AssignedApprovable
+                                  LEFT OUTER JOIN ariba.base.core.EncryptedString As PCardEncrString USING PCard.CardNumber
+                                  LEFT OUTER JOIN ariba.basic.core.Money AS ChargeAmount USING Charge.TotalInvoiced
+                                  LEFT OUTER JOIN ariba.basic.core.Currency AS ChargeCurr USING ChargeAmount.Currency
+                                  LEFT OUTER JOIN ariba.basic.core.Currency AS ReportingCurr USING ExpenseReport.ReportingCurrency
+                                  LEFT OUTER JOIN ariba.l2charge.core.ExpenseType USING ChargeLineItem.ExpenseType
+                                  LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Charge.Requester
+                                  LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS Description INCLUDE INACTIVE USING ChargeLineItem.Description
+                                  LEFT OUTER JOIN ariba.charge.core.RawChargeLineData As RawChargeLineData INCLUDE INACTIVE USING ChargeLineItem.RawChargeLineData
+                                  LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ChargeLineItem.Parent IS NULL AND (Charge.ChargeType != 2 OR Charge.InvoiceState = 1)"
+                      incrementalClause="(:IncrementalStartDate &lt;= Charge.TimeUpdated AND
+                                          Charge.TimeUpdated &lt; :IncrementalEndDate) OR
+                                         (:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                                          ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Charge"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ChargeId">
+                <aqlMapping selectField="Charge.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="PCard.EncryptedString">
+                <aqlMapping selectField="PCardEncrString.EncryptedString"/>
+            </field>
+            <field name="RALineNumber">
+                <aqlMapping selectField="NumberInCollection"/>
+            </field>
+            <field name="LoadedDate">
+                <aqlMapping selectField="Charge.ImportDate"/>
+            </field>
+            <field name="SupplierName">
+                <aqlMapping selectField="Charge.SupplierName"/>
+            </field>
+            <field name="ReconcileStatus">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="TransactionDate">
+                <aqlMapping selectField="Charge.InvoiceDate"/>
+            </field>
+            <field name="ReconcileApprovableId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="ExpenseReport.Name"/>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="ExpenseType.UniqueName"/>
+            </field>
+            <field name="ExpenseCode">
+                <aqlMapping selectField="RawChargeLineData.ExpenseCode"/>
+            </field>
+            <field name="ChargeStatus">
+                <aqlMapping selectField="Charge.StatusString"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="Description.Description"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ApprovableType">
+                <aqlMapping selectField="Charge.ChargeType"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="0"/>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                                <entry value="3"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Unset"/>
+                                <entry value="Expense"/>
+                                <entry value="Procure"/>
+                                <entry value="NonBuyer"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SubmitDate">
+                <aqlMapping selectField="ExpenseReport.SubmitDate"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="ChargeAmount.AmountInReportingCurrency"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="ReportingCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseAmount.Amount">
+                <aqlMapping selectField="ChargeAmount.ApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="BaseAmount.Currency">
+                <aqlMapping selectField="ChargeCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <inDataLoad name="BuyerProcureCharge" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerChargeDelete" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerERCharge" version="8.2" disableLoad="true"/>
+
+</allDataLoads>

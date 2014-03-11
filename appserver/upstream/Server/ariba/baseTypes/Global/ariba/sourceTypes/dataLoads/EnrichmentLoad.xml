@@ -1,0 +1,184 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="InvoiceDE">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SourceSystem">
+            <csvMapping selectField="SourceSystemId"/>
+        </field>
+
+        <field name="Description">
+            <csvMapping selectField="InvoiceDescription"/>
+        </field>
+        <field name="PODescription">
+            <csvMapping selectField="PODescription"/>
+        </field>
+
+        <field name="Part.SourceSystem">
+            <csvMapping selectField="PartSS"/>
+        </field>
+        <field name="Part.PartKey1">
+            <csvMapping selectField="PartKey1"/>
+        </field>
+        <field name="Part.PartKey2">
+            <csvMapping selectField="PartKey2"/>
+        </field>
+        <field name="Part.PartKey3">
+            <csvMapping selectField="PartKey3"/>
+        </field>
+
+        <field name="Supplier.SourceSystem">
+            <csvMapping selectField="SupplierSS"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <csvMapping selectField="SupplierId"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <csvMapping selectField="SupplierLocationId"/>
+        </field>
+
+        <field name="Account.SourceSystem">
+            <csvMapping selectField="AccountSS"/>
+        </field>
+        <field name="Account.AccountId">
+            <csvMapping selectField="AccountId"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <csvMapping selectField="AccountCompanyCode"/>
+        </field>
+
+        <field name="ERPCommodity.SourceSystem">
+            <csvMapping selectField="ERPCommoditySS"/>
+        </field>
+        <field name="ERPCommodity.CommodityId">
+            <csvMapping selectField="ERPCommodityId"/>
+        </field>
+
+        <field name="DEConfidence">
+            <csvMapping selectField="ACTConfidence"/>
+        </field>
+        <field name="UNSPSC.AribaCodeId">
+            <csvMapping selectField="ACTId"/>
+        </field>
+
+        <field name="DEStatus">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="DEUpdated"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+
+<dataLoad name="SupplierDE">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.dimension.Supplier"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SupplierId">
+            <csvMapping selectField="SupplierId"/>
+        </field>
+        <field name="SupplierLocationId">
+            <csvMapping selectField="SupplierLocationId"/>
+        </field>
+        <field name="SourceSystem">
+            <csvMapping selectField="SupplierSS"/>
+        </field>
+
+        <field name="DEConfidence">
+            <csvMapping selectField="DEConfidence"/>
+        </field>
+        <field name="DESupplierId">
+            <csvMapping selectField="DESupplierID"/>
+        </field>
+        <field name="DESupplierName">
+            <csvMapping selectField="DESupplierName"/>
+        </field>
+        <field name="DESupplierParentId">
+            <csvMapping selectField="DEParentID"/>
+        </field>
+        <field name="DESupplierParentName">
+            <csvMapping selectField="DEParentName"/>
+        </field>
+
+        <field name="DECreditRating">
+            <csvMapping selectField="DECreditRating"/>
+        </field>
+        <field name="DERevenueRating">
+            <csvMapping selectField="DERevenueSize"/>
+        </field>
+        <field name="DEIndustrySICCode">
+            <csvMapping selectField="DEPrimarySICCode"/>
+        </field>
+        <field name="DEIndustrySICCodeName">
+            <csvMapping selectField="DEPrimarySICCodeDescription"/>
+        </field>
+
+        <field name="DECity">
+            <csvMapping selectField="DECity"/>
+        </field>
+        <field name="DEState">
+            <csvMapping selectField="DEStateProvince"/>
+        </field>
+        <field name="DECountry">
+            <csvMapping selectField="DECountry"/>
+        </field>
+
+        <field name="DEDiversity">
+            <csvMapping selectField="DEDiversity"/>
+        </field>
+        <field name="DEDiversityMinorityOwned">
+            <csvMapping selectField="DEDiversityMinorityOwned"/>
+        </field>
+        <field name="DEDiversityWomanOwned">
+            <csvMapping selectField="DEDiversityWomanOwned"/>
+        </field>
+        <field name="DEDiversityVeteranOwned">
+            <csvMapping selectField="DEDiversityVeteranOwned"/>
+        </field>
+        <field name="DEDiversitySBA8A">
+            <csvMapping selectField="DEDiversitySBA8A"/>
+        </field>
+        <field name="DEDiversityHubZone">
+            <csvMapping selectField="DEDiversityHubZone"/>
+        </field>
+        <field name="DEDiversitySDB">
+            <csvMapping selectField="DEDiversitySDB"/>
+        </field>
+        <field name="DEDiversityDVO">
+            <csvMapping selectField="DEDiversityDisabledVeteranOwned"/>
+        </field>
+        <field name="DEDiversityEthnicity">
+            <csvMapping selectField="DEDiversityEthnicity" required="false"/>
+        </field>
+
+        <field name="DEDiversityStatus">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.SupplierDiversity">
+                    <parameter name="DiversityField" value="DEDiversity"/>
+                    <parameter name="Fields">
+                        <!-- List needs to match list in SupplierDiversityController.java -->
+                        <vector>
+                            <entry value="DEDiversityMinorityOwned"/>
+                            <entry value="DEDiversityWomanOwned"/>
+                            <entry value="DEDiversityVeteranOwned"/>
+                            <entry value="DEDiversitySBA8A"/>
+                            <entry value="DEDiversityHubZone"/>
+                            <entry value="DEDiversitySDB"/>
+                            <entry value="DEDiversityDisabledVeteranOwned"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

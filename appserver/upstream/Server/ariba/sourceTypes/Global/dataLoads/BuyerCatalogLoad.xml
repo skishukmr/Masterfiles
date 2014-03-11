@@ -1,0 +1,95 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerCatalogItemType">
+    <loadStages>
+        <aqlStage fromClause="ariba.catalog.base.core.ComplexTypeImpl, ariba.catalog.base.core.TypeVersionMap"
+                  whereClause="TypeVersionMap.SubscriptionVersionNumber = ComplexTypeImpl.SubscriptionVersionNumber AND
+                               TypeVersionMap.TypeSubscriptionName = ComplexTypeImpl.TypeSubscriptionName"
+                  incrementalClause="((ComplexTypeImpl.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      ComplexTypeImpl.TimeUpdated &lt; :IncrementalEndDate) OR
+                                      (TypeVersionMap.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      TypeVersionMap.TimeUpdated &lt; :IncrementalEndDate))"/>
+        <analysisStage destinationName="ariba.analytics.catalog.CatalogItemType"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ItemType">
+            <aqlMapping selectField="ComplexTypeImpl.TypeProviderImpl.Name || ':' || ComplexTypeImpl.Name"/>
+        </field>
+        <field name="ItemName">
+            <aqlMapping selectField="ComplexTypeImpl.DisplayName"/>
+        </field>
+        <field name="SearchVersionName">
+            <aqlMapping selectField="TypeVersionMap.SearchVersionName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerCatalogItemType" version="7.1,8.0,8.1" disableLoad="true"/>
+
+
+<dataLoad name="BuyerCatalogAttributeType">
+    <loadStages>
+        <aqlStage fromClause="ariba.catalog.base.core.AttributeImpl
+                              JOIN ariba.catalog.base.core.ComplexTypeImpl USING AttributeImpl.ParentTypeImpl,
+                              ariba.catalog.base.core.TypeVersionMap"
+                  whereClause="AttributeImpl.SelectingAttribute IS NULL AND
+                               TypeVersionMap.SubscriptionVersionNumber = ComplexTypeImpl.SubscriptionVersionNumber AND
+                               TypeVersionMap.TypeSubscriptionName = ComplexTypeImpl.TypeSubscriptionName"
+                  incrementalClause="(AttributeImpl.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      AttributeImpl.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.catalog.CatalogAttributeType"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="AttributeName">
+            <aqlMapping selectField="AttributeImpl.Name"/>
+        </field>
+        <field name="DisplayName">
+            <aqlMapping selectField="AttributeImpl.DisplayName"/>
+        </field>
+        <field name="CatalogItemType.SearchVersionName">
+            <aqlMapping selectField="TypeVersionMap.SearchVersionName"/>
+        </field>
+        <field name="CatalogItemType.ItemType">
+            <aqlMapping selectField="ComplexTypeImpl.TypeProviderImpl.Name || ':' || ComplexTypeImpl.Name"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerCatalogAttributeType" version="7.1,8.0,8.1" disableLoad="true"/>
+
+<dataLoad name="BuyerCatalogAttributeValue">
+    <loadStages>
+        <aqlStage fromClause="ariba.catalog.base.core.AttributeImpl
+                              JOIN ariba.catalog.base.core.ComplexTypeImpl USING AttributeImpl.ParentTypeImpl
+                              JOIN ariba.catalog.base.core.StringEnumeration USING AttributeImpl.Enumeration,
+                              ariba.catalog.base.core.TypeVersionMap"
+                  whereClause="AttributeImpl.SelectingAttribute IS NULL AND
+                               TypeVersionMap.SubscriptionVersionNumber = ComplexTypeImpl.SubscriptionVersionNumber AND
+                               TypeVersionMap.TypeSubscriptionName = ComplexTypeImpl.TypeSubscriptionName"
+                  incrementalClause="(AttributeImpl.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      AttributeImpl.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.catalog.CatalogAttributeValue"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CanonicalValue">
+            <aqlMapping selectField="StringEnumeration.StringEnumerationParts.CanonicalValue"/>
+        </field>
+        <field name="DisplayValue">
+            <aqlMapping selectField="StringEnumeration.StringEnumerationParts.DisplayName"/>
+        </field>
+        <field name="AttributeType.AttributeName">
+            <aqlMapping selectField="AttributeImpl.Name"/>
+        </field>
+        <field name="AttributeType.CatalogItemType.SearchVersionName">
+            <aqlMapping selectField="TypeVersionMap.SearchVersionName"/>
+        </field>
+        <field name="AttributeType.CatalogItemType.ItemType">
+            <aqlMapping selectField="ComplexTypeImpl.TypeProviderImpl.Name || ':' || ComplexTypeImpl.Name"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerCatalogAttributeValue" version="7.1,8.0,8.1" disableLoad="true"/>
+
+</allDataLoads>

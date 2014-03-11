@@ -1,0 +1,3839 @@
+Dim prefixClauseName
+Dim prefixSectionName
+Dim aribaKeyword
+Dim ClauseIdKey
+Dim SectionIdKey
+Dim prefixFieldName
+Dim NewClauseIdValue
+Dim SameClauseKey
+Dim SummaryContentKey
+Dim MaxSummaryLength
+Dim syncupTypeIdKey
+Dim bookmarkNameKey
+Dim previousBookmarkKey
+Dim SectionContextKey
+Dim VirtualUploadKey
+Dim GlobalContractBookmarkName
+Dim globalBookmarkTree
+Dim globalBookmark
+Dim SectionBeginValue
+Dim SectionEndValue
+Dim defaultPropertyValue
+Dim DocumentPropertyKey
+Dim TempFolderName
+Dim objectSeparator
+Dim summarySeparator
+Dim TrueValue
+Dim FalseValue
+Dim Word97MajorVersion
+Dim Word2000MajorVersion
+Dim WordXPMajorVersion
+Dim WordXP2003MajorVersion
+Dim Word2007MajorVersion
+Dim EmptyClauseSummary
+Dim VersionSeparator
+Dim sectionSeparatorLength
+Dim sectionSeparator
+
+Dim ConfirmConversionRestoreValue
+
+prefixClauseNewName = "clauseAriba_"
+prefixSectionNewName = "sectionAriba_"
+prefixClauseGenName = "clauseDPI"
+prefixSectionGenName = "sectionDPI"
+prefixAribaOldGenId = "aribaOldGenId"
+GeneratedClause = 1
+GeneratedSection = 2
+prefixClauseName = "clause"
+prefixSectionName = "section"
+aribaKeyword = "Ariba_"
+ClauseIdKey = "clauseId"
+SectionIdKey = "sectionId"
+prefixFieldName = "ca"
+NewClauseIdValue = "NewClause"
+SameClauseKey = "sameClause"
+SummaryContentKey = "summaryContent"
+syncupTypeIdKey = "syncupTypeId"
+bookmarkNameKey = "bookmarkName"
+previousBookmarkKey = "previousBookmark"
+SectionContextKey = "sectionContext"
+VirtualUploadKey = "virtualUpload"
+GlobalContractBookmarkName = "sectionGlobalContract"
+globalBookmarkTree = GlobalContractBookmarkName
+globalBookmark = ""
+SectionBeginValue = "("
+SectionEndValue = ")"
+defaultPropertyValue = " "
+DocumentPropertyKey = "DOCPROPERTY "
+TempFolderName = "temp"
+objectSeparator = "********"
+summarySeparator = "******"
+sectionSeparator = "$$$$$$"
+sectionSeparatorLength = 6
+TrueValue = True
+FalseValue = False
+Word97MajorVersion = "8"
+Word2000MajorVersion = "9"
+WordXPMajorVersion = "10"
+WordXP2003MajorVersion = "11"
+Word2007MajorVersion = "12"
+
+Const WordUnknownType = "WordUnknownType"
+Const Word2000Type = "Word2000Type"
+Const WordXPType = "WordXPType"
+Const Word07Type = "Word07Type"
+Const WordDocExtension = ".doc"
+Const Word07DocExtension = ".docx"
+
+Const ContentUnknownType = "ContentUnknownType"
+Const ContentSectionType = "ContentSectionType"
+Const ContentClauseType = "ContentClauseType"
+
+Const FieldTypeDocProp = "FieldTypeDocProp"
+Const FieldTypeRef = "FieldTypeRef"
+Const FieldTypeUnknown = "FieldTypeUnknown"
+
+EmptyClauseSummary = "-----empty------"
+VersionSeparator = "."
+MaxSummaryLength = 200
+
+
+'// ------- Authoring methods --------------
+Function isGenBookmark(bookmarkName)
+    On Error Resume Next
+
+    isGenBookmark = False
+
+    Dim index1, index2, index3
+    index1 = InStr(1, bookmarkName, prefixClauseGenName, vbBinaryCompare)
+    index2 = InStr(1, bookmarkName, prefixSectionGenName, vbBinaryCompare)
+    index3 = InStr(1, bookmarkName, GlobalContractBookmarkName, vbBinaryCompare)
+
+    '// XXX Temp hack to support clauseAriba_ during sync
+    Dim index4
+    index4 = InStr(1, bookmarkName, prefixClauseNewName, vbBinaryCompare)
+
+    if(index1 <> 0 Or index2 <> 0 Or index3 <> 0 Or index4 <> 0) Then
+        isGenBookmark = True
+    End If
+End Function
+
+'// ------- Authoring methods --------------
+Function isNewBookmark(bookmarkName)
+    On Error Resume Next
+
+    isNewBookmark = False
+
+    Dim index1, index2, index5
+
+    index1 = InStr(1, bookmarkName, prefixClauseNewName, vbBinaryCompare)
+    index2 = InStr(1, bookmarkName, prefixSectionNewName, vbBinaryCompare)
+    index3 = InStr(1, bookmarkName, GlobalContractBookmarkName, vbBinaryCompare)
+
+    if(index1 <> 0 Or index2 <> 0 Or index3 <> 0) Then
+        isNewBookmark = True
+    End If
+End Function
+
+Function isGenBookmarkForLoad(bookmarkName)
+    On Error Resume Next
+
+    isGenBookmarkForLoad = 0
+
+    Dim index1, index2
+
+    index1 = InStr(1, bookmarkName, prefixClauseGenName, vbBinaryCompare)
+    index2 = InStr(1, bookmarkName, prefixSectionGenName, vbBinaryCompare)
+
+    If (index1 <> 0) Then
+        isGenBookmarkForLoad = GeneratedClause
+    Else
+        If (index2 <> 0) Then
+            isGenBookmarkForLoad = GeneratedSection
+        End If
+    End If
+End Function
+
+Function openDocumentWithCheck (contractModified, openDocForceGeneration, serverTimestamp, documentFullName, bookmarkName, generatingUrl, isDocumentEditable)
+    On Error Resume Next
+
+    setDocumentAttributes documentFullName, isDocumentEditable
+
+    openDocumentWithCheck = 0
+
+    If (Not contractModified) Then
+        openDocumentWithCheck = openDocumentWithbookmark(documentFullName, bookmarkName)
+    Else
+        If (not openDocForceGeneration and isClientChange(documentFullName, serverTimestamp)) Then
+            openDocumentWithCheck = openDocumentWithbookmark(documentFullName, bookmarkName)
+        Else
+            ariba.Request.setWindowLocation(generatingUrl)
+        End If
+    End If
+End Function
+
+Function openDocumentWithCheckHandler (keyValues)
+    On Error Resume Next
+
+    Dim contractModified
+    contractModified = booleanValue(awxsGetValue(keyValues, "contractModified"))
+    Dim openDocForceGeneration
+    openDocForceGeneration = booleanValue(awxsGetValue(keyValues, "openDocForceGeneration"))
+
+    openDocumentWithCheckHandler = openDocumentWithCheck(contractModified, openDocForceGeneration, awxsGetValue(keyValues, "serverTimestamp"), awxsGetValue(keyValues, "documentFullName"), awxsGetValue(keyValues, "bookmarkName"), ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "generatingUrl")),booleanValue(awxsGetValue(keyValues, "isDocumentEditable")))
+End Function
+
+Sub accessDocumentWithCheck (contractModified, serverTimestamp, documentFullName, generatingUrl)
+    On Error Resume Next
+
+    If ((contractModified) And (Not isClientChange(documentFullName, serverTimestamp))) Then
+        ariba.Request.setWindowLocation(generatingUrl)
+    End If
+End Sub
+
+Function isDocumentReadyToGenerateHandler (keyValues)
+    On Error Resume Next
+
+    isDocumentReadyToGenerateHandler = False
+
+    If (isClientChange(awxsGetValue(keyValues, "documentLocation"), awxsGetValue(keyValues, "serverTimestamp")) = False) Then
+        isDocumentReadyToGenerateHandler = True
+    End If
+End Function
+
+Function openDocumentWithbookmark (documentFullName, bookmarkName)
+    On Error Resume Next
+
+    openDocumentWithbookmark = 0
+
+    Dim aDocument
+
+    Set aDocument = Nothing
+    Set aDocument = GetObject(documentFullName)
+
+    '// msgbox "bookmarkName " & bookmarkName
+
+    If ((Err.Number = 0) And (Not aDocument is Nothing)) Then
+        Dim AnApp
+
+        Set AnApp = aDocument.Application
+        AnApp.Visible = True
+
+        If (bookmarkName <> "") Then
+            Dim agreement
+            Set agreement = aDocument
+            If (Not agreement is Nothing) Then
+                agreement.Activate
+
+                Dim currentSelection
+                Set currentSelection = agreement.ActiveWindow.Selection
+                Dim aRange
+                Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+                AnApp.Activate
+
+                AnApp.NormalTemplate.Saved = True
+
+                Set agreement = Nothing
+            End If
+        End If
+
+        AnApp.Activate
+        aDocument.Activate
+        
+        '//xxxKKIM (1-A6I0CG)This is a temporary fix by turning on Track Changes whenever the document opens
+        '//until we fix for deletion to work regardless of Track Changes on/off 
+        aDocument.TrackRevisions = True
+
+        window.blur
+
+        Set AnApp = Nothing
+        Set aDocument = Nothing
+    Else
+        openDocumentWithbookmark = -1
+    End If
+End Function
+
+Sub CompatiblePaste (aSelection, wordType)
+    On Error Resume Next
+
+    CompatiblePasteWithFormat aSelection, wordType, 0 '// wdPasteDefault = 0
+End Sub
+
+Sub CompatiblePasteWithFormat (aSelection, wordType, typePaste)
+    On Error Resume Next
+    LogBegin "CompatiblePasteWithFormat wordType=" & wordType & ",typePaste=" & typePaste
+    If (wordType = Word2000Type) Then
+        aSelection.Paste
+    Else
+        If (wordType = WordXPType ) Then
+            aSelection.PasteAndFormat(typePaste)
+        Else
+            If (wordType = Word07Type) Then
+                aSelection.PasteAndFormat(16) '//wdFormatOriginalFormatting
+            Else
+                LogMessage "Unknown Word Type"
+            End If
+        End If
+    End If
+    LogEnd "CompatiblePasteWithFormat"
+End Sub
+
+Function getMajorVersion (appVersion)
+    On Error Resume Next
+
+    getMajorVersion = appVersion
+
+    Dim index
+    index = InStr(1, appVersion, VersionSeparator, vbBinaryCompare)
+    If (index > 0) Then
+        getMajorVersion = Trim(Mid(appVersion, 1, index - 1))
+    End If
+End Function
+
+Function getWordType (appVersion)
+    On Error Resume Next
+
+    getWordType = WordUnknownType
+
+    Dim majorVersion
+    majorVersion = getMajorVersion(appVersion)
+
+    LogMessage "MS Word Version " & majorVersion
+    '// msgbox("MS Word Version " & majorVersion)
+
+    If (Word2000MajorVersion = majorVersion) Then
+        getWordType = Word2000Type
+    Else
+        If ((WordXPMajorVersion = majorVersion) OR (WordXP2003MajorVersion = majorVersion)) Then
+            getWordType = WordXPType
+        Else
+            If (Word2007MajorVersion = majorVersion) Then
+                getWordType = Word07Type
+            End If
+        End If
+    End If
+    LogMessage "word type set to " & getWordType
+End Function
+
+Function isClientChange (clientDocumentName, serverTimestamp)
+    On Error Resume Next
+
+    isClientChange = False
+
+    Dim cfexists
+    cfexists = clientFileExists(clientDocumentName)
+    If (cfexists = 0) Then
+        Dim cachedTimestamp
+        cachedTimestamp = clientFileTimestamp(clientDocumentName)
+        '// msgbox "client " & cachedTimestamp
+        '// msgbox "server " & serverTimestamp
+        If (Not cachedTimestamp = "") Then
+            If (strComp(cachedTimestamp, serverTimestamp, 1) = 0) Then
+                isClientChange = False
+
+                Dim AnApp
+                Set AnApp = GetObject(, "Word.Application")
+                If ((Err.Number = 0) And (Not AnApp is Nothing)) Then
+                    Dim aIndex
+                    aIndex = InstrRev(clientDocumentName, "/", -1, vbBinaryCompare)
+                    Dim documentName
+                    documentName = Right(clientDocumentName, Len(clientDocumentName) - aIndex)
+                    Dim aDocument
+                    For Each aDocument In AnApp.Documents
+                        If (aDocument.Name = documentName) Then
+                            Dim changed
+                            changed = Not aDocument.Saved
+                            If (changed = False) Then
+                                '// aDocument.Close
+                            Else
+                                isClientChange = True
+                            End If
+                        End If
+                    Next
+
+                    Set AnApp = Nothing
+                End If
+            Else
+                isClientChange = True
+            End If
+        End If
+    End If
+End Function
+
+Sub syncupContent (wordApplication, documentLocation, syncupUrl, tempDocumentFolder, isUploadSection, clauseUrl)
+    On Error Resume Next
+
+    syncupContentInAgreement wordApplication, documentLocation, syncupUrl, tempDocumentFolder, isUploadSection, clauseUrl, True, True, True
+End Sub
+
+' Called when a contract doc is initially loaded
+Sub syncupContentInAgreement (wordApplication, documentLocation, syncupUrl, tempDocumentFolder, isUploadSection, clauseUrl, toSave, isUploadClause, isWorkspaceTemplate)
+    On Error Resume Next
+
+    logMessage("ContractAuthoring.syncupContentInAgreement start ...")
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    openDocumentInWord wordApplication, documentLocation, False
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    Dim agreementDocument
+    Set agreementDocument = wordApplication.ActiveDocument
+
+    '// ---------------------------------------------------------
+    '// Save the current settings such as View Type, track change
+    saveWordSettings agreementDocument
+
+    '// Set the view type to be normal, all regen will be done in this setting
+    setDocumentViewType agreementDocument, ViewTypeNormal
+    '// ---------------------------------------------------------
+
+    Dim currentSelection
+    Dim i, count
+    Dim bookmarkName
+    Dim currentBookmark, contextBookmark
+    Dim allBookmark
+    Dim treeContent
+    Dim fromPosition, toPosition
+    Dim sectionStructure
+    Dim clauseName
+    Dim index
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    agreementDocument.Activate
+    Set currentSelection = agreementDocument.ActiveWindow.Selection
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+    Set currentBookmark = Nothing
+    Set contextBookmark = Nothing
+
+    sectionStructure = ""
+
+    '// Build clause tree using bookmark locations
+
+    Dim xmlDoc_loadRequest
+    Set xmlDoc_loadRequest = getXmlDoc_loadRequest
+
+    Dim xmlNode_loadRequest
+    Set xmlNode_loadRequest = xmlDoc_loadRequest.documentElement
+    xmlNode_loadRequest.setAttribute ATTRIBUTE_WORD_TYPE, wordType
+
+    Dim xmlNode_editList
+    Set xmlNode_editList = xmlDOM.createElement(TAG_EDIT_LIST)
+    xmlNode_loadRequest.appendChild xmlNode_editList
+
+    Dim xmlNode_otherBookmarkList
+    Set xmlNode_otherBookmarkList = xmlDOM.createElement(TAG_OTHER_BOOKMARK_LIST)
+    xmlNode_loadRequest.appendChild xmlNode_otherBookmarkList
+
+    UpdateWindowStatus SCANNING_DOCUMENT
+
+    Dim scanForParagraphs, scanForSummary
+    scanForParagraphs = True
+    scanForSummary    = True
+
+    fixSectionGlobalBookmark agreementDocument, currentSelection
+    currentSelection.WholeStory
+    Set allBookmark = currentSelection.Bookmarks
+    count = allBookmark.count
+    scanBookmarksForLoad agreementDocument,allBookmark, scanForParagraphs, scanForSummary, xmlNode_loadRequest
+
+    xmlNode_loadRequest.appendChild xmlNode_newEntities
+
+    If(EnableLogging) Then
+        logXmlTree xmlNode_loadRequest, 1
+    End If
+
+    '// send the loadXml to server for processing
+    syncupUrl = syncupUrl & "&" & "loadTypeIdKey=loadXml"
+    logMessage "syncupUrl = " & syncupUrl
+
+    UpdateWindowStatus SYNC_TO_SERVER
+
+    Dim applyBookmarksXml
+    applyBookmarksXml = sendDataToServer(xmlDoc_loadRequest.xml,syncupUrl)
+    logMessage "applyBookmarksXml = " & applyBookmarksXml
+
+    If(applyBookmarksXml = SERVER_EXCEPTION) Then
+        UpdateWindowStatus VALIDATION_ERROR
+        serverExceptionOnLoad = True
+    Else
+        UpdateWindowStatus APPLY_GENERATED_BOOKMARKS
+        '// apply the new bookmarks
+        applyBookmarksUtil agreementDocument,applyBookmarksXml
+    End If
+
+    '// ---------------------------------------------------------
+    '// Restore the current settings such as View Type, track change
+    restoreWordSettings agreementDocument
+    '// ---------------------------------------------------------
+
+    If (Not isWorkspaceTemplate) Then
+        logMessage "Setting agreementDocument.TrackRevisions = True (syncupContentInAgreement)"
+        agreementDocument.TrackRevisions = True
+    End If
+
+    If (toSave = True) Then
+        agreementDocument.Saved = false
+        agreementDocument.Save
+    End If
+
+End Sub
+
+
+Sub addGlobalContractBookmarkInDocument (currentDocument)
+    On Error Resume Next
+
+    currentDocument.Activate
+
+    If (currentDocument.Bookmarks.Exists(GlobalContractBookmarkName) = False) Then
+        Dim currentSelection
+        Set currentSelection = currentDocument.ActiveWindow.Selection
+        currentSelection.WholeStory
+        Dim bookmarkRange
+        Dim pos
+
+        If (currentSelection.Start + 1 >= currentSelection.End) Then
+            createASpace currentDocument, currentSelection
+            currentSelection.WholeStory
+        End If
+
+        If (currentSelection.Rows.Count <= 1) Then
+            pos = currentSelection.EndKey(6, 0) '// wdStory = 6, wdMove = 0
+            createNewLine currentDocument, currentSelection
+            currentSelection.Range.ListFormat.RemoveNumbers
+            createNewLine currentDocument, currentSelection
+            currentSelection.Range.ListFormat.RemoveNumbers
+            currentSelection.WholeStory
+        End If
+
+        Set bookmarkRange = currentDocument.Range(currentSelection.Start, currentSelection.End)
+        Dim aBookmark
+        Set aBookmark = currentDocument.Bookmarks.Add(GlobalContractBookmarkName, bookmarkRange)
+
+        Dim aRange
+        Set aRange = currentSelection.GoTo(-1, , , GlobalContractBookmarkName) '// wdGoToBookmark = -1
+        pos = currentSelection.HomeKey(5, 0) '// wdLine = 5
+    End If
+End Sub
+
+Sub saveOpenDocument (wordApplication, documentLocation)
+    On Error Resume Next
+
+    logBegin "saveOpenDocument(documentLocation='" & documentLocation & "')"
+    setDocumentAttributes documentLocation, true
+
+    Dim itemDocument
+    Set itemDocument = Nothing
+    Set itemDocument = GetObject(documentLocation)
+
+    If ((Err.Number = 0) And (Not itemDocument is Nothing)) Then
+        If (itemDocument.Saved = False) Then
+            logMessage "    Doing itemDocument.Save"
+            itemDocument.Save
+            logErrorCheck "itemDocument.Save"
+        Else
+            logMessage "    Skipping itemDocument.Save, not needed."
+        End If
+        Dim itemApplication
+        Set itemApplication = Nothing
+        Set itemApplication = itemDocument.Application
+        itemDocument.Close
+
+        If wordApplication is Nothing Then
+            Set wordApplication = GetObject(, "Word.Application")
+        End If
+
+        If ((Not (itemApplication is Nothing)) And _
+            (itemApplication.Documents.Count = 0) And _
+            (Not (itemApplication is wordApplication))) Then
+            itemApplication.NormalTemplate.Saved = True
+            itemApplication.Quit wdDoNotSaveChanges
+        End If
+
+        Set itemDocument = Nothing
+        Set itemApplication = Nothing
+
+    Else
+        If (itemDocument is Nothing) Then
+            logMessage "    itemDocument is Nothing"
+        Else
+            logErrorCheck "itemDocument is set, but got error"
+        End If
+    End If
+
+    logEnd "saveOpenDocument"
+    Err.Clear
+End Sub
+
+Sub saveOpenDocumentHandler (keyValues)
+    On Error Resume Next
+
+    saveOpenDocument Nothing, awxsGetValue(keyValues, "documentLocation")
+End Sub
+
+Function getFilePath (documentLocation)
+    On Error Resume Next
+    Dim pos
+    Dim filePath
+    Dim token
+    Dim text
+    Dim del
+
+    del = "/"
+    filePath = ""
+    token = ""
+    text = documentLocation
+    LogMessage "Starting getFilePath on " & text
+
+    Do
+        If text = "" Then Exit Do
+
+        '// find our delimiter in the remaining path, exit if we are at the filename
+        pos = InStr(text, del)
+        If pos < 1 Then Exit Do
+
+        '// get the current directory
+        token = Left(text, pos)
+        logMessage " token: "  & token
+
+        '// see if there is more text to go through
+        pos = Len(text) - pos + 1 - Len(del)
+        logMessage " pos, Len(text), Len(del): " & pos & " " & Len(text) & " " & Len(del)
+        If pos < 1 Then
+            text = ""
+        Else
+            '// set our remaining path to what's left
+            text = Right(text, pos)
+            logMessage " text: " & text
+        End If
+
+        '// build out our path
+        filePath = filePath & token
+    Loop
+
+    LogMessage "File Path = " & filePath
+    getFilePath = filePath
+
+End Function
+
+Function getFileName (documentLocation)
+    On Error Resume Next
+    Dim pos
+    Dim fileName
+    Dim token
+    Dim text
+    Dim del
+    del = "/"
+    fileName = ""
+    token = ""
+    text = documentLocation
+    LogMessage "Starting getFileName on " & text
+
+    Do
+        If text = "" Then Exit Do
+
+        '// find our delimiter in the remaining path, continue even at the filename
+        pos = InStr(text, del)
+        If pos < 1 Then
+            pos = Len(text) + 1
+        End If
+
+        '// get the current directory
+        token = Left(text, pos)
+
+        '// see if there is more text to go through
+        pos = Len(text) - pos + 1 - Len(del)
+
+        '// set our remaining path to what's left
+        If pos < 1 Then
+            text = ""
+        Else
+            text = Right(text, pos)
+        End If
+
+        '// let the filename be the last token we go through
+        fileName = token
+    Loop
+
+    LogMessage "File Name = " & fileName
+    getFileName = fileName
+
+End Function
+
+Function openDocumentInWord (wordApplication, documentLocation, readOnly)
+    On Error Resume Next
+
+    logBegin "openDocumentInWord"
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    Dim fileName
+    fileName = documentLocation
+
+    If wordType = Word07Type Then
+        Dim filePath
+        filePath = getFilePath(documentLocation)
+        fileName = getFileName(documentLocation)
+
+        If filePath <> "" Then
+            wordApplication.ChangeFileOpenDirectory filePath
+        End If
+    End If
+
+    '// Turn off confirm conversions when we open a document so we don't get popups when
+    '// dealing with Word 2007 documents in Word 2003 or before.
+    ConfirmConversionRestoreValue = wordApplication.ConfirmConversions
+    wordApplication.ConfirmConversions = False
+
+    If readOnly = False Then
+        wordApplication.Documents.Open fileName, False
+    Else
+        wordApplication.Documents.Open fileName, False, True
+    End If
+
+    wordApplication.ConfirmConversions = ConfirmConversionRestoreValue
+    logEnd "openDocumentInWord"
+End Function
+
+'//----------------------------------------------------------------------------------------
+'// Called for syncup when a doc is edited
+'// Called by SmartClientSceiptUtil.awl.incrementalSyncupClauseUtil
+'//----------------------------------------------------------------------------------------
+Function incrementalSyncupClause (wordApplication, documentLocation, originalDocumentUrl, incrementalSyncupUrl, tempDocumentFolder, propertyList, retrievePropertyUrl, fullySync)
+    On Error Resume Next
+
+    incrementalSyncupClause = ""
+
+    logBegin "Start ContractAuthoring.incrementalSyncupClause"
+    logMessage "fullySync = " & fullySync & ", incrementalSyncupUrl = " & incrementalSyncupUrl
+
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    logMessage "wordtype = " & wordType
+
+    Dim clientVerison
+    Dim serverVersion
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    saveOpenDocument wordApplication, documentLocation
+
+    if Err.Number <> 0 then
+        logMessage " Could Not Save Document - " & Err.Number
+        Exit Function
+    end if
+
+    logMessage "open " & """" & documentLocation & """"
+
+    openDocumentInWord wordApplication, documentLocation, False
+
+    if Err.Number <> 0 then
+        logMessage " Could Not Open Document - " & Err.Number & " - " & documentLocation
+    end if
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Function
+    End If
+
+    LogMessage "active doc: " & wordApplication.ActiveDocument
+
+    Dim agreementDocument
+    Set agreementDocument = wordApplication.ActiveDocument
+
+    '// ---------------------------------------------------------
+    '// Save the current settings such as View Type, track change
+    saveWordSettings agreementDocument
+
+    '// Set the view type to be normal, all regen will be done in this setting
+    setDocumentViewType agreementDocument, ViewTypeNormal
+    '// ---------------------------------------------------------
+
+
+    Dim originalProtection
+    originalProtection = agreementDocument.ProtectionType
+
+    If (originalProtection <> -1) Then '// wdNoProtection = -1
+        agreementDocument.Unprotect
+    End If
+
+    Dim defaultBookmark
+    Set defaultBookmark = Nothing
+    Set defaultBookmark = agreementDocument.Bookmarks.Item(GlobalContractBookmarkName)
+
+    If (defaultBookmark is Nothing) Then
+        '// skip syncup for brand new document
+        Exit Function
+    End If
+
+    Dim currentSelection
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    Set currentSelection = agreementDocument.ActiveWindow.Selection
+    
+    '// fix defect 1-34AMA, accept revision of type 0 that cause infinite loop
+    '// of Document.Revisions on Word 2002. Must be called before the following
+    '// function to avoid infinite loop.
+    acceptRevisionsForType agreementDocument, RevisionTypeNoRev
+
+    '// Accept formatting changes to fix defect where deleted revision is not
+    '// returned by Word.
+    acceptRevisionsForType agreementDocument, RevisionParagraphProperty
+    
+    '//CR 1-9XQKFD, 1-9XQKH9, 1-9XQKIZ
+    fixCurrentSelection agreementDocument, 0
+    
+    '*******************************************************************************
+    '//To debug the revisions after the above modification
+    '
+    '//Dim docRevisions
+    '//Set docRevisions = agreementDocument.Revisions
+    '//Dim docRevItem
+    '//For each docRevItem in docRevisions
+    '//   Dim dRange 
+    '//   Set dRange = docRevItem.Range     
+    '//   logMessage "    agreementDocument revision, type = " & docRevItem.Type
+    '//   logMessage "    agreementDocument revision, range start = " & dRange.Start
+    '//   logMessage "    agreementDocument revision, range end = " & dRange.End
+    '//Next
+    '*******************************************************************************
+
+    '*******************************************************************************
+    '//To debug the bookmarks of the agreementDocument after the modification
+    '//getLogsOfDocumentBookmarks agreementDocument
+    '*******************************************************************************
+
+    tmpClientFile = appendStringToFileLocation(documentLocation, "Client")
+    tmpServerFile = appendStringToFileLocation(documentLocation, "Server")
+
+    logMessage "client " & tmpClientFile
+    logMessage "server " & tmpServerFile
+
+    If not saveDocumentToClient(tmpServerFile, originalDocumentUrl) Then
+        Exit Function
+    End If
+
+    Dim fso
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    fso.CopyFile documentLocation, tmpClientFile
+
+    Dim i
+    Dim fs
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord wordApplication, tmpServerFile, False
+    Set serverVersion = wordApplication.ActiveDocument
+
+    If (serverVersion.ProtectionType <> -1) Then '// wdNoProtection = -1
+        serverVersion.Unprotect
+    End If
+
+    serverVersion.Revisions.AcceptAll
+
+    serverVersion.TrackRevisions = False
+    logMessage "Setting serverVersion.TrackRevisions = False (incrementalSyncupClause)"
+    Set fs = serverVersion.Fields
+    For i = 1 to fs.Count
+        Set f = fs.Item(i)
+        f.Result = f.Code
+    Next
+
+    serverVersion.Save
+    
+    '//****************************************
+    '// Get all the bookmarks from ServerFile
+    '//getLogsOfDocumentBookmarks serverVersion
+    '//***************************************    
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord wordApplication, tmpClientFile, False
+    Set clientVersion = wordApplication.ActiveDocument
+
+    If (clientVersion.ProtectionType <> -1) Then '// wdNoProtection = -1
+        clientVersion.Unprotect
+    End If
+    
+    clientVersion.Revisions.AcceptAll
+
+    logMessage "Setting clientVersion.TrackRevisions = False (incrementalSyncupClause)"
+    clientVersion.TrackRevisions = False
+
+    Set fs = clientVersion.Fields
+    For i = 1 to fs.Count
+        Set f = fs.Item(i)
+        f.Result = f.Code
+    Next
+
+    '// Set the client doc also in the same view type
+    setDocumentViewType clientVersion, ViewTypeNormal
+
+    clientVersion.Save
+    
+    '//****************************************
+    '// Get all the bookmarks from ServerFile
+    '//getLogsOfDocumentBookmarks clientVersion
+    '//***************************************
+    
+
+    logMessage "before compare client " & clientVersion.Name
+
+    Dim xmlDoc_syncupRequest
+    Set xmlDoc_syncupRequest = getXmlDoc_syncupRequest
+    Dim xmlNode_syncupRequest    '// xml node representing the syncup request
+    Set xmlNode_syncupRequest = xmlDoc_syncupRequest.documentElement
+    xmlNode_syncupRequest.setAttribute ATTRIBUTE_WORD_TYPE, wordType
+
+    Dim xmlNode_editList
+    Set xmlNode_editList = xmlDOM.createElement(TAG_EDIT_LIST)
+    xmlNode_syncupRequest.appendChild xmlNode_editList
+
+    Dim xmlNode_otherBookmarkList
+    Set xmlNode_otherBookmarkList = xmlDOM.createElement(TAG_OTHER_BOOKMARK_LIST)
+    xmlNode_syncupRequest.appendChild xmlNode_otherBookmarkList
+
+    UpdateWindowStatus COMPARING_WORD_DOCS
+
+    '//Comparision between clientVersion and serverVersion
+    logMessage ""
+    logMessage "Start Compare and Merge on Client"
+    CompatibleCompare clientVersion, tmpServerFile, wordType
+    logMessage "End Compare and Merge on Client"
+    
+    '*******************************************************************************
+    '//To debug the bookmarks of the clientVersion after Merge
+    '//logMessage " *****clientVersion after Merge***** "
+    '//getLogsOfDocumentBookmarks clientVersion
+    '*******************************************************************************     
+    
+    '//******************************************************************************
+    '//Get all the bookmarks from Merged File
+    '//ISSUE: When a whole section is deleted, the start position of the next section takes over the start position of
+    '//the deleted section after merge. I'm not sure if this is a MS merging issue, but because of that
+    '//when a clause in the next section is deleted along side with the section, the section deletion does not 
+    '//happen because the section belongs to the next section. 
+    '//WORKAROUND FIX: If there are any 2 consecutive 
+    '//sections that have the same start position, then change the start position of the 2nd section to the end
+    '//position of the previous section.
+    '//SIDE EFFECT:If a part of a section is deleted with a full section, the changes on the part won't be applied
+    Dim mBookmark
+    Dim preBookmarkName, preBookmarkStart, preBookmarkEnd
+    For Each mBookmark In clientVersion.Bookmarks
+        If (mBookmark.Name <> preBookmarkName) Then
+            If ((Instr(1,mBookmark.Name,prefixSectionName,vbBinaryCompare)<>0) AND (mBookmark.Start = preBookmarkStart)) Then
+                mBookmark.Start = preBookmarkEnd
+            End If
+            preBookmarkName = mBookmark.Name
+            preBookmarkStart = mBookmark.Start
+            preBookmarkEnd = mBookmark.End
+        End If
+    Next
+    mBookmark = Nothing
+    '//******************************************************************************   
+
+    UpdateWindowStatus PROCESS_INSERTS
+
+    Dim myStartTimeForInserts
+    myStartTimeForInserts = Time
+    logMessage "### processSectionsForInserts: Start Time = " & myStartTimeForInserts
+
+
+    Dim bookmarksContainer
+    Set bookmarksContainer = createBookmarkContainer(agreementDocument.Bookmarks)
+     
+    Dim processSectionsForInserts
+    Set processSectionsForInserts = processAllInserts(wordApplication, agreementDocument, bookmarksContainer, clientVersion, xmlNode_editList)
+
+    Dim myEndTimeForInserts
+    myEndTimeForInserts = Time
+    Dim durationForInserts
+    durationForInserts = DateDiff("s", myStartTimeForInserts, myEndTimeForInserts)
+    logMessage "### processAllInserts: End Time = " & myEndTimeForInserts
+    logMessage "### Total Time (Sec) for processAllInserts = " & durationForInserts
+
+    '// printBookmarkInfo clientVersion
+
+    UpdateWindowStatus PROCESS_DELETES
+
+    Dim myStartTimeForDeletes
+    myStartTimeForDeletes = Time
+    logMessage " "
+    logMessage "### processAllDeletes: Start Time = " & myStartTimeForDeletes
+
+    Dim processSectionsForDeletes
+
+    Dim myEndTimeForDeletes
+    Dim durationForDeletes
+    If (wordType = Word2000Type Or wordType = WordXPType) Then
+        Set processSectionsForDeletes = processAllDeletes (wordApplication, agreementDocument, bookmarksContainer, clientVersion, xmlNode_editList)
+        myEndTimeForDeletes = Time
+        durationForDeletes = DateDiff("s", myStartTimeForDeletes, myEndTimeForDeletes)
+        logMessage "### processAllDeletes For Word2000Type or WorkXPType: End Time = " & myEndTimeForDeletes
+        logMessage "### Total Time (Sec) for processAllDeletes = " & durationForDeletes
+
+    Else
+        wordApplication.Visible = False
+        document.body.style.cursor = "wait"
+
+        clientVersion.Revisions.AcceptAll
+
+        logMessage "Start Compare and Merge on Server"
+        CompatibleCompareMergeTarget clientVersion, tmpServerFile, wordType
+        logMessage "End Compare and Merge on Server"
+
+        Set processSectionsForDeletes = processAllDeletes (wordApplication, agreementDocument, bookmarksContainer, serverVersion, xmlNode_editList)
+
+        myEndTimeForDeletes = Time
+	durationForDeletes = DateDiff("s", myStartTimeForDeletes, myEndTimeForDelets)
+	logMessage "### processAllDeletes For Else: End Time = " & myEndTimeForDeletes
+        logMessage "### Total Time (Sec) for processAllDeletes = " & durationForDeletes
+
+    End If
+
+    Set bookmarksContainer = Nothing
+
+    '// If fully syncup, then we want to sync the structure of the whole document. We do that
+    '// by adding "sectionGlobalContract" bookmark in the list of dirty bookmarks. Note that
+    '// combineIntoUniqueBookmarks will keep the sectionGlobal in this case and remove contained
+    '// sections. Also, by doing the above processAllInserts and processAllDeletes, we capture
+    '// the dirty clauses.
+    If(fullySync) Then
+        Dim globalContractBookmark
+        Set globalContractBookmark = Nothing
+        Set globalContractBookmark = agreementDocument.Bookmarks.Item(GlobalContractBookmarkName)
+        processSectionsForInserts.add  GlobalContractBookmarkName, globalContractBookmark
+    End If
+
+    '// section list is a dictionary of (bookmarkName, bookmarkObject) pairs
+    Dim dirtySectionList
+
+    Dim myStartTimeForCombine
+    myStartTimeForCombine = Time
+    logMessage " "
+    logMessage "### combineIntoUniqueBookmarks: Start Time = " & myStartTimeForCombine
+
+    Set dirtySectionList = combineIntoUniqueBookmarks(processSectionsForInserts, processSectionsForDeletes)
+
+    Dim myEndTimeForCombine
+    myEndTimeForCombine = Time
+    Dim durationForCombine
+    durationForCombine = DateDiff("s", myStartTimeForCombine, myEndTimeForCombine)
+    logMessage "### combineIntoUniqueBookmarks: End Time = " & myEndTimeForCombine
+    logMessage "### Total Time (Sec) for combineIntoUniqueBookmarks = " & durationForCombine
+
+    UpdateWindowStatus SCAN_SECTIONS
+
+    logMessage " Start scanSectionList"
+
+    Dim myStartTimeForScanSectionList
+    myStartTimeForScanSectionList = Time
+    logMessage " "
+    logMessage "### scanSectionList: Start Time = " & myStartTimeForScanSectionList
+
+    '//1-A6I0EF: If TrackRevisions is false, we can get the Revisions from the merged document
+    If (agreementDocument.TrackRevisions = True) Then
+        scanSectionList agreementDocument, dirtySectionList, xmlNode_syncupRequest
+    Else
+        scanSectionList clientVersion, dirtySectionList, xmlNode_syncupRequest
+    End If
+
+    Dim myEndTimeForScanSectionList
+    myEndTimeForScanSectionList = Time
+    Dim durationForScanSectionList
+    durationForScanSectionList = DateDiff("s", myStartTimeForScanSectionList, myEndTimeForScanSectionList)
+    logMessage "### scanSectionList: End Time = " & myEndTimeForScanSectionList
+    logMessage "### Total Time (Sec) for scanSectionList = " & durationForScanSectionList
+
+    logMessage " End scanSectionList"
+
+    UpdateWindowStatus PROCESS_REVISIONS
+
+    logMessage "XML : Get Revisions ------------------------ "
+    Dim xmlNode_revisionList
+    '//1-A6I0EF: If TrackRevisions is false, we can get the Revisions from the merged document
+    If (agreementDocument.TrackRevisions = True) Then
+        Set xmlNode_revisionList = getXmlNodeAllRevisions(wordApplication, agreementDocument)
+    Else
+        Set xmlNode_revisionList = getXmlNodeAllRevisions(wordApplication, clientVersion)
+    End If
+
+    xmlNode_syncupRequest.appendChild xmlNode_revisionList
+
+    logMessage "XML in pretty format : ----------------------------"
+    logXmlTree xmlNode_syncupRequest, 1
+    logMessage "End XML : ------------------------ "
+
+    dirtySectionList = Nothing
+    processSectionsForInserts = Nothing
+    processSectionsForDeletes = Nothing
+
+    if(xmlNode_editList.hadChildNodes) Then
+        logMessage ""
+
+        clientVersion.Close
+        serverVersion.Close
+
+        logMessage "ContractAuthoring.incrementalSyncupClause M9: " & i & " startTime: " & Time
+        fso.CopyFile documentLocation, tmpClientFile
+
+        wordApplication.Visible = False
+        document.body.style.cursor = "wait"
+
+        openDocumentInWord wordApplication, tmpClientFile, False
+        Set clientVersion = wordApplication.ActiveDocument
+
+        If (clientVersion.ProtectionType <> -1) Then '// wdNoProtection = -1
+            clientVersion.Unprotect
+        End If
+
+        clientVersion.Revisions.AcceptAll
+
+        Dim strUrl
+        Dim returnResponse
+
+        If (xmlNode_syncupRequest.hasChildNodes()) Then
+            '// Dim clauseTree
+            '// logMessage "Start ContractAuthoring.incrementalSyncupClause : bookmarkTreeContent"
+            '// clauseTree = bookmarkTreeContent(clientVersion)
+            '// logMessage "End ContractAuthoring.incrementalSyncupClause : bookmarkTreeContent"
+
+            UpdateWindowStatus SYNC_TO_SERVER
+
+            strUrl = incrementalSyncupUrl & "&" & syncupTypeIdKey & "=syncupXml"
+
+            logMessage "syncupUrl " & strUrl
+
+            logMessage "Start syncupXml"
+            returnResponse = sendDataToServer(xmlDoc_syncupRequest.xml, strUrl)
+
+            '// THIS WAS USED FOR TESTING the resource issue - instead of sending it to the server, we save and reopen in a file
+            '//xmlDoc_syncupRequest.Save "c:/InetPub/wwwroot/abc2.xml"
+            '//xmlDoc_syncupRequest = Nothing
+            '//returnResponse = sendXMLDataToServer(Nothing, strUrl)
+
+            logMessage "End syncupXml"
+            logMessage "Response = " & returnResponse
+
+            incrementalSyncupClause = returnResponse
+
+            If(returnResponse = SERVER_EXCEPTION) Then
+                UpdateWindowStatus VALIDATION_ERROR
+            End If
+        End If
+
+        set fso = Nothing
+    Else
+        clientVersion.Close
+        serverVersion.Close
+    End If
+
+    UpdateWindowStatus PROCESS_PROPERTIES
+
+    logMessage "Start ContractAuthoring.incrementalSyncupClause retrieveWordData"
+    retrieveWordData agreementDocument, propertyList, retrievePropertyUrl
+    logMessage "End ContractAuthoring.incrementalSyncupClause retrieveWordData"
+
+    If (originalProtection <> -1) Then '// wdNoProtection = -1
+        agreementDocument.Protect originalProtection
+    End If
+
+
+    '// ---------------------------------------------------------
+    '// Restore the current settings such as View Type, track change
+    restoreWordSettings agreementDocument
+    '// ---------------------------------------------------------
+
+    agreementDocument.Save
+
+
+    logEnd "ContractAuthoring.incrementalSyncupClause endTime: " & Time
+End Function
+
+Sub fixCurrentSelection (aDocument, startPos)
+    On Error Resume Next
+
+    '//CR 1-9XQKFD, 1-9XQKH9, 1-9XQKIZ
+    '//When a bookmark to be deleted is selected with heading or tailing paragraph marker, the range is shifted by one
+    '//as result of which it micalculates position and does not update the deletion on the server properly.
+    '//In addition, if a selected bookmark start with double quotes, the Word creates a space at the beginning which also
+    '//ends up miscalculating the position of the selection and not updating the deletion on the server properly either.
+    Dim revisions
+    Set revisions = aDocument.Revisions
+    Dim sizeOfEmptyRange, endPosOfEmptyRange
+    Dim index, emptyIndex
+    emptyIndex = 0
+    index = 0
+    Dim modificationType
+    modificationType = ""
+    Dim firstChar, lastChar
+    firstChar = ""
+    lastChar = ""
+    
+    logMessage " Starting fixCurrentSelection"
+    logMessage " revisions count: " & revisions.Count
+    
+    Dim aItem
+    For each aItem in revisions 
+        index = index + 1
+            
+        Dim range 
+        Set range = aItem.Range
+            
+        Dim revisionStart, revisionEnd
+        revisionStart = range.Start
+        revisionEnd = range.End
+        
+        '//since this sub routine is called recursively, it starts from the position after the previous change.
+        If (revisionStart > startPos) Then
+        
+            modificationType = aItem.Type
+        
+            logMessage " "            
+            logMessage "    First Looping revision, index = " & index
+            logMessage "    First Looping revision, type = " & modificationType
+            logMessage "    First Looping revision, range start = " & revisionStart
+            logMessage "    First Looping revision, range end = " & revisionEnd
+            logMessage "    First Looping revision, range = " & range
+            
+            '//Case 1: If a range to be deleted is a bookmark and starts with a double quotes, when a paragraph marker 
+            '//is selected along side with the bookmark, an empty insert range is created in front of the selection to be deleted
+            '//The solution is to detect the empty range, reject the insert and the deletion, and then reselect the bookmark to be deleted
+	            '// Insert
+	        If (modificationType = RevisionTypeInsert) Then
+	            If (isEmptyText(range)) Then
+	                emptyIndex = index
+	                sizeOfEmptyRange = revisionEnd - revisionStart
+	                endPosOfEmptyRange = revisionEnd
+	                logMessage " modificationType, sizeOfEmptyRange, endPosOfEmptyRange: " & modificationType & " " & sizeOfEmptyRange & " " & endPosOfEmptyRange
+	            End If
+                '// Delete
+	        ElseIf (modificationType = RevisionTypeDelete) Then
+	            If (isEmptyText(range)) Then
+	                logMessage " do not delete empty clause"
+	            Else
+	                '//double quotes
+	                If (revisionStart = endPosOfEmptyRange) Then
+	                    Dim bookmarksToBeDeleted
+	                    bookmarksToBeDeleted = Nothing
+	                    Set bookmarksToBeDeleted = getBookmarkNamesInARange(aDocument, range, sizeOfEmptyRange)
+	                    If (Not bookmarksToBeDeleted is Nothing) Then
+	                        aDocument.Revisions(index).Reject
+	                        aDocument.Revisions(emptyIndex).Reject
+		                    sizeOfEmptyRange = 0
+	                        endPosOfEmptyRange = 0
+	                        Dim aBookmarkToBeDeleted, aRangeToBeDeleted
+	                        For Each aBookmarkToBeDeleted in bookmarksToBeDeleted
+                                logMessage " the range to be deleted: " & aBookmarkToBeDeleted
+	                            Set aRangeToBeDeleted = aDocument.GoTo(-1, , , aBookmarkToBeDeleted)
+	                            deleteSelection(aRangeToBeDeleted)
+	                        Next
+	                        aDocument.Save
+	                        '//call itself because Revisions are changed when revisions are changed
+	                        fixCurrentSelection aDocument, revisionStart
+	                        Exit For
+	                    End If
+	                '// Paragraph marker  
+	                Else  
+		            '//Case 2: If a range to be deleted is a bookmark, when a leading/tailing paragraph marker is selected along side with the bookmark,
+		            '//The positions after the selected are shifted to the right/left
+		            '//The solution is to detect the paragraph marker and reposition the range to be deleted
+  
+                         firstChar = range.Characters(1).Text
+                         lastChar = range.Characters(Len(range)).Text
+                         
+                         logMessage "    firstChar, Asc(firstChar): " & firstChar & " " & Asc(firstChar)
+			             logMessage "    lastChar, Asc(lastChar): " & lastChar & " " & Asc(lastChar)
+
+		                 If (firstChar = paraChar OR lastChar = paraChar) Then
+	                         Dim bookmarksWithParaToBeDeleted
+	                         bookmarksWithParaToBeDeleted = Nothing
+	                         Set bookmarksWithParaToBeDeleted = getBookmarkNamesInARange(aDocument, range, -1)
+	                         If (Not bookmarksWithParaToBeDeleted is Nothing) Then
+	                             aDocument.Revisions(index).Reject
+	                             Dim aBookmarkWithParaToBeDeleted, aRangeWithParaToBeDeleted
+	                             For Each aBookmarkWithParaToBeDeleted in bookmarksWithParaToBeDeleted
+	                                 logMessage " the range to be deleted: " & aBookmarkWithParaToBeDeleted
+	                                 Set aRangeWithParaToBeDeleted = aDocument.GoTo(-1, , , aBookmarkWithParaToBeDeleted)
+                                     deleteSelection(aRangeWithParaToBeDeleted)
+	        	                 Next
+	        	                 aDocument.Save
+	        	                 '//call itself because Revisions are changed when revisions are changed
+	                             fixCurrentSelection aDocument, revisionStart
+	                             Exit For
+			                 End If
+		                End If '// If (firstChar = paraChar OR...)
+                    End If '// If (revisionStart = endPosOfEmptyRange)
+	            End If '//If (isEmptyText(range))
+	        End If '//If modificationType is insert
+        End If '//If (revisionStart > startPos)
+    Next   
+
+End Sub
+
+Function EmptyLineBeforeOrAfter (modifiedRange, inBookmark)
+    On Error Resume Next
+
+    EmptyLineBeforeOrAfter = False
+
+    If (((modifiedRange.Start = inBookmark.Start) Or (modifiedRange.End = inBookmark.End)) And (modifiedRange.ComputeStatistics(3) = 0)) Then '//  wdStatisticCharacters = 3
+        EmptyLineBeforeOrAfter = True
+    End If
+End Function
+
+
+Function incrementalSyncupClauseHandler (keyValues)
+    On Error Resume Next
+
+    incrementalSyncupClauseHandler = ""
+    Dim wordApplication
+    Set wordApplication = contactApp()
+
+    setClientLogLevel awxsGetValue(keyValues, "clientLogLevel")
+
+    incrementalSyncupClauseHandler = incrementalSyncupClause (wordApplication, awxsGetValue(keyValues, "documentLocation"), _
+                            ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "originalDocumentUrl")), _
+                            ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "incrementalSyncupUrl")), _
+                            awxsGetValue(keyValues, "tempDocumentFolder"), _
+                            awxsGetValue(keyValues, "propertyList"), _
+                            ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "retrievepropertyAction")), _
+                            awxsGetValue(keyValues, "fullySync"))
+
+    cleanupApplication wordApplication
+End Function
+
+Sub syncupClauseDocumentHandler (keyValues)
+    On Error Resume Next
+
+    Dim wordApplication
+    Set wordApplication = contactApp()
+
+    syncupClauseDocument wordApplication, _
+                         awxsGetValue(keyValues, "documentLocation"), _
+                         awxsGetValue(keyValues, "clauseId"), _
+                         awxsGetValue(keyValues, "tempDocumentFolder"), _
+                         ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "originalUrl"))
+
+    cleanupApplication wordApplication
+End Sub
+
+Function withinBookmarkName (aDocument, aRange)
+    On Error Resume Next
+
+    withinBookmarkName = ""
+
+    Dim currentSelection
+    Set currentSelection = aDocument.ActiveWindow.Selection
+
+    withinBookmarkName = withinBookmarkNameInSelection(currentSelection, aRange, False)
+
+End Function
+
+Function withinBookmarkNameInSelection (currentSelection, aRange, isSection)
+    On Error Resume Next
+
+    withinBookmarkNameInSelection = ""
+
+    Dim allBookmark
+    Set allBookmark = aRange.Bookmarks
+
+    '// We need to careful if we change this method as we are assuming all the callers
+    '// can handle bookmark proxies
+    If (allBookmark.Count > 0) Then
+        Dim currentBookmark
+        Set currentBookmark = Nothing
+        Dim aBookmark
+
+        For each aBookmark in allBookmark
+            If (bookmarkFullyIncluded(aBookmark, aRange) = 1) Then
+                '//logMessage "(Kee)withinBookmarkNameInSelection: aRange fully Included in aBookmark"
+                Dim index1, index2
+
+                index1 = InStr(1, aBookmark.Name, prefixSectionName, vbBinaryCompare)
+                If (isSection = True) Then
+                    index2 = 0
+                Else
+                    index2 = InStr(1, aBookmark.Name, prefixClauseName, vbBinaryCompare)
+                End If
+                If ((index1 <> 0) OR (index2 <> 0)) Then
+                    If (Not currentBookmark is Nothing) Then
+                        If (bookmarkIncluded(currentBookmark, aBookmark) = 1) Then
+                            Set currentBookmark = aBookmark
+                        End If
+                    Else
+                        Set currentBookmark = aBookmark
+                    End If
+                End If
+            End If
+        Next
+
+        If (Not currentBookmark is Nothing) Then
+            withinBookmarkNameInSelection = currentBookmark.Name
+        End If
+    End If
+End Function
+
+
+'// Returns bookmark which FULLY includes the give range. bookmark cannot
+'// be exactly as range, must fully contain the range.
+Function withinGenBookmarkInternal (aDocument, aRange, bIsProxy)
+    On Error Resume Next
+
+    Dim currentSelection
+    Set currentSelection = aDocument.ActiveWindow.Selection
+
+    Set withinGenBookmarkInternal = withinGenBookmarkInSelection(currentSelection, aRange, False, bIsProxy)
+
+End Function
+
+Function withinGenBookmark (aDocument, aRange)
+    Set withinGenBookmark = withinGenBookmarkInternal(aDocument, aRange, False)
+End Function
+
+'// Returns bookmark which FULLY includes the give range. If "isSection" is true,
+'// then nearest section bookmark that FULLY contains range will be returned.
+Function withinGenBookmarkInSelection (currentSelection, aRange, isSection, bIsProxy)
+    On Error Resume Next
+
+    Set withinGenBookmarkInSelection = Nothing
+
+    Dim allBookmark
+    
+    '//logMessage "(Kee)withinGenBookmarkInSelection: aRange =  " & aRange.DomRange
+
+    If (bIsProxy) Then
+        Set allBookmark = aRange.BookmarkProxies
+    Else
+        Set allBookmark = createAribaStaticArrayFromCollection(aRange.Bookmarks)
+    End If
+
+    If (allBookmark.Count > 0) Then
+        Dim currentBookmark
+        Set currentBookmark = Nothing
+        Dim aBookmark
+
+        dim count
+        count = allBookmark.Count
+        dim index
+        For index = 1 to count
+            Set aBookmark = allBookmark.Item(index)
+            '//logMessage "(Kee)withinGenBookmarkInSelection: index, aBookmark name, start, end =  " & index & " " & aBookmark.Name & " " & aBookmark.Start & " " & aBookmark.End
+            If (bookmarkFullyIncluded(aBookmark, aRange) = 1) Then
+                '//logMessage "(Kee)withinGenBookmarkInSelection: aRange Properly Included in aBookmark"
+                Dim index1, index2
+                If(aBookmark.Name = GlobalContractBookmarkName) Then
+                    '//logMessage "(Kee)withinGenBookmarkInSelection: a bookmark is GlobalContractBookmark"
+                    Set currentBookmark = aBookmark
+                Else
+                    index1 = InStr(1, aBookmark.Name, prefixSectionGenName, vbBinaryCompare)
+                    '//logMessage "(Kee)withinGenBookmarkInSelection: index1 = " & index1
+                    If (isSection = True) Then
+                        index2 = 0
+                    Else
+                        index2 = InStr(1, aBookmark.Name, prefixClauseGenName, vbBinaryCompare)
+                        '//logMessage "(Kee)withinGenBookmarkInSelection: index2 = " & index2
+                    End If
+                    If ((index1 <> 0) OR (index2 <> 0)) Then
+                        If (Not currentBookmark is Nothing) Then
+                            '//logMessage "(Kee)withinGenBookmarkInSelection: currentBookmark = " & currentBookmark.Name
+                            If (bookmarkIncluded(currentBookmark, aBookmark) = 1) Then
+                                '//logMessage "(Kee)withinGenBookmarkInSelection: aBookmark is included in currentBookmark"
+                                Set currentBookmark = aBookmark
+                                '//logMessage "(Kee)withinGenBookmarkInSelection: currentBookmark = " & currentBookmark.Name
+                            End If
+                        Else
+                            '//logMessage "(Kee)withinGenBookmarkInSelection: currentBookmark is Nothing"
+                            Set currentBookmark = aBookmark
+                        End If
+                    End If
+                End If
+            End If
+        Next
+
+        If (Not currentBookmark is Nothing) Then
+            '//1-9U0NUT: if the bookmark is proxy, return the DomBookmark of currentBookmark
+            If (bIsProxy) Then
+                Set withinGenBookmarkInSelection = currentBookmark.DomBookmark
+            Else
+                Set withinGenBookmarkInSelection = currentBookmark
+            End If
+        End If
+    End If
+End Function
+
+Sub incrementalSyncupForNewClause (wordApplication, currentDocument, currentSelection, tempDocumentFolder, incrementalSyncupUrl)
+    On Error Resume Next
+
+    logMessage "ContractAuthoring.incrementalSyncupForNewClause startTime: " & Time
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    currentDocument.Activate
+
+    Set currentSelection = currentDocument.ActiveWindow.Selection
+    currentSelection.WholeStory
+
+    Dim allBookmarks
+    Set allBookmarks = currentSelection.Bookmarks
+    Dim count
+    count = allBookmarks.Count
+
+    Dim i
+    Dim newBookmark
+    For i = 1 to count
+        Set newBookmark = allBookmarks.Item(i)
+        Dim bookmarkName
+        bookmarkName = newBookmark.Name
+
+        logMessage "    Start incrementalAddClause - bookmarkName = " & bookmarkName
+
+        Dim aIndex
+
+        logMessage "        Start Insert check"
+        aIndex = InStr(1, bookmarkName, aribaKeyword, vbBinaryCompare)
+        logMessage "        End Insert check"
+
+        If (aIndex <> 0) Then
+            Dim aContent
+            Dim aRange
+
+            Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+            aContent = Trim(Mid(getSelectionContent(currentSelection), 1, MaxSummaryLength))
+
+            Dim tempDocumentLocation
+            tempDocumentLocation = tempClauseCreated(wordApplication, currentSelection, bookmarkName, tempDocumentFolder)
+
+            Dim sectionName
+            sectionName = findSectionName(currentSelection, bookmarkName)
+            Dim previousBookmarkName
+            If (Not sectionName = "") Then
+                previousBookmarkName = findPreviousBookmarkName(currentSelection, bookmarkName, sectionName)
+            Else
+                previousBookmarkName = findPreviousBookmarkName(currentSelection, bookmarkName, GlobalContractBookmarkName)
+            End If
+
+            logMessage "    Start uploadNewClause"
+            uploadNewClause currentDocument, currentSelection, bookmarkName, sectionName, previousBookmarkName, tempDocumentLocation, aContent, incrementalSyncupUrl
+            logMessage "    End uploadNewClause"
+        End If
+
+        wordApplication.Visible = False
+        document.body.style.cursor = "wait"
+
+        currentDocument.Activate
+        Set currentSelection = currentDocument.ActiveWindow.Selection
+        currentSelection.WholeStory
+        logMessage "    End incrementalAddClause - bookmarkName = " & bookmarkName
+    Next
+
+    logMessage "ContractAuthoring.incrementalSyncupForNewClause"
+    logMessage ""
+End Sub
+
+Sub uploadNewClause (currentDocument, currentSelection, bookmarkName, sectionName, previousBookmarkName, documentLocation, aContent, incrementalSyncupUrl)
+    On Error Resume Next
+
+    Dim strUrl
+    strUrl = incrementalSyncupUrl & "&" & syncupTypeIdKey & "=insert"
+
+    If (Not sectionName = "") Then
+        strUrl = strUrl & "&" & SectionIdKey & "=" & sectionName
+    End If
+
+    If (Not previousBookmarkName = "") Then
+        strUrl = strUrl & "&" & previousBookmarkKey & "=" & previousBookmarkName
+    End If
+
+    '// msgbox "insert " & strUrl
+
+    Dim sData
+    sData = getFileBytes(documentLocation)
+
+    If logError(GeneratingErr.openDocumentErrorMessage) Then
+        Exit Sub
+    End If
+
+
+    Dim returnResponse
+    logMessage "    Start insert Clause"
+    returnResponse = sendDataToServer(sData, strUrl)
+    logMessage "    End insert Clause"
+
+    '// msgbox("returnResponse " & returnResponse)
+
+        '// upgrade bookmark
+    If (Not returnResponse = "") Then
+        Dim aRange
+        Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+        Dim aBookmark
+        Set aBookmark = currentDocument.Bookmarks.Add(returnResponse, aRange)
+        Dim pos
+        pos = currentDocument.Bookmarks.Item(bookmarkName).Delete
+
+        If (Not aContent = "") Then
+            strUrl = incrementalSyncupUrl & "&" & syncupTypeIdKey & "=summary"
+            strUrl = strUrl & "&" & ClauseIdKey & "=" & returnResponse
+            logMessage "    Start sync summary"
+            returnResponse = sendDataToServer(aContent, strUrl)
+            logMessage "    End sync summary"
+        End If
+    End If
+End Sub
+
+Function isContainBookmark (aRange)
+    On Error Resume Next
+
+    isContainBookmark = False
+
+    Set allBookmark = aRange.Bookmarks
+
+    If (allBookmark.Count > 0) Then
+        Dim aBookmark
+        For each aBookmark in allBookmark
+            Dim index1, index2
+
+            index1 = InStr(1, aBookmark.Name, prefixSectionName, vbBinaryCompare)
+            index2 = InStr(1, aBookmark.Name, prefixClauseName, vbBinaryCompare)
+            If ((index1 <> 0) OR (index2 <> 0)) Then
+                If (bookmarkFullyIncluded(aRange, aBookmark) = 1) Then
+                    isContainBookmark = True
+                End If
+            End If
+        Next
+    End If
+End Function
+
+Function findSectionName (currentSelection, bookmarkName)
+    On Error Resume Next
+
+    findSectionName = ""
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+    Dim allBookmark
+    Set allBookmark = currentSelection.Bookmarks
+
+    If (allBookmark.Count > 0) Then
+        Dim currentBookmark
+        Set currentBookmark = Nothing
+
+        Dim aBookmark
+
+        For each aBookmark in allBookmark
+            Dim index1, index2
+            index1 = InStr(1, aBookmark.Name, prefixSectionName, vbBinaryCompare)
+            If (index1 <> 0) Then
+                If (Not currentBookmark is Nothing) Then
+                    If (bookmarkIncluded(currentBookmark, aBookmark) = 1) Then
+                        Set currentBookmark = aBookmark
+                    End If
+                Else
+                    Set currentBookmark = aBookmark
+                End If
+            End If
+        Next
+
+        If (Not currentBookmark is Nothing) Then
+            findSectionName = currentBookmark.Name
+        End If
+    End If
+End Function
+
+Function findPreviousBookmarkName (currentSelection, bookmarkName, sectionName)
+    On Error Resume Next
+
+    findPreviousBookmarkName = ""
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , sectionName) '// wdGoToBookmark = -1
+
+    Dim allBookmark
+    Set allBookmark = currentSelection.Bookmarks
+
+    If (allBookmark.Count > 0) Then
+        Dim currentBookmark
+        Set currentBookmark = Nothing
+
+        Dim aBookmark
+
+        Dim i, count
+        count = allBookmark.Count
+
+        Dim index
+        index = -1
+
+        i = 1
+        Do While ((index = -1) And (i <= count))
+            If (allBookmark.Item(i).Name = bookmarkName) Then
+                index = i - 1
+            End If
+            i = i + 1
+        Loop
+
+        If (index <> -1) Then
+            Do While ((index >= 1) And (currentBookmark is Nothing))
+                Set aBookmark = allBookmark.Item(index)
+                Dim aSectionName
+                aSectionName = withinBookmarkNameInSelection(currentSelection, aBookmark.Range, True)
+
+                If (aSectionName = sectionName) Then
+                    Set currentBookmark = aBookmark
+                End If
+                index = index - 1
+            Loop
+        End If
+
+        If (Not currentBookmark is Nothing) Then
+            findPreviousBookmarkName = currentBookmark.Name
+        End If
+    End If
+End Function
+
+Function findFirstBookmarkNameInSection (currentDocument, currentSelection, sectionName)
+    On Error Resume Next
+
+    findFirstBookmarkNameInSection = ""
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , sectionName) '// wdGoToBookmark = -1
+
+    Dim allBookmark
+    Set allBookmark = currentSelection.Bookmarks
+
+    '// Get the first bookmark not equal to sectioName and fully contained in
+    Dim bookmark, sectionBookmark
+    Set sectionBookmark = currentDocument.Bookmarks(sectionName)
+    For each bookmark in allBookmark
+        If ( bookmark.Name <> sectionName And bookmarkFullyIncluded(sectionBookmark, bookmark) And _
+             (isNewBookmark(bookmark.Name) Or isGenBookmark(bookmark.Name)) ) Then
+            findFirstBookmarkNameInSection = bookmark.Name
+            Exit For
+        End If
+    Next
+End Function
+
+Function bookmarkTreeContent (currentDocument)
+    On Error Resume Next
+
+    bookmarkTreeContent = ""
+
+    currentDocument.Activate
+
+    Dim currentSelection
+
+    Set currentSelection = currentDocument.ActiveWindow.Selection
+    currentSelection.WholeStory
+
+    Dim allBookmarks
+    Set allBookmarks = currentSelection.Bookmarks
+
+    Dim count
+    count = allBookmarks.Count
+
+    Dim aBookmark
+    For i = 1 to count
+        logMessage "ContractAuthoring.bookmarkTreeContent outer loop count = " & i & " startTime: " & Time
+        currentSelection.WholeStory
+        Set aBookmark = allBookmarks.Item(i)
+
+        Dim index1, index2
+        Dim bookmarkName
+        bookmarkName = aBookmark.Name
+        logMessage "ContractAuthoring.bookmarkTreeContent bookmarkName = " & bookmarkName
+        index1 = InStr(1, bookmarkName, prefixSectionName, vbBinaryCompare)
+        index2 = InStr(1, bookmarkName, prefixClauseName, vbBinaryCompare)
+        If (index1 <> 0) Then
+            Dim sectionBookmarkContent
+            sectionBookmarkContent = sectionSeparator & bookmarkName
+            Dim aIndex
+            aIndex = i + 1
+            Dim subBookmark
+            currentSelection.WholeStory
+            Set subBookmark = allBookmarks.Item(aIndex)
+            Do While ((aIndex <= count) AND (bookmarkIncluded(aBookmark, subBookmark.Range) = 1))
+                logMessage "ContractAuthoring.bookmarkTreeContent inner loop count = " & aIndex & " startTime: " & Time
+                If (withinBookmarkNameInSelection(currentSelection, subBookmark.Range, True) = bookmarkName) Then
+                    sectionBookmarkContent = sectionBookmarkContent & objectSeparator & subBookmark.Name
+                End If
+
+                aIndex = aIndex + 1
+                currentSelection.WholeStory
+                If (aIndex <= count) Then
+                    Set subBookmark = allBookmarks.Item(aIndex)
+                End If
+            Loop
+            logMessage "ContractAuthoring.bookmarkTreeContent inner loop done time = " & Time
+            bookmarkTreeContent = bookmarkTreeContent & sectionBookmarkContent
+            logMessage "ContractAuthoring.bookmarkTreeContent outer loop count = " & i & " done time = " & Time
+        End If
+    Next
+
+    '// msgbox "bookmarkTree " & bookmarkTreeContent
+End Function
+
+Sub CompatibleCompare (sourceDocument, targetDocument, wordType)
+    On Error Resume Next
+
+    '// wdMergeTargetSelected = 0, wdMergeTargetCurrent = 1
+    CompatibleCompareWithOption sourceDocument, targetDocument, wordType, 1, False
+End Sub
+
+Sub CompatibleCompareOrMerge (sourceDocument, targetDocument, wordType)
+    On Error Resume Next
+
+    '// wdMergeTargetCurrent=1, highlightDiff=False, useCompare=False
+    CompatibleCompareMergeWithOption sourceDocument, targetDocument, wordType, 1, False, False
+End Sub
+
+Sub CompatibleCompareWithOption (sourceDocument, targetDocument, wordType, mergeTarget, highlightDiff)
+    On Error Resume Next
+
+    CompatibleCompareMergeWithOption sourceDocument, targetDocument, wordType, mergeTarget, highlightDiff, True
+End Sub
+
+'// ----------------------------------------------------------------------
+'// Word2000:
+'// "Merge" and "Compare" merges the changes to the current document
+'//
+'// "Merge" will take the track changes from other document and merged in
+'//  the current.
+'//
+'// "Compare" will track the untracked changes in the current document based
+'// on comparing with other document.
+'//
+'// Both apis take only one argument, that is, the target file path
+'//
+'// For Word 2002/2003:
+'// The changes can be in current document or target document
+'// Merge can merge the changes in either current document or target document.
+'// MergeTarget is controlled by the secong argument in the Merge api.
+'// -----------------------------------------------------------------------
+Sub CompatibleCompareMergeWithOption (sourceDocument, targetDocument, wordType, mergeTarget, highlightDiff, useCompare)
+    On Error Resume Next
+
+    sourceDocument.Activate
+
+    If (wordType = Word2000Type) Then
+        If (useCompare = True) Then
+            sourceDocument.Compare targetDocument
+        Else
+            sourceDocument.Merge targetDocument
+        End If
+    Else
+        If (wordType = WordXPType OR wordType = Word07Type) Then
+            logMessage "    CompatibleCompareWithOption sourceDocument.Merge targetDocument, mergeTarget, False, wdFormattingFromPrompt, False"
+            '// DetectFormatChanges = False, UseFormattingFrom=(wdFormattingFromCurrent=0), AddToRecentFiles=False
+            sourceDocument.Merge targetDocument, mergeTarget, False, 0, False
+        End If
+    End If
+
+    If (highlightDiff = True) Then
+        sourceDocument.Application.WordBasic.NextChangeOrComment
+    End If
+End Sub
+
+Sub CompatibleCompareMergeTarget (sourceDocument, targetDocument, wordType)
+    On Error Resume Next
+
+    '// wdMergeTargetSelected = 0, wdMergeTargetCurrent = 1
+    CompatibleCompareMergeTargetWithOption sourceDocument, targetDocument, wordType, 0, False
+End Sub
+
+Sub CompatibleCompareMergeTargetWithOption (sourceDocument, targetDocument, wordType, mergeTarget, highlightDiff)
+    On Error Resume Next
+
+    sourceDocument.Activate
+
+    logMessage "     CompatibleCompareMergeTargetWithOption:targetDocument " & targetDocument
+
+    If (wordType = Word2000Type) Then
+        '// TODO_XXX - CompareMergeTarget for Word2000
+        logMessage "    CompatibleCompareWithOption sourceDocument.Merge targetDocument"
+        targetDocument.Compare sourceDocument
+    Else
+        If (wordType = WordXPType OR wordType = Word07Type) Then
+            logMessage "    CompatibleCompareWithOption sourceDocument.Merge targetDocument, mergeTarget, False, wdFormattingFromPrompt, False"
+            '// DetectFormatChanges = False, UseFormattingFrom=(wdFormattingFromCurrent=0), AddToRecentFiles=False
+            sourceDocument.Merge targetDocument, mergeTarget, False, 0, False
+        End If
+    End If
+
+    If (highlightDiff = True) Then
+        sourceDocument.Application.WordBasic.NextChangeOrComment
+    End If
+End Sub
+
+Function contactApp ()
+    On Error Resume Next
+
+    Set contactApp = Nothing
+
+        '//launch app
+    Set contactApp = CreateObject("Word.Application")
+    If logError(GeneratingErr.contactApplicationErrorMessage) Then
+        Exit Function
+    End If
+    contactApp.Visible = false
+    document.body.style.cursor = "wait"
+End Function
+
+Sub cleanupApplication (app)
+    On Error Resume Next
+
+    If (Not (app is Nothing)) Then
+        app.Visible = false
+        document.body.style.cursor = "wait"
+        app.NormalTemplate.Saved = True
+        app.Quit wdDoNotSaveChanges
+        Set app = Nothing
+    End If
+End Sub
+
+Function contactDocument (app, documentLocation)
+    On Error Resume Next
+
+    Set contactDocument = Nothing
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    saveOpenDocument app, documentLocation
+    openDocumentInWord app, documentLocation, False
+
+    Dim value
+    If (Err.Number <> 0) Then
+        Err.Clear
+        saveOpenDocument app, documentLocation
+            '// syncup then reopen
+        value = SmartClientScriptUtil.saveFileToClient(documentLocation)
+        openDocumentInWord app, documentLocation, False
+    End If
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Function
+    End If
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    Set contactDocument = app.ActiveDocument
+End Function
+
+Function sendDataToServer (sData, serverUrl)
+    On Error Resume Next
+
+    sendDataToServer = ""
+
+    logMessage "Sending data to server - start: " & serverUrl
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        logMessage "data not sent error"
+        Exit Function
+    End If
+
+    xmlhttp.Open "POST", serverUrl, false
+    logMessage "ready to post"
+
+    xmlhttp.Send sData
+
+    logMessage "posted"
+    sendDataToServer = xmlhttp.responseText
+
+    Set xmlhttp = Nothing
+    logMessage "Sending data to server - end"
+End Function
+
+'// For Testing the post issue
+Function sendXMLDataToServer (sData, serverUrl)
+    On Error Resume Next
+
+    sendXMLDataToServer = ""
+
+    logMessage "Sending data to server - start: " & serverUrl
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        logMessage "data not sent error"
+        Exit Function
+    End If
+
+    xmlhttp.Open "POST", serverUrl, false
+    logMessage "reading to post"
+    Dim xmlDoc_syncupRequest1
+    Set xmlDoc_syncupRequest1 = getXmlDoc_syncupRequest
+    xmlDoc_syncupRequest1.Load "c:/InetPub/wwwroot/abc2.xml"
+    logMessage "ready to post"
+    xmlhttp.Send xmlDoc_syncupRequest1.xml
+
+    logMessage "posted"
+    sendXMLDataToServer = xmlhttp.responseText
+
+    Set xmlhttp = Nothing
+    logMessage "Sending data to server - end"
+End Function
+
+
+Function sendDataToServerHandler (keyValues)
+    On Error Resume Next
+
+    Dim resourceData
+    resourceData = getFileBytes(awxsGetValue(keyValues, "dataResource"))
+
+    sendDataToServerHandler = sendDataToServer(resourceData, ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl")))
+End Function
+
+Function getRangeSummary (aRange)
+    On Error Resume Next
+    getRangeSummary = Trim(Mid(getRangeContent(aRange), 1, MaxSummaryLength))
+End Function
+
+Function getSelectionContent (aSelection)
+    On Error Resume Next
+
+    getSelectionContent = ""
+
+    Dim aRange
+    Set aRange = aSelection.Range
+
+    getSelectionContent = getRangeContent(aRange)
+End Function
+
+Function getRangeContent (aRange)
+    On Error Resume Next
+
+    getRangeContent = ""
+
+    '// XXX : DO NOT UPDATE fields on the fly - the paragraph location will be out of sync
+    '// with parent bookmark location since bookamrk location are computed BEFORE this
+    '// expansion is done. If its important to UpdateFields, then it should be done before
+    '// bookmark processing is started.
+    '// Make sure field values in selection are updated, and set TextRetrievalMode so hidden
+    '// Set TextRetrievalMode so hidden text and field codes will never be included when we extract the Text property
+    '// aRange.Fields.Update
+    '// - sanjay 2005.09.09
+
+    aRange.TextRetrievalMode.ViewType = 3 '// wdPrintView = 3
+    aRange.TextRetrievalMode.IncludeHiddenText = false
+    aRange.TextRetrievalMode.IncludeFieldCodes = false
+
+    getRangeContent = aRange.Text
+End Function
+
+
+Sub populateSectionSummary(bookmark,xmlNode_parent)
+    On Error Resume Next
+
+    Dim summary
+    summary = EmptyClauseSummary
+
+    Dim sectionRange
+    Set sectionRange = bookmark.Range
+
+    Dim summaryEndPos
+    summaryEndPos = bookmark.Start
+
+    Dim sectionParagraph
+    Set sectionParagraph = sectionRange.Paragraphs(1).Range
+
+    summary = Trim(getRangeContent(sectionParagraph))
+    summaryEndPos = sectionParagraph.End
+
+    xmlNode_parent.appendChild xmlDOM.createCDATASection(summary)
+    xmlNode_parent.setAttribute ATTRIBUTE_SUMMARY_ENDPOS , summaryEndPos
+End Sub
+
+
+Function getClauseSummary(bookmark)
+    On Error Resume Next
+
+    getClauseSummary = EmptyClauseSummary
+
+    Dim clauseRange
+    Set clauseRange = bookmark.Range
+
+    If (isEmptyRange(clauseRange) = False) Then
+        getClauseSummary = Trim(Mid(getRangeContent(clauseRange), 1, MaxSummaryLength))
+    End If
+End Function
+
+
+Function getClauseSummaryAll(bookmark)
+    On Error Resume Next
+
+    getClauseSummaryAll = EmptyClauseSummary
+
+    Dim clauseRange
+    Set clauseRange = bookmark.Range
+
+    If (isEmptyRange(clauseRange) = False) Then
+        getClauseSummaryAll = getRangeContent(clauseRange)
+    End If
+End Function
+
+Function getClauseSummaryAllByRange(clauseRange)
+    On Error Resume Next
+
+    getClauseSummaryAllByRange = EmptyClauseSummary
+
+    dim rangeContent
+    rangeContent = getRangeContent(clauseRange)
+
+    If (isEmptyRange2(clauseRange, rangeContent) = False) Then
+        getClauseSummaryAllByRange = rangeContent
+    End If
+End Function
+
+Function getClauseSummaryByName(document, bookmarkName)
+    On Error Resume Next
+
+    getClauseSummaryByName = EmptyClauseSummary
+
+    Dim bookmark
+    Set bookmark =  document.Bookmarks.Item(bookmarkName)
+
+    logMessage "`    getClauseSummaryByName bookmark name = " & bookmark.Name
+
+    Dim clauseRange
+    Set clauseRange = bookmark.Range
+
+    '// logMessage "bookmark range = " & bookmark.Range
+
+    If (isEmptyRange(clauseRange) = False) Then
+        getClauseSummaryByName = Trim(Mid(getRangeContent(clauseRange), 1, MaxSummaryLength))
+    End If
+End Function
+
+
+Function cleanupSectionStructure (bookmarkStructure)
+    Dim index
+    cleanupSectionStructure = ""
+
+    index = InstrRev(bookmarkStructure, sectionSeparator, -1, vbBinaryCompare)
+    If (index <> 0) Then
+        If (index = 1) Then
+            cleanupSectionStructure = ""
+        End If
+        cleanupSectionStructure = Trim(Mid(bookmarkStructure, 1, index - 1))
+    End If
+End Function
+
+Function contextBookmarkForName (allBookmark, bookmarkStructure)
+    Dim index
+    Dim bookmarkName
+
+    Set contextBookmarkForName = Nothing
+
+    index = InstrRev(bookmarkStructure, sectionSeparator, -1, vbBinaryCompare)
+    If (index <> 0) Then
+        bookmarkName = Trim(Mid(bookmarkStructure, index + sectionSeparatorLength))
+        If allBookmark.Exists(bookmarkName) = True Then
+            Set contextBookmarkForName= allBookmark.Item(bookmarkName)
+        End If
+    End If
+End Function
+
+Function booleanValue (value)
+    booleanValue = False
+
+    If ((value = "true") Or (value = "True") Or (value = "TRUE")) Then
+        booleanValue = True
+    End If
+End Function
+
+Function isRangeIncluded (b1, b2)
+    On Error Resume Next
+
+    isRangeIncluded = False
+    If ((b1.Start <= b2.Start) And (b1.End >= b2.End)) Then
+        isRangeIncluded = True
+    End If
+End Function
+
+Function bookmarkIncluded (b1, b2)
+    On Error Resume Next
+
+    bookmarkIncluded = 0
+    If ((b1.Start <= b2.Start) And (b1.End >= b2.End)) Then
+        bookmarkIncluded = 1
+    End If
+End Function
+
+Function bookmarkFullyIncluded (b1, b2)
+    On Error Resume Next
+
+    'logMessage "(Kee) b1.Start, b2.Start, b2.End, b1.End = " & b1.Start & " " & b2.Start & " " & b2.End & " " & b1.End
+    bookmarkFullyIncluded = 0
+    If ((b1.Start <= b2.Start) And (b1.End >= b2.End) And ((b1.Start <> b2.Start) Or (b1.End <> b2.End))) Then
+        bookmarkFullyIncluded = 1
+    End If
+End Function
+
+Function isClauseEdited (wordApplication, clauseName, clauseLocation, originalUrl)
+    On Error Resume Next
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    Dim strUrl
+    strUrl = originalUrl
+
+    tmpClientFile = appendStringToFileLocation(clauseLocation, "Client")
+    tmpServerFile = appendStringToFileLocation(clauseLocation, "Server")
+
+    dim fso
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    fso.CopyFile clauseLocation, tmpClientFile
+
+    clauseId = clauseName
+    If (Not clauseId = "") Then
+        strUrl = strUrl & "&clauseId=" & clauseId
+    End If
+
+    If not saveDocumentToClient(tmpServerFile, strUrl) Then
+        isClauseEdited = False
+        Exit Function
+    End If
+
+    Dim fs
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord WordApplication, tmpClientFile, False
+    Set fs = wordApplication.ActiveDocument.Fields
+    For i = 1 to fs.Count
+        Set f = fs.Item(i)
+        f.Result = f.Code
+    Next
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    wordApplication.ActiveDocument.Save
+    '// wordApplication.ActiveDocument.Close
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord WordApplication, tmpClientFile, False
+    Set fs = wordApplication.ActiveDocument.Fields
+    For i = 1 to fs.Count
+        Set f = fs.Item(i)
+        f.Result = f.Code
+    Next
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    wordApplication.ActiveDocument.Save
+
+    CompatibleCompare wordApplication.ActiveDocument, tmpClientFile, wordType
+
+    '// Msgbox "Count :" & wordApplication.ActiveDocument.Revisions.Count
+    isClauseEdited = isDocumentChanged(wordApplication.ActiveDocument)
+
+    '// wordApplication.ActiveDocument.Close
+
+    set fso = Nothing
+End Function
+
+Function isDocumentChanged (aDocument)
+    On Error Resume Next
+
+    isDocumentChanged = False
+
+    Dim aRevision
+    For each aRevision in aDocument.Revisions
+        '// wdRevisionConflict = 7, wdRevisionDelete = 2,  wdRevisionInsert = 1, wdRevisionReplace = 9,
+        If ((aRevision.Type = 7) OR _
+            (aRevision.Type = 2) OR _
+            (aRevision.Type = 1) OR _
+            (aRevision.Type = 9)) Then
+            isDocumentChanged = True
+            Exit Function
+        End If
+    Next
+End Function
+
+Function openWordFile (wordApplication, fileName)
+    Set openWordFile = Nothing
+    wordApplication.NormalTemplate.Saved = True
+    openDocumentInWord wordApplication, fileName, False
+    Dim wordDocument
+    Set wordDocument = wordApplication.ActiveDocument
+    Set openWordFile = wordDocument
+End Function
+
+Function appendStringToFileLocation (documentLocation, stringToAppend)
+    Dim index
+    Dim length
+    length = Len(documentLocation)
+
+    index = InStrRev(documentLocation, ".", -1, vbTextCompare)
+    If index = 0 Then
+        index = length + 1
+    End If
+
+    Dim path
+    Dim ext
+
+    path = Left(documentLocation, index - 1)
+    ext = Right(documentLocation, length - index + 1)
+
+    appendStringToFileLocation = path & stringToAppend & ext
+End Function
+
+Function getTempFileName (currentFile)
+    getTempFileName = appendStringToFileLocation(currentFile, "Temp")
+End Function
+
+Function getTemp2FileName (currentFile)
+    getTemp2FileName = appendStringToFileLocation(currentFile, "Temp2")
+End Function
+
+Sub deleteFile(fileName)
+    Dim fso
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    fso.DeleteFile fileName, true
+End Sub
+
+'// Delete the file forcefully, and if its folder is now empty, delete the folder too.
+'// This is cool because under DFS particularly for temp files, we put each file in its
+'// own folder with a name derived from the bookmark or the internalId (or both),
+'// and the folder is worthless and annoying debris if the single file it  contained is
+'// deleted.  It will recursively delete up to folderCount parent folders, if they are
+'// empty after each previous deletion.
+Function deleteFileAndMaybeFolder(fileName, folderCount)
+    On Error Resume Next
+    '// logBegin "deleteFileAndMaybeFolder fileName='" & fileName & "'"
+    deleteFileAndMaybeFolder = true
+    Dim er, iErrorHandling, fso, parentFolderName
+    er = ""
+    for iErrorHandling = 1 to 1
+        Set fso = Nothing
+        Set fso = CreateObject("Scripting.FileSystemObject")
+        if Err.Number <> 0 then er = "CreateObject(Scripting.FileSystemObject)": Exit For: end if
+        parentFolderName = fso.getParentFolderName(filename)
+        if Err.Number <> 0 then er = "fso.getParentFolderName('" & fileName & "')": Exit For: end if
+        if fso.FileExists(fileName) then
+            fso.DeleteFile fileName, true
+            if Err.Number <> 0 then er = "fso.DeleteFile '" & fileName & "', true": Exit For: end if
+            logMessage "Deleted unneeded File '" & fileName & "'"
+        end if
+        if folderCount > 0 then
+            deleteFileAndMaybeFolder = deleteMaybeFolderHelper(fso, parentFolderName, folderCount - 1)
+        end if
+    Next '// End For iErrorHandling...
+    if Err.Number <> 0 then
+        logErrorCheck "[deleteFileAndMaybeFolder] " & er
+        deleteFileAndMaybeFolder = false
+    end if
+    '// logEnd "deleteFileAndMaybeFolder returns " & deleteFileAndMaybeFolder
+End Function
+
+Function deleteMaybeFolderHelper(fso, folderName, folderCount)
+    On Error Resume Next
+    '// logBegin "deleteMaybeFolderHelper folderName='" & folderName & "'"
+    deleteMaybeFolderHelper = true
+    Dim er, iErrorHandling, parentFolderName, folder, files, subFolders
+    er = ""
+    for iErrorHandling = 1 to 1
+        parentFolderName = fso.getParentFolderName(folderName)
+        if Err.Number <> 0 then er = "fso.getParentFolderName('" & folderName & "')": Exit For: end if
+        if fso.FolderExists(folderName) then
+            if Err.Number <> 0 then er = "fso.FolderExists('" & folderName & "')": Exit For: end if
+            Set folder = fso.getFolder(folderName)
+            if Err.Number <> 0 then er = "fso.getFolder('" & folderName & "')": Exit For: end if
+            Set files = folder.Files
+            if Err.Number <> 0 then er = "folder.Files": Exit For: end if
+            Set subFolders = folder.SubFolders
+            if Err.Number <> 0 then er = "folder.SubFolders": Exit For: end if
+            if files.Count <= 0 and subFolders.Count <= 0 then
+                if Err.Number <> 0 then er = "files.Count <= 0 and subFolders.Count <= 0": Exit For: end if
+                fso.DeleteFolder folderName, true
+                if Err.Number <> 0 then er = "fso.DeleteFolder '" & folderName & "', true": Exit For: end if
+                logMessage "Deleted empty Folder '" & folderName & "'"
+                if folderCount > 0 then
+                    deleteMaybeFolderHelper = deleteMaybeFolderHelper(fso, parentFolderName, folderCount - 1)
+                end if
+            end if
+        end if
+    Next '// End For iErrorHandling...
+    if Err.Number <> 0 then
+        logErrorCheck "[deleteMaybeFolderHelper] " & er
+        deleteMaybeFolderHelper = false
+    end if
+    '// logEnd "deleteMaybeFolderHelper returns " & deleteMaybeFolderHelper
+End Function
+
+'// This method is called to merge the modified contract document
+'// with current document. Specifically, its called by "Merge Document"
+'// action on the contract document and also by "Review Change" after
+'// in negotiation task after counter proposal is accepted.
+Sub diffUsingWordWithTrackChangesOn (currentFile, modifiedFile)
+    On Error Resume Next
+
+    setDocumentAttributes currentFile,true
+    logMessage "Start diffUsingWordWithTrackChangesOn"
+
+    Dim wordApplication
+    Set wordApplication = CreateObject("Word.Application")
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    '// This is necessary for the Word Application to show up
+    wordApplication.Visible = True
+
+    logMessage "Open and acceptAll on current document"
+
+    '// Track changes in the original doc should be turned off (Defect 1-13XH7)
+    '// Otherwise, tracked changes in the original doc that are rejected by the
+    '// external document reappears after external doc is merged.
+    '// Also, in Word2000, the "Compare" will fail if the original doc has any
+    '// track changes
+    Dim currentDocument
+    Set currentDocument = openWordFile(wordApplication, currentFile)
+
+    currentDocument.Revisions.AcceptAll
+
+    logMessage "Save currentDocument as temp"
+
+    '// save the original doc with revisions accepted as temp file
+    '// because that is used to generate track changes in the modified
+    '// document. Should not save the original doc with track changes gone
+    '// because user should have option of backing out of merge with no loss
+    '// of information.
+    Dim tmpCurrentFile
+    tmpCurrentFile = getTempFileName(currentFile)
+    currentDocument.SaveAs tmpCurrentFile
+    currentDocument.Close
+
+    logMessage "Open and AcceptAll on external document"
+    logMessage "modified document = " & modifiedFile
+
+    '// Use "Compare" to make the changes tracked.
+    '// Note that For Word 2000, the "Merge" fails if there are
+    '// untracked changes in the modified document. In any case,
+    '// making all changes tracked fixes interoperability merge
+    '// issues between different versions of Word.
+    Dim modifiedDocument
+    Set modifiedDocument = openWordFile(wordApplication, modifiedFile)
+
+    '// Set the view type to be normal
+    setDocumentViewType modifiedDocument, ViewTypeNormal
+
+    modifiedDocument.Revisions.AcceptAll
+    modifiedDocument.TrackRevisions = False
+    modifiedDocument.Activate
+
+    '// for the modified file save, don't keep around the merge id information
+    Dim priorRSIDValue
+    priorRSIDValue = wordApplication.Options.StoreRSIDOnSave
+
+    wordApplication.Options.StoreRSIDOnSave = False
+
+    '// Template:="Normal", NewTemplate:=False, DocumentType:=0
+    Dim tempDocument1
+    Set tempDocument1 = wordApplication.Documents.Add(modifiedFile, False, 0)
+    tempDocument1.Activate
+
+    setDocumentViewType tempDocument1, ViewTypeNormal
+    '// clear the clipboard so we don't have a large clipboard
+    Set clearRange = tempDocument1.Range(0,1)
+    clearRange.Copy
+
+    tempDocument1.Revisions.AcceptAll
+    modifiedDocument.Close
+
+    '// Merge the server doc into the modified doc in order to have the merge work correctly for older version of word.
+    '// Not needed for Word 2007
+    If (wordType <> Word07Type) Then
+        If (wordType <> Word2000Type) Then
+            '// Note that the following call with "DetectFormatChanges=True" params works
+            '// correctly when some text is deleted by the modifiedFile. Supplying default
+            '// values for all params does not seem to work for deletes - that is, the
+            '// original text remains even though deleted in the modifiedFile.
+            '// Note that Compare does not work reliably for 2003
+            '// Method params:
+            '// fileName, wdMergeTargetCurrent=1, DetectFormatChanges=True, useFormattingFromCurrent=0, AddToRecentFiles=False
+            tempDocument1.Merge tmpCurrentFile, 1, True, 0, False
+        Else
+            tempDocument1.Compare tmpCurrentFile
+        End If
+    End If
+
+    logMessage "Fix Props on external document"
+
+    '// fix docProps after merge to removed duplications caused by
+    '// merging docProps in original and textValues in modified document.
+    '// The modified document will contain text values, if the docProps
+    '// were removed at time of Review/Negotiation
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+    fixFieldsAfterMerge tempDocument1
+    wordApplication.Visible = True
+
+    Dim tmpModifiedFile
+    tmpModifiedFile = getTemp2FileName(currentFile)
+    tempDocument1.SaveAs tmpModifiedFile
+    tempDocument1.Close
+    logMessage "tmpModifiedFile = " & tmpModifiedFile
+
+    wordApplication.Options.StoreRSIDOnSave = priorRSIDValue
+
+    logMessage "Open and AcceptAll on currentDocument"
+
+    Set currentDocument = openWordFile(wordApplication, currentFile)
+
+    '// ---------------------------------------------------------
+    '// Save the current settings such as View Type, track change
+    saveWordSettings currentDocument
+
+    '// Set the view type to be normal, all regen will be done in this setting
+    setDocumentViewType currentDocument, ViewTypeNormal
+    '// ---------------------------------------------------------
+
+    currentDocument.Revisions.AcceptAll
+
+    logMessage "Call Merge on currentDocument"
+
+    If (wordType <> Word2000Type) Then
+        '// Note that the following call with "DetectFormatChanges=True" params works
+        '// correctly when some text is deleted by the modifiedFile. Supplying default
+        '// values for all params does not seem to work for deletes - that is, the
+        '// original text remains even though deleted in the modifiedFile.
+        '// Method params:
+        '// fileName, wdMergeTargetCurrent=1, DetectFormatChanges=True, useFormattingFromCurrent=0, AddToRecentFiles=False
+        currentDocument.Merge tmpModifiedFile, 1, True, 0, False
+    Else
+        currentDocument.Merge tmpModifiedFile
+    End If
+
+    '// ---------------------------------------------------------
+    '// Restore the current settings such as View Type, track change
+    restoreWordSettings currentDocument
+    '// ---------------------------------------------------------
+
+    logMessage "Delete tmpCurrentFile, tmpModifiedFile"
+    '// remove temp file for currentDocument, modifiedDocument
+    deleteFile tmpCurrentFile
+    deleteFile tmpModifiedFile
+
+    logMessage "End diffUsingWordWithTrackChangesOn"
+End Sub
+
+
+Sub diffUsingWordWithTrackChangesOnHandler (keyValues)
+    On Error Resume Next
+
+    setClientLogLevel awxsGetValue(keyValues, "clientLogLevel")
+
+    diffUsingWordWithTrackChangesOn awxsGetValue(keyValues, "targetDocument"), awxsGetValue(keyValues, "sourceDocument")
+End Sub
+
+
+Sub diffUsingWord (currentFile, modifiedFile)
+
+    Dim wordApplication
+    Set wordApplication = CreateObject("Word.Application")
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    wordApplication.Visible = True
+
+    Dim currentDocument
+    Set currentDocument = openWordFile(wordApplication, currentFile)
+
+    CompatibleCompareOrMerge currentDocument, modifiedFile, wordType
+
+    Set wordApplication = Nothing
+End Sub
+
+Sub diffUsingWordHandler (keyValues)
+    On Error Resume Next
+
+    diffUsingWord awxsGetValue(keyValues, "targetDocument"), awxsGetValue(keyValues, "sourceDocument")
+End Sub
+
+Sub pureDiffInMSWord (sourceDocument, targetDocument, bookmarkName)
+    On Error Resume Next
+
+    Dim aSourceDocument
+    Set aSourceDocument = GetObject(sourceDocument)
+    '// aSourceDocument.Application.Visible = False
+    Dim aTargetDocument
+    Set aTargetDocument = GetObject(targetDocument)
+    '// aTargetDocument.Application.Visible = False
+
+    aSourceDocument.Revisions.AcceptAll
+    aTargetDocument.Revisions.AcceptAll
+
+    Dim wordApplication
+    Set wordApplication = aSourceDocument.Application
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    wordApplication.Visible = True
+    wordApplication.NormalTemplate.Saved = True
+
+    Dim highlightDiff
+    If ("" = bookmarkName) Then
+        highlightDiff = True
+    Else
+        highlightDiff = False
+    End If
+
+    CompatibleCompareWithOption aSourceDocument, targetDocument, wordType, 2, highlightDiff '// wdMergeTargetNew = 2
+
+    '// aSourceDocument.Application.Visible = True
+    '// aTargetDocument.Application.Visible = True
+
+    If (highlightDiff = False) Then
+        Dim aSelection
+        Dim aRange
+        Set aSelection = aTargetDocument.Application.ActiveDocument.ActiveWindow.Selection
+        Set aRange = aSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+        Set aSelection = aSourceDocument.Application.ActiveDocument.ActiveWindow.Selection
+        Set aRange = aSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+        '// AnApp.Activate
+    End If
+
+    If (wordType = WordXPType OR wordType = Word07Type) Then
+        aSourceDocument.Close wdDoNotSaveChanges
+    End If
+
+    aTargetDocument.Close wdDoNotSaveChanges
+End Sub
+
+Sub pureDiffInMSWordHandler (keyValues)
+    On Error Resume Next
+
+    pureDiffInMSWord awxsGetValue(keyValues, "sourceDocument"), awxsGetValue(keyValues, "targetDocument"), awxsGetValue(keyValues, "bookmarkName")
+End Sub
+
+Function tempClauseCreated (wordApplication, currentSelection, clauseName, tempDocumentFolder)
+    On Error Resume Next
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    LogMessage "tempClauseCreated wordType = " & wordType
+
+    tempClauseCreated = ""
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , clauseName) '// wdGoToBookmark = -1
+    currentSelection.Copy
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    Dim tempDocument
+    Set tempDocument = wordApplication.Documents.Add( , , , False)
+    tempDocument.Activate
+
+    populateProperty aRange, tempDocument
+
+    Dim newSelection
+    Set newSelection = tempDocument.ActiveWindow.Selection
+    CompatiblePasteWithAllValue newSelection, wordType
+
+    If (tempDocument.Bookmarks.Exists(clauseName) = True) Then
+        tempDocument.Bookmarks(clauseName).Delete
+    End If
+
+    Dim tempDocumentName
+    tempDocumentName = Replace(tempDocumentFolder, "/", "\")
+    Dim created
+    created = createDirectory(tempDocumentName & TempFolderName)
+    If (created = 0) Then
+        Dim ext
+        ext = WordDocExtension
+        If (wordType = Word07Type) Then
+            ext = Word07DocExtension
+        End If
+        tempDocumentName = tempDocumentName & TempFolderName & "\" & clauseName & ext
+
+        tempDocument.SaveAs tempDocumentName
+
+        tempDocument.Close
+
+        tempClauseCreated = tempDocumentName
+    End If
+End Function
+
+Sub CompatiblePasteWithAllValue (currentSelection, wordType)
+    On Error Resume Next
+
+    Dim pos
+    currentSelection.TypeText "a"
+    pos = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+    CompatiblePasteWithFormat currentSelection, wordType, 16 '// wdFormatOriginalFormatting = 16
+    pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+    currentSelection.TypeBackspace
+End Sub
+
+Function getFileBytes (filename)
+    On Error Resume Next
+
+    Dim fso, fileStream
+
+    tmpFileName = filename & ".tmp"
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    fso.CopyFile filename, tmpFileName
+    set fileStream = CreateObject("ADODB.Stream")
+    fileStream.Type = 1  '//adTypeBinary
+    fileStream.Open
+    fileStream.LoadFromFile tmpFileName
+    getFileBytes = fileStream.Read
+    fileStream.Close
+    Set fileStream = Nothing
+    fso.DeleteFile tmpFileName, true
+    Set fso = Nothing
+End Function
+
+Sub convertCommentToBookmarkForAdHocClause (currentDocument)
+    On Error Resume Next
+
+    Dim currentComment
+    Dim newClauseName
+
+    Dim newClauseIndex
+    newClauseIndex = 1
+
+    For each currentComment in currentDocument.Comments
+        If (currentComment.Initial = aribaKeyword) Then
+            newClauseName = prefixClauseName & aribaKeyword & newClauseIndex
+            newClauseIndex = newClauseIndex + 1
+
+            Dim newClauseBookmark
+            Set newClauseBookmark = currentDocument.Bookmarks.Add(newClauseName, currentComment.Scope)
+            logMessage "    In convertCommentToBookmarkForAdHocClause, newClauseBookmark = " & newClauseBookmark
+        End If
+    Next
+
+        '// cleanup
+    For each currentComment in currentDocument.Comments
+        If (currentComment.Initial = aribaKeyword) Then
+            currentComment.Delete
+        End If
+    Next
+End Sub
+
+Function addCommentForAdHocClause (currentDocument, currentSelection, sectionName, newClauseIndex, xmlNode_parent)
+    On Error Resume Next
+
+    logMessage "     addCommentForAdHocClause , sectionName = " & sectionName
+
+    Dim globalRange
+    Set globalRange = currentSelection.GoTo(-1, , , GlobalContractBookmarkName) '// wdGoToBookmark = -1
+
+    Dim i, count
+    Dim bookmarkName
+    Dim currentBookmark, previousBookmark
+    Dim allBookmark
+    Dim fromPosition, toPosition
+    Dim sectionRange
+    Dim sectionBookmark
+
+    Set sectionRange = currentSelection.GoTo(-1, , , sectionName) '// wdGoToBookmark = -1
+
+    Set currentBookmark = Nothing
+    Set previousBookmark = Nothing
+    Set allBookmark = sectionRange.Bookmarks
+    Set sectionBookmark= allBookmark.Item(sectionName)
+    count = allBookmark.count
+
+    Dim sectionFrom
+    Dim sectionTo
+
+    '// XXX : sectionFrom NOT computed correctly this way
+    '// sectionFrom = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+    '// sectionFrom = currentSelection.MoveEnd(4, 1)  '// wdParagraph = 4
+    '// sectionFrom = currentSelection.End
+    '// sectionFrom = sectionFrom + 1
+
+    '// sectionFrom is the end of first non-empty paragraph in the section bookmark
+    Dim sectionParagraph
+    For each sectionParagraph in sectionRange.Paragraphs
+        Dim tempRange
+        Set tempRange = sectionParagraph.Range
+        If(IsEmptyRange(tempRange) = False) Then
+            sectionFrom = tempRange.End
+            Exit For
+        End If
+    Next
+
+    sectionTo = sectionRange.End
+
+    logMessage "sectionFrom = " & sectionFrom
+
+    newClauseIndex = 1
+
+    '// loop thru all bookmarks, and check if there is any content between the bookmarks
+    '// that need to be bookmarked
+    For i = 1 To count
+        Dim clauseName
+        Set currentBookmark = allBookmark.Item(i)
+        bookmarkName = currentBookmark.Name
+
+        Dim index
+        index = InStr(1, bookmarkName, prefixSectionGenName, vbBinaryCompare)
+        If (index = 0) Then
+            index = InStr(1, bookmarkName, prefixClauseGenName, vbBinaryCompare)
+        End If
+        If ((index <> 0) AND (currentBookmark.Name <> sectionBookmark.Name) AND (bookmarkIncluded(sectionBookmark, currentBookmark) = 1)) Then
+            '// defined section/clause
+            If (previousBookmark is Nothing) Then
+                If (sectionBookmark.Name <> GlobalContractBookmarkName) Then
+                    newClauseIndex = addNewClauseInComment(sectionFrom, currentBookmark.Start, currentDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+                Else
+                    newClauseIndex = addNewClauseInComment(globalRange.Start, currentBookmark.Start, currentDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+                End If
+
+                Set previousBookmark = currentBookmark
+                fromPosition = previousBookmark.End
+            Else
+                If (bookmarkIncluded(previousBookmark, currentBookmark) = 0) Then
+                        '// parallel structure
+                    newClauseIndex = addNewClauseInComment(fromPosition, currentBookmark.Start, currentDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+                    fromPosition = currentBookmark.End
+                    Set previousBookmark = currentBookmark
+                End If
+            End If
+        End If
+
+        currentDocument.Application.Visible = False
+        currentDocument.Activate
+    Next
+
+    If (Not (previousBookmark is Nothing)) Then
+        If (sectionBookmark.Name <> GlobalContractBookmarkName) Then
+            newClauseIndex = addNewClauseInComment(previousBookmark.End, sectionTo, currentDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+        Else
+            newClauseIndex = addNewClauseInComment(previousBookmark.End, globalRange.End, currentDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+        End If
+    Else
+        newClauseIndex = addNewClauseInComment(sectionFrom, sectionTo, currentDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+    End If
+
+    addCommentForAdHocClause = newClauseIndex
+End Function
+
+Function addNewClauseInComment (fromPosition, toPosition, aDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+    On Error Resume Next
+
+    addNewClauseInComment = newClauseIndex
+
+    logMessage "    addNewClauseInComment , fromPosition = " & fromPosition & " toPosition = " & toPosition
+
+    If (fromPosition + 1 < toPosition) Then
+        '// get list of child bookmarks. split the range into unmarked and marked range.
+        '// Call unmakedToXml, sectionToXml, clauseToXml for unmarked, sectionBookmark, clauseBookmark respectively
+        Dim theRange
+        Set theRange = aDocument.Range(fromPosition, toPosition)
+        logMessage " range = " & theRange
+        Dim childBookmarks
+        logMessage " Start getChildBookmarksForRange"
+        Set childBookmarks = getChildBookmarksForRange(aDocument,theRange)
+        logMessage " End getChildBookmarksForRange"
+
+        Dim lastEnd
+        lastEnd = fromPosition
+
+        Dim xmlNode_newEntities
+        Set xmlNode_newEntities = xmlDOM.createElement(TAG_NEW_ENTITIES)
+        xmlNode_newEntities.setAttribute ATTRIBUTE_SECTION_BOOKMARK , sectionBookmark.Name
+        If(previousBookmark Is Nothing) Then
+            xmlNode_newEntities.setAttribute ATTRIBUTE_PREVIOUS_BOOKMARK , ""
+        Else
+            xmlNode_newEntities.setAttribute ATTRIBUTE_PREVIOUS_BOOKMARK , previousBookmark.Name
+        End If
+
+        For each aBookmark in childBookmarks.Items()
+            If(aBookmark.Start > lastEnd+1) Then
+                appendChildNewClausesXml aDocument,aDocument.Range(lastEnd,aDocument.Bookmarks.Item(aBookmark.Name).Start),sectionBookmark,previousBookmark,xmlNode_newEntities
+            End If
+
+            '// TBD : XXX : How to deal with inserted text that has sectionAriba_ bookmark prefix.
+            '// For now, it is ignored sent as xml tree to server , but server IGNORES it.
+            If(InStr(1,aBookmark.Name,prefixSectionName & aribaKeyword,vbBinaryCompare)<>0) Then
+                xmlNode_newEntities.appendChild sectionToXml(aDocument,aBookmark)
+            ElseIf(InStr(1,aBookmark.Name,prefixClauseName & aribaKeyword,vbBinaryCompare)<>0) Then
+                xmlNode_newEntities.appendChild clauseToXml(aDocument,aBookmark,True)
+            End If
+
+            lastEnd = aBookmark.End
+        Next
+        logMessage "Done For Loop ************"
+        If(toPosition > lastEnd+1) Then
+            appendChildNewClausesXml aDocument,aDocument.Range(lastEnd,toPosition),sectionBookmark,previousBookmark,xmlNode_newEntities
+        End If
+
+        If(xmlNode_newEntities.hasChildNodes) Then
+            xmlNode_parent.appendChild xmlNode_newEntities
+        End If
+    End If
+
+End Function
+
+Sub appendChildNewClausesXml(aDocument,theRange, sectionBookmark, previousBookmark, xmlNode_parent)
+    On Error Resume Next
+
+    logMessage "        appendChildNewClausesXml Start"
+
+    Dim xmlClauseArray
+    Set xmlClauseArray = paragraphsToClauses(theRange)
+
+    logMessage "        appendChildNewClausesXml xmlClauseArray.Count = " & xmlClauseArray.Count
+    If(xmlClauseArray.Count > 0) Then
+        Dim xmlClause
+        For each xmlClause in xmlClauseArray.Items()
+            xmlNode_parent.appendChild xmlClause
+        Next
+    End If
+End Sub
+
+Function isEmptyRange (aRange)
+    On Error Resume Next
+
+    isEmptyRange = True
+
+    If (((Len(Trim(getRangeContent(aRange))) > 0)) AND (aRange.ComputeStatistics(0) > 0)) Then '//' wdStatisticWords = 0
+        isEmptyRange = False      
+    End If    
+End Function
+
+Function isEmptyRange2 (aRange, content)
+    On Error Resume Next
+
+    isEmptyRange2 = True
+
+    If (((Len(Trim(content)) > 0)) AND (aRange.ComputeStatistics(0) > 0)) Then '//' wdStatisticWords = 0
+        isEmptyRange2 = False
+    End If
+End Function
+
+Function isEmptyText (aRange)
+    On Error Resume Next
+
+    isEmptyText = True
+
+    If (Len(Trim(getRangeContent(aRange))) > 0) Then
+        isEmptyText = False
+    End If
+End Function
+
+Function uploadSection (currentDocument, sectionContent, sectionContext, sectionId, originalUrl)
+    On Error Resume Next
+
+    Dim strUrl
+    strUrl = originalUrl
+
+    Dim sData
+    sData = sectionContent
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        Exit Function
+    End If
+
+    If (Not sectionId = "") Then
+        strUrl = strUrl & "&" & SectionIdKey & "=" & sectionId
+    End If
+
+    If (Not sectionContext = "") Then
+        strUrl = strUrl & "&" & SectionContextKey & "=" & sectionContext
+    End If
+
+    '// msgbox "strUrl " & strUrl
+
+    xmlhttp.Open "POST", strUrl, false
+    xmlhttp.Send sData
+
+    Dim responseData
+    responseData = xmlhttp.responseText
+
+    If ((Not responseData = "") AND (Not sectionId = "") AND (currentDocument.Bookmarks.Exists(sectionId))) Then
+        Dim aRange
+        Set aRange = currentDocument.Bookmarks.Item(sectionId).Range
+        Dim aBookmark
+        Set aBookmark = currentDocument.Bookmarks.Add(responseData, aRange)
+        uploadSection = responseData
+        Dim pos
+        pos = currentDocument.Bookmarks.Item(sectionId).Delete
+
+        '// msgbox("responseData " & responseData)
+    Else
+        uploadSection = sectionId
+    End If
+
+    Set xmlhttp = Nothing
+End Function
+
+Sub applyStyleInSectionClause (aDocument, styleId, aSelection, contentType)
+    On Error Resume Next
+
+    logMessage " applyStyleInSectionClause, styleId = " & styleId & " contentType = " & contentType
+
+    '// XXX : For either case - section or clause, we should apply style only on
+    '// the first paragraph. For clause, it may be necessary to apply Default
+    '// style on the rest of the paragraphs. Revisit this later.
+    '// kkim:(1-1WAG7) Because of the above change, if a clause has multiple paragraphs,
+    '// the style gets lost after the 1st paragraph. The fix is to apply the style to the paragraphs 
+    '// that have the same left indent, the same level, and the same type (Bullets, SimpleNumbering, NoNumbering, etc.) 
+    '// as the first paragraph does. And then remove the numbering and align the paragraphs with the first paragraph.
+    '// There's an issue where if a paragraph has lower levels of paragraphs,we by-pass applying the style to them 
+    '// as result of which wrong styles might be applied to those paragraphs. In the future during a release cycle, 
+    '// we should give the users options of whether to apply the style only to the first paragraph which is the current behavior 
+    '// or whether to apply to the same kind of paragraph which is the new behavior of this change.
+    Dim aRange   
+    If ((Not styleId = noStyle) AND (Not styleId = AdHocStyle)) Then
+        If (contentType = ContentSectionType) Then
+            Set aRange = aSelection.Paragraphs(1).Range
+            aRange.Style = aDocument.Styles(styleId)
+        ElseIf (contentType = ContentClauseType) Then
+            Dim aPara
+            Dim aListFormat
+            Dim leftIndentAfterApplyStyle
+            Dim firstParaListLevel
+            Dim firstParaListType
+            Dim firstParaLeftIndent
+            Dim index
+            index = 1
+            For each aPara in aSelection.Paragraphs
+                Set aRange = aPara.Range
+                Set aListFormat = aRange.ListFormat
+                logMessage " ListLevelNumber, ListType, LeftIndent " & index & "." & aListFormat.ListLevelNumber & " "  & aListFormat.ListType & " " & aPara.LeftIndent
+                If (index = 1) Then
+                    firstParaListLevel  = aListFormat.ListLevelNumber
+                    firstParaListType   = aListFormat.ListType
+                    firstParaLeftIndent = aPara.LeftIndent
+                    aRange.Style = aDocument.Styles(styleId)
+                    leftIndentAfterApplyStyle = aPara.LeftIndent
+                ElseIf (firstParaLeftIndent = aPara.LeftIndent AND _
+	                firstParaListLevel  = aListFormat.ListLevelNumber AND _
+	                firstParaListType   = aListFormat.ListType) Then
+	            aRange.Style = aDocument.Styles(styleId)
+	            aListFormat.RemoveNumbers 1 '// 1 = wdNumberParagraph
+	            aPara.LeftIndent  = leftIndentAfterApplyStyle
+                End If
+                index = index + 1
+            Next
+        End If       
+    End If 
+End Sub
+
+Function contentType (bookmarkName)
+    On Error Resume Next
+
+    contentType = ContentUnknownType
+
+    Dim aIndex
+    aIndex = InStr(1, bookmarkName, prefixClauseName, vbBinaryCompare)
+
+    logMessage "bookmark = " & bookmarkName & " aIndex = " & aIndex
+
+    If (aIndex <> 0) Then
+        contentType = ContentClauseType
+    Else
+        aIndex = InStr(1, bookmarkName, prefixSectionName, vbBinaryCompare)
+        If (aIndex <> 0) Then
+            contentType = ContentSectionType
+        End If
+    End If
+End Function
+
+Function addADocumentProperty (aPropertyName, aDocumentProperties)
+    On Error Resume Next
+
+    addADocumentProperty = False
+
+    Dim aProperty
+    Set aProperty = Nothing
+
+    Set aProperty = aDocumentProperties.Item(aPropertyName)
+    If ((Err.Number <> 0) Or (aProperty is Nothing)) Then
+        Err.clear
+
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        aDocumentProperties.Add aPropertyName, False, 4, defaultPropertyValue '// msoPropertyTypeString = 4
+
+        addADocumentProperty = True
+    End If
+End Function
+
+Function addAFormProperty (aPropertyName, aFormProperties)
+    On Error Resume Next
+
+    addAFormProperty = False
+
+    Dim aProperty
+    Set aProperty = Nothing
+
+    Set aProperty = aFormProperties.Item(aPropertyName)
+    If ((Err.Number <> 0) Or (aProperty is Nothing)) Then
+        Err.clear
+
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        agreement.Activate
+        Set currentSelection = agreement.ActiveWindow.Selection
+
+        Dim pos
+        If (agreement.Bookmarks.Exists(GlobalContractBookmarkName) = True) Then
+            Dim aRange
+            Set aRange = currentSelection.GoTo(-1, , , GlobalContractBookmarkName) '// wdGoToBookmark = -1
+            pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+        Else
+            pos = currentSelection.EndKey(6, 0) '// wdStory = 6, wdMove = 0
+        End If
+        currentSelection.TypeParagraph
+
+        Set aFormProperty = aFormProperties.Add(currentSelection.Range, 70) '// wdFieldFormTextInput = 70
+
+        aFormProperty.Name = aPropertyName
+        aFormProperty.Result = defaultPropertyValue
+
+        addAFormProperty = True
+    End If
+End Function
+
+Sub populateProperty (aRange, aDocument)
+    On Error Resume Next
+
+    Dim documentProperties
+    Set documentProperties = aDocument.CustomDocumentProperties
+
+    Dim aField
+    For each aField in aRange.Fields
+        If (aField.Type = 85) Then '// wdFieldDocProperty = 85
+            Dim codeText
+            codeText = aField.Code.Text
+            Dim index1, index2
+            index1 = InStr(1, codeText, DocumentPropertyKey, vbBinaryCompare)
+            If (index1 <> 0) Then
+                index1 = index1 + Len(DocumentPropertyKey) + 1
+                index2 = InStr(index1, codeText, " ", vbBinaryCompare)
+                Dim name
+                name = Mid(codeText, index1, index2 - index1)
+                Dim result
+                result = addADocumentProperty(name, documentProperties)
+            End If
+        End If
+    Next
+End Sub
+
+Sub openClauseNavigatorUtil (bookmarkName, returnResult, documentLocation)
+    On Error Resume Next
+
+    If (bookmarkName <> "") Then
+        Dim agreement
+
+        Set agreement = Nothing
+        Set agreement = GetObject(documentLocation)
+
+        If ((Err.Number = 0) And (Not agreement is Nothing)) Then
+            Dim AnApp
+
+            Set AnApp = Nothing
+            Set AnApp = agreement.Application
+
+            AnApp.Visible = True
+            agreement.Activate
+
+            Dim currentSelection
+            Set currentSelection = agreement.ActiveWindow.Selection
+            Dim aRange
+
+            Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+            AnApp.Application.Activate
+
+            Set AnApp = Nothing
+            Set agreement = Nothing
+        End If
+    End If
+End Sub
+
+Sub openClauseNavigatorHandler (keyValues)
+    On Error Resume Next
+
+    openClauseNavigatorUtil awxsGetValue(keyValues, "bookmarkName"), awxsGetValue(keyValues, "returnResult"), awxsGetValue(keyValues, "documentLocation")
+End Sub
+
+Function highlightClauseNavigatorUtil (documentLocation)
+    On Error Resume Next
+
+    currentBookmarkName = ""
+
+    Dim AnApp
+    Set AnApp = GetObject(, "Word.Application")
+
+    If ((Err.Number = 0) And (Not AnApp is Nothing)) Then
+        Dim aIndex
+        aIndex = InstrRev(documentLocation, "/", -1, vbBinaryCompare)
+        Dim documentName
+        documentName = Right(documentLocation, Len(documentLocation) - aIndex)
+
+        Dim agreement
+        Set agreement = AnApp.Documents.Item(documentName)
+        If (Not agreement is Nothing) Then
+            agreement.Activate
+
+            Dim currentSelection
+            Set currentSelection = agreement.ActiveWindow.Selection
+
+            Dim allBookmark
+            Set allBookmark = currentSelection.Bookmarks
+
+            If (allBookmark.Count > 0) Then
+                Dim currentBookmark
+                Set currentBookmark = agreement.Bookmarks.Item(GlobalContractBookmarkName)
+                Dim aBookmark
+
+                For each aBookmark in allBookmark
+                    Dim index1, index2
+                    index1 = InStr(1, aBookmark.Name, prefixSectionName, vbBinaryCompare)
+                    index2 = InStr(1, aBookmark.Name, prefixClauseName, vbBinaryCompare)
+                    If ((index1 <> 0) OR (index2 <> 0)) Then
+                        If (bookmarkIncluded(currentBookmark, aBookmark) = 1) Then
+                            Set currentBookmark = aBookmark
+                        End If
+                    End If
+                Next
+
+                Dim currentBookmarkName
+                currentBookmarkName = currentBookmark.Name
+
+                highlightClauseNavigatorUtil = currentBookmarkName
+            End If
+        End If
+        Set AnApp = Nothing
+    End If
+End Function
+
+Function highlightClauseNavigatorHandler (keyValues)
+    On Error Resume Next
+
+    highlightClauseNavigatorHandler = highlightClauseNavigatorUtil(awxsGetValue(keyValues, "documentLocation"))
+End Function
+
+Sub addFieldToDom (xmlDom, fieldName, fieldText)
+    On Error Resume Next
+
+    Dim ele, tnode
+    Set ele = xmlDom.createElement("FormField")
+    ele.setAttribute "name", fieldName
+    Set tnode = xmlDom.createTextNode(fieldText)
+    ele.appendChild(tnode)
+    xmlDom.documentElement.appendChild(ele)
+End Sub
+
+Sub retrieveWordData (aDocument, formFieldsValue, actionUrl)
+    On Error Resume Next
+
+    Dim xmlDomFields
+    Set xmlDomFields = CreateObject("Msxml2.DOMDocument.3.0")
+    xmlDomFields.async = False
+
+    '// If logError(msg1) Then
+    '//     Exit Sub
+    '// End If
+    xmlDomFields.loadXML("<?xml version=""1.0""?><root/>")
+
+        '//parse form fields and add them to xml
+    Dim sField, sText
+    Dim fieldArray
+
+    fieldArray = Split(formFieldsValue, "******")
+
+    For each sField in fieldArray
+        If (Len(sField) > 0) Then
+            logMessage "reading Property " & prefixFieldName & sField
+            sText = aDocument.FormFields(prefixFieldName & sField).Result
+                '// backward compatibility
+            If Err.number <> 0 Then
+                Err.Clear
+                sText = aDocument.FormFields(sField).Result
+            End If
+                '//if form field does not exist, skip and not send it to server
+
+            logMessage "sField " & sField
+            logMessage "value " & sText
+
+            If Err.number <> 0 Then
+                sText = ""
+                Err.Clear
+            Else
+                If (Not sText = "") Then
+                    addFieldToDom xmlDomFields, sField, sText
+                End If
+            End If
+        End If
+    Next
+
+    Dim result
+
+    If(EnableLogging) Then
+        logMessage "Fields XML"
+        logXmlTree xmlDomFields.documentElement, 1
+    End If
+
+    result = sendDataToServer(xmlDomFields.xml, actionUrl)
+
+    Set xmlDomFields = Nothing
+End Sub
+
+
+Sub generatingCleanVersionHandler (keyValues)
+    On Error Resume Next
+
+    generatingCleanVersionInFly awxsGetValue(keyValues, "documentLocation"), _
+                                awxsGetValue(keyValues, "tempDocumentName"), _
+                                booleanValue(awxsGetValue(keyValues, "isRemoveChangeRequired")), _
+                                booleanValue(awxsGetValue(keyValues, "isRemoveFieldRequired")), _
+                                ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "saveCleanVersionUrl"))
+End Sub
+
+Sub generatingCleanVersionInFly (documentLocation, tempDocumentName, isRemoveChangeRequired, isRemoveFieldRequired, saveCleanVersionUrl)
+    On Error Resume Next
+
+    Dim tempFolder
+    tempFolder = Replace(tempDocumentName, "/", "\")
+    tempFolder = tempFolder & Second(Now)
+    Dim created
+    created = createDirectory(tempFolder)
+
+    Dim aIndex
+    aIndex = InstrRev(documentLocation, "\", -1, vbBinaryCompare)
+    tmpClientFile = tempFolder & "\" & Mid(documentLocation,  aIndex + 1)
+
+    Dim fso
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    fso.CopyFile documentLocation, tmpClientFile
+
+    Dim wordApplication
+    Set wordApplication = contactApp()
+
+    wordApplication.Visible = False
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord WordApplication, tmpClientFile, False
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+    Dim cleanupDocument
+    Set cleanupDocument = wordApplication.ActiveDocument
+
+    generatingCleanVersion cleanupDocument, isRemoveChangeRequired, isRemoveFieldRequired
+
+    cleanupDocument.Saved = false
+    cleanupDocument.Save
+
+    cleanupApplication wordApplication
+
+    Dim sData
+    sData = getFileBytes(tmpClientFile)
+
+    sendDataToServer sData, saveCleanVersionUrl
+End Sub
+
+Sub generatingCleanVersion (aDocument, isRemoveChangeRequired, isRemoveFieldRequired)
+    On Error Resume Next
+
+    Dim originalTrack
+    originalTrack = aDocument.TrackRevisions
+
+    If (isRemoveChangeRequired = True) Then
+        aDocument.Revisions.AcceptAll
+    End If
+
+    aDocument.TrackRevisions = False
+    logMessage "Setting clientVersion.TrackRevisions = False (generatingCleanVersion)"
+
+    If (isRemoveFieldRequired = True) Then
+        removeField aDocument
+    End If
+
+    aDocument.TrackRevisions = originalTrack
+    logMessage "Restoring clientVersion.TrackRevisions = " & originalTrack & " (generatingCleanVersion)"
+End Sub
+
+Sub removeField (aDocument)
+    On Error Resume Next
+
+    Dim anItemForm
+    Dim anItem
+    Dim aRange
+    Dim aStartPosition
+    Dim aValue
+    Dim currentSelection
+    Dim aDocumentProperties
+    Dim aDocumentProperty
+    Dim aName
+
+    logMessage "**** Remove Form Fields"
+    For each anItemForm in aDocument.FormFields
+        aValue = anItemForm.Result
+        aStartPosition = anItemForm.Range.Start
+        anItemForm.Delete
+        Set currentSelection = aDocument.ActiveWindow.Selection
+        currentSelection.Start = aStartPosition
+        currentSelection.End = aStartPosition
+        currentSelection.TypeText aValue
+    Next
+
+    Set aDocumentProperties = aDocument.CustomDocumentProperties
+
+    logMessage "**** Remove Custom Fields"
+    For each anItem in aDocument.Fields
+        If (getTypeForDocumentProperty(anItem) = FieldTypeDocProp) Then
+            logMessage "full name = " & anItem.Code.Text
+            aName = getNameForDocumentProperty(anItem)
+            logMessage "aName = " & aName
+            anItem.Select
+            Set currentSelection = aDocument.ActiveWindow.Selection
+            Set aRange = currentSelection.Range
+            aStartPosition = aRange.Start
+            aValue = aRange.Text
+            anItem.Delete
+            currentSelection.TypeText aValue
+
+            Set aDocumentProperty = Nothing
+            Set aDocumentProperty = aDocumentProperties.Item(aName)
+            If (Not (aDocumentProperty is Nothing)) Then
+                aDocumentProperty.Delete
+            End If
+        End If
+    Next
+
+End Sub
+
+Function getNameForDocumentProperty (aField)
+    On Error Resume Next
+
+    getNameForDocumentProperty = ""
+
+    Dim codeString
+    codeString = aField.Code.Text
+
+    Dim PrefixDocumentProperty
+    PrefixDocumentProperty = "DOCPROPERTY "
+
+    Dim PrefixRefProperty
+    PrefixRefProperty = "REF "
+
+    Dim index1, index2
+    index1 = InStr(1, codeString, PrefixDocumentProperty, vbBinaryCompare)
+    logMessage "getNameForDocumentProperty, index1 = " & index1
+
+    If (index1 <> 0) Then
+        index1 = index1 + Len(PrefixDocumentProperty)
+    Else
+        index1 = InStr(1, codeString, PrefixRefProperty, vbBinaryCompare)
+        index1 = index1 + Len(PrefixRefProperty)
+    End If
+
+    index2 = InStr(index1 + 1, codeString, " ", vbBinaryCompare)
+    getNameForDocumentProperty = Trim(Mid(codeString, index1, index2 - index1))
+End Function
+
+Function getTypeForDocumentProperty (aField)
+    On Error Resume Next
+
+    Dim codeString
+    codeString = aField.Code.Text
+
+    Dim PrefixDocumentProperty
+    PrefixDocumentProperty = "DOCPROPERTY "
+
+    Dim PrefixRefProperty
+    PrefixRefProperty = "REF "
+
+    If (InStr(1, codeString, PrefixDocumentProperty, vbBinaryCompare) <> 0) Then
+        getTypeForDocumentProperty = FieldTypeDocProp
+    ElseIf (InStr(1, codeString, PrefixRefProperty, vbBinaryCompare) <> 0) Then
+        getTypeForDocumentProperty = FieldTypeRef
+    Else
+        getTypeForDocumentProperty = FieldTypeUnknown
+    End If
+End Function
+
+
+'// If the docProps were removed from the external doc, then
+'// after merge, the docProps in the original doc and the textValue
+'// in the external doc result in duplication with original prop
+'// delered. Run the following method after Merge to keep docProps
+'// and removed textValues.
+Sub fixFieldsAfterMerge(aDocument)
+    Dim anItemForm
+    Dim anItem
+    Dim aRange
+    Dim currentSelection
+    Dim aDocumentProperties
+    Dim aDocumentProperty
+    Dim aName
+    Dim revision
+
+    For Each anItemForm In aDocument.FormFields
+        anItemForm.Select
+        Set currentSelection = aDocument.ActiveWindow.Selection
+        Set aRange = currentSelection.range
+        For Each revision In aRange.Revisions
+            '// more than one formfields can be combined together in the revision, so use isRangeIncluded
+            logMessage "revision text = *" & revision.range.text & "* range text = *" & aRange.text & "*"
+            If ( revision.Type = 2 And revision.range.text = aRange.text ) Then
+                rejectInsertedRevision aDocument.range(revision.range.Start - 1, revision.range.End + 1), revision
+                revision.Reject
+            End If
+        Next
+    Next
+
+    For Each anItem In aDocument.Fields
+        '// for deleted props, the getType retunns Unknown, so not use the filter getType=docProps
+        '// revsionType = 2 will make sure only deleted props are picked up
+        anItem.Select
+        Set currentSelection = aDocument.ActiveWindow.Selection
+        Set aRange = currentSelection.range
+        For Each revision In aRange.Revisions
+            logMessage "revision text = *" & revision.range.text & "* range text = *" & aRange.text & "*"
+            If ( revision.Type = 2 And revision.range.text = aRange.text ) Then
+                rejectInsertedRevision aDocument.range(revision.range.Start - 1, revision.range.End + 1), revision
+                revision.Reject
+            End If
+        Next
+    Next
+
+End Sub
+
+
+'// Rejects the inserted revision that mathes the rejected one
+Sub rejectInsertedRevision(range, deletedRevision)
+    Dim revision
+    For Each revision In range.Revisions
+        If (revision.Type = 1 And revision.range.text = deletedRevision.range.text And (Not isRangeIncluded(revision.range,deletedRevision.range)) ) Then
+            revision.Reject
+            Exit For
+        End If
+    Next
+End Sub
+
+
+Sub meetingAppointmentFinderHandler (keyValues)
+    On Error Resume Next
+
+    meetingAppointmentFinder awxsGetValue(keyValues, "conferenceName"), _
+                             awxsGetValue(keyValues, "aDay"), _
+                             awxsGetValue(keyValues, "aHour")
+End Sub
+
+Sub meetingAppointmentFinder (conferenceName, aDay, aHour)
+    On Error Resume Next
+
+    Dim anOutlook
+    Set anOutlook = CreateObject("Outlook.Application")
+    Dim anItem
+    Set anItem = anOutlook.CreateItem(1) '// olAppointmentItem = 1
+
+    Dim aConferenceRoom
+    Set aConferenceRoom = anItem.Recipients.Add(conferenceName)
+    aConferenceRoom.Type = 3 '// olResource = 3
+    Dim freeBusyInfo
+
+    '// freeBusyInfo = aConferenceRoom.FreeBusy(#5/17/2004#, 60, False)
+    '// msgbox("busy " & freeBusyInfo)
+
+    Dim aNameSpace
+    Set aNameSpace = anOutlook.GetNameSpace("MAPI")
+    Dim aRecipient
+    Set aRecipient = aNameSpace.CreateRecipient("Conf. Giants Bldg. 2_2-419.20")
+    freeBusyInfo = aRecipient.FreeBusy(#5/17/2004#, 60, False)
+    logMessage("busy " & freeBusyInfo)
+
+    anItem.MeetingStatus = 1 '// olMeeting = 1
+    anItem.Subject = "temptemp"
+    anItem.Location = "Conf. Giants Bldg. 2_2-419.20"
+    anItem.Start = #5/17/2004 11:00AM#
+    anItem.Duration = 60
+    Dim aRequiredItem
+    Set aRequiredItem = anItem.Recipients.Add("Gang Lan")
+    aRequiredItem.Type = 1 '// olRequired = 1
+    Dim anOptionalItem
+    Set anptionalItem = anItem.Recipients.Add("Gang Lan")
+    aOptionalItem.Type = 2 '// olOptional = 2
+    anItem.Display
+
+    '// anItem.Send
+
+End Sub
+
+Sub syncupClauseDocument (wordApplication, documentLocation, clauseId, tempDocumentFolder, originalUrl)
+    On Error Resume Next
+
+    saveOpenDocument wordApplication, documentLocation
+    openDocumentInWord wordApplication, documentLocation, False
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+    Dim aDocument
+    Set aDocument = wordApplication.ActiveDocument
+
+    syncupClauseDocumentInternal wordApplication, aDocument, documentLocation, clauseId, tempDocumentFolder, originalUrl
+End Sub
+
+Sub syncupClauseDocumentInternal (wordApplication, aDocument, documentLocation, clauseId, tempDocumentFolder, originalUrl)
+    On Error Resume Next
+
+    logMessage "syncupClauseDocumentInternal clause = " & clauseId & " doc = " & documentLocation & " postUrl = " & originalUrl
+
+    Dim currentSelection
+    Set currentSelection = aDocument.ActiveWindow.Selection
+
+    LogMessage "Temp document folder = " & tempDocumentFolder
+
+    tempDocumentLocation = tempClauseCreated(wordApplication, currentSelection, clauseId, tempDocumentFolder)
+
+    LogMessage "Temp document = " & tempDocumentLocation
+
+    Dim postUrl
+    postUrl = originalUrl
+
+    Dim sData
+    If (Not tempDocumentLocation = "") Then
+        sData = getFileBytes(tempDocumentLocation)
+    End If
+
+    If logError(GeneratingErr.openDocumentErrorMessage) Then
+        Exit Sub
+    End If
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        Exit Sub
+    End If
+
+    If (Not clauseId = "") Then
+        postUrl = postUrl & "&" & ClauseIdKey & "=" & clauseId
+    End If
+
+    logMessage "post Url = " & postUrl
+
+    Dim response
+    response = sendDataToServer(sData, postUrl)
+
+    logMessage "syncupClauseDocumentInternal response = " & response
+End Sub
+
+Sub uploadDocument (currentDocument, documentLocation, sectionContext, clauseId, noChange, aContent, originalUrl)
+    On Error Resume Next
+
+    Dim strUrl
+    strUrl = originalUrl
+
+    Dim sData
+    sData = "acw"
+    If (Not documentLocation = "") Then
+        sData = getFileBytes(documentLocation)
+    Else
+        strUrl = strUrl & "&" & VirtualUploadKey & "=yes"
+    End If
+
+    If logError(GeneratingErr.openDocumentErrorMessage) Then
+        Exit Sub
+    End If
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        Exit Sub
+    End If
+
+    If (Not clauseId = "") Then
+        strUrl = strUrl & "&" & ClauseIdKey & "=" & clauseId
+    End If
+
+    If (Not sectionContext = "") Then
+        strUrl = strUrl & "&" & SectionContextKey & "=" & sectionContext
+    End If
+
+    If (noChange = True) Then
+        strUrl = strUrl & "&" & SameClauseKey & "=yes"
+    End If
+
+    '// msgbox "strUrl " & strUrl
+
+    xmlhttp.Open "POST", strUrl, false
+    If (noChange = True) Then
+        xmlhttp.Send "a"
+    Else
+        logMessage("http send to:" & strUrl)
+        xmlhttp.Send sData
+
+        Dim responseData
+        responseData = xmlhttp.responseText
+
+        If ((Not responseData = "") AND (Not clauseId = "") AND (currentDocument.Bookmarks.Exists(clauseId))) Then
+            Dim aRange
+            Set aRange = currentDocument.Bookmarks.Item(clauseId).Range
+            Dim aBookmark
+            Set aBookmark = currentDocument.Bookmarks.Add(responseData, aRange)
+            Dim pos
+            pos = currentDocument.Bookmarks.Item(clauseId).Delete
+
+            strUrl = originalUrl
+            strUrl = strUrl & "&" & ClauseIdKey & "=" & responseData
+
+            '// msgbox ("responseData " & responseData)
+        End If
+
+        If (Not aContent = "") Then
+            strUrl = strUrl & "&" & SummaryContentKey & "=yes"
+            logMessage("http send to:" & strUrl)
+            xmlhttp.Open "POST", strUrl, false
+            xmlhttp.Send aContent
+        End If
+    End If
+
+    Set xmlhttp = Nothing
+End Sub
+
+Sub testXMLDocPost
+    Dim xmlDoc_syncupRequest
+    Set xmlDoc_syncupRequest = getXmlDoc_syncupRequest
+
+    xmlDoc_syncupRequest.Load "c:/InetPub/wwwroot/abc1.xml"
+
+    logMessage "Sending data to server - start: " & serverUrl
+
+
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        logMessage "data not sent error"
+        Exit Sub
+    End If
+
+    xmlhttp.Open "POST", serverUrl, false
+    logMessage "ready to post"
+    xmlhttp.Send xmlDoc_syncupRequest.xml
+
+    logMessage "posted"
+    incrementalSyncupClause = xmlhttp.responseText
+    Set xmlhttp = Nothing
+    logMessage "Sending data to server - end"
+End Sub
+Dim ContractAuthoringTrigger
+
+Dim eventIncrementalSyncupClause
+Set eventIncrementalSyncupClause = awxsCreateEvent("incrementalSyncupClause", GetRef("incrementalSyncupClauseHandler"))
+awxsRegisterEvent "incrementalSyncupClause", eventIncrementalSyncupClause
+
+Dim eventSendDataToServer
+Set eventSendDataToServer = awxsCreateEvent("sendDataToServer", GetRef("sendDataToServerHandler"))
+awxsRegisterEvent "sendDataToServer", eventSendDataToServer
+
+Dim eventOpenDocumentWithCheck
+Set eventOpenDocumentWithCheck = awxsCreateEvent("openDocumentWithCheck", GetRef("openDocumentWithCheckHandler"))
+awxsRegisterEvent "openDocumentWithCheck", eventOpenDocumentWithCheck
+
+Dim eventOpenClauseNavigator
+Set eventOpenClauseNavigator = awxsCreateEvent("openClauseNavigator", GetRef("openClauseNavigatorHandler"))
+awxsRegisterEvent "openClauseNavigator", eventOpenClauseNavigator
+
+Dim eventHighlightClauseNavigator
+Set eventHighlightClauseNavigator = awxsCreateEvent("highlightClauseNavigator", GetRef("highlightClauseNavigatorHandler"))
+awxsRegisterEvent "highlightClauseNavigator", eventHighlightClauseNavigator
+
+Dim eventDiffUsingWord
+Set eventDiffUsingWord = awxsCreateEvent("diffUsingWord", GetRef("diffUsingWordHandler"))
+awxsRegisterEvent "diffUsingWord", eventDiffUsingWord
+
+Dim eventPureDiffInMSWord
+Set eventPureDiffInMSWord = awxsCreateEvent("pureDiffInMSWord", GetRef("pureDiffInMSWordHandler"))
+awxsRegisterEvent "pureDiffInMSWord", eventPureDiffInMSWord
+
+Dim eventIsDocumentReadyToGenerate
+Set eventIsDocumentReadyToGenerate = awxsCreateEvent("isDocumentReadyToGenerate", GetRef("isDocumentReadyToGenerateHandler"))
+awxsRegisterEvent "isDocumentReadyToGenerate", eventIsDocumentReadyToGenerate
+
+Dim eventDiffUsingWordWithTrackChangesOn
+Set eventDiffUsingWordWithTrackChangesOn = awxsCreateEvent("diffUsingWordWithTrackChangesOn", GetRef("diffUsingWordWithTrackChangesOnHandler"))
+awxsRegisterEvent "diffUsingWordWithTrackChangesOn", eventDiffUsingWordWithTrackChangesOn
+
+Dim eventGeneratingCleanVersion
+Set eventGeneratingCleanVersion = awxsCreateEvent("generatingCleanVersion", GetRef("generatingCleanVersionHandler"))
+awxsRegisterEvent "generatingCleanVersion", eventGeneratingCleanVersion
+
+Dim eventMeetingAppointmentFinder
+Set eventMeetingAppointmentFinder = awxsCreateEvent("meetingAppointmentFinder", GetRef("meetingAppointmentFinderHandler"))
+awxsRegisterEvent "meetingAppointmentFinder", eventMeetingAppointmentFinder
+
+Dim eventSyncupClauseDocument
+Set eventSyncupClauseDocument = awxsCreateEvent("syncupClauseDocument", GetRef("syncupClauseDocumentHandler"))
+awxsRegisterEvent "syncupClauseDocument", eventSyncupClauseDocument
+
+Dim eventSaveOpenDocument
+Set eventSaveOpenDocument = awxsCreateEvent("saveOpenDocument", GetRef("saveOpenDocumentHandler"))
+awxsRegisterEvent "saveOpenDocument", eventSaveOpenDocument

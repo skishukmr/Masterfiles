@@ -1,0 +1,146 @@
+
+
+Sub BookmarksInSelection()
+'
+' Prints the bookmarks in a selecton
+'
+    MsgBox encodedBookmarks(selection.bookmarks)
+
+End Sub
+
+Function encodedBookmarks(bookmarks)
+    Dim bookmarkStr
+    bookmarkStr = ""
+
+    For Each Bookmark In bookmarks
+        bookmarkStr = bookmarkStr & "[" & Bookmark.name & " " & Bookmark.Start & ":" & Bookmark.End & "]"
+    Next
+
+    encodedBookmarks = bookmarkStr
+
+End Function
+
+Function encodedRevisions(revisions, bIsDetail)
+    Dim bookmarkStr
+    bookmarkStr = ""
+
+    For Each Revision In revisions
+        If bIsDetail Then
+            bookmarkStr = bookmarkStr & vbCrLf & "[" & Revision.Type & " " & Revision.range.Start & ":" & Revision.range.End & _
+                " " & Revision.range.Text & "]"
+        Else
+            bookmarkStr = bookmarkStr & vbCrLf & "[" & Revision.Type & " " & Revision.range.Start & ":" & Revision.range.End & "]"
+        End If
+    Next
+
+    encodedRevisions = bookmarkStr
+
+End Function
+
+Sub MergeServerDocumentIntoSelf()
+    Dim serverFileName
+    serverFileName = InputBox("Enter server file name")
+    ' Merge the server file with self
+    ActiveDocument.Merge serverFileName, wdMergeTargetCurrent, False, True
+
+End Sub
+
+Sub BookmarksInDocument()
+'
+' Macro2 Macro
+' Macro recorded 1/28/2009 by Employee of
+'
+    Open "C:\Temp\MyFile.txt" For Output As #1
+    Write #1, encodedBookmarks(ActiveDocument.bookmarks)
+
+End Sub
+
+Sub GoToBookmarkNameTest()
+  On Error Resume Next
+    Dim bmName
+    bmName = InputBox("Enter Bookmark Name you want to go to")
+    Dim currentSelection
+    Set currentSelection = ActiveDocument.ActiveWindow.selection
+    gotoBookmarkName currentSelection, bmName
+    MsgBox "Went To " & "[" & range.name & " " & range.Start & ":" & range.End & "]"
+End Sub
+
+' Displays Revisions in the current document
+Sub DipslayRevisions()
+    MsgBox encodedRevisions(ActiveDocument.revisions, False)
+End Sub
+
+Sub DipslayRevisionsWithDetail()
+    MsgBox encodedRevisions(ActiveDocument.revisions, True)
+End Sub
+
+Sub gotoBookmarkName(currentSelection, bmName)
+    Dim range
+    Set range = currentSelection.GoTo(-1, , , bmName)
+End Sub
+
+Sub moveDown(currentSelection)
+    currentSelection.moveDown 4, 1
+End Sub
+
+Sub moveToDownPara(currentSelection)
+    moveDown currentSelection
+    moveToStartPara currentSelection
+End Sub
+
+Sub moveToStartPara(currentSelection)
+    gotoBookmarkName currentSelection, "\Para"
+    moveToStartSelection currentSelection
+End Sub
+
+Sub moveToStartSelection(currentSelection)
+    currentSelection.End = currentSelection.Start
+End Sub
+
+Sub moveToEndSelection(currentSelection)
+    currentSelection.Start = currentSelection.End
+End Sub
+
+Function isEmptyPargraph(aRange)
+    aRange.TextRetrievalMode.ViewType = 3 '// wdPrintView = 3
+    aRange.TextRetrievalMode.IncludeHiddenText = False
+    aRange.TextRetrievalMode.IncludeFieldCodes = False
+
+    Dim getRangeContent
+    getRangeContent = aRange.Text
+
+    isEmptyPargraph = False
+    Dim len1
+    len1 = Len(Trim(getRangeContent))
+    If len1 > 1 Then
+        Exit Function
+    End If
+
+    Dim paraChar
+    paraChar = Chr(13)
+
+    If len1 = 0 Then
+        isEmptyPargraph = True
+    Else
+        If aRange.Characters(1).Text = paraChar Then
+            isEmptyPargraph = True
+        End If
+    End If
+End Function
+
+Sub findEmptyParagraphsAfterBookmark()
+    Dim bmName
+    bmName = InputBox("Enter Bookmark Name")
+    Dim currentSelection
+    Set currentSelection = ActiveDocument.ActiveWindow.selection
+    gotoBookmarkName currentSelection, bmName
+    moveToEndSelection currentSelection
+    moveToDownPara currentSelection
+    Dim emptyPara
+    Set emptyPara = currentSelection.range.Paragraphs(1)
+    If isEmptyPargraph(emptyPara.range) Then
+        MsgBox "Emtpy Paragraph after bookmark found"
+    Else
+        MsgBox "NO emtpy Paragraph after bookmark found"
+    End If
+End Sub

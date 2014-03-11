@@ -1,0 +1,3494 @@
+var Params=new function(){}();
+Params.urlOriginalDocumentUrl="urlOriginalDocumentUrl";
+Params.urlIncrementalSyncupUrl="urlIncrementalSyncupUrl";
+Params.urlActionUrl="urlActionUrl";
+Params.urlOriginalUrl="urlOriginalUrl";
+Params.urlSaveCleanVersionUrl="urlSaveCleanVersionUrl";
+Params.urlGeneratingUrl="urlGeneratingUrl";
+Params.urlDoneUrl="urlDoneUrl";
+Params.urlDocumentUrl="urlDocumentUrl";
+Params.urlRetrievepropertyAction="urlRetrievepropertyAction";
+Params.urlSyncupClauseContentActionUrl="urlSyncupClauseContentActionUrl";
+Params.urlDownloadSyncupXmlUrl="urlDownloadSyncupXmlUrl";
+Params.urlSaveSyncHistoryUrl="urlSaveSyncHistoryUrl";
+Params.urlUploadDocumentUrl="urlUploadDocumentUrl";
+Params.urlPromoteUrl="urlPromoteUrl";
+Params.urlCheckParseErrorActionUrl="urlCheckParseErrorActionUrl";
+Params.sClientLogLevel="sClientLogLevel";
+Params.dDocumentTimestamp="dDocumentTimestamp";
+Params.dServerTimestamp="dServerTimestamp";
+Params.dLastSyncTimestamp="dLastSyncTimestamp";
+Params.requestType="requestType";
+Params.sDataResource="sDataResource";
+Params.sFolderName="sFolderName";
+Params.sDocumentOldLocation="sDocumentOldLocation";
+Params.sDocumentNewLocation="sDocumentNewLocation";
+Params.sSourceDocumentLocation="sSourceDocumentLocation";
+Params.sTargetDocumentLocation="sTargetDocumentLocation";
+Params.sDocumentFullName="sDocumentFullName";
+Params.sDocumentLocation="sDocumentLocation";
+Params.sTempDocumentName="sTempDocumentName";
+Params.sBookmarkName="sBookmarkName";
+Params.sTempDocumentFolder="sTempDocumentFolder";
+Params.sPropertyList="sPropertyList";
+Params.sClauseId="sClauseId";
+Params.sSectionStyleId="sSectionStyleId";
+Params.sFormFieldsValue="sFormFieldsValue";
+Params.sApplicationName="sApplicationName";
+Params.sDocumentPropertiesContent="sDocumentPropertiesContent";
+Params.sFormFieldsEncodedString="sFormFieldsEncodedString";
+Params.sConditionalClausesEncodedString="sConditionalClausesEncodedString";
+Params.sReviseBookmarkEncodedString="sReviseBookmarkEncodedString";
+Params.sIncrementalInitializationEncodedString="sIncrementalInitializationEncodedString";
+Params.sIncrementalGenerationEncodedString="sIncrementalGenerationEncodedString";
+Params.sApplyStyleEncodedString="sApplyStyleEncodedString";
+Params.sSectionGenerationEncodedString="sSectionGenerationEncodedString";
+Params.sSectionTreeEncodedString="sSectionTreeEncodedString";
+Params.sTasksEncodedString="sTasksEncodedString";
+Params.bFullySync="bFullySync";
+Params.bIsDocumentEditable="bIsDocumentEditable";
+Params.bIsRemoveChangeRequired="bIsRemoveChangeRequired";
+Params.bIsRemoveFieldRequired="bIsRemoveFieldRequired";
+Params.bIsOnlyValueUpgradeRequired="bIsOnlyValueUpgradeRequired";
+Params.bIsSimplyGeneration="bIsSimplyGeneration";
+Params.bIsTrackChangeActive="bIsTrackChangeActive";
+Params.bIsReviseBookmarkGeneration="bIsReviseBookmarkGeneration";
+Params.bIsIncrementalGeneration="bIsIncrementalGeneration";
+Params.bIsApplyStyleRequired="bIsApplyStyleRequired";
+Params.bContractModified="bContractModified";
+Params.bOpenDocForceGeneration="bOpenDocForceGeneration";
+Params.bIsCleanVersionRequired="bIsCleanVersionRequired";
+Params.bIsTemplate="bIsTemplate";
+Params.bSkipCopyClause="bSkipCopyClause";
+Params.bIsWordDocValue="bIsWordDocValue";
+Params.bKeepTasks="bKeepTasks";
+Params.bUseFilter="bUseFilter";
+Params.bShowCleanedDoc="bShowCleanedDoc";
+function sfBooleanValueForBinding(A){if(A==null){return false
+}else{if(typeof A=="string"){var B=A.toLowerCase();
+return B=="true"
+}else{if(typeof A=="boolean"){return A
+}else{LoggerUtil.logError(null,"Invalid Boolean Argument typeof is "+typeof A,null);
+return A
+}}}}var prefixClauseNewName="clauseAriba_";
+var prefixSectionNewName="sectionAriba_";
+var prefixClauseGenName="clauseDPI";
+var prefixSectionGenName="sectionDPI";
+var prefixAribaOldGenId="aribaOldGenId";
+var GeneratedUnknown=0;
+var GeneratedClause=1;
+var GeneratedSection=2;
+var prefixClauseName="clause";
+var prefixSectionName="section";
+var aribaKeyword="Ariba_";
+var ClauseIdKey="clauseId";
+var SectionIdKey="sectionId";
+var prefixFieldName="ca";
+var NewClauseIdValue="NewClause";
+var SameClauseKey="sameClause";
+var SummaryContentKey="summaryContent";
+var syncupTypeIdKey="syncupTypeId";
+var bookmarkNameKey="bookmarkName";
+var previousBookmarkKey="previousBookmark";
+var SectionContextKey="sectionContext";
+var VirtualUploadKey="virtualUpload";
+var GlobalContractBookmarkName="sectionGlobalContract";
+var globalBookmarkTree=GlobalContractBookmarkName;
+var globalBookmark="";
+var SectionBeginValue="(";
+var SectionEndValue=")";
+var defaultPropertyValue=" ";
+var DocumentPropertyKey="DOCPROPERTY ";
+var TempFolderName="temp";
+var objectSeparator="********";
+var summarySeparator="******";
+var sectionSeparator="$$$$$$";
+var sectionSeparatorLength=6;
+var EmptyClauseSummary="-----empty------";
+var noStyle="noStyle";
+var AdHocStyle="--------";
+var defaultFormPropertyPrefix="_";
+var DocumentPropertiesContentKey="documentPropertiesContent";
+var ACMTaskId="ACMTaskId";
+var WordVersion=new function(){}();
+WordVersion.Word97MajorVersion="8";
+WordVersion.Word2000MajorVersion="9";
+WordVersion.WordXPMajorVersion="10";
+WordVersion.WordXP2003MajorVersion="11";
+WordVersion.Word2007MajorVersion="12";
+WordVersion.Word2010MajorVersion="14";
+var ContentType=new function(){}();
+ContentType.ContentUnknownType="ContentUnknownType";
+ContentType.ContentSectionType="ContentSectionType";
+ContentType.ContentClauseType="ContentClauseType";
+var FieldType=new function(){}();
+FieldType.FieldTypeDocProp="FieldTypeDocProp";
+FieldType.FieldTypeRef="FieldTypeRef";
+FieldType.FieldTypeUnknown="FieldTypeUnknown";
+var WordType=new function(){}();
+WordType.WordUnknownType="WordUnknownType";
+WordType.Word2000Type="Word2000Type";
+WordType.WordXPType="WordXPType";
+WordType.Word07Type="Word07Type";
+WordType.Word10Type="Word10Type";
+WordType.WordDocExtension=".doc";
+WordType.Word10DocExtension=WordType.Word07DocExtension=".docx";
+var VersionSeparator=".";
+var MaxSummaryLength=200;
+var MIE="Method Invokation Error ";
+var DNF="Document Not Found ";
+var NBF="No Bookmarks Found";
+var WindowStatus=new function(){}();
+WindowStatus.PROCESS_INSERTS="Processing Inserts";
+WindowStatus.PROCESS_DELETES="Processing Deletes";
+WindowStatus.PROCESS_REVISIONS="Processing Revisions";
+WindowStatus.UPLOAD_DOCUMENT="Uploading document";
+WindowStatus.PROCESS_PROPERTIES="Processing Properties";
+WindowStatus.COMPARE_WORD_DOCS="Comparing Word Documents";
+WindowStatus.SYNC_TO_SERVER="Synchronizing to server";
+WindowStatus.SCANNING_DOCUMENT="Scanning Document";
+WindowStatus.APPLY_GENERATED_BOOKMARKS="Applying Bookmarks";
+WindowStatus.BOOKMARK_DOCUMENT="Bookmarking Document";
+WindowStatus.SCAN_SECTIONS="Scanning Sections";
+WindowStatus.VALIDATION_ERROR="Validation Error";
+var RevisionType=new function(){}();
+RevisionType.NoRev=0;
+RevisionType.Insert=1;
+RevisionType.Delete=2;
+RevisionType.ParagraphNumber=4;
+RevisionType.ParagraphProperty=10;
+var paraChar=String.fromCharCode(13);
+var softReturnChar=String.fromCharCode(11);
+var lineFeed=String.fromCharCode(10);
+var tabChar=String.fromCharCode(9);
+var spaceChar=String.fromCharCode(32);
+var noStyle="noStyle";
+var AdHocStyle="--------";
+var FolderSeparator="\\";
+var ViewType=new function(){}();
+ViewType.ViewTypeNormal=1;
+ViewType.ViewTypePrint=3;
+var AribaEncoderSeperator=new function(){}();
+AribaEncoderSeperator.ListItemSeparator="__ZZARIBAITEM__";
+AribaEncoderSeperator.ListParamSeparator="__ZZARIBAPARAM__";
+AribaEncoderSeperator.ListChildNodeSeparator="__ZZARIBACHILD__";
+AribaEncoderSeperator.VariableSeparator=",";
+var GenerateCommand=new function(){}();
+GenerateCommand.AddClauseCommand="addClauseCommandUtil";
+GenerateCommand.AddSectionCommand="addSectionCommandUtil";
+GenerateCommand.EditClauseCommand="setClauseCommandUtil";
+GenerateCommand.EditSectionCommand="setSectionCommandUtil";
+GenerateCommand.MoveSectionClauseCommand="moveClauseSectionCommandUtil";
+GenerateCommand.RemoveClauseSectionCommand="removeClauseSectionCommandUtil";
+GenerateCommand.AutoOpenClauseCommand="autoOpenSyncupClause";
+GenerateCommand.CopySourceOpenCommand="copySourceOpenCommandUtil";
+GenerateCommand.CopySourceCloseCommand="copySourceCloseCommandUtil";
+GenerateCommand.CopyReplaceClauseCommand="copyReplaceClauseCommandUtil";
+GenerateCommand.CopyAddClauseCommand="copyAddClauseCommandUtil";
+var XmlRequestType=new function(){}();
+XmlRequestType.SyncUpRequest="syncUpRequest";
+XmlRequestType.LoadRequest="loadRequest";
+var SERVER_EXCEPTION="SERVER_EXCEPTION";
+var VALIDATION_ERROR="Validation Error";
+var StyleContentKey="styleContent";
+var StyleSeparator="********";
+var ApplicationName=new function(){}();
+ApplicationName.Word="Word";
+ApplicationName.Excel="Excel";
+var LoggerUtil=new function(){this.enableLogging=false;
+this.logLevel=0;
+this.Space="                                                    ";
+this.logPadding="";
+this.setLogLevel=function(A){if(A!=null){this.enableLogging=(A=="debug")
+}};
+this.logAlert=function(A){this.logMessage("!!! ALERT !!!!"+A)
+};
+this.logMessage=function(A){if(this.enableLogging){DFS.debugMessage(Date()+" "+this.logPadding+" "+A+"\n")
+}};
+this.logBegin=function(A){this.logBeginBlock(A,false)
+};
+this.logBeginBlock=function(B,A){if(this.enableLogging){if(A){this.logMessage("")
+}this.logMessage("Begin "+B);
+this.logLevel=this.logLevel+2;
+if(this.logLevel>25){this.logLevel=25
+}this.logPadding=this.Space.substring(0,this.logLevel)
+}};
+this.logEnd=function(A){this.logEndBlock(A,false)
+};
+this.logEndBlock=function(B,A){if(this.enableLogging){if(this.logLevel>=2){this.logLevel=this.logLevel-2
+}this.logPadding=this.Space.substring(0,this.logLevel);
+this.logMessage("End "+B);
+if(A){this.logMessage("")
+}}};
+this.logXmlTree=function(F,E,D){if(this.enableLogging){if(F!=""){this.logMessage(F)
+}var C=this.Space.substring(0,D);
+if(E.hasChildNodes()){this.logXmlNode(E,D);
+var A=E.childNodes.length;
+for(var B=0;
+B<A;
+++B){this.logXmlTree("",E.childNodes[B],D+1)
+}}else{this.logXmlNode(E,D)
+}if(E.tagName!=null){this.logMessage(C+"&lt;/"+E.tagName+"&gt;")
+}}};
+this.logXmlNode=function(D,B){if(this.enableLogging){var E=this.Space.substring(0,B);
+if(D.nodeType==3){E=E.concat(D.innerText)
+}else{if(D.nodeType==4){E=E.concat(D.nodeValue)
+}else{E=E.concat("&lt;");
+E=E.concat(D.tagName);
+var A=D.attributes.length;
+for(var C=0;
+C<A;
+++C){E=E.concat(" ");
+E=E.concat(D.attributes[C].name);
+E=E.concat("=");
+E=E.concat(D.attributes[C].nodeValue)
+}E=E.concat("&gt;")
+}}this.logMessage(E)
+}};
+this.logArgs=function(B,A){if(B!=null&&A!=null){this.logMessage(this.getArgString(B,A))
+}};
+this.getArgString=function(C,A){var D=C;
+D=D.concat("\n");
+for(var B in A){D+=B+" : "+A[B]+"\n"
+}return D
+};
+this.logInfo=function(C,A,B){this.logMessage("[INFO] "+A)
+};
+this.logErrorOnExit=function(){try{var B=ScriptError.innerHTML;
+if(B==null||B==""){ScriptError.innerHTML="Generic Script Error"
+}}catch(A){}};
+this.logError=function(D,B,C){if(C!=null){this.logMessage("[ERROR] "+B+" "+C)
+}else{this.logMessage("[ERROR]"+B)
+}if(D!=null){var A=false;
+try{SmartClientScriptError.innerHTML=D
+}catch(C){A=true
+}if(A){try{ScriptError.innerHTML=D;
+ActiveXError.style.display=""
+}catch(C){}}}};
+this.updateWindowStatus=function(A){window.status=A
+};
+this.logRevision=function(C,B,A){if(this.enableLogging){this.logMessage("Processing Revision "+this.formatRange(A)+" Type: "+C+" ParentBookmark:"+this.formatBookmark(B)+" Content: "+sfDomRangeForRange(A))
+}};
+this.logRevisionCount=function(A,B){if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Revision Info: Revisions Type "+A+" Count "+B)
+}};
+this.logMissingGlobalBookmark=function(){if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Did not find the global bookmark!!!")
+}};
+this.logEmptyRange=function(A){if(LoggerUtil.enableLogging){LoggerUtil.logMessage(" Empty deleted range found rangeStart = "+A.Start&" rangeEnd = "+A.End)
+}};
+this.logMissingParentBookmark=function(A){if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Missing Parent Bookmark for Range "+this.formatRange(A))
+}};
+this.logCollection=function(E,C){if(LoggerUtil.enableLogging){this.logMessage("Collection "+E);
+var A=C.Count;
+var D="";
+for(var B=1;
+B<=A;
+++B){if(B!=1){D+=","
+}D+=C.Item(B)
+}this.logMessage(D)
+}};
+this.formatRange=function(A){var B="";
+B=B.concat("(");
+B=B.concat(A.Start);
+B=B.concat(":");
+B=B.concat(A.End);
+B=B.concat(")");
+return B
+};
+this.formatBookmark=function(A){var B="";
+B=B.concat(A.Name);
+B=B.concat(this.formatRange(A));
+return B
+};
+this.logBookmarks=function(F,C){if(LoggerUtil.enableLogging){this.logMessage("Bookmarks "+F);
+var A=C.Count;
+var E="";
+for(var B=1;
+B<=A;
+++B){if(B!=1){E+=","
+}var D=C.Item(B);
+E+=this.formatBookmark(D)
+}this.logMessage(E)
+}};
+this.logCommand=function(D){if(LoggerUtil.enableLogging){var C="";
+var A=D.length;
+for(var B=0;
+B<A;
+++B){if(B==0){C=C.concat("Command:"+D[B]+" Args: ")
+}else{C=C.concat(D[B]+" ")
+}}this.logMessage(C)
+}}
+}();
+function sfLoggerInit(B,C,A){if(A[Params.sClientLogLevel]!=null){LoggerUtil.setLogLevel(A[Params.sClientLogLevel])
+}if(LoggerUtil.enableLogging){LoggerUtil.logArgs(C,A)
+}}function sfExportFunctions(B){for(var A=0;
+A<B.length;
+A+=2){awxsRegisterHandler(B[A],B[A+1])
+}}function sfTrim(B){if(B==null||B==""){return B
+}var A=ACW.trim(B);
+return A
+}function sfTrimStringArray(B){if(B==null){return 
+}for(var A=0;
+A<B.length;
+++A){B[A]=sfTrim(B[A])
+}}function sfEmptyString(A){return A==null||A.length<=0
+}function sfTypeName(B){var A=awxsGetEventObject("vbTypeName");
+A.setArg("object",B);
+return A.invoke()
+}function sfvbDoIncrementalGeneration(){var A=awxsGetEventObject("vbDoIncrementalGeneration");
+return A.invoke()
+}function sfFormatUrl(A){return ClientAutomation.ResolvePartialURL(ariba.Request.formatUrl(A))
+}function sfGetItemFromCollection(C,A){try{return C.Item(A)
+}catch(B){return null
+}}var XMLUtil=new function(){this.createDOM=function(B){var A=new ActiveXObject("Msxml2.DOMDocument.3.0");
+A.async=false;
+A.loadXML(B);
+return A
+};
+this.loadRequestDOM=function(){return this.createDOM('<?xml version="1.0" encoding="UTF-8"?><loadRequest/>')
+};
+this.syncupRequestDOM=function(){return this.createDOM('<?xml version="1.0" encoding="UTF-8"?><syncupRequest/>')
+};
+this.plainRequestDOM=function(){return this.createDOM('<?xml version="1.0" encoding="UTF-8"?>')
+};
+this.addFormField=function(D,E,A){var B=D.createElement("FormField");
+B.setAttribute("name",E);
+var C=D.createTextNode(A);
+B.appendChild(C);
+D.documentElement.appendChild(B)
+};
+this.createBookmarkNode=function(E,A,D,C){var B=E.createElement(A);
+if(D!=null){B.appendChild(E.createCDATASection(D))
+}B.setAttribute(XML_ATTRIBUTE_BOOKMARK,C.Name);
+B.setAttribute(XML_ATTRIBUTE_STARTPOS,C.Start);
+B.setAttribute(XML_ATTRIBUTE_ENDPOS,C.End);
+return B
+};
+this.appendBookmarkOtherNode=function(D,C,B){var A=this.createBookmarkNode(D,XML_TAG_OTHER_BOOKMARK,null,C);
+B.appendChild(A)
+};
+this.appendBookmarkSectionGlobalNode=function(D,C,B){var A=this.createBookmarkNode(D,XML_TAG_SECTION_GLOBAL,null,C);
+B.appendChild(A)
+};
+this.appendBookmarkSummaryNode=function(E,D,C,A){var B=this.createBookmarkNode(E,XML_TAG_SET_SUMMARY,C,D);
+A.appendChild(B)
+};
+this.setNodeAttribute=function(B,A,C){B.setAttribute(A,C)
+};
+this.getNodeAttribute=function(B,A){return B.getAttribute(A)
+};
+this.documentElement=function(A){return A.documentElement
+};
+this.appendChild=function(A,B){A.appendChild(B)
+};
+this.getFromPos=function(A){if(A.nodeName==XML_TAG_SECTION){return A.getAttribute(XML_ATTRIBUTE_SUMMARY_ENDPOS)
+}else{if(A.nodeName==XML_TAG_CLAUSE){return A.getAttribute(XML_ATTRIBUTE_ENDPOS)
+}else{if(A.nodeName==XML_TAG_SECTION_GLOBAL){return A.getAttribute(XML_ATTRIBUTE_STARTPOS)
+}else{return null
+}}}};
+this.getToPos=function(A){return A.getAttribute(XML_ATTRIBUTE_STARTPOS)
+};
+this.getToPosParent=function(A){return A.getAttribute(XML_ATTRIBUTE_ENDPOS)
+};
+this.addFormFieldToDom=function(C,D,B){var A=C.createElement("FormField");
+A.setAttribute("name",D);
+A.appendChild(C.createTextNode(B));
+C.documentElement.appendChild(A)
+}
+}();
+function sfXMLNodeSetup(A){if(A.requestType==XmlRequestType.SyncUpRequest){A.xmlDOM=XMLUtil.syncupRequestDOM()
+}else{if(A.requestType==XmlRequestType.LoadRequest){A.xmlDOM=XMLUtil.loadRequestDOM()
+}}A.xmlDocumentElement=XMLUtil.documentElement(A.xmlDOM);
+XMLUtil.setNodeAttribute(A.xmlDocumentElement,XML_ATTRIBUTE_WORD_TYPE,A.wordType);
+A.xmlNode_editList=A.xmlDOM.createElement(XML_TAG_EDIT_LIST);
+A.xmlDocumentElement.appendChild(A.xmlNode_editList);
+A.xmlNode_otherBookmarkList=A.xmlDOM.createElement(XML_TAG_OTHER_BOOKMARK_LIST);
+XMLUtil.appendChild(A.xmlDocumentElement,A.xmlNode_otherBookmarkList)
+}function sfCreateNewEntityNode(B){var A=B.xmlDOM.createElement(XML_TAG_NEW_ENTITIES);
+B.xmlNode_editList.appendChild(A);
+return A
+}function sfAppendBookmarkOtherNode(D,C,B){var A=XMLUtil.createBookmarkNode(D,XML_TAG_OTHER_BOOKMARK,null,C);
+B.appendChild(A)
+}function sfAppendBookmarkSectionGlobalNode(D,C,B){var A=XMLUtil.createBookmarkNode(D,XML_TAG_SECTION_GLOBAL,null,C);
+B.appendChild(A)
+}function sfCreateRevisionsNode(A,G,J){var B=A.createElement(XML_TAG_REVISION_LIST);
+for(var C=1;
+C<=J.Count;
+++C){var E=J.Item(C);
+LoggerUtil.logMessage("sfCreateRevisionsNode: Type "+E.Type+" Start "+E.RangeProxy.Start+" End "+E.RangeProxy.End);
+if(E.Type==RevisionType.Delete||E.Type==RevisionType.ParagraphNumber){var D=E.RangeProxy;
+var I=D.End;
+if(E.Type==RevisionType.Delete){var F=sfBeginningMatchedBookmark(G,D);
+if(F!=""&&F.indexOf(prefixSectionGenName)!=0&&D.Paragraphs.Count>1){I=D.End+1
+}}var H=A.createElement(XML_TAG_REVISION);
+H.setAttribute(XML_ATTRIBUTE_REVISION_TYPE,E.Type);
+H.setAttribute(XML_ATTRIBUTE_STARTPOS,E.RangeProxy.Start);
+H.setAttribute(XML_ATTRIBUTE_ENDPOS,I);
+B.appendChild(H)
+}}return B
+}function sfBookmarkNode(D,B,F,A,E){if(F.Name==GlobalContractBookmarkName){sfAppendBookmarkSectionGlobalNode(D.xmlDOM,F,A)
+}else{if(F.Name.indexOf(prefixSectionNewName)>=0||F.Name.indexOf(prefixSectionGenName)>=0){sfFixSectionBookmark(B,F);
+var C=sfSectionToXml(D,B,F);
+A.appendChild(C)
+}else{if(F.Name.indexOf(prefixClauseNewName)>=0||F.Name.indexOf(prefixClauseGenName)>=0){sfFixClauseBookmark(B,F);
+var C=sfClauseToXml(D,B,F,E);
+A.appendChild(C)
+}else{sfAppendBookmarkOtherNode(D.xmlDOM,F,A)
+}}}}function sfSectionToXml(C,A,D){var B=D.Range.Paragraphs(1).Range;
+var E=XMLUtil.createBookmarkNode(C.xmlDOM,XML_TAG_SECTION,sfTrim(sfGetRangeContent(B)),sfCreateBookmarkProxy(D));
+XMLUtil.setNodeAttribute(E,XML_ATTRIBUTE_SUMMARY_ENDPOS,B.End);
+return E
+}function sfClauseToXml(C,A,E,F){var D=E.Name;
+var G=D.indexOf(prefixClauseNewName);
+var H=C.xmlDOM.createElement(XML_TAG_CLAUSE);
+var B=null;
+if(F||G>=0){B=sfGetClauseSummary(E)
+}return XMLUtil.createBookmarkNode(C.xmlDOM,XML_TAG_CLAUSE,B,E)
+}function sfParseNewEntities(N,S,C){var R=C.childNodes[0];
+var T=0;
+while(T<C.childNodes.length){var J=C.childNodes[T];
+var L=XMLUtil.getFromPos(J);
+var K=(J.nextSibling!=null)?XMLUtil.getToPos(J.nextSibling):XMLUtil.getToPosParent(R);
+var G=new Number(L);
+var F=new Number(K);
+if((G+1)<(F-1)){var A=J.getAttribute(XML_ATTRIBUTE_BOOKMARK);
+var E=N.Bookmarks(A);
+if(A!=""&&sfContentType(A)==ContentType.ContentClauseType){sfFixBookmarkEndToPara(N,E);
+var P=E.End;
+if(P!=G){var Q=XMLUtil.createBookmarkNode(S,XML_TAG_SET_SUMMARY,sfGetClauseSummaryAll(E),sfCreateBookmarkProxy(E));
+C.parentNode.appendChild(Q);
+G=P
+}}if((G+1)<(F-1)){var O=N.Range(G+1,F-1);
+if(!sfIsEmptyText(O)){var I=sfParagraphsToClauses(S,O);
+var D=I.Count;
+for(var M=1;
+M<=D;
+++M){var H=I.Item(M);
+if(J.nextSibling!=null){var B=C.insertBefore(H,J.nextSibling)
+}else{C.appendChild(H)
+}J=J.nextSibling;
+T=T+1
+}}}}T=T+1
+}}function sfParagraphsToClauses(A,H){var B=new sfObjectArray();
+var G=H.Paragraphs;
+var D=G.Count;
+for(var C=1;
+C<=D;
+++C){var E=G(C).Range;
+if(sfIsEmptyParagraph(E)){continue
+}var I=A.createElement(XML_TAG_PARAGRAPH);
+I.setAttribute(XML_ATTRIBUTE_STARTPOS,E.Start);
+I.setAttribute(XML_ATTRIBUTE_ENDPOS,E.End);
+var F=sfGetRangeSummary(E);
+I.appendChild(A.createCDATASection(F));
+B.AddItem(I)
+}return B
+}function sfApplyBookmarksUtil(G,K){LoggerUtil.logBegin("sfApplyBookmarksUtil");
+var C=G.getAgreementDocument().ActiveWindow.Selection;
+var F=XMLUtil.createDOM(K);
+var L=F.documentElement;
+var M=L.childNodes[0];
+var E=M.childNodes.length;
+for(var D=0;
+D<E;
+++D){var B=M.childNodes[D];
+if(B.tagName==XML_TAG_APPLY_BOOKMARK_BY_LOCATION){var J=B.getAttribute(XML_ATTRIBUTE_NEW_BOOKMARK);
+var I=B.getAttribute(XML_ATTRIBUTE_STARTPOS);
+var A=B.getAttribute(XML_ATTRIBUTE_ENDPOS);
+sfApplyBookmarkByLocation(G,C,J,I,A);
+sfApplyStyleByAttribute(G,C,J,B)
+}else{if(B.tagName==XML_TAG_APPLY_BOOKMARK_BY_NAME){var J=B.getAttribute(XML_ATTRIBUTE_NEW_BOOKMARK);
+var H=B.getAttribute(XML_ATTRIBUTE_BOOKMARK);
+sfApplyBookmarkByName(G,C,J,H);
+sfApplyStyleByAttribute(G,C,J,B)
+}}G.getAgreementDocument().UndoClear()
+}LoggerUtil.logEnd("sfApplyBookmarksUtil")
+}function sfAppendChildNewClausesXml(F,D,A){var B=sfParagraphsToClauses(F,D);
+var E=B.Count;
+for(var C=1;
+C<=E;
+++C){A.appendChild(B.Item(C))
+}}var XML_ATTRIBUTE_BOOKMARK="bookmark";
+var XML_ATTRIBUTE_NEW_BOOKMARK="newBookmark";
+var XML_ATTRIBUTE_STARTPOS="startPos";
+var XML_ATTRIBUTE_ENDPOS="endPos";
+var XML_ATTRIBUTE_SUMMARY_ENDPOS="summaryEndPos";
+var XML_ATTRIBUTE_SECTION_BOOKMARK="sectionBookmark";
+var XML_ATTRIBUTE_PREVIOUS_BOOKMARK="previousBookmark";
+var XML_ATTRIBUTE_WORD_TYPE="wordType";
+var XML_ATTRIBUTE_REVISION_TYPE="revisionType";
+var XML_ATTRIBUTE_STYLE="style";
+var XML_TAG_EDIT_LIST="editList";
+var XML_TAG_OTHER_BOOKMARK="otherBookmark";
+var XML_TAG_OTHER_BOOKMARK_LIST="otherBookmarkList";
+var XML_TAG_REVISION="revision";
+var XML_TAG_REVISION_LIST="revisionList";
+var XML_TAG_SECTION="section";
+var XML_TAG_SECTION_GLOBAL="sectionGlobal";
+var XML_TAG_CLAUSE="clause";
+var XML_TAG_PARAGRAPH="paragraph";
+var XML_TAG_SET_SUMMARY="setSummary";
+var XML_TAG_NEW_ENTITIES="newEntities";
+var XML_TAG_DELETE_ENTITY="deleteEntity";
+var XML_TAG_MOVE_ENTITY="moveEntity";
+var XML_TAG_SYNCUP_APPLY="syncupApply";
+var XML_TAG_APPLY_BOOKMARK_LIST="applyBookmarkList";
+var XML_TAG_APPLY_BOOKMARK_BY_LOCATION="applyBookmarkByLocation";
+var XML_TAG_APPLY_BOOKMARK_BY_NAME="applyBookmarkByName";
+function sfGetHttp(){try{var B=new ActiveXObject("MSXML2.XMLHTTP.3.0");
+return B
+}catch(A){LoggerUtil.logError(DFSErr.Msg3,MIE+"sfGetHttp",A);
+throw A
+}}function sfGetFso(){try{var B=new ActiveXObject("Scripting.FileSystemObject");
+return B
+}catch(A){LoggerUtil.logError(DFSErr.Msg1,MIE+"sfGetFso",A);
+throw A
+}}function sfGetXmlDom(){try{var B=new ActiveXObject("MSXML2.DOMDocument");
+return B
+}catch(A){LoggerUtil.logError(DFSErr.Msg1,MIE+"sfGetXmlDom",A);
+throw A
+}}function sfGetTempFolderPath(){try{var C=sfGetFso();
+var B=C.GetSpecialFolder(2);
+return B.Path
+}catch(A){LoggerUtil.logMessage(MIE+"sfGetTempFolderPath");
+throw A
+}}function siGetTempFolderPath(){return sfGetTempFolderPath()
+}function sfCreateDirectory(C){try{var B=sfGetFso();
+if(!B.FolderExists(C)){B.CreateFolder(C)
+}return true
+}catch(A){LoggerUtil.logError(DFSErr.Msg1,MIE+"sfCreateDirectory",A);
+throw A
+}}function siCreateDirectory(A){sfLoggerInit(null,"siCreateDirectory",A);
+return sfCreateDirectory(sfForwardToBackSlash(A[Params.sFolderName]))
+}function sfClientFileExists(A){try{var C=sfGetFso();
+return C.FileExists(A)
+}catch(B){LoggerUtil.logMessage(MIE+"sfClientFileExists");
+throw B
+}}function siClientFileExists(A){try{return sfClientFileExists(sfForwardToBackSlash(A[Params.sDocumentLocation]))
+}catch(B){return false
+}}function sfClientFileTimestamp(A){return DFS.toUTCString(sfCompatibleClientFileTimestamp(A))
+}function siClientFileTimestamp(A){try{return sfClientFileTimestamp(sfForwardToBackSlash(A[Params.sDocumentLocation]))
+}catch(B){LoggerUtil.logErrorOnExit();
+return""
+}}function sfCompatibleClientFileTimestamp(A){try{var C=sfGetFso();
+var D=C.GetFile(A);
+return D!=null?D.DateLastModified:""
+}catch(B){SmartClientDFSDirectoryError.style.display="";
+LoggerUtil.logError(DFSErr.Msg1,MIE+"sfCompatibleClientFileTimestamp: Exception "+B+" File Path : "+A,B);
+throw B
+}}function siCompatibleClientFileTimestamp(A){try{return sfCompatibleClientFileTimestamp(sfForwardToBackSlash(A[Params.sDocumentLocation]))
+}catch(B){LoggerUtil.logErrorOnExit();
+return""
+}}function sfAreTimestampsEqual(B,D){try{var A=sfCompatibleClientFileTimestamp(B);
+if(A==null){return false
+}var E=A.toString();
+return D==A
+}catch(C){LoggerUtil.logMessage(MIE+"sfAreTimestampsEqual");
+throw C
+}}function siAreTimestampsEqual(A){try{return sfAreTimestampsEqual(sfForwardToBackSlash(A[Params.sDocumentLocation]),A[Params.dServerTimestamp])
+}catch(B){LoggerUtil.logErrorOnExit();
+return false
+}}function sfGetFilePath(B,D){if(B==null||B==""){return""
+}var A=B.split("/");
+var E="";
+if(D){for(var C=0;
+C<(A.length-1);
+++C){E=E.concat(A[C]);
+E=E.concat("/")
+}return E
+}else{return A[A.length-1]
+}}function sfAppendStringToFileLocation(B,E){var A=B.lastIndexOf(".");
+var D=B.substring(0,A);
+var C=B.substring(A+1,B.length);
+return D+E+"."+C
+}function sfGetFileNameFromPathName(B){var A=B.lastIndexOf("\\");
+return A>0?B.substring(A+1,B.length):""
+}function sfSaveDocumentToClient(E,D){try{if(LoggerUtil.enableLogging){LoggerUtil.logMessage("sfSaveDocumentToClient document Name "+E+" strUrl "+D)
+}if(sfClientFileExists(E)){sfSetDocumentAttributes(E,true)
+}var B=sfGetHttp();
+B.Open("Get",D,false);
+B.Send(null);
+var C=new ActiveXObject("ADODB.Stream");
+C.Type=1;
+C.Open();
+while(B.readyState!=4){}C.Write(B.ResponseBody);
+C.saveToFile(E,2);
+C.close();
+C=null;
+return true
+}catch(A){LoggerUtil.logError(DFSErr.Msg2,MIE+"sfSaveDocumentToClient ",A);
+throw A
+}}function siSaveDocumentToClient(A){sfLoggerInit(null,"siSaveDocumentToClient",A);
+try{return sfSaveDocumentToClient(sfForwardToBackSlash(A[Params.sDocumentLocation]),ClientAutomation.ResolvePartialURL(A[Params.urlActionUrl]))
+}catch(B){LoggerUtil.logErrorOnExit();
+return false
+}}function sfSaveFile(A){if(A!=null){A.Save();
+if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Saving Document "+A.Path)
+}}}function sfSaveClauseToClient(I,H,C){try{document.body.style.cursor="wait";
+var B=sfGetFso();
+var G=0;
+var E=I.indexOf(FolderSeparator);
+do{var A=sfTrim(I.substring(0,E));
+if(!B.FolderExists(A)){B.CreateFolder(A)
+}G=E+1;
+E=I.indexOf(FolderSeparator,G)
+}while(E>=0);
+var D=C;
+if(H!=""){D=D.concat("&clauseId=");
+D=D.concat(H)
+}return sfSaveDocumentToClient(I,D)
+}catch(F){LoggerUtil.logError(null,MIE+"saveClauseToClient",null);
+throw F
+}}function sfSaveSyncHistory(C,D){try{if(C!=""){D=D.concat("&timestamp=");
+D=D.concat(C)
+}var B=sfGetHttp();
+B.Open("Get",D,false);
+B.Send(null);
+return true
+}catch(A){LoggerUtil.logError(DFSErr.Msg3,MIE+"sfSaveSyncHistory: URL="+D,A);
+throw A
+}}function siSaveSyncHistory(A){sfLoggerInit(null,"siSaveSyncHistory",A);
+return sfSaveSyncHistory(A[Params.dDocumentTimestamp],ClientAutomation.ResolvePartialURL(A[Params.urlActionUrl]))
+}function sfForwardToBackSlash(B){try{var C=B;
+C=C.replace(/\//g,"\\");
+C=C.replace(/:\\/,":\\\\");
+return C
+}catch(A){return B
+}}function sfSetDocumentAttributes(F,E){try{var D=sfForwardToBackSlash(F);
+var C=sfGetFso();
+if(!C.FileExists(D)){LoggerUtil.logError(null,"sfSetDocumentAttributes: document is not found",null);
+return false
+}var A=C.GetFile(D);
+if(E){if((A.attributes&1)==1){A.attributes=A.attributes-1
+}}else{if((A.attributes&1)==0){A.attributes=A.attributes+1
+}}return true
+}catch(B){LoggerUtil.logError(null,MIE+"sfSetDocumentAttributes  DocumentName:"+F,B);
+throw B
+}}function sfOpenClientFileWithApp(A,B){sfSetDocumentAttributes(A,B);
+return sfOpenClientDocument(A)
+}function siOpenClientFileWithApp(A){return sfOpenClientFileWithApp(A[Params.sDocumentLocation],A[Params.bIsDocumentEditable])
+}function sfOpenClientDocument(A){try{var D=new ActiveXObject("WScript.Shell");
+var C=sfForwardToBackSlash(A);
+D.Run('"'+C+'"',1);
+return true
+}catch(B){LoggerUtil.logError(DFSErr.Msg1,MIE+"sfOpenClientDocument "+A,B);
+throw B
+}}function siOpenClientDocument(A){return sfOpenClientDocument(A[Params.sDocumentLocation])
+}function sfSaveFileToClient(A,D,C){try{if(!sfCreateFolderTree(A)){return false
+}return sfSaveDocumentToClient(D,C)
+}catch(B){LoggerUtil.logMessage(MIE+"sfSaveFileToClientFolder Array="+A+", DocumentName="+D+", ActionURL="+C);
+throw B
+}}function siSaveFileToClient(B){try{sfLoggerInit(null,"siSaveFileToClient",B);
+var A=B[Params.sFolderName].split("******");
+return sfSaveFileToClient(A,B[Params.sDocumentLocation],ClientAutomation.ResolvePartialURL(B[Params.urlActionUrl]))
+}catch(C){LoggerUtil.logErrorOnExit();
+return false
+}}function sfMoveClientFile(A,C,F){try{if(!sfCreateFolderTree(A)){return false
+}var E=sfGetFso();
+if(E.FileExists(F)){var D=E.GetFile(F);
+D.Delete(true)
+}E.MoveFile(C,F);
+return true
+}catch(B){LoggerUtil.logError(DFSErr.Msg6,MIE+"sfMoveClientFileFolder Array="+A+", oldLocation="+C+", newLocation="+F,B);
+throw B
+}}function siMoveClientFile(B){try{sfLoggerInit(null,"siMoveClientFile",B);
+var A=B[Params.sFolderName].split("******");
+return sfMoveClientFile(A,sfForwardToBackSlash(B[Params.sDocumentOldLocation]),sfForwardToBackSlash(B[Params.sDocumentNewLocation]))
+}catch(C){LoggerUtil.logErrorOnExit();
+return false
+}}function sfCreateFolderTree(A){try{var E=sfGetFso();
+for(var C=0;
+C<A.length;
+++C){var D=A[C];
+if(D!=null&&D.length>0&&!E.FolderExists(D)){E.CreateFolder(D)
+}}return true
+}catch(B){LoggerUtil.logError(DFSErr.Msg4,MIE+"sfCreateFolderTree(folderArray="+A+") Exception ",B);
+throw B
+}}function sfGetFileBytes(B){try{var C=B.concat(".tmp");
+var E=sfGetFso();
+E.CopyFile(B,C);
+var F=new ActiveXObject("ADODB.Stream");
+F.Type=1;
+F.Open();
+F.LoadFromFile(C);
+var A=F.Read();
+F.Close();
+E.DeleteFile(C,true);
+return A
+}catch(D){LoggerUtil.logError(GeneratingErr.openDocumentErrorMessage,MIE+"sfGetFileBytes file Name:"+B,D);
+throw D
+}}function siGetFileBytes(A){return sfGetFileBytes(sfForwardToBackSlash(A[Params.sDocumentLocation]))
+}function sfSendDataToServer(B,A){try{var D=sfGetHttp();
+D.Open("POST",A,false);
+D.Send(B);
+return D.responseText
+}catch(C){LoggerUtil.logMessage(MIE+"sfSendDataToServer server url "+A);
+throw C
+}}function siCallServer(A){sfSendDataToServer("",ClientAutomation.ResolvePartialURL(A[Params.urlActionUrl]))
+}function siSendDataToServer(A){var C="";
+try{C=sfGetFileBytes(sfForwardToBackSlash(A[Params.sDocumentLocation]))
+}catch(B){}sfSendDataToServer(C,ClientAutomation.ResolvePartialURL(A[Params.urlActionUrl]))
+}function sfIsClientChanged(J,K){if(!sfClientFileExists(J)){return false
+}var F=sfClientFileTimestamp(J);
+if(F==""){return false
+}if(F!=K){return true
+}else{var D=null;
+try{D=new ActiveXObject("Word.Application");
+var B=J.lastIndexOf("/");
+var L=J.length;
+var A=J.substr(B+1,(L-B)-1);
+var C=D.Documents;
+var G=C.Count;
+for(var E=1;
+E<=G;
+++E){var I=C.Item(E);
+if(I.Name==A){return !I.Saved
+}}}catch(H){LoggerUtil.logMessage(GeneratingErr.contactApplicationErrorMessage);
+throw H
+}finally{if(D!=null){sfQuitApp(D)
+}}}return false
+}function sfAutoOpenSyncupDocument(A){var C=SmartClientScriptUtil.saveFileToClient(A);
+if(C){var B=sfClientFileTimestamp(A);
+if(B!=""){if(!sfSaveSyncHistory(B,sfFormatUrl(SmartClientScriptUtil.actionIds.saveSyncHistoryWithCommit))){LoggerUtil.logMessage("Error: saveSyncHistoryWithCommit failed with ts="+B);
+return false
+}}else{LoggerUtil.logMessage("Error: clientFileTimestamp is bad for sfilename="+A);
+return false
+}}return C
+}function sfOpenOrFindDocumentByDFSFilename(H,B,F,G){try{var C=true;
+if(F&&!sfClientFileExists(B)){C=sfAutoOpenSyncupDocument(B)
+}if(C){if(H.wordType==WordType.Word07Type||H.wordType==WordType.Word10Type){var D=sfGetFilePath(H.sDocumentLocation,true);
+var E=sfGetFilePath(H.sDocumentLocation,false);
+if(D!=""){H.wordApp.ChangeFileOpenDirectory(D)
+}}var L=false;
+var K=false;
+var M="";
+var A="";
+var J=false;
+H.wordApp.Documents.Open(B,L,G,K,M,A,J);
+H.hideApp()
+}return C
+}catch(I){LoggerUtil.logError(null,MIE+"sfOpenOrFindDocumentByDFSFilename",I);
+throw I
+}}function sfDeleteFileAndMaybeFolder(E,D){try{var B=sfGetFso();
+var C=B.getParentFolderName(filename);
+if(B.FileExists(E)){B.DeleteFile(E,true)
+}if(D>0){sfDeleteMaybeFolderHelper(B,C,D-1)
+}}catch(A){LoggerUtil.logError(DFSErr.Msg5,MIE+"sfDeleteFileAndMaybeFolder: file name is "+E,A);
+throw A
+}}function sfDeleteMaybeFolderHelper(E,G,H){try{var F=E.getParentFolderName(G);
+if(E.FolderExists(G)){var D=E.getFolder(G);
+var C=D.Files;
+var A=D.SubFolders;
+if(C.Count<=0&&A.Count<=0){E.DeleteFolder(G,true);
+if(H>0){sfDeleteMaybeFolderHelper(E,F,H-1)
+}}}}catch(B){LoggerUtil.logError(DFSErr.Msg5,MIE+"sfDeleteMaybeFolderHelper: folder name is "+H,null);
+throw B
+}}function sfClientDocumentDetect(B,A){var C=sfGetFso();
+if(A!=""&&C.FileExists(B)){return DFS.isFileChanged(A,B,B)
+}else{return false
+}}function siClientDocumentDetect(A){return sfClientDocumentDetect(sfForwardToBackSlash(A[Params.sDocumentLocation]),A[Params.dLastSyncTimestamp])
+}function sfDeleteFile(C){try{var B=sfGetFso();
+B.DeleteFile(C,true)
+}catch(A){LoggerUtil.logError(DFSErr.Msg5,"sfDeleteFile: cannot delete file"+C,A);
+throw A
+}}function sfCopyFile(A,C){try{var D=sfGetFso();
+D.CopyFile(A,C)
+}catch(B){LoggerUtil.logError(null,"sfCopyFile: cannot copy files "+A+" "+C,B);
+throw B
+}}function sfGetTempFileNameUsingTimestamp(D,A){var C=sfForwardToBackSlash(D);
+var B=new Date();
+C=C.concat(B.getSeconds());
+sfCreateDirectory(C);
+C=C.concat("\\");
+C=C.concat(sfGetFileNameFromPathName(A));
+return C
+}sfExportFunctions(new Array("siCallServer",siCallServer,"siSendDataToServer",siSendDataToServer,"siSaveSyncHistory",siSaveSyncHistory,"siGetTempFolderPath",siGetTempFolderPath,"siCreateDirectory",siCreateDirectory,"siSaveFileToClient",siSaveFileToClient,"siClientFileExists",siClientFileExists,"siOpenClientDocument",siOpenClientDocument,"siOpenClientFileWithApp",siOpenClientFileWithApp,"siMoveClientFile",siMoveClientFile,"siSaveDocumentToClient",siSaveDocumentToClient,"siGetFileBytes",siGetFileBytes,"siClientDocumentDetect",siClientDocumentDetect,"siAreTimestampsEqual",siAreTimestampsEqual,"siCompatibleClientFileTimestamp",siCompatibleClientFileTimestamp,"siClientFileTimestamp",siClientFileTimestamp));
+function sfcExecutionState(){this.agreementDocumentOverride=null;
+this.hideApp=function(){var A=this;
+A.wordApp.Visible=A.appVisible;
+window.focus();
+document.body.style.cursor="wait"
+};
+this.onErrorExit=function(){var A=this;
+A.quitApp();
+LoggerUtil.logErrorOnExit();
+if(A.urlDoneUrl){ariba.Request.setWindowLocation(A.urlDoneUrl)
+}};
+this.quitApp=function(){var A=this;
+sfQuitApp(A.wordApp);
+A.wordApp=null
+};
+this.getAgreementDocument=function(){if(this.agreementDocumentOverride!=null){return this.agreementDocumentOverride
+}else{return this.agreementDocument
+}}
+}var vExecutionState=new sfcExecutionState();
+function sfInitExecutionStateBasic(B,A){sfClearExecutionState(B);
+if(A[Params.sApplicationName]!=null){B.sApplicationName=A[Params.sApplicationName]
+}if(A[Params.sDataResource]!=null){B.sDataResource=A[Params.sDataResource]
+}if(A[Params.sDocumentLocation]!=null){B.sDocumentLocation=A[Params.sDocumentLocation]
+}else{if(A.documentLocation!=null){B.sDocumentLocation=A.documentLocation
+}}if(A[Params.sSourceDocumentLocation]!=null){B.sSourceDocumentLocation=A[Params.sSourceDocumentLocation]
+}if(A[Params.sTargetDocumentLocation]!=null){B.sTargetDocumentLocation=A[Params.sTargetDocumentLocation]
+}if(A[Params.sDocumentFullName]!=null){B.sDocumentFullName=A[Params.sDocumentFullName]
+}if(A[Params.sTempDocumentFolder]!=null){B.sTempDocumentFolder=A[Params.sTempDocumentFolder]
+}if(A[Params.sTempDocumentName]!=null){B.sTempDocumentName=A[Params.sTempDocumentName]
+}else{if(A.tempDocumentName!=null){B.sTempDocumentName=A.tempDocumentName
+}}if(A[Params.sBookmarkName]!=null){B.sBookmarkName=A[Params.sBookmarkName]
+}if(A[Params.sClauseId]!=null){B.sClauseId=A[Params.sClauseId]
+}if(A[Params.sSectionStyleId]!=null){B.sSectionStyleId=A[Params.sSectionStyleId]
+}if(A[Params.sFormFieldsValue]!=null){B.sFormFieldsValue=A[Params.sFormFieldsValue]
+}if(A[Params.sDocumentPropertiesContent]!=null){B.sDocumentPropertiesContent=A[Params.sDocumentPropertiesContent]
+}if(A[Params.sClientLogLevel]!=null){B.sClientLogLevel=A[Params.sClientLogLevel]
+}if(A[Params.sFormFieldsEncodedString]!=null){B.oFormFields=sfDecodeFormFieldString(A[Params.sFormFieldsEncodedString])
+}if(A[Params.sConditionalClausesEncodedString]!=null){B.oConditionalClauses=sfDecodeStringVector(A[Params.sConditionalClausesEncodedString])
+}if(A[Params.sReviseBookmarkEncodedString]!=null){B.oReviseBookmarks=sfDecodeReviseBookmarkString(A[Params.sReviseBookmarkEncodedString])
+}if(A[Params.sIncrementalInitializationEncodedString]!=null){B.oIncrementalIntializationCmds=sfDecodeStringVector(A[Params.sIncrementalInitializationEncodedString])
+}if(A[Params.sIncrementalGenerationEncodedString]!=null){B.oIncrementalGenerationCmds=sfDecodeStringVector(A[Params.sIncrementalGenerationEncodedString])
+}if(A[Params.sApplyStyleEncodedString]!=null){B.oApplyStyles=sfDecodeApplyStyleString(A[Params.sApplyStyleEncodedString])
+}if(A[Params.sSectionGenerationEncodedString]!=null){B.oGenSections=sfDecodeStringVector(A[Params.sSectionGenerationEncodedString])
+}if(A[Params.sSectionTreeEncodedString]!=null){B.oContentTree=sfDecodeContentString(A[Params.sSectionTreeEncodedString])
+}if(A[Params.sTasksEncodedString]!=null){B.oACMTasks=sfDecodeTasks(A[Params.sTasksEncodedString])
+}if(A[Params.urlRetrievepropertyAction]!=null){B.urlRetrievepropertyAction=ClientAutomation.ResolvePartialURL(A[Params.urlRetrievepropertyAction])
+}if(A[Params.urlOriginalDocumentUrl]!=null){B.urlOriginalDocumentUrl=ClientAutomation.ResolvePartialURL(A[Params.urlOriginalDocumentUrl])
+}if(A[Params.urlPromoteUrl]!=null){B.urlPromoteUrl=ClientAutomation.ResolvePartialURL(A[Params.urlPromoteUrl])
+}if(A[Params.urlIncrementalSyncupUrl]!=null){B.urlIncrementalSyncupUrl=ClientAutomation.ResolvePartialURL(A[Params.urlIncrementalSyncupUrl])
+}if(A[Params.urlActionUrl]!=null){B.urlActionUrl=ClientAutomation.ResolvePartialURL(A[Params.urlActionUrl])
+}else{if(A.actionUrl!=null){B.urlActionUrl=ClientAutomation.ResolvePartialURL(A.actionUrl)
+}}if(A[Params.urlDocumentUrl]!=null){B.urlDocumentUrl=ClientAutomation.ResolvePartialURL(A[Params.urlDocumentUrl])
+}else{if(A.documentUrl!=null){B.urlDocumentUrl=ClientAutomation.ResolvePartialURL(A.documentUrl)
+}}if(A[Params.urlDoneUrl]!=null){B.urlDoneUrl=ClientAutomation.ResolvePartialURL(A[Params.urlDoneUrl])
+}else{if(A.doneUrl!=null){B.urlDoneUrl=ClientAutomation.ResolvePartialURL(A.doneUrl)
+}}if(A[Params.urlGeneratingUrl]!=null){B.urlGeneratingUrl=ClientAutomation.ResolvePartialURL(A[Params.urlGeneratingUrl])
+}if(A[Params.urlSyncupClauseContentActionUrl]!=null){B.urlSyncupClauseContentActionUrl=ClientAutomation.ResolvePartialURL(A[Params.urlSyncupClauseContentActionUrl])
+}if(A[Params.urlDownloadSyncupXmlUrl]!=null){B.urlDownloadSyncupXmlUrl=ClientAutomation.ResolvePartialURL(A[Params.urlDownloadSyncupXmlUrl])
+}else{if(A.downloadSyncupXmlUrl!=null){B.urlDownloadSyncupXmlUrl=ClientAutomation.ResolvePartialURL(A.downloadSyncupXmlUrl)
+}}if(A[Params.urlSaveSyncHistoryUrl]!=null){B.urlSaveSyncHistoryUrl=ClientAutomation.ResolvePartialURL(A[Params.urlSaveSyncHistoryUrl])
+}else{if(A.saveSyncHistoryUrl!=null){B.urlSaveSyncHistoryUrl=ClientAutomation.ResolvePartialURL(A.saveSyncHistoryUrl)
+}}if(A[Params.urlUploadDocumentUrl]!=null){B.urlUploadDocumentUrl=ClientAutomation.ResolvePartialURL(A[Params.urlUploadDocumentUrl])
+}else{if(A.uploadDocumentUrl!=null){B.urlUploadDocumentUrl=ClientAutomation.ResolvePartialURL(A.uploadDocumentUrl)
+}}if(A[Params.urlCheckParseErrorActionUrl]!=null){B.urlCheckParseErrorActionUrl=ClientAutomation.ResolvePartialURL(A[Params.urlCheckParseErrorActionUrl])
+}if(A[Params.urlSaveCleanVersionUrl]!=null){B.urlSaveCleanVersionUrl=ClientAutomation.ResolvePartialURL(A[Params.urlSaveCleanVersionUrl])
+}if(A[Params.bShowCleanedDoc]!=null){B.bShowCleanedDoc=sfBooleanValueForBinding(A[Params.bShowCleanedDoc])
+}if(A[Params.sPropertyList]!=null){B.sPropertyList=A[Params.sPropertyList]
+}if(A[Params.dLastSyncTimestamp]!=null){B.dLastSyncTimestamp=A[Params.dLastSyncTimestamp]
+}B.bIsOnlyValueUpgradeRequired=false;
+if(A[Params.bIsSimplyGeneration]!=null){B.bIsSimplyGeneration=sfBooleanValueForBinding(A[Params.bIsSimplyGeneration])
+}if(A[Params.bIsTrackChangeActive]!=null){B.bIsTrackChangeActive=sfBooleanValueForBinding(A[Params.bIsTrackChangeActive])
+}if(A[Params.bIsIncrementalCopyProjectGeneration]!=null){B.bIsIncrementalCopyProjectGeneration=sfBooleanValueForBinding(A[Params.bIsIncrementalCopyProjectGeneration])
+}if(A[Params.bIsReviseBookmarkGeneration]!=null){B.bIsReviseBookmarkGeneration=sfBooleanValueForBinding(A[Params.bIsReviseBookmarkGeneration])
+}if(A[Params.bIsIncrementalGeneration]!=null){B.bIsIncrementalGeneration=sfBooleanValueForBinding(A[Params.bIsIncrementalGeneration])
+}if(A[Params.bIsCleanVersionRequired]!=null){B.bIsCleanVersionRequired=sfBooleanValueForBinding(A[Params.bIsCleanVersionRequired])
+}if(A[Params.bIsRemoveChangeRequired]!=null){B.bIsRemoveChangeRequired=sfBooleanValueForBinding(A[Params.bIsRemoveChangeRequired])
+}if(A[Params.bIsRemoveFieldRequired]!=null){B.bIsRemoveFieldRequired=sfBooleanValueForBinding(A[Params.bIsRemoveFieldRequired])
+}if(A[Params.bIsApplyStyleRequired]!=null){B.bIsApplyStyleRequired=sfBooleanValueForBinding(A[Params.bIsApplyStyleRequired])
+}if(A[Params.bFullySync]!=null){B.bFullySync=sfBooleanValueForBinding(A[Params.bFullySync])
+}if(A[Params.bContractModified]!=null){B.bContractModified=sfBooleanValueForBinding(A[Params.bContractModified])
+}if(A[Params.bOpenDocForceGeneration]!=null){B.bOpenDocForceGeneration=sfBooleanValueForBinding(A[Params.bOpenDocForceGeneration])
+}if(A[Params.bIsDocumentEditable]!=null){B.bIsDocumentEditable=sfBooleanValueForBinding(A[Params.bIsDocumentEditable])
+}if(A[Params.bIsSimplyGeneration]!=null){B.bIsSimplyGeneration=sfBooleanValueForBinding(A[Params.bIsSimplyGeneration])
+}if(A[Params.bIsTrackChangeActive]!=null){B.bIsTrackChangeActive=sfBooleanValueForBinding(A[Params.bIsTrackChangeActive])
+}if(A[Params.bIsTemplate]!=null){B.bIsTemplate=sfBooleanValueForBinding(A[Params.bIsTemplate])
+}else{if(A.isTemplate!=null){B.bIsTemplate=sfBooleanValueForBinding(A.isTemplate)
+}}if(A[Params.bSkipCopyClause]!=null){B.bSkipCopyClause=sfBooleanValueForBinding(A[Params.bSkipCopyClause])
+}if(A[Params.bIsWordDocValue]!=null){B.bIsWordDocValue=sfBooleanValueForBinding(A[Params.bIsWordDocValue])
+}if(A[Params.bKeepTasks]!=null){B.bKeepTasks=sfBooleanValueForBinding(A[Params.bKeepTasks])
+}if(A[Params.bUseFilter]!=null){B.bUseFilter=sfBooleanValueForBinding(A[Params.bUseFilter])
+}if(A[Params.dServerTimestamp]!=null){B.dServerTimestamp=A[Params.dServerTimestamp]
+}}function sfInitExecutionState(B){var A=new sfcExecutionState();
+sfInitExecutionStateBasic(A,B);
+return A
+}function sfPrintExecutionState(A){var B="";
+B=B.concat("urlRetrievepropertyAction:"+A.urlRetrievepropertyAction+"\n");
+B=B.concat("urlOriginalDocumentUrl:"+A.urlOriginalDocumentUrl+"\n");
+B=B.concat("urlIncrementalSyncupUrl:"+A.urlIncrementalSyncupUrl+"\n");
+B=B.concat("urlActionUrl:"+A.urlActionUrl+"\n");
+B=B.concat("urlDoneUrl:"+A.urlDoneUrl+"\n");
+B=B.concat("urlGeneratingUrl:"+A.urlGeneratingUrl+"\n");
+B=B.concat("urlPropertyList:"+A.sPropertyList+"\n");
+LoggerUtil.logMessage(B)
+}function sfClearExecutionState(A){}function sfcFormField(A,C,B){this.FieldName=A;
+this.FieldValue=(C==null||C=="")?" ":C;
+this.Editable=sfBooleanValueForBinding(B)
+}function sfDecodeFormFieldString(F){var A=new sfObjectArray();
+var E=F.split(AribaEncoderSeperator.ListItemSeparator);
+for(var C=0;
+C<E.length;
+++C){var G=(E[C]).split(AribaEncoderSeperator.ListParamSeparator);
+var B=G[1];
+if(B!=null){B=B.replace(/__ZZARIBABACKSLASH__/g,"\\");
+B=B.replace(/__ZZARIBADOUBLEQUOTE__/g,'"');
+B=B.replace(/__ZZARIBANEWLINE__/g,softReturnChar)
+}var D=new sfcFormField(G[0],B,G[2]);
+A.AddItem(D)
+}return A
+}function sfDecodeStringVector(D){var A=new sfObjectArray();
+if(sfIsEmptyString(D)){return A
+}var C=D.split(AribaEncoderSeperator.ListItemSeparator);
+for(var B=0;
+B<C.length;
+++B){A.AddItem(C[B])
+}return A
+}function sfcReviseBookmark(B,A){this.TemplateName=B;
+this.WorkspaceName=A
+}function sfDecodeReviseBookmarkString(E){var A=new sfObjectArray();
+var C=E.split(AribaEncoderSeperator.ListItemSeparator);
+for(var B=0;
+B<C.length;
+++B){var F=(C[B]).split(AribaEncoderSeperator.ListParamSeparator);
+var D=new sfcReviseBookmark(F[0],F[1]);
+A.AddItem(D)
+}return A
+}function sfcApplyStyle(B,A,C){this.Name=B;
+this.StyleId=A;
+this.IsClause=C
+}function sfDecodeApplyStyleString(E){var A=new sfObjectArray();
+var C=E.split(AribaEncoderSeperator.ListItemSeparator);
+for(var B=0;
+B<C.length;
+++B){var F=(C[B]).split(AribaEncoderSeperator.ListParamSeparator);
+var D=new sfcApplyStyle(F[0],F[1],F[2]);
+A.AddItem(D)
+}return A
+}function sfcContentNode(D,B,A,F,E,C){this.IsClause=D;
+this.Name=B;
+this.FullName=A;
+this.ItemId=F;
+this.ItemStyle=E;
+this.Children=C
+}function sfDecodeContentString(E){var A=new sfObjectArray();
+var C=E.split(AribaEncoderSeperator.ListItemSeparator);
+for(var B=0;
+B<C.length;
+++B){var D=(C[B]).split(AribaEncoderSeperator.ListParamSeparator);
+if(D[0]=="False"){var F=D[5].split(AribaEncoderSeperator.ListChildNodeSeparator);
+A.AddItem(new sfcContentNode(D[0],D[1],D[2],D[3],D[4],F))
+}else{A.AddItem(new sfcContentNode(D[0],D[1],D[2],D[3],D[4],null))
+}}return A
+}function sfcTask(A){this.InternalId=A[0];
+this.Title=A[1];
+this.TaskCompletionDate=A[2];
+this.Status=A[3];
+this.TaskStartDate=A[4];
+this.TaskDueDate=A[5];
+this.ParenteWorkspaceTitle=A[6];
+this.Description=A[7];
+this.WebJumper=A[8]
+}function sfPrintTask(A){return"InternalId "+A.InternalId+",Title "+A.Title+",TaskCompletionDate "+A.TaskCompletionDate+",Status "+A.Status+",TaskStartDate "+A.TaskStartDate+",TaskDueDate "+A.TaskDueDate+",ParenteWorkspaceTitle "+A.ParenteWorkspaceTitle+",Description "+A.Description+",WebJumper "+A.WebJumper
+}function sfDecodeTasks(F){var A=new sfObjectArray();
+var C=F.split(AribaEncoderSeperator.ListItemSeparator);
+for(var B=0;
+B<C.length;
+++B){var E=(C[B]).split(AribaEncoderSeperator.ListParamSeparator);
+var D=new sfcTask(E);
+A.AddItem(D)
+}return A
+}function sfGetChildren(B,C){var A=sfGetNode(B,C);
+return A.Children
+}function sfGetNode(D,E){var C=D.Count;
+for(var A=1;
+A<=C;
+++A){var B=D.Item(A);
+if(B.ItemId==E){return B
+}}LoggerUtil.logError(null,"sfGetNode: Node not found!! for lookup key "+E,null);
+return null
+}function sfGetCommand(E){var E=sfTrim(E);
+if(E==""||E==null){return null
+}var D=E.indexOf(" ");
+if(D<0){return null
+}var G=E.substring(0,D);
+var C=E.substring(D+1,E.length);
+var B=C.split(AribaEncoderSeperator.VariableSeparator);
+var A=new Array();
+A[0]=G;
+for(var F=0;
+F<B.length;
+++F){A[F+1]=sfTrim(B[F])
+}return A
+}function sfGetApp(A){try{A.wordApp=new ActiveXObject("Word.Application");
+A.appVersion=A.wordApp.Version;
+A.wordType=sfGetWordType(A.appVersion);
+A.appVisible=A.wordType==WordType.Word2000Type;
+A.wordApp.Visible=A.appVisible;
+document.body.style.cursor="wait";
+LoggerUtil.logMessage("Word Type = "+A.wordType+" App Version "+A.appVersion)
+}catch(B){LoggerUtil.logError(GeneratingErr.contactApplicationErrorMessage,MIE+"sfGetApp",B);
+throw B
+}}function sfQuitApp(A){if(A==null){LoggerUtil.logError(null,MIE+"sfQuitApp: Null word app",null);
+return 
+}try{A.Visible=false;
+A.NormalTemplate.Saved=true;
+A.quit(0);
+document.body.style.cursor="auto"
+}catch(B){LoggerUtil.logError(null,MIE+"sfQuitApp",B)
+}}function sfGetWordType(B){var C=B.indexOf(".");
+var A=B.substring(0,C);
+if(A==WordVersion.Word2000MajorVersion){return WordType.Word2000Type
+}else{if(A==WordVersion.WordXPMajorVersion||A==WordVersion.WordXP2003MajorVersion){return WordType.WordXPType
+}else{if(A==WordVersion.Word2007MajorVersion){return WordType.Word07Type
+}else{if(A==WordVersion.Word2010MajorVersion){return WordType.Word10Type
+}else{return WordType.WordUnknownType
+}}}}}function sfSaveWordSettings(B,A){var C=A.ActiveWindow;
+if(C.View.SplitSpecial==0){B.saveSettingViewType=C.ActivePane.View.Type
+}else{B.saveSettingViewType=C.View.Type
+}A.Bookmarks.ShowHidden=false
+}function sfRestoreWordSettings(B,A){var C=A.ActiveWindow;
+if(C.View.SplitSpecial==0){C.ActivePane.View.Type=B.saveSettingViewType
+}else{C.View.Type=B.saveSettingViewType
+}}function sfGetDocumentViewType(B,D){var C=B.ActiveWindow;
+var E=C.View.SplitSpecial==0?C.ActivePane.View:C.View;
+var A=E.Type;
+if(D){B.Bookmarks.ShowHidden=false
+}return A
+}function sfSetDocumentViewType(B,A){var C=B.ActiveWindow;
+var D=C.View.SplitSpecial==0?C.ActivePane.View:C.View;
+D.Type=A
+}function sfSaveOpenDocument(A,C){if(!sfClientFileExists(C)){LoggerUtil.logError(null,"sfSaveOpenDocument: Document not found "+C,null);
+return false
+}try{sfSetDocumentAttributes(C,true);
+var B=GetObject(C);
+if(B==null){return false
+}if(!B.Saved){B.Save()
+}B.Close();
+return true
+}catch(D){LoggerUtil.logError(null,"Method Invokation Error: sfSaveOpenDocument",D);
+throw D
+}}function sfOpenDocumentInWord(A,B,C,G){try{var F=C;
+if(B==WordType.Word07Type||B==WordType.Word10Type){var E=sfGetFilePath(C,true);
+F=sfGetFilePath(C,false);
+if(E!=""){A.ChangeFileOpenDirectory(E)
+}}A.Documents.Open(F,false,G);
+return A.ActiveDocument
+}catch(D){LoggerUtil.logError(GeneratingErr.wordOpenErrorMessage,"Method Invokation Error: sfOpenDocumentInWord Document Location "+C,null);
+throw D
+}}function sfContactDocument(C,B,A,E){try{C.hideApp();
+try{if(E){sfSaveOpenDocument(C.wordApp,B)
+}sfOpenDocumentInWord(C.wordApp,C.wordType,B,A)
+}catch(D){if(E){sfSaveOpenDocument(C.wordApp,B)
+}SmartClientScriptUtil.saveFileToClient(C.sDocumentLocation);
+sfOpenDocumentInWord(C.wordApp,C.wordType,B,A)
+}C.hideApp();
+return C.wordApp.ActiveDocument
+}catch(D){LoggerUtil.logError(null,MIE+"sfContactDocument "+D+" documentName="+B,null);
+throw D
+}}function sfOpenDocumentWithbookmark(F,B){if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Enter Fn sfOpenDocumentWithbookmark documentFullName:"+F+",bookmarkName:"+B)
+}try{var A=GetObject(sfForwardToBackSlash(F));
+var E=A.Application;
+if(A!=null){var E=A.Application;
+E.Visible=true;
+if(B!=null&&B!=""){E.Activate();
+A.Activate();
+window.blur();
+var D=A.ActiveWindow.Selection;
+sfGotoBookmarkName(D,B);
+E.NormalTemplate.Saved=true
+}else{E.Activate();
+A.Activate();
+window.blur()
+}A.TrackRevisions=true;
+A=null;
+E=null
+}return true
+}catch(C){LoggerUtil.logError(null,MIE+"sfOpenDocumentWithbookmark + ex",C);
+throw C
+}}function sfGotoBookmarkName(C,A){var B=awxsGetEventObject("gotoFunction");
+B.setArg("selection",C);
+B.setArg("bookmarkname",A);
+return B.invoke()
+}function sfAddTempWordDocument(A){var B=awxsGetEventObject("addTempWordDocument");
+B.setArg("wordapplication",A.wordApp);
+return B.invoke()
+}function sfOpenDocumentWithCheck(A){sfSetDocumentAttributes(A.sDocumentFullName,A.bIsDocumentEditable);
+if(!A.bContractModified){return sfOpenDocumentWithbookmark(A.sDocumentFullName,A.sBookmarkName)
+}else{if(!A.bOpenDocForceGeneration&&sfIsClientChanged(A.sDocumentFullName,A.dServerTimestamp)){return sfOpenDocumentWithbookmark(A.sDocumentFullName,A.sBookmarkName)
+}else{ariba.Request.setWindowLocation(A.urlGeneratingUrl);
+return false
+}}}function sfHighlightClauseNavigator(J){try{var B=GetObject(J);
+if(B==null){return""
+}var C=B.ActiveWindow.Selection;
+var A=C.Bookmarks;
+var F=A.Count;
+if(F==0){return""
+}var D=B.Bookmarks.Item(GlobalContractBookmarkName);
+for(var E=1;
+E<=F;
+++E){var G=A.Item(E);
+var I=G.Name;
+if(I.indexOf(prefixSectionName)>=0||I.indexOf(prefixClauseName)>=0){if(D==null||sfBookmarkIncluded(D,G)){D=G
+}}}B=null;
+return D!=null?D.Name:""
+}catch(H){return""
+}}function siOpenDocumentWithCheck(B){var A=sfInitExecutionState(B);
+try{sfLoggerInit(A,"siOpenDocumentWithCheck",B);
+return sfOpenDocumentWithCheck(A)
+}catch(C){LoggerUtil.logError(GeneratingErr.openDocumentErrorMessage,"",C);
+A.onErrorExit()
+}}function siOpenClauseNavigator(B){var A=sfInitExecutionState(B);
+sfLoggerInit(A,"siOpenClauseNavigator",B);
+sfOpenDocumentWithbookmark(A.sDocumentLocation,A.sBookmarkName)
+}function siHighlightClauseNavigator(A){try{return sfHighlightClauseNavigator(A[Params.sDocumentLocation])
+}catch(B){LoggerUtil.logErrorOnExit()
+}}function siSaveOpenDocument(A){try{return sfSaveOpenDocument(null,A[Params.sDocumentLocation])
+}catch(B){LoggerUtil.logErrorOnExit()
+}}function sfRetrieveWordData(D,F,B){try{var A=new ActiveXObject("Msxml2.DOMDocument.3.0");
+A.async=false;
+A.loadXML('<?xml version="1.0"?><root/>');
+var I=F.split("******");
+for(var E=0;
+E<I.length;
+++E){var H=I[E];
+if(!sfEmptyString(H)){var C=D.FormFields(H).Result;
+if(!sfEmptyString(C)){XMLUtil.addFormFieldToDom(A,H,C)
+}}}sfSendDataToServer(A.xml,B);
+A=null
+}catch(G){LoggerUtil.logError(null,MIE+"sfRetrieveWordData",null)
+}}function sfPopulateProperty(A,C){var E=A.Fields;
+if(E==null){return 
+}var G=E.Count;
+var J=C.CustomDocumentProperties;
+for(var D=1;
+D<=G;
+++D){var K=E.Item(D);
+if(K.Type!=85){continue
+}var F=K.Code.Text;
+if(F==null){continue
+}var I=F.indexOf(DocumentPropertyKey);
+if(I>=0){I+=(DocumentPropertyKey.length+1);
+var H=F.indexOf(" ",I);
+var B=F.substring(I,H);
+var L=sfAddADocumentProperty(B,J)
+}}}function sfAddADocumentProperty(B,A){if(B==null||B==""){return false
+}try{var D=A.Item(B);
+if(D!=null){return false
+}}catch(C){}A.Add(B,false,4,defaultPropertyValue);
+return true
+}sfExportFunctions(new Array("siOpenDocumentWithCheck",siOpenDocumentWithCheck,"siHighlightClauseNavigator",siHighlightClauseNavigator,"siSaveOpenDocument",siSaveOpenDocument));
+function sfObjectArray(){this.array1=new Array();
+this.array2=new Array();
+this.Count=0;
+this.AddItem=function(A){if(A!=null){this.array1[this.Count++]=A
+}};
+this.Item=function(A){return this.array1[A-1]
+};
+this.AddItemByName=function(A,B){this.array2[A]=B;
+this.AddItem(B)
+};
+this.ItemByName=function(A){return this.array2[A]
+};
+this.Contains=function(A){return this.array2[A]!=null
+};
+this.RemoveItemByName=function(A){this.array2[A]=null
+};
+this.init=function(){this.array1=new Array();
+this.array2=new Array();
+this.Count=0
+};
+this.DeleteAll=function(){for(var A=1;
+A<=this.Count;
+++A){var B=this.Item(A);
+B.Delete()
+}this.init()
+}
+}function sfCloneObjectArray(B){var C=B.Count;
+var D=new sfObjectArray();
+for(var A=1;
+A<=C;
+++A){D.AddItem(B.Item(A))
+}return D
+}function sfBookmarkProxy(B,D,A,C){this.Name=B;
+this.Start=D;
+this.End=A;
+this.DomBookmark=C;
+this.setEnd=function(E){this.DomBookmark.End=E;
+this.End=E
+}
+}function sfRangeProxy(C,B,A){this.Start=C;
+this.End=B;
+this.DomRange=A;
+this.BookmarkProxies=new sfObjectArray();
+this.ParagraphProxies=new sfObjectArray();
+this.addBookmark=function(E,H,D,F){var G=new sfBookmarkProxy(E,H,D,F);
+this.BookmarkProxies.AddItem(G)
+};
+this.BookmarkProxy=function(D){return this.BookmarkProxies.Item(D)
+};
+this.BookmarkProxyByName=function(D){return this.BookmarkProxies.ItemByName(D)
+};
+this.BookmarkCount=function(){return this.BookmarkProxies.Count
+};
+this.resync=function(){this.Start=this.DomRange.Start;
+this.End=this.DomRange.End
+}
+}function sfDomRangeForRange(A){if(A instanceof sfRangeProxy){return A.DomRange
+}else{return A
+}}function sfRangeProxyForBookmark(A){if(A==null){return A
+}else{if(A instanceof sfBookmarkProxy){return sfCreateFullRangeProxy(A.DomBookmark.Range)
+}else{return sfCreateFullRangeProxy(A.Range)
+}}}function sfSetBookmarkEnd(A,B){if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Bookmark modified! "+A.End+" TO "+B)
+}if(A instanceof sfBookmarkProxy){A.setEnd(B)
+}else{A.End=B
+}}function sfRevisionProxy(C,A,B){this.Type=C;
+this.RangeProxy=A;
+this.DomRevision=B
+}function sfBookmarkContainer(){this.bookmarkProxies=new sfObjectArray();
+this.ranges=new sfObjectArray();
+this.addBookmark=function(B,E,D,C,A){var F=new sfBookmarkProxy(B,E,D,C);
+this.bookmarkProxies.AddItemByName(B,F);
+this.ranges.AddItemByName(B,A)
+};
+this.BookmarkProxy=function(A){var B=this.bookmarkProxies.ItemByName(A);
+if(B==null){LoggerUtil.logAlert("Bookmark Container: Null bookmark proxy")
+}return B
+};
+this.DomRange=function(A){var B=this.ranges.ItemByName(A);
+if(B==null){LoggerUtil.logAlert("Bookmark Container: Null dom range")
+}return B
+};
+this.Log=function(){LoggerUtil.logMessage("Printing Bookmarks Container");
+var A=this.bookmarkProxies.Count;
+for(var B=1;
+B<=A;
+++B){var C=this.bookmarkProxies.Item(B);
+LoggerUtil.logMessage(C.Name+","+C.Start+","+C.End)
+}}
+}function sfCreateFullRangeProxy(C){var B=new sfRangeProxy(C.Start,C.End,C);
+var F=C.Bookmarks;
+var A=F.Count;
+for(var D=1;
+D<=A;
+++D){var E=F.Item(D);
+B.addBookmark(E.Name,E.Start,E.End,E)
+}return B
+}function sfCreateBasicRangeProxy(A){return new sfRangeProxy(A.Start,A.End,A)
+}function sfCreateRevisionProxy(B){var A=B.Range;
+return new sfRevisionProxy(B.Type,sfCreateFullRangeProxy(A),B)
+}function sfCreateRevisionProxies(D){var E=new sfObjectArray();
+var C=D.Count;
+for(var B=1;
+B<=C;
+++B){var A=D.Item(B);
+E.AddItem(sfCreateRevisionProxy(A))
+}return E
+}function sfCreateBookmarkProxy(A){return A!=null?new sfBookmarkProxy(A.Name,A.Start,A.End,A):null
+}function sfCreateBookmarkContainer(F){var D=F.Bookmarks;
+var E=new sfBookmarkContainer();
+var A=D.Count;
+for(var B=1;
+B<=A;
+++B){var C=D.Item(B);
+E.addBookmark(C.Name,C.Start,C.End,C,C.Range)
+}return E
+}function sfGetSectionBookmarks(A,B){var C=A.ActiveWindow.Selection;
+var D=sfGotoBookmarkName(C,B);
+return sfGetRangeBookmarks(D)
+}function sfBookmarkIncluded(B,A){return B.Start<=A.Start&&B.End>=A.End
+}function sfBookmarkFullyIncluded(B,A){return sfBookmarkIncluded(B,A)&&(B.Start!=A.Start||B.End!=A.End)
+}function sfIsContainBookmark(A){var D=A.Bookmarks;
+var E=D.Count;
+for(var C=1;
+C<=E;
+++C){var F=D.Item(C);
+var B=F.Name;
+if(B.indexOf(prefixClauseName)>=0||B.indexOf(prefixSectionName)>=0){if(sfBookmarkFullyIncluded(A,F)){return true
+}}}return false
+}function sfIsSectionBookmark(A){return A.Name.indexOf(prefixSectionGenName)>=0
+}function sfIsGenBookmark(A){return A.indexOf(prefixClauseGenName)>=0||A.indexOf(prefixSectionGenName)>=0||A.indexOf(GlobalContractBookmarkName)>=0||A.indexOf(prefixClauseNewName)>=0
+}function sfIsNewBookmark(A){return A.indexOf(prefixClauseNewName)>=0||A.indexOf(prefixSectionNewName)>=0||A.indexOf(GlobalContractBookmarkName)>=0
+}function sfIsGenBookmarkForLoad(A){if(A.indexOf(prefixClauseGenName)>=0){return GeneratedClause
+}else{if(A.indexOf(prefixSectionGenName)>=0){return GeneratedSection
+}else{return GeneratedUnknown
+}}}function sfWithinBookmarkNameInSelection(D,A,C){var B=A.Bookmarks;
+var H=B.Count;
+var E=null;
+for(var F=1;
+F<=H;
+++F){var G=B.Item(F);
+if(sfBookmarkFullyIncluded(G,A)){var K=G.name;
+var J=K.indexOf(prefixSectionName);
+var I=C?0:K.indexOf(prefixClauseName);
+if(J>=0||I>=0){if(E==null||sfBookmarkIncluded(E,G)){E=G
+}}}}return E
+}function sfWithinBookmarkName(A,B){return sfWithinBookmarkNameInSelection(A.ActiveWindow.Selection,B,false)
+}function sfWithinGenBookmarkInSelection(I,B){if(!(I instanceof sfRangeProxy)){LoggerUtil.logError(null,"sfWithinGenBookmarkInSelection: Got Non proxy object",null)
+}var C=I.BookmarkProxies;
+var F=C.Count;
+var D=null;
+for(var E=1;
+E<=F;
+++E){var J=C.Item(E);
+var A=sfIsSectionBookmark(J)?sfBookmarkIncluded(J,I):sfBookmarkFullyIncluded(J,I);
+if(!A){continue
+}if(J.Name==GlobalContractBookmarkName){D=J
+}else{var H=J.Name.indexOf(prefixSectionName);
+var G=B?0:J.Name.indexOf(prefixClauseName);
+if(H>=0||G>=0){if(D==null||sfBookmarkIncluded(D,J)){D=J
+}}}}return D
+}function sfCombineIntoUniqueBookmarks(I,H){var J=new sfObjectArray();
+var G=new sfObjectArray();
+for(var D=1;
+D<=I.Count;
+++D){var E=I.Item(D);
+if(!G.Contains(E.Name)){J.AddItem(E);
+G.AddItemByName(E.Name,E)
+}}for(var D=1;
+D<=H.Count;
+++D){var E=H.Item(D);
+if(!G.Contains(E.Name)){J.AddItem(E);
+G.AddItemByName(E.Name,E)
+}}for(var D=1;
+D<=J.Count;
+++D){for(var C=D+1;
+C<=J.Count;
+++C){var F=J.Item(D);
+var B=J.Item(C);
+if(sfBookmarkIncluded(F,B)){G.AddItemByName(B.Name,null)
+}else{if(sfBookmarkIncluded(B,F)){G.AddItemByName(F.Name,null)
+}}}}var A=new sfObjectArray();
+for(var D=1;
+D<=J.Count;
+++D){var E=J.Item(D);
+if(G.Contains(E.Name)){A.AddItem(E.Name)
+}}LoggerUtil.logBookmarks("Combined Bookmarks",J);
+return A
+}function sfGetBookmarksStartingAt(H,A){var D=new sfObjectArray();
+sfMoveToPosition(H,A);
+var B=H.Range;
+var G=B.bookmarks;
+var E=G.Count;
+for(var C=1;
+C<=E;
+++C){var F=G.Item(C);
+D.AddItemByName(F.Name,F)
+}return D
+}function sfGetRangeBookmarks(A){if(A==null){return new sfObjectArray()
+}try{var F=A.Bookmarks;
+var G=new sfObjectArray();
+var D=F.Count;
+for(var C=1;
+C<=D;
+++C){var E=F.Item(C);
+if(sfBookmarkIncluded(A,E)){G.AddItem(E)
+}}return G
+}catch(B){LoggerUtil.logError(null,MIE+"sfGetRangeBookmarks",B);
+return null
+}}function sfGetBookmarkByName(A,B){try{var D=A.Bookmarks.Item(B);
+return D
+}catch(C){return null
+}}function sfGetRangeBookmarksWithinEpsilon(A,B,D,C){var E=A.Range(B.Start-D,B.End+C);
+return sfGetRangeBookmarks(E)
+}function sfConvertBookmarksToNames(B){var D=new sfObjectArray();
+var C=B.Count;
+for(var A=1;
+A<=C;
+++A){var E=B.Item(A);
+if(E!=null){D.AddItem(E.Name)
+}}return D
+}function sfGetRangeContent(A){var B=sfDomRangeForRange(A);
+var C=B.TextRetrievalMode;
+if(C!=null){C.ViewType=3;
+C.IncludeHiddenText=false;
+C.IncludeFieldCodes=false
+}return B.Text
+}function sfGetSelectionContent(C){var A=C.Range;
+var B=sfGetRangeContent(A);
+return B
+}function sfIsEmptyRange(A){var B=sfGetRangeContent(A);
+B=sfTrim(B);
+return B.Length<=0
+}function sfIsEmptyParagraph(A){var B=sfGetRangeContent(A);
+B=sfTrim(B);
+return sfIsEmptyString(B)
+}function sfIsSpace(A){return A==paraChar||A==lineFeed||A==tabChar||A==spaceChar
+}function sfIsEmptyString(A){if(A==null||A==""){return true
+}for(var B=0;
+B<A.length;
+++B){if(!sfIsSpace(A.charAt(B))){return false
+}}return true
+}function sfIsEmptyRange2(A,C){var B=C;
+B=sfTrim(B);
+return B.length<=0
+}function sfIsEmptyText(A){if(A==null){return true
+}var B=sfGetRangeContent(A);
+B=sfTrim(B);
+return B==null||B.length==0
+}function sfGetClauseSummaryImpl(B,D){var A=B.Range;
+if(!sfIsEmptyText(A)){var C=sfGetRangeContent(A);
+if(!D){C=C.substr(0,MaxSummaryLength);
+C=sfTrim(C)
+}return C
+}else{return EmptyClauseSummary
+}}function sfGetRangeSummary(A){var B=sfGetRangeContent(A);
+B=B.substr(0,MaxSummaryLength);
+B=sfTrim(B);
+return B
+}function sfGetClauseSummary(A){return sfGetClauseSummaryImpl(A,false)
+}function sfGetClauseSummaryAll(A){return sfGetClauseSummaryImpl(A,true)
+}function sfGetClauseSummaryAllByRange(A){var B=sfGetRangeContent(A);
+return !sfIsEmptyRange2(A,B)?B:EmptyClauseSummary
+}function getClauseSummaryByName(A,B){return sfGetClauseSummaryImpl(A.Bookmarks.Item(B),false)
+}function sfGetChildBookmarksForRange(A,B){return sfGetChildBookmarks(sfGetChildBookmarks(A,B,false))
+}function sfGetChildBookmarks(C,J,G){var I=new sfObjectArray();
+var D=J.Bookmarks;
+var F=D.Count;
+var B=null;
+for(var E=1;
+E<=F;
+++E){var H=D.Item(E);
+var A=G?sfBookmarkFullyIncluded(J,H):sfBookmarkIncluded(J,H);
+if(!A){continue
+}if(B==null||!sfBookmarkIncluded(B,H)){I.AddItem(H)
+}}return I
+}function sfContentType(A){if(A.indexOf(prefixClauseName)>=0){return ContentType.ContentClauseType
+}else{if(A.indexOf(prefixSectionName)>=0){return ContentType.ContentSectionType
+}else{return ContentType.ContentUnknownType
+}}}function sfTempClauseCreated(E,C){try{LoggerUtil.logBegin("sfTempClauseCreated");
+var A=sfGotoBookmarkName(C,E.sClauseId);
+C.Copy();
+E.hideApp();
+var H=sfAddTempWordDocument(E);
+H.Activate();
+sfPopulateProperty(A,H);
+var G=H.ActiveWindow.Selection;
+sfCompatiblePasteWithAllValue(G,E.wordType);
+if(H.Bookmarks.Exists(E.sClauseId)){H.Bookmarks(E.sClauseId).Delete()
+}var D=sfForwardToBackSlash(E.sTempDocumentFolder);
+if(sfCreateDirectory(D+TempFolderName)){var B=WordType.WordDocExtension;
+if(E.wordType==WordType.Word07Type){B=WordType.Word07DocExtension
+}else{if(E.wordType==WordType.Word10Type){B=WordType.Word10DocExtension
+}}var I=D+TempFolderName+"\\"+E.sClauseId+"."+B;
+H.SaveAs(I);
+H.Close();
+LoggerUtil.logEnd("sfTempClauseCreated");
+return I
+}else{LoggerUtil.logError(null,"sfTempClauseCreated: Cannot create temp document",null);
+LoggerUtil.logEnd("sfTempClauseCreated");
+return""
+}}catch(F){LoggerUtil.logError("","Invokation Error: sfTempClauseCreated",F);
+throw F
+}}function sfCompatiblePaste(B,A){sfCompatiblePasteWithFormat(B,A,0)
+}function sfCompatiblePasteWithAllValue(B,A){B.TypeText("a");
+var C=B.MoveLeft(1,1);
+sfCompatiblePasteWithFormat(B,A,16);
+C=B.MoveRight(1,1);
+B.TypeBackspace()
+}function sfCompatiblePasteWithFormat(C,A,B){if(A==WordType.Word2000Type){C.Paste()
+}else{if(A==WordType.WordXPType){C.PasteAndFormat(B)
+}else{if(A==WordType.Word07Type){C.PasteAndFormat(16)
+}else{if(A==WordType.Word10Type){C.PasteAndFormat(16)
+}else{LoggerUtil.logError(null,"Unknown word format",null)
+}}}}}function sfGoodToGreatBookmark(D,B,A){var C=sfContentType(A);
+if(C==ContentType.ContentClauseType){sfFixClauseBookmark(D,D.Bookmarks.Item(A))
+}}function sfIsBookmarkExists(D,C,B){if(D.Bookmarks.Exists(B)){var A=sfGotoBookmarkName(C,B);
+if(C.End>C.Start){return true
+}}return false
+}function sfEndsWithASectionBookmark(A){var E=sfGetRangeBookmarks(A);
+var D=A.End;
+var C=E.Count;
+for(var B=1;
+B<=C;
+++B){var F=E.Item(B);
+if(sfIsSectionBookmark(F)&&F.End==D){return true
+}}return false
+}function sfScanBookmarksForLoad(K,I,E,C){LoggerUtil.logBegin("sfScanBookmarksForLoad");
+var B=K.currentSelection.Bookmarks;
+var J=B.Count;
+var M=sfCreateNewEntityNode(K);
+for(var G=1;
+G<=J;
+++G){var H=B.Item(G);
+var D=sfIsGenBookmarkForLoad(H.Name);
+if(D!=GeneratedUnknown){var F=null;
+var L=H.Name;
+if(D==GeneratedSection){F=prefixSectionNewName+prefixAribaOldGenId+L.substring(prefixSectionGenName.length,L.length)
+}else{F=prefixClauseNewName+prefixAribaOldGenId+L.substring(prefixClauseGenName.length,L.length)
+}var A=K.getAgreementDocument().Bookmarks.Item(L).Range;
+H=K.getAgreementDocument().Bookmarks.Add(F,A);
+var N=K.getAgreementDocument().Bookmarks.Item(L).Delete()
+}if(sfIsNewBookmark(H.Name)){sfBookmarkNode(K,K.getAgreementDocument(),H,M,E)
+}else{sfAppendBookmarkOtherNode(K.xmlDOM,H,K.xmlNode_otherBookmarkList)
+}}if(I){sfParseNewEntities(K.getAgreementDocument(),K.xmlDOM,M)
+}LoggerUtil.logEnd("sfScanBookmarksForLoad")
+}function sfFindSectionName(E,B){sfGotoBookmarkName(E,B);
+var D=E.Bookmarks;
+var F=D.Count;
+var A=null;
+for(var C=1;
+C<=F;
+++C){var G=D.Item(C);
+if(A==null){if(sfBookmarkIncluded(A,G)){A=G
+}}else{A=G
+}}return A!=null?A.Name:""
+}function sfFindPreviousBookmarkName(J,I,C){sfGotoBookmarkName(J,C);
+var A=J.Bookmarks;
+var H=A.Count;
+var D=null;
+var B=-1;
+for(var F=1;
+F<=H;
+++F){if(A.Item(F).Name==I){B=F-1;
+break
+}}for(var F=B;
+F>=1;
+--F){var G=A.Item(F);
+var E=sfWithinBookmarkNameInSelection(J,G.Range,true);
+if(E==C){D=G;
+break
+}}return D!=null?D.Name:null
+}function sfFindFirstBookmarkNameInSection(D,I,B){sfGotoBookmarkName(I,B);
+var A=I.Bookmarks;
+var E=D.Bookmarks(B);
+var F=A.Count;
+for(var C=1;
+C<=F;
+++C){var G=A.Item(C);
+var H=G.Name;
+if(H!=B&&sfBookmarkFullyIncluded(E,G)&&(sfIsNewBookmark(H)||sfIsGenBookmark(H))){return H
+}}return""
+}function sfIsRangeASection(A){var D=A.BookmarkProxies;
+for(var C=1;
+C<=D.Count;
+++C){var B=D.Item(C);
+LoggerUtil.logMessage(" bmProxy "+B.Start+" :"+B.End);
+if(B.Start==A.Start&&B.End==A.End&&sfIsSectionBookmark(B)){return true
+}}return false
+}function sfDeleteSelection(A){A.Delete(1,1)
+}function sfDeleteChar(A,B){A.Delete(1,B)
+}function sfSelectPara(A){sfGotoBookmarkName(A,"\\Para")
+}function sfSelectBookmark(B,A){sfGotoBookmarkName(B,A)
+}function sfMoveToStartSelection(A){A.End=A.Start
+}function sfMoveToEndSelection(A){A.Start=A.End
+}function sfMoveToStartDocument(A){A.HomeKey(6,0)
+}function sfMoveToEndDocument(A){A.EndKey(6,0)
+}function sfMoveToStartLine(A){A.HomeKey(5)
+}function sfMoveToStartPara(A){sfSelectBookmark(A,"\\Para");
+sfMoveToStartSelection(A)
+}function sfMoveToEndPara(A){sfSelectBookmark(A,"\\Para");
+sfMoveToEndSelection(A);
+sfMoveToLeft(A,1)
+}function sfMoveToPosition(B,A){B.Start=A;
+B.End=A
+}function sfExtendToEndPara(A){A.EndOf(4,1)
+}function sfMoveToLeft(B,A){B.MoveLeft(1,A)
+}function sfMoveToRight(A,B){A.MoveRight(1,B)
+}function sfMoveToDownPara(A){A.MoveDown(4,1);
+sfMoveToStartPara(A)
+}function sfMoveToUpPara(A){sfMoveToStartPara(A);
+sfMoveToLeft(A,1);
+sfMoveToStartPara(A)
+}function sfResetStyleOnPrevPara(A,B){sfMoveToUpPara(B);
+sfResetStyleOnPara(A,B);
+sfMoveToDownPara(B)
+}function sfFixSectionBookmark(D,B){var A=D.Range(B.End-1,B.End);
+var C=D.Range(B.End,B.End+1);
+if(A!=paraChar&&C==paraChar){sfSetBookmarkEnd(B,B.End+1)
+}else{if(A!=paraChar&&C!=paraChar){sfSetBookmarkEnd(B,D.Range(B.End,B.End+1).Paragraphs(1).Range.End)
+}}}function sfFixClauseBookmark(C,B){var A=C.Range(B.End-1,B.End);
+if(A==paraChar){sfSetBookmarkEnd(B,B.End-1)
+}}function sfRemoveEmptyParaAfterBookmark(E,C,G,J){LoggerUtil.logMessage("Attempting to remove empty Paragraph after "+G);
+var B=E.TrackRevisions;
+E.TrackRevisions=false;
+var A=sfContentType(G);
+if(A==ContentType.ContentClauseType){if(J==null){J=GlobalContractBookmarkName
+}var F=sfGetBookmarkByName(E,J);
+if(F==null){E.TrackRevisions=B;
+return 
+}var D=F.End;
+while(true){sfSelectBookmark(C,G);
+sfMoveToEndSelection(C);
+sfMoveToDownPara(C);
+F=sfGetBookmarkByName(E,J);
+D=F.End;
+var I=C.Range.Paragraphs(1);
+var H=I.Range;
+if(H.End<D&&sfIsEmptyParagraph(H)){LoggerUtil.logMessage("Removed empty Paragraph after "+G);
+sfDeleteChar(C,1)
+}else{break
+}}sfFixClauseBookmark(E,E.Bookmarks.Item(G))
+}E.TrackRevisions=B
+}function sfFixBookmarkEndToPara(C,B){var A=C.ActiveWindow.Selection;
+sfMoveToPosition(A,B.End);
+sfMoveToEndPara(A);
+if(A.End!=B.End){sfSetBookmarkEnd(B,A.End)
+}}function sfFixSectionGlobalBookmark(F,D){var J=F.Bookmarks(GlobalContractBookmarkName);
+var K=F.Range(J.End-1,J.End);
+var A=F.Range(J.End,J.End+1);
+var H=J.Start;
+var C=sfGetBookmarksStartingAt(D,H);
+var G=C.Count;
+var I=false;
+for(var E=1;
+E<=G;
+++E){var B=C.Item(E);
+if(B.Name!=GlobalContractBookmarkName){I=true;
+break
+}}if(I){sfNewPositionClauseSection(F,D,"",GlobalContractBookmarkName)
+}D.WholeStory();
+if(K!=paraChar&&D.End==(J.End+1)){sfMoveToEndSelection(D);
+sfCreateNewLine(F,D);
+J.End=J.End+1;
+K=paraChar
+}if(K!=paraChar&&A==paraChar){J.End=J.End+1
+}}var EditTypeNewLine=1;
+var EditTypeSpace=2;
+var EditTypeBackspace=3;
+var EditTypeRestoreNewLineByDelete=4;
+function sfEditInternal(A,E,C){try{var B=A.TrackRevisions;
+A.TrackRevisions=false;
+if(C==EditTypeNewLine){E.TypeParagraph()
+}else{if(C==EditTypeSpace){E.TypeText(" ")
+}else{if(C==EditTypeBackspace){E.TypeBackspace()
+}else{if(C==EditTypeRestoreNewLineByDelete){E.HomeKey(5,0);
+E.MoveDown(5,1,1);
+if(sfIsEmptyRange(E.Range)){E.Delete(1,1)
+}}}}}A.TrackRevisions=B
+}catch(D){logError(MIE+"sfEditInternal: EditType "+C);
+throw D
+}}function sfCreateNewLine(A,B){sfEditInternal(A,B,EditTypeNewLine)
+}function sfCreateASpace(A,B){sfEditInternal(A,B,EditTypeSpace)
+}function sfDoBackspace(A,B){sfEditInternal(A,B,EditTypeBackspace)
+}function sfRestoreNewLine(A,B){sfDoBackspace(A,B)
+}function sfRestoreNewLineByDelete(A,B){sfEditInternal(A,B,EditTypeRestoreNewLineByDelete)
+}function sfInsertAfterBookmarkTitle(A,E,B){LoggerUtil.logBegin("sfInsertAfterBookmarkTitle: "+B);
+if(!A.Bookmarks.Exists(B)){return 
+}sfSelectBookmark(E,B);
+var C=E.End;
+sfMoveToStartSelection(E);
+sfMoveToEndPara(E);
+sfCreateNewLine(A,E);
+sfResetStyleOnPara(A,E);
+var F=E.Start;
+if(F>=C){sfCreateNewLine(A,E);
+sfCreateNewLine(A,E);
+var D=sfGetBookmarkByName(A,B);
+D.End=E.Start
+}sfMoveToPosition(E,F);
+LoggerUtil.logEnd("sfInsertAfterBookmarkTitle")
+}function sfInsertAfterBookmarkUtil(D,M,J,E){LoggerUtil.logMessage("sfInsertAfterBookmarkUtil: inserting "+E+" after "+J);
+sfGoodToGreatBookmark(D,M,J);
+var H=sfGetBookmarkByName(D,J);
+if(H==null){sfMoveToEndSelection(M);
+return 
+}sfSelectBookmark(M,J);
+sfExtendToEndPara(M);
+sfMoveToEndSelection(M);
+var B=M.Start;
+var C=new sfObjectArray();
+var A=M.Range;
+var L=A.bookmarks;
+var I=L.Count;
+for(var G=1;
+G<=I;
+++G){var K=L.Item(G);
+if(K.Start==M.Start&&K.Name!=J){C.AddItem(K)
+}}if(C.Count>0){sfCreateNewLine(D,M);
+sfResetStyleOnPrevPara(D,M);
+I=C.Count;
+for(var G=1;
+G<=I;
+++G){var N=C.Item(G);
+N.Start=M.Start
+}}sfSelectBookmark(M,J);
+sfExtendToEndPara(M);
+var F=new sfObjectArray();
+A=M.Range;
+L=A.bookmarks;
+I=L.Count;
+for(var G=1;
+G<=I;
+++G){var K=L.Item(G);
+if(K.End>=H.End&&K.End<=M.End&&K.Start<H.Start&&K.Name!=J){F.AddItem(K)
+}}sfMoveToPosition(M,B);
+if(F.Count>0){sfCreateNewLine(D,M);
+I=F.Count;
+for(var G=1;
+G<=I;
+++G){var O=F.Item(G);
+O.End=M.Start
+}}sfMoveToPosition(M,B)
+}function sfInsertAfterBookmarkBegin(C,B,A){sfSelectBookmark(B,A);
+sfMoveToStartSelection(B);
+sfCreateNewLine(C,B);
+sfMoveToUpPara(B);
+sfResetStyleOnPara(C,B);
+sfMoveToDownPara(B)
+}function sfInsertBeforeBookmark(E,D,A){sfSelectBookmark(D,A);
+sfMoveToStartSelection(D);
+var B=E.Bookmarks.Item(A);
+B.Start=B.Start+1;
+D.TypeParagraph();
+var C=D.Start;
+sfMoveToUpPara(D);
+sfResetStyleOnPara(E,D);
+B.Start=C
+}function sfInsertAfterBookmark(A,D,B){var C=sfFindSectionName(D,B);
+sfInsertAfterBookmarkUtil(A,D,B,C)
+}function sfRemoveBookmarkAndContent(C,B,A){LoggerUtil.logBegin("sfRemoveBookmarkAndContent: "+A);
+sfSelectBookmark(B,A);
+sfExtendToEndPara(B);
+sfDeleteSelection(B);
+sfClearupBookmark(sfGetBookmarkByName(C,A));
+LoggerUtil.logEnd("sfRemoveBookmarkAndContent")
+}function sfNewPositionClauseSection(G,F,C,D){LoggerUtil.logBegin("sfNewPositionClauseSection("+G+","+F+","+C+","+D+")");
+if(C==""){if(GlobalContractBookmarkName==D){var E=sfFindFirstBookmarkNameInSection(G,F,D);
+if(E!=""){var B=G.Bookmarks.Item(E);
+var A=sfGotoBookmarkName(F,D);
+if(B.Start==A.Start){var H=F.MoveLeft(1,1);
+sfInsertBeforeBookmark(G,F,E)
+}else{sfInsertAfterBookmarkBegin(G,F,D)
+}}else{sfInsertAfterBookmarkBegin(G,F,D)
+}}else{sfInsertAfterBookmarkTitle(G,F,D)
+}}else{sfInsertAfterBookmarkUtil(G,F,C,D)
+}LoggerUtil.logEnd("sfNewPositionClauseSection")
+}function sfAddBookmarkWithOptions(D,C,F,G){LoggerUtil.logBegin("sfAddBookmarkWithOptions("+D+","+C+","+F+","+G+")");
+if(G){sfCreateNewLine(D,C);
+var H=C.MoveUp(5,1)
+}sfResetStyleToNormal(D,C);
+var I=1;
+C.TypeText(" ");
+var B=D.Range(C.Start-I,C.Start);
+var E=D.Bookmarks.Add(F,B);
+var A=sfGotoBookmarkName(C,F);
+C.End=C.Start;
+LoggerUtil.logEnd("sfAddBookmarkWithOptions")
+}function sfAddBookmark(C,B,A){sfAddBookmarkWithOptions(C,B,A,true)
+}function sfClearupBookmark(D){if(D==null){return 
+}var C=D.Range;
+var B=C.Bookmarks;
+var F=B.Count;
+var E=new sfObjectArray();
+for(var A=1;
+A<=F;
+++A){var G=B.Item(A);
+if(sfBookmarkFullyIncluded(C,G)){E.AddItem(G)
+}}E.DeleteAll()
+}function sfAddGlobalContractBookmarkInDocument(E){E.Activate();
+if(E.Bookmarks.Exists(GlobalContractBookmarkName)){return 
+}var D=E.ActiveWindow.Selection;
+D.WholeStory();
+if(D.Start+1>=D.End){sfCreateASpace(E,D);
+D.WholeStory()
+}if(D.Bookmarks.Count>0){var B=D.Bookmarks(1);
+if(B.Start==0){LoggerUtil.logMessage("Adding space before first book mark");
+D.End=D.Start;
+sfCreateASpace(E,D);
+B.Start=B.Start+1;
+D.WholeStory()
+}}var I=false;
+try{I=D.Rows.Count<=1
+}catch(G){I=true
+}if(I){var H=D.EndKey(6,0);
+sfCreateNewLine(E,D);
+D.Range.ListFormat.RemoveNumbers();
+sfCreateNewLine(E,D);
+D.Range.ListFormat.RemoveNumbers();
+D.WholeStory()
+}var C=E.Range(D.Start,D.End);
+var F=E.Bookmarks.Add(GlobalContractBookmarkName,C);
+var A=sfGotoBookmarkName(D,GlobalContractBookmarkName);
+var H=D.HomeKey(5,0)
+}function sfAddGlobalContractBookmark(C){C.Activate();
+if(C.Bookmarks.Exists(GlobalContractBookmarkName)){return 
+}LoggerUtil.logBegin("sfAddGlobalContractBookmark");
+var B=C.ActiveWindow.Selection;
+var D=B.EndKey(6,0);
+sfAddBookmark(C,B,GlobalContractBookmarkName);
+D=B.EndKey(6,0);
+sfRestoreNewLine(C,B);
+var A=sfGotoBookmarkName(B,GlobalContractBookmarkName);
+D=B.MoveRight(1,1);
+D=B.MoveLeft(1,1);
+sfCreateNewLine(C,B);
+B.Range.ListFormat.RemoveNumbers();
+LoggerUtil.logEnd("sfAddGlobalContractBookmark")
+}function sfIsNextCharPara(B,A){return B.Range(A,A+1)==paraChar
+}function sfResetContractContent(C){C.Activate();
+if(C.Bookmarks.Exists(GlobalContractBookmarkName)){var B=C.ActiveWindow.Selection;
+var A=sfGotoBookmarkName(B,GlobalContractBookmarkName);
+var D=B.Delete(1,1);
+D=C.Bookmarks.Item(GlobalContractBookmarkName).Delete();
+sfAddBookmark(C,B,GlobalContractBookmarkName)
+}}function sfApplyBookmarkByLocation(E,F,A,D,C){var B=E.getAgreementDocument().Range(D,C-1);
+var G=E.getAgreementDocument().Bookmarks.Add(A,B)
+}function sfApplyBookmarkByName(D,E,A,C){var B=sfGotoBookmarkName(E,C);
+var F=D.getAgreementDocument().Bookmarks.Add(A,B);
+var G=D.getAgreementDocument().Bookmarks.Item(C).Delete()
+}function sfApplyStyleByAttribute(C,D,A,B){var E=B.getAttribute(XML_ATTRIBUTE_STYLE);
+if(E!=""){sfSelectBookmark(D,A);
+sfApplyStyleInSectionClause(C.getAgreementDocument(),E,D,sfContentType(A))
+}}function sfApplyStyleInSectionClause(K,I,M,N){if(I==null){return 
+}var A;
+var B;
+try{B=K.Styles(I)
+}catch(J){LoggerUtil.logError(null,"sfApplyStyleInSectionClause Invalid Args: styleId is "+I+",contentType is "+N,null);
+return 
+}try{if(I!=noStyle&&I!=AdHocStyle){if(N==ContentType.ContentSectionType){A=M.Paragraphs(1).Range;
+A.Style=B
+}else{if(N==ContentType.ContentClauseType){var O=null;
+var G=null;
+var P=null;
+var L=null;
+var D=null;
+var E=null;
+var C=M.Paragraphs;
+var H=C.count;
+for(var F=1;
+F<=H;
+F++){O=C.Item(F);
+A=O.Range;
+G=A.ListFormat;
+if(F==1){L=G.ListLevelNumber;
+D=G.ListType;
+E=O.LeftIndent;
+A.Style=B;
+P=O.LeftIndent
+}else{if(E==O.LeftIndent&&L==G.ListLevelNumber&&D==G.ListType){A.Style=B;
+G.RemoveNumbers(1);
+O.LeftIndent=P
+}}}}}}}catch(J){LoggerUtil.logError(null,MIE+"sfApplyStyleInSectionClause: styleId is "+I+",contentType is "+N,J);
+throw J
+}}function sfAddClause(E,G,D,F,C,A,B){sfAddClauseToClipboard(E,G);
+sfAddClauseFromClipboard(E,D,F,C,true,A)
+}function sfAddClauseToClipboard(B,C){LoggerUtil.logBegin("sfAddClauseToClipboard "+C);
+sfOpenDocumentInWord(B.wordApp,B.wordType,C,false);
+var A=B.wordApp.ActiveDocument.ActiveWindow.Selection;
+A.WholeStory();
+sfPopulateProperty(A.Range,B.getAgreementDocument());
+A.Copy();
+B.wordApp.ActiveDocument.Close();
+LoggerUtil.logEnd("sfAddClauseToClipboard ")
+}function sfAddClauseFromClipboard(F,C,J,H,G,B){var I=F.agreementDocument;
+F.getAgreementDocument().Activate();
+sfNewPositionClauseSection(I,F.currentSelection,B,J);
+var D=G;
+sfAddBookmarkWithOptions(I,F.currentSelection,C,D);
+sfCompatiblePaste(F.currentSelection,F.wordType);
+sfDeleteChar(F.currentSelection,1);
+if(!G){var E=I.Bookmarks(C);
+if(sfIsNextCharPara(I,E.Range.End-1)){if(sfIsNextCharPara(I,F.currentSelection.End)){sfDeleteChar(F.currentSelection,1)
+}E.Range.End=E.Range.End-1
+}}var A=sfGotoBookmarkName(F.currentSelection,C);
+if(G){sfApplyStyleInSectionClause(I,H,F.currentSelection,sfContentType(C));
+F.currentSelection.Font.Reset()
+}sfGoodToGreatBookmark(I,F.currentSelection,C);
+sfRemoveEmptyParaAfterBookmark(I,F.currentSelection,C,J)
+}function sfAddSection(F,E,C,J,G,B,D){LoggerUtil.logBegin("sfAddSection "+E);
+var I=F.agreementDocument;
+F.hideApp();
+I.Activate();
+sfNewPositionClauseSection(I,F.currentSelection,B,J);
+sfAddBookmarkWithOptions(I,F.currentSelection,C,false);
+sfApplyStyleInSectionClause(I,G,F.currentSelection,sfContentType(C));
+F.currentSelection.TypeText(E);
+var A=sfGotoBookmarkName(F.currentSelection,C);
+var H=F.currentSelection.MoveRight(1,1);
+H=F.currentSelection.MoveLeft(1,1);
+sfCreateNewLine(I,F.currentSelection);
+F.currentSelection.Range.ListFormat.RemoveNumbers();
+LoggerUtil.logEnd("sfAddSection"+E)
+}function sfSetSection(D,C,H,F,B){if(D.getAgreementDocument().Bookmarks.Exists(H)){sfSelectBookmark(D.currentSelection,H);
+sfMoveToStartSelection(D.currentSelection);
+sfMoveToEndPara(D.currentSelection);
+var A=D.currentSelection.Range;
+if(B){var I=null;
+try{I=D.currentSelection.NextRevision()
+}catch(G){LoggerUtil.logInfo(null,"sfSetSection Error with keep section title",G)
+}if(I!=null&&I.Type==2){I.Reject();
+sfSelectBookmark(D.currentSelection,H);
+sfMoveToStartSelection(D.currentSelection);
+sfExtendToEndPara(D.currentSelection);
+sfApplyStyleInSectionClause(D.getAgreementDocument(),F,D.currentSelection,sfContentType(H))
+}}else{var E=D.currentSelection.End;
+var J=D.getAgreementDocument().Bookmarks(H);
+if(E>=J.End){sfInsertAfterBookmarkTitle(D.getAgreementDocument(),D.currentSelection,H)
+}sfSelectBookmark(D.currentSelection,H);
+sfMoveToStartSelection(D.currentSelection);
+sfExtendToEndPara(D.currentSelection);
+sfApplyStyleInSectionClause(D.getAgreementDocument(),F,D.currentSelection,sfContentType(H));
+D.currentSelection.TypeText(C)
+}}else{sfApplyStyleInSectionClause(D.getAgreementDocument(),F,D.currentSelection,sfContentType(H));
+D.currentSelection.TypeText(C)
+}}function sfSetClause(D,F,E,A,C,B){sfAddClauseToClipboard(D,F);
+sfReplaceClauseFromClipboard(D,E,A,C,B,true)
+}function sfReplaceClauseFromClipboard(D,I,B,G,F,E){D.currentSelection=D.wordApp.ActiveDocument.ActiveWindow.Selection;
+if(I==null||I==""){I=GlobalContractBookmarkName
+}LoggerUtil.logBegin("sfReplaceClauseFromClipboard: "+G);
+D.getAgreementDocument().Activate();
+var H=false;
+if(sfIsBookmarkExists(D.getAgreementDocument(),D.currentSelection,G)){sfRemoveBookmarkAndContent(D.getAgreementDocument(),D.currentSelection,G)
+}if(I==""&&B==""){LoggerUtil.logMessage("ERROR: both contextSectionBookmarkName and previousBookmarkName are null")
+}sfNewPositionClauseSection(D.getAgreementDocument(),D.currentSelection,B,I);
+sfAddBookmarkWithOptions(D.getAgreementDocument(),D.currentSelection,G,false);
+sfCompatiblePaste(D.currentSelection,D.wordType);
+sfDeleteChar(D.currentSelection,1);
+if(!E){var C=D.getAgreementDocument().Bookmarks(G);
+if(sfIsNextCharPara(D.getAgreementDocument(),C.Range.End-1)){if(sfIsNextCharPara(D.getAgreementDocument(),D.currentSelection.End)){sfDeleteChar(D.currentSelection,1)
+}C.Range.End=C.Range.End-1
+}}var A=sfGotoBookmarkName(D.currentSelection,G);
+if(E){sfApplyStyleInSectionClause(D.getAgreementDocument(),F,D.currentSelection,sfContentType(G));
+D.currentSelection.Font.Reset()
+}sfGoodToGreatBookmark(D.getAgreementDocument(),D.currentSelection,G);
+sfRemoveEmptyParaAfterBookmark(D.getAgreementDocument(),D.currentSelection,G,I);
+LoggerUtil.logEnd("sfReplaceClauseFromClipboard")
+}function sfCopyReplaceClause(E,A,F,B,D,C){if(sfIsBookmarkExists(E.copyProjectSourceAgreement,E.currentSelection,D)){sfCopySourceClauseToClipboard(D,A);
+sfReplaceClauseFromClipboard(F,B,D,C,A)
+}else{if(sfIsBookmarkExists(E.getAgreementDocument(),D)){sfRemoveBookmarkAndContent(E.getAgreementDocument(),E.currentSelection,D)
+}}}function sfCopyAddClause(F,A,E,G,D,B,C){sfCopySourceClauseToClipboard(E,A);
+sfAddClauseFromClipboard(E,G,D,A,B)
+}function sfCopySourceClauseToClipboard(C,B,A){C.copyProjectSourceAgreement.Activate();
+var D=C.wordApp.ActiveDocument.ActiveWindow.Selection;
+sfSelectBookmark(D,B);
+if(!A){sfExtendToEndPara(D)
+}D.Copy()
+}function sfAutoOpenSyncupClause(B,A,C){sfSaveClauseToClient(A,C,B.urlDocumentUrl)
+}function sfMoveClauseSection(G,I,D,A,H,B){window.focus();
+document.body.style.cursor="wait";
+G.getAgreementDocument().Activate();
+var C=sfGotoBookmarkName(G.currentSelection,I);
+var F=sfWithinBookmarkNameInSelection(G.currentSelection,C,true);
+if(F==A){var E=sfFindPreviousBookmarkName(G.currentSelection,I,A);
+if(E==B){return 
+}}C=sfGotoBookmarkName(G.currentSelection,I);
+sfExtendToEndPara(G.currentSelection);
+G.currentSelection.Copy();
+sfRemoveBookmarkAndContent(G.getAgreementDocument(),G.currentSelection,I);
+sfNewPositionClauseSection(G.getAgreementDocument(),G.currentSelection,B,A);
+sfAddBookmarkWithOptions(G.getAgreementDocument(),G.currentSelection,I,false);
+sfCompatiblePaste(G.currentSelection,G.wordType);
+var J=G.currentSelection.Delete(1,1);
+C=sfGotoBookmarkName(G.currentSelection,I);
+sfApplyStyleInSectionClause(G.getAgreementDocument(),H,G.currentSelection,sfContentType(I));
+sfGoodToGreatBookmark(G.getAgreementDocument(),G.currentSelection,I);
+sfRemoveEmptyParaAfterBookmark(G.getAgreementDocument(),G.currentSelection,I,A)
+}function sfReviseMoveForwardBookmark(D,C,G){try{var A=sfGotoBookmarkName(C,G);
+var I=C.MoveRight(1,1);
+I=C.MoveLeft(1,1);
+var B=sfWithinBookmarkName(D,C.Range);
+if(G!=B){var E=D.Bookmarks.Item(B);
+var H=D.Bookmarks.Item(G);
+if(H.End==E.End){var A=sfGotoBookmarkName(C,G);
+I=C.MoveRight(1,1);
+sfCreateASpace(D,C);
+H.End=H.End+1
+}}}catch(F){LoggerUtil.logError(null,MIE+"sfReviseMoveForwardBookmark",F);
+throw F
+}}function sfRemoveClauseSection(C,B){C.hideApp();
+C.getAgreementDocument().Activate();
+sfGoodToGreatBookmark(C.getAgreementDocument(),C.currentSelection,B);
+var A=sfGotoBookmarkName(C.currentSelection,B);
+sfExtendToEndPara(C.currentSelection);
+var E=C.currentSelection.Delete(1,1);
+try{var E=C.getAgreementDocument().Bookmarks(B).Delete()
+}catch(D){}}function sfSetSectionContent(F,D,G,C,B){var E=false;
+if(F.getAgreementDocument().Bookmarks.Exists(D)){var A=sfGotoBookmarkName(F.currentSelection,D);
+var H=F.currentSelection.MoveLeft(1,1);
+H=F.currentSelection.EndKey(5,1);
+H=F.currentSelection.MoveLeft(1,1,1);
+H=F.currentSelection.Delete(1,1)
+}else{if(F.getAgreementDocument().Bookmarks.Exists(B)){sfInsertAfterBookmark(F.getAgreementDocument(),F.currentSelection,B);
+sfAddBookmark(F.getAgreementDocument(),F.currentSelection,D);
+E=true
+}}sfApplyStyleInSectionClause(F.getAgreementDocument(),C,F.currentSelection,sfContentType(D));
+F.currentSelection.TypeText(G);
+if(E){var A=sfGotoBookmarkName(currentSelection,D);
+var H=F.currentSelection.MoveRight(1,1);
+H=F.currentSelection.MoveRight(1,1);
+H=F.currentSelection.Delete(1,1)
+}}function sfSetClauseContent(C,E,I,D,A){window.focus();
+document.body.style.cursor="wait";
+sfOpenDocumentInWord(C.wordApp,C.wordType,I,false);
+var H=C.wordApp.ActiveDocument.ActiveWindow.Selection;
+H.WholeStory();
+sfPopulateProperty(H.Range,C.getAgreementDocument());
+H.Copy();
+C.wordApp.ActiveDocument.Close();
+C.getAgreementDocument().Activate();
+var G=false;
+if(C.getAgreementDocument().Bookmarks.Exists(E)){var B=sfGotoBookmarkName(C.currentSelection,E);
+C.currentSelection.End=C.currentSelection.End-1;
+var F=C.currentSelection.Delete(1,1);
+F=C.currentSelection.Delete(1,1)
+}else{if(C.getAgreementDocument().Bookmarks.Exists(A)){sfInsertAfterBookmark(C.getAgreementDocument(),C.currentSelection,A);
+sfAddBookmark(C.getAgreementDocument(),C.currentSelection,E);
+G=true
+}}sfCompatiblePaste(C.currentSelection,C.wordType);
+sfApplyStyleInSectionClause(C.getAgreementDocument(),D,C.currentSelection,sfContentType(E));
+var B=sfGotoBookmarkName(C.currentSelection,E);
+var F=C.currentSelection.MoveRight(1,1);
+F=C.currentSelection.MoveLeft(1,1);
+sfRestoreNewLine(C.getAgreementDocument(),C.currentSelection);
+if(G){B=sfGotoBookmarkName(C.currentSelection,E);
+F=C.currentSelection.MoveRight(1,1);
+F=C.currentSelection.MoveRight(1,1);
+F=C.currentSelection.Delete(1,1)
+}sfGoodToGreatBookmark(C.getAgreementDocument(),C.currentSelection,E)
+}function sfAddCommentForAdHocClause(J,L,N,E){var F=sfGotoBookmarkName(currentSelection,GlobalContractBookmarkName);
+var A=sfGotoBookmarkName(currentSelection,L);
+var H=A.Bookmarks;
+var I=H.Item(L);
+var G=H.count;
+var D=null;
+var C=A.Paragraphs;
+var O=C.count;
+for(var S=1;
+S<=O;
+++S){var Q=C.Item(S);
+var R=Q.Range;
+if(!sfIsEmptyRange(R)){D=R.End;
+break
+}}var B=A.End;
+var N=1;
+var M=null;
+var P;
+for(var S=1;
+S<=G;
+++S){var T=H.Item(S);
+var U=T.Name;
+var K=U.indexOf(prefixSectionGenName);
+if(K<0){K=U.indexOf(prefixClauseGenName)
+}if(K>=0&&T.Name!=I.Name&&sfBookmarkIncluded(I,T)){if(M==null){if(I.Name!=GlobalContractBookmarkName){N=sfAddNewClauseInComment(J,D,T.Start,J.getAgreementDocument(),N,I,M,E)
+}else{N=sfAddNewClauseInComment(J,F.Start,T.Start,J.getAgreementDocument(),N,I,M,E)
+}M=T;
+P=M.End
+}else{if(!sfBookmarkIncluded(M,T)){N=sfAddNewClauseInComment(J,P,T.Start,J.getAgreementDocument(),N,I,M,E);
+P=T.End;
+M=T
+}}}J.getAgreementDocument().Application.Visible=false;
+J.getAgreementDocument().Activate()
+}if(M!=null){if(I.Name!=GlobalContractBookmarkName){N=sfAddNewClauseInComment(J,M.End,B,J.getAgreementDocument(),N,I,M,E)
+}else{N=sfAddNewClauseInComment(J,M.End,F.End,J.getAgreementDocument(),N,I,M,E)
+}}else{N=sfAddNewClauseInComment(J,D,B,J.getAgreementDocument(),N,I,M,E)
+}return N
+}function sfAddNewClauseInComment(K,H,P,D,O,I,L,B){if((H+1)<P){var N=D.Range(H,P);
+var M=sfGetChildBookmarksForRange(D,N);
+var E=H;
+var A=K.xmlDOM.createElement(XML_TAG_NEW_ENTITIES);
+A.setAttribute(XML_ATTRIBUTE_SECTION_BOOKMARK,I.Name);
+if(L==null){A.setAttribute(XML_ATTRIBUTE_PREVIOUS_BOOKMARK,"")
+}else{A.setAttribute(XML_ATTRIBUTE_PREVIOUS_BOOKMARK,L.Name)
+}var J=M.Count;
+for(var F=1;
+F<=J;
+++F){var G=M.Item(F);
+if(G.Start>E+1){sfAppendChildNewClausesXml(K.xmlDOM,D.Range(E,D.Bookmarks.Item(G.Name).Start),A)
+}var C=G.Name;
+if(C.indexOf(prefixSectionName+aribaKeyword)>=0){A.appendChild(sfSectionToXml(D,G))
+}else{if(C.indexOf(prefixClauseName+aribaKeyword)>=0){A.appendChild(sfClauseToXml(D,G,true))
+}}E=G.End
+}if(P>E+1){sfAppendChildNewClausesXml(K.xmlDOM,D.Range(E,P),A)
+}if(A.hasChildNodes){B.appendChild(A)
+}}return O
+}function sfConvertCommentToBookmarkForAdHocClause(E){var B=1;
+var G=E.Comments;
+var D=G.Count;
+for(var C=1;
+C<=D;
+++C){var F=G.Item(C);
+if(F.Initial==aribaKeyword){var A=prefixClauseName+aribaKeyword+B;
+B+=1;
+var H=E.Bookmarks.Add(A,F.Scope)
+}}G=E.Comments;
+D=G.Count;
+for(var C=1;
+C<=D;
+++C){var F=G.Item(C);
+if(F.Initial==aribaKeyword){F.Delete()
+}}}function sfResetStyleOnPara(A,B){sfSelectPara(B);
+sfResetStyleToNormal(A,B);
+sfMoveToStartSelection(B)
+}function sfResetStyleToNormal(A,B){B.Style=A.Styles(-1)
+}function sfISCFixCurrentSelection(C,B){var A=C.getAgreementDocument().TrackRevisions;
+C.getAgreementDocument().TrackRevisions=true;
+sfISCFixCurrentSelectionInternal(C,B);
+C.getAgreementDocument().TrackRevisions=A
+}function sfISCFixCurrentSelectionInternal(E,W){try{LoggerUtil.logBegin("sfISCFixCurrentSelectionInternal");
+var K=E.getAgreementDocument().Revisions;
+var F=K.Count;
+var R=0,L=-1;
+var B=0;
+var P="";
+var V="",J="";
+for(var T=1;
+T<=F;
+++T){var I=K.Item(T);
+var N=I.Range;
+var D=N.Start;
+var A=N.End;
+if(D>W){P=I.Type;
+if(P==RevisionType.Insert){if(sfIsEmptyText(N)){B=T;
+R=A-D;
+L=A
+}}else{if(P==RevisionType.Delete){if(sfIsEmptyText(N)){continue
+}if(D==L){var M=sfGetRangeBookmarksWithinEpsilon(E.getAgreementDocument(),N,R,R);
+M=sfConvertBookmarksToNames(M);
+if(M.Count>0){E.getAgreementDocument().Revisions(T).Reject();
+E.getAgreementDocument().Revisions(B).Reject();
+R=0;
+L=-1;
+for(var S=1;
+S<=M.Count;
+++S){var O=E.getAgreementDocument().ActiveWindow.Selection;
+try{var C=sfGotoBookmarkName(O,M.Item(S));
+sfDeleteSelection(C)
+}catch(U){}}sfSaveFile(E.getAgreementDocument());
+sfISCFixCurrentSelectionInternal(E,D);
+return 
+}}else{var G=N.Text;
+if(G!=null&&G.length>0){V=G.charAt(0);
+J=G.charAt(G.length-1)
+}if(V==paraChar||J==paraChar){var Q=V==paraChar?-1:0;
+var H=J==paraChar&&!sfEndsWithASectionBookmark(N)?-1:0;
+var M=sfGetRangeBookmarksWithinEpsilon(E.getAgreementDocument(),N,Q,H);
+M=sfConvertBookmarksToNames(M);
+if(M.Count>0){E.getAgreementDocument().Revisions(T).Reject();
+for(var S=1;
+S<=M.Count;
+++S){var O=E.getAgreementDocument().ActiveWindow.Selection;
+try{var C=sfGotoBookmarkName(O,M.Item(S));
+sfDeleteSelection(C)
+}catch(U){}}sfSaveFile(E.getAgreementDocument());
+sfISCFixCurrentSelectionInternal(E,D);
+return 
+}}}}}}}LoggerUtil.logEnd("sfISCFixCurrentSelectionInternal")
+}catch(U){LoggerUtil.logError(null,"Method Invocation Error: sfISCFixCurrentSelectionInternal",null);
+E.canContinue=false;
+throw U
+}}function sfISCFixSectionBookmarks(B){var F=null;
+var A=-1;
+var E=-1;
+var D=B.clientVersion.bookmarks;
+var G=D.Count;
+for(var C=1;
+C<=G;
+++C){var H=D.Item(C);
+if(H.Name!=F){if(H.Name.indexOf(prefixSectionName)>=0&&H.Start==A){H.Start=E
+}F=H.Name;
+A=H.Start;
+E=H.End
+}}}function logRangeModified(B,A){if(LoggerUtil.enableLogging){if(A){LoggerUtil.logAlert("Range Start Modified"+B.Start)
+}else{LoggerUtil.logAlert("Range End Modified"+B.End)
+}}}function sfRemoveLeadingTailingParaMarkerOfARange(B){LoggerUtil.logBegin("sfRemoveLeadingTailingParaMarkerOfARange");
+if(!sfIsRangeASection(B)){var A=B.DomRange;
+var C=A.Text;
+var E=C.charAt(0);
+var D=C.charAt(C.length-1);
+var F=false;
+if(E==paraChar){A.Start=A.Start+1;
+logRangeModified(A,true);
+F=true
+}if(D==paraChar){A.End=A.End-1;
+logRangeModified(A,false);
+F=true
+}}LoggerUtil.logEnd("sfRemoveLeadingTailingParaMarkerOfARange")
+}function sfBeginningMatchedBookmark(H,A){var F=A.Bookmarks;
+var C=A.Start;
+var B=A.End;
+if(F==null){return""
+}var G=F.Count;
+for(var D=1;
+D<=G;
+++D){var E=F.Item(D);
+if(E.Start==C){if(E.End==B||(E.End<B&&sfIsEmptyText(H.Range(E.End,B)))||(E.End>B&&sfIsEmptyText(H.Range(B,E.End)))){return E.Name
+}}}return""
+}function sfCompatibleCompareOrMergeWithOption(C,F,A,E,B,D){LoggerUtil.logBegin("In sfCompatibleCompareMergeWithOption ");
+C.Activate();
+if(A==WordType.Word2000Type){if(D){C.Compare(F)
+}else{C.Merge(F)
+}}else{if(A==WordType.WordXPType||A==WordType.Word07Type||A==WordType.Word10Type){if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Merging server file into the client file")
+}C.Merge(F,E,false,0,false)
+}}if(B){C.Application.WordBasic.NextChangeOrComment()
+}LoggerUtil.logEnd("In sfCompatibleCompareMergeWithOption ")
+}function sfCompatibleCompareMergeTargetWithOption(C,E,A,D,B){C.Activate();
+if(A==WordType.Word2000Type){E.Compare(C)
+}else{if(A==WordType.WordXPType||A==WordType.Word07Type||A==WordType.Word10Type){C.Merge(E,D,false,0,false)
+}}if(B){C.Application.WordBasic.NextChangeOrComment()
+}}function sfcDiffDocument(){this.tmpTargetFileName=null;
+this.tmpSourceDocument=null;
+this.tmpSourceFileName=null;
+this.priorRSIDValue=false;
+this.diffDocument=function(){LoggerUtil.logBegin("sfDiffUsingWordWithTrackChangesOn");
+var A=this;
+sfGetApp(A);
+A.wordApp.Visible=true;
+this.prepTargetDocument();
+this.prepSourceDocument();
+this.mergeTargetIntoSource();
+this.mergeSourceIntoTarget();
+this.cleanUp();
+LoggerUtil.logEnd("sfDiffUsingWordWithTrackChangesOn")
+};
+this.prepTargetDocument=function(){LoggerUtil.logMessage("prepTargetDocument");
+var A=this;
+sfSetDocumentAttributes(A.sTargetDocumentLocation,true);
+var B=sfOpenDocumentInWord(A.wordApp,A.wordType,A.sTargetDocumentLocation,false);
+B.Revisions.AcceptAll();
+this.tmpTargetFileName=sfAppendStringToFileLocation(A.sTargetDocumentLocation,"Temp");
+B.SaveAs(this.tmpTargetFileName);
+B.Close()
+};
+this.prepSourceDocument=function(){LoggerUtil.logMessage("prepSourceDocument");
+var A=this;
+var B=sfOpenDocumentInWord(A.wordApp,A.wordType,A.sSourceDocumentLocation,false);
+sfSetDocumentViewType(B,ViewType.ViewTypeNormal);
+B.Revisions.AcceptAll();
+B.TrackRevisions=false;
+B.Activate();
+this.priorRSIDValue=A.wordApp.Options.StoreRSIDOnSave;
+A.wordApp.Options.StoreRSIDOnSave=false;
+this.tmpSourceDocument=A.wordApp.Documents.Add(A.sSourceDocumentLocation,false,0);
+this.tmpSourceDocument.Activate();
+sfSetDocumentViewType(this.tmpSourceDocument,ViewType.ViewTypeNormal);
+var C=this.tmpSourceDocument.Range(0,1);
+C.Copy();
+this.tmpSourceDocument.Revisions.AcceptAll();
+B.Close()
+};
+this.mergeTargetIntoSource=function(){LoggerUtil.logMessage("mergeTargetIntoSource");
+var A=this;
+if(A.wordType!=WordType.Word07Type&&A.wordType!=WordType.Word10Type){if(A.wordType!=WordType.Word2000Type){this.tmpSourceDocument.Merge(this.tmpTargetFileName,1,true,0,false)
+}else{this.tmpSourceDocument.Compare(this.tmpTargetFileName)
+}}A.wordApp.Visible=false;
+document.body.style.cursor="wait";
+this.fixFieldsAfterMerge(this.tmpSourceDocument);
+A.wordApp.Visible=true;
+this.tmpSourceFileName=sfAppendStringToFileLocation(A.sTargetDocumentLocation,"Temp2");
+this.tmpSourceDocument.SaveAs(this.tmpSourceFileName);
+this.tmpSourceDocument.Close();
+A.wordApp.Options.StoreRSIDOnSave=this.priorRSIDValue
+};
+this.mergeSourceIntoTarget=function(){LoggerUtil.logMessage("mergeSourceIntoTarget");
+var A=this;
+var B=sfOpenDocumentInWord(A.wordApp,A.wordType,A.sTargetDocumentLocation,false);
+sfSaveWordSettings(A,B);
+sfSetDocumentViewType(B,ViewType.ViewTypeNormal);
+B.Revisions.AcceptAll();
+if(A.wordType!=WordType.Word2000Type){B.Merge(this.tmpSourceFileName,1,true,0,false)
+}else{B.Merge(this.tmpSourceFileName)
+}sfRestoreWordSettings(A,B)
+};
+this.fixFieldsAfterMerge=function(A){this.fixFieldsAfterMergeForType(A,A.FormFields);
+this.fixFieldsAfterMergeForType(A,A.Fields)
+};
+this.fixFieldsAfterMergeForType=function(C,H){LoggerUtil.logMessage("fixFieldsAfterMergeForType");
+var J=H!=null?H.Count:0;
+for(var F=1;
+F<=J;
+++F){var G=H.Item(F);
+G.Select();
+var D=C.ActiveWindow.Selection;
+var A=D.range;
+var K=A.Revisions;
+var B=K!=null?K.Count:0;
+for(var E=1;
+E<=B;
+++E){var I=K.Item(E);
+if(I.Type==2&&I.range.text==A.text){this.rejectInsertedRevision(C.range(I.range.Start-1,I.range.End+1),I);
+I.Reject()
+}}}};
+this.rejectInsertedRevision=function(B,F){var E=B.Revisions;
+var A=E!=null?E.Count:0;
+for(var D=1;
+D<=A;
+++D){var C=E.Item(D);
+if(C.Type==1&&C.range.text==F.range.text&&(!sfBookmarkIncluded(C.range,F.range))){C.Reject();
+break
+}}};
+this.cleanUp=function(){var A=this;
+sfDeleteFile(this.tmpSourceFileName);
+sfDeleteFile(this.tmpTargetFileName)
+}
+}sfcDiffDocument.prototype=new sfcExecutionState;
+function siDiffUsingWordWithTrackChangesOn(B){LoggerUtil.logBegin("siDiffUsingWordWithTrackChangesOn");
+var A=new sfcDiffDocument();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"sfcDiffDocument",B);
+A.diffDocument()
+}catch(C){A.onErrorExit()
+}LoggerUtil.logEnd("siDiffUsingWordWithTrackChangesOn")
+}function sfPureDiffInMSWord(H){var B=GetObject(H.sSourceDocumentLocation);
+var C=GetObject(H.sTargetDocumentLocation);
+B.Activate();
+B.Revisions.AcceptAll();
+C.Activate();
+C.Revisions.AcceptAll();
+var I=B.Application;
+var D=I.Version;
+var E=sfGetWordType(D);
+I.Visible=true;
+I.NormalTemplate.Saved=true;
+var F=(""==H.sBookmarkName);
+var G=2;
+if(E==WordType.Word07Type||E==WordType.Word10Type){sfCompatibleCompareOrMergeWithOption(C,H.sSourceDocumentLocation,E,G,F,true)
+}else{sfCompatibleCompareOrMergeWithOption(B,H.sTargetDocumentLocation,E,G,F,true)
+}if(!F){var J=C.Application.ActiveDocument.ActiveWindow.Selection;
+var A=sfGotoBookmarkName(J,H.sBbookmarkName);
+J=B.Application.ActiveDocument.ActiveWindow.Selection;
+A=sfGotoBookmarkName(J,H.sBbookmarkName)
+}if(E==WordType.WordXPType||E==WordType.Word07Type||E==WordType.Word10Type){B.Close(0)
+}C.Close(0)
+}function siPureDiffInMSWord(B){LoggerUtil.logBegin("siPureDiffInMSWord");
+var A=new sfcDiffDocument();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siPureDiffInMSWord",B);
+sfPureDiffInMSWord(A)
+}catch(C){A.onErrorExit()
+}LoggerUtil.logEnd("siPureDiffInMSWord")
+}sfExportFunctions(new Array("siDiffUsingWordWithTrackChangesOn",siDiffUsingWordWithTrackChangesOn,"siPureDiffInMSWord",siPureDiffInMSWord));
+function sfcStartGenerate(){this.generate=function(){var I=_cdGenerate;
+try{if(!I.bIsSimplyGeneration){H()
+}else{sfGetApp(I);
+if(!I.bIsOnlyValueUpgradeRequired){sfProcessClause(I)
+}sfImportValues(I);
+sfSyncConditionalClauses(I);
+sfUploadDocument(I);
+sfSyncHistory(I);
+sfFullyCleanup(I);
+ariba.Request.setWindowLocation(I.urlDoneUrl)
+}}catch(J){I.onErrorExit()
+}};
+function D(J,I){step_contact_app.className="inactiveStep";
+step_import_data.className="inactiveStep";
+step_upload_clause.className="inactiveStep";
+step_upload_data.className="inactiveStep";
+step_syncup_data.className="inactiveStep";
+step_done.className="inactiveStep";
+document.all(J).className="activeStep";
+setTimeout(I,1000)
+}function C(J){var I=_cdGenerate;
+LoggerUtil.logMessage("Document Generation Step:"+J);
+I.hideApp()
+}function H(){var I=_cdGenerate;
+try{sfGetApp(I);
+D("step_import_data",A)
+}catch(J){I.onErrorExit()
+}}function A(){var I=_cdGenerate;
+try{C("step_import_data");
+if(!I.bIsOnlyValueUpgradeRequired){sfProcessClause(I)
+}sfImportValues(I);
+D("step_upload_clause",B)
+}catch(J){I.onErrorExit()
+}}function B(){var I=_cdGenerate;
+try{C("step_upload_clause");
+sfSyncConditionalClauses(I);
+D("step_upload_data",G)
+}catch(J){I.onErrorExit()
+}}function G(){var I=_cdGenerate;
+try{C("step_upload_data");
+sfUploadDocument(I);
+D("step_syncup_data",F)
+}catch(J){I.onErrorExit()
+}}function F(){var I=_cdGenerate;
+try{C("step_syncup_data");
+sfSyncHistory(I);
+D("step_done",E)
+}catch(J){I.onErrorExit()
+}}function E(){var I=_cdGenerate;
+try{C("step_done");
+sfAutoOpenDocument(I);
+sfCleanup(I);
+_cdGenerate=null;
+ariba.Request.setWindowLocation(I.urlDoneUrl)
+}catch(J){I.onErrorExit()
+}}}sfcStartGenerate.prototype=new sfcExecutionState;
+var _cdGenerate=null;
+function siStartGenerate(B){_cdGenerate=new sfcStartGenerate();
+var A=_cdGenerate;
+sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siStartGenerate",B);
+A.generate()
+}function sfAutoOpenDocument(A){A.wordApp.Visible=true;
+A.getAgreementDocument().Activate();
+A.wordApp.Activate();
+if(A.sBookmarkName!=null&&A.sBookmarkName!=""){var B=A.getAgreementDocument().ActiveWindow.Selection;
+sfGotoBookmarkName(B,A.sBookmarkName)
+}}function sfSyncConditionalClauses(A){LoggerUtil.logBegin("sfSyncConditionalClauses");
+A.hideApp();
+A.sTempDocumentFolder=sfGetTempFolderPath();
+var D=A.oConditionalClauses.Count;
+for(var B=1;
+B<=D;
+++B){var C=A.oConditionalClauses.Item(B);
+if(sfIsEmptyString(C)){continue
+}sfSyncupClauseDocumentInternal(A,C,A.urlSyncupClauseContentActionUrl)
+}LoggerUtil.logEnd("sfSyncConditionalClauses")
+}function sfProcessClause(A){LoggerUtil.logBegin("sfProcessClause");
+sfSaveOpenDocument(A.wordApp,A.sDocumentLocation);
+sfAutoOpenSyncupDocument(A.sDocumentLocation);
+A.agreementDocument=sfOpenDocumentInWord(A.wordApp,A.wordType,A.sDocumentLocation,false);
+sfSaveWordSettings(A,A.getAgreementDocument());
+sfSetDocumentViewType(A.getAgreementDocument(),ViewType.ViewTypeNormal);
+window.focus();
+A.getAgreementDocument().TrackRevisions=false;
+if(A.bIsReviseBookmarkGeneration){sfReviseBookmark(A)
+}else{if(A.bIsIncrementalGeneration){if(A.bIsTrackChangeActive&&!A.bIsIncrementalCopyProjectGeneration){A.getAgreementDocument().TrackRevisions=true
+}sfAddGlobalContractBookmark(A.getAgreementDocument());
+sfIncrementalUpgradeClause(A);
+if(A.bIsApplyStyleRequired){sfApplyStyle(A)
+}}else{sfAssembleClause(A)
+}}sfRestoreWordSettings(A,A.getAgreementDocument());
+LoggerUtil.logEnd("sfProcessClause")
+}function sfReviseBookmark(A){LoggerUtil.logBegin("sfReviseBookmark");
+var B=A.getAgreementDocument().TrackRevisions;
+A.getAgreementDocument().TrackRevisions=false;
+A.currentSelection=A.getAgreementDocument().ActiveWindow.Selection;
+sfDoIncrementalInitialization(A);
+A.getAgreementDocument().Revisions.AcceptAll();
+A.getAgreementDocument().TrackRevisions=B;
+LoggerUtil.logEnd("sfReviseBookmark")
+}function sfAssembleClause(A){window.focus();
+var B=A.getAgreementDocument();
+sfResetContractContent(B);
+sfAddGlobalContractBookmark(B);
+B.Activate();
+A.currentSelection=B.ActiveWindow.Selection;
+window.focus();
+sfDoSectionGeneration(A);
+A.wordApp.ActiveDocument.Saved=false;
+A.wordApp.ActiveDocument.Save()
+}function sfDoIncrementalInitialization(B){LoggerUtil.logBegin("sfDoIncrementalInitialization");
+var A=B.oIncrementalIntializationCmds;
+var D=A.Count;
+for(var C=1;
+C<=D;
+++C){sfInvokeCommand(B,A.Item(C))
+}LoggerUtil.logEnd("sfDoIncrementalInitialization")
+}function sfInvokeCommand(A,C){try{var D=sfGetCommand(C);
+if(D==null||D.length<=0){return 
+}if(LoggerUtil.enableLogging){LoggerUtil.logCommand(D)
+}if(D[0]==GenerateCommand.AddClauseCommand){sfAddClause(A,D[1],D[2],D[3],D[4],D[5],sfBooleanValueForBinding(D[6]))
+}else{if(D[0]==GenerateCommand.AddSectionCommand){sfAddSection(A,D[1],D[2],D[3],D[4],D[5],sfBooleanValueForBinding(D[6]))
+}else{if(D[0]==GenerateCommand.EditClauseCommand){sfSetClause(A,D[1],D[2],D[3],D[4],D[5])
+}else{if(D[0]==GenerateCommand.EditSectionCommand){sfSetSection(A,D[1],D[2],D[3],sfBooleanValueForBinding(D[4]))
+}else{if(D[0]==GenerateCommand.MoveSectionClauseCommand){sfMoveClauseSection(A,D[1],D[2],D[3],D[4],D[5])
+}else{if(D[0]==GenerateCommand.RemoveClauseSectionCommand){sfRemoveClauseSection(A,D[1])
+}else{if(D[0]==GenerateCommand.AutoOpenClauseCommand){sfAutoOpenSyncupClause(A,D[1],D[2])
+}else{if(D[0]==GenerateCommand.CopySourceOpenCommand){sfCopySourceOpen(A,D[1])
+}else{if(D[0]==GenerateCommand.CopySourceCloseCommand){sfCopySourceClose(A)
+}else{if(D[0]==GenerateCommand.CopyReplaceClauseCommand){sfCopyReplaceClause(A,sfBooleanValueForBinding(D[1]),D[2],D[3],D[4],D[5])
+}else{if(D[0]==GenerateCommand.CopyAddClauseCommand){sfCopyAddClause(A,sfBooleanValueForBinding(D[1]),D[2],D[3],D[4],D[5],sfBooleanValueForBinding(D[6]))
+}else{}}}}}}}}}}}}catch(B){LoggerUtil.logError(null,MIE+"sfInvokeCommand and Command is "+C,B);
+throw B
+}}function sfIncrementalUpgradeClause(A){LoggerUtil.logBegin("sfIncrementalUpgradeClause");
+try{if(A.bIsIncrementalGeneration){window.focus();
+document.body.style.cursor="wait";
+A.getAgreementDocument().Activate();
+A.currentSelection=A.getAgreementDocument().ActiveWindow.Selection;
+sfReviseMoveForwardBookmark(A.getAgreementDocument(),A.currentSelection,GlobalContractBookmarkName);
+sfDoIncrementalGeneration(A)
+}}catch(B){LoggerUtil.logError(null,MIE+"sfIncrementalUpgradeClause Ex = ",B);
+throw B
+}LoggerUtil.logEnd("sfIncrementalUpgradeClause")
+}function sfApplyStyle(A){A.getAgreementDocument().Activate();
+A.currentSelection=A.getAgreementDocument().ActiveWindow.Selection;
+sfDoApplyStyle(A)
+}function sfImportValues(A){LoggerUtil.logBegin("sfImportValues");
+if(A.bIsOnlyValueUpgradeRequired){sfSaveOpenDocument(A.wordApp,A.sDocumentLocation);
+sfAutoOpenSyncupDocument(A.sDocumentLocation);
+sfOpenDocumentInWord(A.wordApp,A.wordType,A.sDocumentLocation,false)
+}else{A.getAgreementDocument().Activate()
+}A.agreementDocument=A.wordApp.ActiveDocument;
+A.bIsTrackChangeActive=A.getAgreementDocument().TrackRevisions;
+A.getAgreementDocument().TrackRevisions=false;
+sfDoImportValues(A);
+var B=A.getAgreementDocument().ActiveWindow.Selection;
+var C=B.HomeKey(6,0);
+sfUpdateFieldInHeaderFooter(A.getAgreementDocument());
+A.getAgreementDocument().TrackRevisions=A.bIsTrackChangeActive;
+if(A.bIsCleanVersionRequired){sfGeneratingCleanVersion(A,A.getAgreementDocument())
+}A.getAgreementDocument().Saved=false;
+A.getAgreementDocument().Save();
+sfPostProcess(A);
+LoggerUtil.logEnd("sfImportValues")
+}function sfDoImportValues(E){var B=E.oFormFields;
+var D=B.Count;
+var G=E.getAgreementDocument().CustomDocumentProperties;
+var F=E.getAgreementDocument().FormFields;
+for(var C=1;
+C<=D;
+++C){var J=B.Item(C);
+var H=prefixFieldName+J.FieldName;
+if(!J.Editable){var I=sfGetItemFromCollection(G,H);
+if(I!=null){I.Value=J.FieldValue
+}}else{var A=sfGetItemFromCollection(F,H);
+if(A!=null){A.Result=J.FieldValue;
+A.TextInput.Default=J.FieldValue
+}}}}function sfUpdateFieldInHeaderFooter(A){A.Fields.Update();
+if(A.Sections.Count>0){var B=A.Sections(1);
+if(B.Headers.Count>0){B.Headers(1).Range.Fields.Update()
+}if(B.Footers.Count>0){B.Footers(1).Range.Fields.Update()
+}}}function sfDoApplyStyle(A){LoggerUtil.logBegin("sfDoApplyStyle");
+var E=A.oApplyStyles;
+var D=E.Count;
+for(var B=1;
+B<=D;
+++B){var C=E.Item(B);
+sfGotoBookmarkName(A.currentSelection,C.Name);
+sfApplyStyleInSectionClause(A.getAgreementDocument(),C.StyleId,A.currentSelection,sfContentType(C.Name))
+}LoggerUtil.logEnd("sfDoApplyStyle")
+}function sfDoIncrementalGeneration(B){LoggerUtil.logBegin("sfDoIncrementalGeneration");
+var A=B.oIncrementalGenerationCmds;
+var D=A.Count;
+for(var C=1;
+C<=D;
+++C){sfInvokeCommand(B,A.Item(C))
+}LoggerUtil.logEnd("sfDoIncrementalGeneration")
+}function sfAddSectionCommand(B,A,G){var F=prefixClauseName+A.ItemId;
+if(A.IsClause){sfSaveClauseToClient(A.FullName,F,B.urlDocumentUrl);
+sfAddClause(B,A.FullName,F,G,A.ItemStyle,"",false)
+}else{sfAddSection(A.Name,F,G,A.ItemStyle,"",false);
+var D=sfGetChildren(B.oContentTree,A.ItemId);
+var E=D.Count;
+for(var C=1;
+C<=E;
+++C){sfAddSectionCommand(B,sfGetNode(B.oContentTree,D.Item(C)),F)
+}}}function sfDoSectionGeneration(B){LoggerUtil.logBegin("sfDoSectionGeneration");
+var A=B.oGenSections;
+var D=A.Count;
+for(var C=1;
+C<=D;
+++C){sfAddSectionCommand(B,A.Item(C),"sectionGlobalContract")
+}LoggerUtil.logEnd("sfDoSectionGeneration")
+}function sfPostProcess(A){var B=A.getAgreementDocument();
+B.Activate();
+if(A.bIsTrackChangeActive){B.TrackRevisions=true;
+B.ShowRevisions=true;
+if(!A.wordApp.ActiveWindow.View.ShowRevisionsAndComments){A.wordApp.WordBasic.ViewChanges()
+}}else{B.TrackRevisions=false
+}B.Saved=false;
+B.Save();
+A.wordApp.NormalTemplate.Saved=true
+}function sfGeneratingCleanVersion(B,A){var C=A.TrackRevisions;
+if(B.bIsRemoveChangeRequired){A.Revisions.AcceptAll()
+}A.TrackRevisions=false;
+if(B.bIsRemoveFieldRequired){sfRemoveField(A)
+}A.TrackRevisions=C
+}function siGeneratingCleanVersion(B){var A=new sfcExecutionState();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siGeneratingCleanVersion",B);
+var D=sfForwardToBackSlash(A.sTempDocumentFolder);
+sfCreateDirectory(D);
+D=D.concat("\\");
+D=D.concat(sfGetFileNameFromPathName(A.sDocumentLocation));
+sfCopyFile(A.sDocumentLocation,D);
+sfGetApp(A);
+A.agreementDocument=sfOpenDocumentInWord(A.wordApp,A.wordType,D,false);
+sfGeneratingCleanVersion(A,A.agreementDocument);
+A.getAgreementDocument().Saved=false;
+A.getAgreementDocument().Save();
+sfSendDataToServer(sfGetFileBytes(D),A.urlSaveCleanVersionUrl);
+if(!A.bShowCleanedDoc){A.quitApp()
+}else{A.wordApp.Visible=true;
+A.getAgreementDocument().Activate();
+A.wordApp.Activate()
+}}catch(C){A.onErrorExit()
+}}function sfRemoveField(F){var B=null;
+var I=null;
+var C=F.FormFields;
+C=sfCloneObjectArray(C);
+var M=C.Count;
+for(var J=1;
+J<=M;
+++J){var G=C.Item(J);
+I=G.Result;
+B=G.Range.Start;
+G.Delete();
+var H=F.ActiveWindow.Selection;
+H.Start=B;
+H.End=B;
+H.TypeText(I)
+}var E=F.CustomDocumentProperties;
+var L=F.Fields;
+L=sfCloneObjectArray(L);
+M=L.Count;
+for(var J=1;
+J<=M;
+++J){var K=L.Item(J);
+if(sfGetTypeForDocumentProperty(K)==FieldType.FieldTypeDocProp){var N=sfGetNameForDocumentProperty(K);
+K.Select();
+var H=F.ActiveWindow.Selection;
+var A=H.Range;
+B=A.Start;
+I=A.Text;
+K.Delete();
+H.TypeText(I);
+var D=sfGetItemFromCollection(E,N);
+if(D!=null){D.Delete()
+}}}}function sfGetNameForDocumentProperty(D){var A=D.Code.Text;
+var B="DOCPROPERTY ";
+var C="REF ";
+var F=A.indexOf(B);
+if(F>=0){F=F+B.length
+}else{F=A.indexOf(C);
+F=F+C.length
+}var E=A.indexOf(" ",F+1);
+return A.substring(F,E-F)
+}function sfGetTypeForDocumentProperty(D){var A=D.Code.Text;
+var B="DOCPROPERTY ";
+var C="REF ";
+if(A.indexOf(B)>=0){return FieldType.FieldTypeDocProp
+}else{if(A.indexOf(C)>=0){return FieldType.FieldTypeRef
+}else{return FieldType.FieldTypeUnknown
+}}}function sfUploadDocument(A){LoggerUtil.logBegin("sfUploadDocument");
+var B=sfGetFileBytes(A.sDocumentLocation);
+sfSendDataToServer(B,A.urlActionUrl);
+LoggerUtil.logEnd("sfUploadDocument")
+}function sfSyncHistory(A){var C=sfClientFileTimestamp(A.sDocumentLocation);
+var B=null;
+sfSaveSyncHistory(C,sfFormatUrl(SmartClientScriptUtil.actionIds.saveSyncHistoryWithCommit))
+}function sfFullyCleanup(A){A.quitApp()
+}function sfCleanup(A){if(A.wordApp!=null){A.wordApp.NormalTemplate.Saved=true
+}}function sfCopySourceOpen(A,B){var C=true;
+A.copyProjectSourceLocation=B;
+A.agreementDocument=null;
+A.copyProjectSourceAgreement=null;
+C=sfSaveClauseToClient(B,"copyProjectSource",A.urlDocumentUrl);
+if(C){C=sfOpenOrFindDocumentByDFSFilename(A,A.sDocumentLocation,true,false);
+if(C){A.agreementDocument=A.wordApp.ActiveDocument
+}}if(C){C=sfOpenOrFindDocumentByDFSFilename(A,B,false,true);
+if(C){A.copyProjectSourceAgreement=A.wordApp.ActiveDocument;
+A.currentSelection=A.copyProjectSourceAgreement.ActiveWindow.Selection
+}}}function sfCopySourceClose(A){if(A.copyProjectSourceAgreement!=null){A.copyProjectSourceAgreement.Activate();
+A.wordApp.ActiveDocument.Close();
+A.copyProjectSourceAgreement=null;
+sfDeleteFileAndMaybeFolder(A.copyProjectSourceLocation,2);
+A.copyProjectSourceLocation=""
+}if(A.getAgreementDocument()==null){var B=sfOpenOrFindDocumentByDFSFilename(A,A.sDocumentLocation,true,false);
+if(B){A.agreementDocument=app.ActiveDocument
+}}A.getAgreementDocument().Activate();
+sfPostProcess(A);
+A.wordApp.ActiveDocument.Close();
+A.agreementDocument=null
+}function sfcReviewOkGenerate(){this.reviewOkGenerate=function(){C()
+};
+function C(){var F=_reviewOkGenerate;
+try{sfGetApp(F);
+E("step_build_clause",A)
+}catch(G){F.onErrorExit()
+}}function A(){var F=_reviewOkGenerate;
+try{D();
+E("step_done",B)
+}catch(G){F.onErrorExit()
+}}function B(){var F=_reviewOkGenerate;
+try{F.quitApp();
+var H=sfGetFileBytes(F.sDocumentLocation);
+var J=sfSendDataToServer(H,F.urlUploadDocumentUrl);
+LoggerUtil.logMessage(J);
+var I=sfClientFileTimestamp(F.sDocumentLocation);
+if(I==null||I==""){LoggerUtil.logError(null,"CDReviewOkgenerate: Invalid timestamp = "+I,null)
+}sfSaveSyncHistory(I,F.urlSaveSyncHistoryUrl);
+_reviewOkGenerate=null;
+ariba.Request.setWindowLocation(F.urlDoneUrl)
+}catch(G){F.onErrorExit()
+}}function E(G,F){step_contact_app.className="inactiveStep";
+step_build_clause.className="inactiveStep";
+step_done.className="inactiveStep";
+document.all(G).className="activeStep";
+setTimeout(F,1000)
+}function D(){LoggerUtil.logBegin("sfcReviewOkGenerate:applyBookmarks");
+var F=_reviewOkGenerate;
+F.hideApp();
+sfSaveOpenDocument(F.wordApp,F.sDocumentLocation);
+F.agreementDocument=sfOpenDocumentInWord(F.wordApp,F.wordType,F.sDocumentLocation,false);
+sfSaveWordSettings(F,F.getAgreementDocument());
+sfSetDocumentViewType(F.getAgreementDocument(),ViewType.ViewTypeNormal);
+F.hideApp();
+F.syncUpApplyXmlString=sfSendDataToServer("DownloadSyncupXmlUrl",F.urlDownloadSyncupXmlUrl);
+sfApplyBookmarksUtil(F,F.syncUpApplyXmlString);
+sfRestoreWordSettings(F,F.getAgreementDocument());
+F.getAgreementDocument().Saved=false;
+F.getAgreementDocument().Save();
+LoggerUtil.logEnd("sfcReviewOkGenerate:applyBookmarks")
+}}sfcReviewOkGenerate.prototype=new sfcExecutionState;
+var _reviewOkGenerate=null;
+function siReviewOkGenerate(B){_reviewOkGenerate=new sfcReviewOkGenerate();
+var A=_reviewOkGenerate;
+sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siReviewOkGenerate",B);
+A.reviewOkGenerate()
+}function sfcGenerateClauseTree(){this.generateClauseTree=function(){C()
+};
+function C(){var F=_generateClauseTree;
+try{sfGetApp(F);
+D("step_build_clause",B)
+}catch(G){F.onErrorExit()
+}}function B(){var F=_generateClauseTree;
+try{E();
+D("step_done",A)
+}catch(G){F.onErrorExit()
+}}function A(){var F=_generateClauseTree;
+try{if(!F.bServerExceptionOnLoad){var I=sfGetFileBytes(F.sDocumentLocation);
+var H=sfSendDataToServer(I,F.urlUploadDocumentUrl)
+}F.quitApp();
+_generateClauseTree=null;
+ariba.Request.setWindowLocation(F.urlDoneUrl)
+}catch(G){F.onErrorExit()
+}}function D(G,F){step_contact_app.className="inactiveStep";
+step_build_clause.className="inactiveStep";
+step_done.className="inactiveStep";
+document.all(G).className="activeStep";
+setTimeout(F,1000)
+}function E(){var G=_generateClauseTree;
+G.xmlDOM=XMLUtil.plainRequestDOM();
+LoggerUtil.logBeginBlock("sfcGenerateClauseTree:gctBuildClauseTree");
+if(!SmartClientScriptUtil.saveFileToClient(G.sDocumentLocation)){LoggerUtil.logError(null,"GenerateClauseTree:buildClause - cannot save file",null);
+return 
+}G.wordApp.Visible=false;
+document.body.style.cursor="wait";
+sfSaveOpenDocument(G.wordApp,G.sDocumentLocation);
+G.agreementDocument=sfOpenDocumentInWord(G.wordApp,G.wordType,G.sDocumentLocation,false);
+G.hideApp();
+G.getAgreementDocument().Revisions.AcceptAll();
+var F=G.getAgreementDocument().Bookmarks.Exists(GlobalContractBookmarkName);
+if(!F){sfAddGlobalContractBookmarkInDocument(G.getAgreementDocument())
+}sfSyncupContentInAgreement(G,true,G.bIsTemplate);
+LoggerUtil.logEndBlock("sfcGenerateClauseTree:gctBuildClauseTree")
+}}sfcGenerateClauseTree.prototype=new sfcExecutionState;
+var _generateClauseTree=null;
+function siGenerateClauseTree(B){_generateClauseTree=new sfcGenerateClauseTree();
+var A=_generateClauseTree;
+sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siGenerateClauseTree",B);
+A.generateClauseTree()
+}function sfcPromoteClauseToSection(){this.promoteClauseToSection=function(){this.pcsPromote()
+};
+this.pcsPromote=function(){var D=this;
+sfGetApp(D);
+D.agreementDocument=sfContactDocument(D,D.sDocumentLocation,false,true);
+D.getAgreementDocument().Activate();
+D.currentSelection=D.getAgreementDocument().ActiveWindow.Selection;
+var F=sfGotoBookmarkName(D.currentSelection,D.sClauseId);
+var C=sfTrim(sfGetRangeContent(D.currentSelection.Paragraphs(1).Range));
+var E=C.indexOf(softReturnChar);
+if(E>=0){C=C.substring(0,E)
+}var H=this.pcsUploadSection(C,D.sClauseId);
+sfApplyStyleInSectionClause(D.getAgreementDocument(),D.sSectionStyleId,D.currentSelection,sfContentType(H));
+D.getAgreementDocument().Saved=false;
+D.getAgreementDocument().Save();
+var B=sfGetFileBytes(D.sDocumentLocation);
+var A=sfSendDataToServer(B,D.urlUploadDocumentUrl);
+var G=sfClientFileTimestamp(D.sDocumentLocation);
+if(G==""){return 
+}var I=sfSaveSyncHistory(G,D.urlSaveSyncHistoryUrl);
+D.quitApp();
+ariba.Request.setWindowLocation(D.urlDoneUrl)
+};
+this.pcsUploadSection=function(F,H){var G=this;
+var E=G.urlPromoteUrl;
+var B=sfGetHttp();
+if(G.sClauseId!=""){E=E.concat("&");
+E=E.concat(ClauseIdKey);
+E=E.concat("=");
+E=E.concat(G.sClauseId)
+}B.Open("POST",E,false);
+B.Send(F);
+var C=B.responseText;
+if(C!=""&&G.sClauseId!=""&&G.getAgreementDocument().Bookmarks.Exists(G.sClauseId)){var A=G.getAgreementDocument().Bookmarks.Item(G.sClauseId).Range;
+var D=G.getAgreementDocument().Bookmarks.Add(C,A);
+var I=G.getAgreementDocument().Bookmarks.Item(G.sClauseId).Delete();
+return C
+}else{return H
+}}
+}sfcPromoteClauseToSection.prototype=new sfcExecutionState;
+function siPromoteClauseToSecton(B){var A=new sfcPromoteClauseToSection();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siPromoteClauseToSecton",B);
+A.promoteClauseToSection()
+}catch(C){A.onErrorExit()
+}}function sfcAchieveStyle(){this.retrieveStyle=function(){LoggerUtil.logBegin("retrieveStyle");
+var A=this;
+sfGetApp(A);
+A.agreementDocument=sfContactDocument(A,A.sDocumentLocation,true,false);
+var D="";
+var G=A.getAgreementDocument().styles;
+var F=G.Count;
+for(var C=1;
+C<=F&&C<=1000;
+++C){var E=G.Item(C);
+D=D.concat(StyleSeparator);
+D=D.concat(E.NameLocal)
+}if(LoggerUtil.enableLogging){LoggerUtil.logMessage("Style String is "+D)
+}var B=sfGetHttp();
+if(D!=""){var H=A.urlActionUrl;
+H=H.concat("&");
+H=H.concat(StyleContentKey);
+H=H.concat("=yes");
+B.Open("POST",H,false);
+B.Send(D)
+}A.quitApp();
+LoggerUtil.logEnd("retrieveStyle");
+ariba.Request.setWindowLocation(A.urlDoneUrl)
+}
+}sfcAchieveStyle.prototype=new sfcExecutionState;
+function siAchieveStyle(B){var A=new sfcAchieveStyle();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siAchieveStyle",B);
+A.retrieveStyle()
+}catch(C){A.onErrorExit()
+}}function sfcSetUpDocumentProperty(){this.initializeProperty=function(){var B=this;
+sfGetApp(B);
+B.hideApp();
+try{sfSaveOpenDocument(B.wordApp,B.sDocumentLocation);
+B.agreementDocument=sfOpenDocumentInWord(B.wordApp,B.wordType,B.sDocumentLocation,false)
+}catch(C){sfSaveOpenDocument(B.wordApp,B.sDocumentLocation);
+SmartClientScriptUtil.saveFileToClient(B.sDocumentLocation);
+B.agreementDocument=sfOpenDocumentInWord(B.wordApp,B.wordType,B.sDocumentLocation,false)
+}B.documentProperties=B.getAgreementDocument().CustomDocumentProperties;
+B.formFields=B.getAgreementDocument().FormFields;
+B.hideApp()
+};
+this.retrieveProperty=function(){var C=this;
+this.initializeProperty();
+var B="";
+var E=C.documentProperties.Count;
+for(var D=1;
+D<=E;
+++D){var G=C.documentProperties.Item(D);
+var I=G.Name;
+if(I.indexOf(prefixFieldName)>=0){B=B.concat(objectSeparator);
+B=B.concat(I)
+}}E=C.formFields.Count;
+for(var D=1;
+D<=E;
+++D){var F=C.formFields.Item(D);
+var I=F.Name;
+if(I.indexOf(prefixFieldName)>=0){B=B.concat(objectSeparator);
+B=B.concat(defaultFormPropertyPrefix);
+B=B.concat(I)
+}}C.hideApp();
+var H=C.urlActionUrl;
+if(B!=""){H=H.concat("&");
+H=H.concat(DocumentPropertiesContentKey);
+H=H.concat("=yes");
+sfSendDataToServer(B,H)
+}else{H=H.concat("&");
+H=H.concat(DocumentPropertiesContentKey);
+H=H.concat("=no");
+sfSendDataToServer("a",H)
+}C.hideApp();
+C.quitApp()
+};
+this.setUpProperty=function(){this.initializeProperty();
+var E=this;
+var H=false;
+if(E.sDocumentPropertiesContent!=""){var F=E.sDocumentPropertiesContent.split(objectSeparator);
+for(var C=0;
+C<F.length;
+++C){if(this.addAProperty(F[C])){H=true
+}}}E.hideApp();
+E.sDocumentPropertiesContent=E.sDocumentPropertiesContent.concat(objectSeparator);
+var D=E.documentProperties.Count;
+var L=new Array();
+var B=0;
+for(var C=1;
+C<=D;
+++C){var I=E.documentProperties.Item(C);
+var K=I.Name;
+if(K.indexOf(prefixFieldName)>=0&&E.sDocumentPropertiesContent.indexOf(K)<0){L[B++]=I;
+H=true
+}}D=E.formFields.Count;
+for(var C=1;
+C<=D;
+++C){var J=E.formFields.Item(C);
+var K=J.Name;
+if(K.indexOf(prefixFieldName)>=0){K=defaultFormPropertyPrefix.concat(K);
+if(E.sDocumentPropertiesContent.indexOf(K)<0){L[B++]=J;
+H=true
+}}}for(var C=0;
+C<B;
+++C){L[C].Delete()
+}E.hideApp();
+if(H){E.getAgreementDocument().Fields.Update();
+E.getAgreementDocument().Saved=false;
+E.getAgreementDocument().Save();
+E.getAgreementDocument().Close();
+E.hideApp();
+var G=sfGetFileBytes(E.sDocumentLocation);
+sfSendDataToServer(G,E.urlActionUrl);
+sfSyncHistory(E)
+}E.quitApp()
+};
+this.addAProperty=function(D){var C=this;
+var B=D.indexOf(defaultFormPropertyPrefix);
+if(B==0){D=D.substring(1,D.length);
+return A(C,D,C.formFields)
+}else{return sfAddADocumentProperty(D,C.documentProperties)
+}};
+function A(H,D,C){try{var G=C.Item(D);
+if(G!=null){return false
+}}catch(I){}H.getAgreementDocument().Activate();
+var E=H.getAgreementDocument().ActiveWindow.Selection;
+if(H.getAgreementDocument().Bookmarks.Exists(GlobalContractBookmarkName)){var B=sfGotoBookmarkName(E,GlobalContractBookmarkName);
+var J=E.MoveRight(1,1)
+}else{var J=E.EndKey(6,0)
+}E.TypeParagraph();
+var F=C.Add(E.Range,70);
+F.Name=D;
+F.Result=defaultPropertyValue;
+return true
+}}sfcSetUpDocumentProperty.prototype=new sfcExecutionState;
+function siSetUpDocumentProperty(B){var A=new sfcSetUpDocumentProperty();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siSetUpDocumentProperty",B);
+A.setUpProperty()
+}catch(C){A.onErrorExit()
+}}function siRetrieveDocumentProperty(B){var A=new sfcSetUpDocumentProperty();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siRetrieveDocumentProperty",B);
+A.retrieveProperty()
+}catch(C){A.onErrorExit()
+}}function sfIsDocumentReadyToGenerate(B,A){return sfIsClientChanged(B,A)
+}function siIsDocumentReadyToGenerate(A){return sfIsDocumentReadyToGenerate(A[Params.sDocumentLocation],A[Params.dServerTimestamp])
+}sfExportFunctions(new Array("siStartGenerate",siStartGenerate,"siGenerateClauseTree",siGenerateClauseTree,"siIsDocumentReadyToGenerate",siIsDocumentReadyToGenerate,"siGeneratingCleanVersion",siGeneratingCleanVersion,"siPromoteClauseToSecton",siPromoteClauseToSecton,"siAchieveStyle",siAchieveStyle,"siSetUpDocumentProperty",siSetUpDocumentProperty,"siRetrieveDocumentProperty",siRetrieveDocumentProperty,"siReviewOkGenerate",siReviewOkGenerate));
+function sfcStartSummarizeClause(){this.clauseSummarizing=function(){var D=this;
+sfGetApp(D);
+if(D.bSkipCopyClause){try{var A=sfClientFileExists(D.sDocumentLocation);
+if(!A){if(!SmartClientScriptUtil.saveFileToClient(D.sDocumentLocation)){return 
+}}}catch(F){LoggerUtil.logError(null,"sfcStartSummarizeClause:clauseSummarizing:",F);
+return 
+}}else{if(!SmartClientScriptUtil.saveFileToClient(D.sDocumentLocation)){return 
+}}D.hideApp();
+D.agreementDocument=sfOpenDocumentInWord(D.wordApp,D.wordType,D.sDocumentLocation,false);
+D.hideApp();
+D.currentSelection=D.getAgreementDocument().ActiveWindow.Selection;
+D.currentSelection.WholeStory();
+var B=sfGetSelectionContent(D.currentSelection);
+var C=B.substring(0,MaxSummaryLength);
+var E=sfGetHttp();
+E.Open("POST",D.urlActionUrl,false);
+E.Send(B);
+D.quitApp()
+}
+}sfcStartSummarizeClause.prototype=new sfcExecutionState;
+function siStartSummarizeClause(B){var A=new sfcStartSummarizeClause();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siStartSummarizeClause",B);
+A.clauseSummarizing()
+}catch(C){A.onErrorExit()
+}}function sfcSyncUpProperty(){function C(H,G){step_contact_app.className="inactiveStep";
+step_parsing_data.className="inactiveStep";
+document.all(H).className="activeStep";
+setTimeout(G,1000)
+}function B(){var G=_syncupProperty;
+if(G.wordApp!=null){G.quitApp()
+}ariba.Request.setWindowLocation(G.urlDoneUrl)
+}function A(){var G=_syncupProperty;
+try{if(G.sApplicationName==ApplicationName.Word){sfGetApp(G)
+}else{G.excelApp=new ActiveXObject("Excel.Application");
+G.excelApp=false
+}G.hideApp();
+C("step_parsing_data",F)
+}catch(H){G.onErrorExit()
+}}function F(){var G=_syncupProperty;
+try{G.xmlDOM=sfGetXmlDom();
+G.xmlDOM.loadXML('<?xml version="1.0"?><root/>');
+if(G.bIsWordDocValue){E()
+}else{D()
+}var I=sfGetHttp();
+I.Open("POST",G.urlActionUrl,false);
+I.Send(G.xmlDOM.xml);
+C("step_done",B)
+}catch(H){G.onErrorExit()
+}}function E(){var H=_syncupProperty;
+H.agreementDocument=sfOpenDocumentInWord(H.wordApp,H.wordType,H.sDocumentLocation,true);
+var K=H.sFormFieldsValue.split("******");
+for(var J=0;
+J<K.length;
+++J){if(K[J]==""){continue
+}try{var G=H.getAgreementDocument().FormFields(K[J]).Result;
+if(G!=""){XMLUtil.addFormField(H.xmlDOM,K[J],G)
+}}catch(I){}}H.quitApp()
+}function D(){var J=_syncupProperty;
+var H=J.sDocumentLocation;
+H=sfForwardToBackSlash(H);
+J.excelActiveWorkbook=J.excelApp.Workbooks.Open(H);
+var M=J.sFormFieldsValue.split("******");
+for(var L=0;
+L<M.length;
+++L){var G=M[L];
+if(G.length>0){try{var I=J.excelApp.Evaluate(J.excelActiveWorkbook.Names(G).Value);
+XMLUtil.addFormField(J.xmlDOM,M[L],I)
+}catch(K){}}}J.excelApp.Workbooks.Close();
+J.excelApp.Quit(0)
+}this.startSyncUpProperty=function(){A()
+};
+this.readySyncUpProperty=function(){var G=_syncupProperty;
+C("step_done",B())
+}
+}sfcSyncUpProperty.prototype=new sfcExecutionState;
+var _syncupProperty=null;
+function siStartSyncUpProperty(B){_syncupProperty=new sfcSyncUpProperty();
+var A=_syncupProperty;
+sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siStartSyncUpProperty",B);
+A.startSyncUpProperty()
+}function siReadySyncUpProperty(B){_syncupProperty=new sfcSyncUpProperty();
+var A=_syncupProperty;
+sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siStartSyncUpProperty",B);
+A.readySyncUpProperty()
+}function sfcSyncUpClause(){function C(F,E){step_contact_app.className="inactiveStep";
+step_syncup_data.className="inactiveStep";
+step_done.className="inactiveStep";
+document.all(F).className="activeStep";
+setTimeout(E,1000)
+}this.supContactApp=function(){var E=_syncupClause;
+try{sfGetApp(E);
+C("step_syncup_data",D)
+}catch(F){E.onErrorExit()
+}};
+function D(){var E=_syncupClause;
+try{A();
+C("step_done",B)
+}catch(F){E.onErrorExit()
+}}function B(){var E=_syncupClause;
+try{E.quitApp();
+ariba.Request.setWindowLocation(E.urlDoneUrl)
+}catch(F){E.onErrorExit()
+}}function A(){var K=_syncupClause;
+K.hideApp();
+sfSaveOpenDocument(K.wordApp,K.sDocumentLocation);
+K.agreementDocument=sfOpenDocumentInWord(K.wordApp,K.wordType,K.sDocumentLocation,false);
+K.hideApp();
+K.currentSelection=K.getAgreementDocument().ActiveWindow.Selection;
+K.currentSelection.WholeStory();
+var F=K.currentSelection.Bookmarks;
+var J=F.count;
+var E="";
+K.hideApp();
+var M=1;
+for(var H=1;
+H<=J;
+++H){var G=K.currentSelection.Bookmarks(H);
+var L=G.Name;
+var I=L.indexOf(prefixSectionName);
+if(I>=0){var M=sfAddCommentForAdHocClause(K.getAgreementDocument(),K.currentSelection,L,M)
+}K.getAgreementDocument().Activate();
+K.currentSelection=K.getAgreementDocument().ActiveWindow.Selection;
+K.currentSelection.WholeStory()
+}sfConvertCommentToBookmarkForAdHocClause(K.getAgreementDocument());
+sfSyncupContentInAgreement(K,true,true);
+K.quitApp();
+K.hideApp()
+}}sfcSyncUpClause.prototype=new sfcExecutionState;
+var _syncupClause=null;
+function siSyncUpClause(B){_syncupClause=new sfcSyncUpClause();
+var A=_syncupClause;
+sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siSyncUpClause",B);
+A.supContactApp();
+_syncupClause=null
+}function sfcIncrementalSyncUpClause(){this.sfIncrementalSyncupClause=function(M){if(LoggerUtil.enableLogging){LoggerUtil.logBegin("sfIncrementalSyncupClause")
+}M.canContinue=true;
+M.returnResponse="";
+L(M);
+if(M.canContinue){A(M)
+}if(M.canContinue){sfISCFixCurrentSelection(M,0)
+}if(M.canContinue){I(M)
+}if(M.canContinue){M.requestType=XmlRequestType.SyncUpRequest;
+sfXMLNodeSetup(M)
+}if(M.canContinue){sfISCFixSectionBookmarks(M)
+}if(M.canContinue){J(M)
+}if(M.canContinue){K(M)
+}C(M);
+if(LoggerUtil.enableLogging){LoggerUtil.logEnd("sfIncrementalSyncupClause")
+}};
+function L(M){LoggerUtil.logBegin("sfISCStepSetup");
+sfGetApp(M);
+sfSaveOpenDocument(M.wordApp,M.sDocumentLocation);
+M.readOnly=false;
+sfOpenDocumentInWord(M.wordApp,M.wordType,M.sDocumentLocation,M.readOnly);
+M.agreementDocument=M.wordApp.ActiveDocument;
+M.viewType=sfGetDocumentViewType(M.getAgreementDocument(),true);
+sfSetDocumentViewType(M.getAgreementDocument(),1);
+M.ProtectionType=M.getAgreementDocument().ProtectionType;
+if(M.ProtectionType!=-1){M.getAgreementDocument().Unprotect()
+}M.defaultBookmark=M.getAgreementDocument().Bookmarks.Item(GlobalContractBookmarkName);
+if(M.defaultBookmark==null){M.canContinue=false;
+LoggerUtil.logMessage("sfISCStepSetup Incomplete!!! Didn't find global bookmark name!!");
+return 
+}M.wordApp.Visible=false;
+document.body.style.cursor="wait";
+LoggerUtil.logEnd("sfISCStepSetup")
+}function A(M){LoggerUtil.logBegin("sfISCStepAcceptRevisionsOnAgreementDocument");
+E(M.getAgreementDocument(),RevisionType.NoRev);
+E(M.getAgreementDocument(),RevisionType.ParagraphProperty);
+LoggerUtil.logEnd("sfISCStepAcceptRevisionsOnAgreementDocument")
+}function I(M){LoggerUtil.logBegin("sfISCStepServerClientVersion");
+M.sTmpClientFile=sfAppendStringToFileLocation(M.sDocumentLocation,"Client");
+M.sTmpServerFile=sfAppendStringToFileLocation(M.sDocumentLocation,"Server");
+if(!sfSaveDocumentToClient(M.sTmpServerFile,M.urlOriginalDocumentUrl)){LoggerUtil.logMessage("sfISCStepServerClientVersion Incomplete!! cannot save tmp server file server Version "+M.sTmpServerFile);
+M.canContinue=false;
+return 
+}sfCopyFile(M.sDocumentLocation,M.sTmpClientFile);
+M.wordApp.Visible=false;
+document.body.style.cursor="wait";
+M.serverVersion=H(M.wordApp,M.wordType,M.sTmpServerFile,false);
+M.clientVersion=H(M.wordApp,M.wordType,M.sTmpClientFile,true);
+sfCompatibleCompareOrMergeWithOption(M.clientVersion,M.sTmpServerFile,M.wordType,1,false,true);
+LoggerUtil.logEnd("sfISCStepServerClientVersion")
+}function J(M){try{LoggerUtil.logBegin("sfISCStepProcessModifications");
+M.bookmarksContainer=sfCreateBookmarkContainer(M.getAgreementDocument());
+LoggerUtil.logBegin("Process Inserts");
+M.modificationType=RevisionType.Insert;
+G(M);
+LoggerUtil.logEnd("Process Inserts");
+LoggerUtil.logBegin("Process Deletes");
+M.modificationType=RevisionType.Delete;
+G(M);
+LoggerUtil.logEnd("Process Deletes");
+if(M.bFullySync){var O=M.bookmarksContainer.BookmarkProxy(GlobalContractBookmarkName);
+M.processedInserts.AddItemByName(O.Name,O)
+}M.combinedBookmarks=sfCombineIntoUniqueBookmarks(M.processedInserts,M.processedDeletes);
+LoggerUtil.logEnd("sfISCStepProcessModifications")
+}catch(N){LoggerUtil.logError("Error in Processing Changes Step","Method Invok Error: sfISCStepProcessModifications",N);
+M.canContinue=false;
+throw N
+}}function G(Q){if(Q.modificationType==RevisionType.Insert){LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_INSERTS);
+Q.processedInserts=new sfObjectArray();
+Q.revisionsDoc=Q.clientVersion
+}else{if(Q.modificationType==RevisionType.Delete){LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_DELETES);
+Q.processedDeletes=new sfObjectArray();
+Q.deletedBookmarks=new sfObjectArray();
+if(Q.wordType==WordType.Word2000Type||Q.wordType==WordType.WordXPType||Q.wordType==WordType.Word07Type||Q.wordType==WordType.Word10Type){Q.revisionsDoc=Q.clientVersion
+}else{Q.wordApp.Visible=false;
+document.body.style.cursor="wait";
+Q.clientVersion.Revisions.AcceptAll();
+sfCompatibleCompareMergeTargetWithOption(Q.clientVersion,Q.sTmpServerFile,Q.wordType,0,false);
+Q.revisionsDoc=Q.serverVersion
+}}}var M="";
+var W=Q.revisionsDoc.Revisions;
+var S=W.Count;
+if(S<=0){return 
+}var d=Q.getAgreementDocument().ActiveWindow.Selection;
+var T=Q.revisionsDoc.Bookmarks;
+var a=null;
+if(T.Exists(GlobalContractBookmarkName)){a=sfCreateBookmarkProxy(T.Item(GlobalContractBookmarkName))
+}else{LoggerUtil.logMissingGlobalBookmark();
+return 
+}for(var m=1;
+m<=S;
+++m){var l=sfCreateRevisionProxy(W.Item(m));
+if(l.Type==RevisionType.Delete){M=l.RangeProxy.End
+}if(l.Type!=Q.modificationType){continue
+}var X=l.RangeProxy;
+if(Q.modificationType==RevisionType.Delete){var Y=X.DomRange;
+sfRemoveLeadingTailingParaMarkerOfARange(X);
+var O=sfBeginningMatchedBookmark(Q.getAgreementDocument(),Y);
+if(O!=""&&O.indexOf(prefixSectionGenName)<0&&Y.Paragraphs.Count>1){Y.End=Y.End+1
+}X.resync()
+}if(!sfBookmarkIncluded(a,l.RangeProxy)){LoggerUtil.logError(null,"Revision outside Global Bookmark",null);
+continue
+}if(Q.modificationType==RevisionType.Insert){if(M==X.Start&&sfIsEmptyText(X.DomRange)){continue
+}}var N=sfWithinGenBookmarkInSelection(X,false);
+if(N==null){LoggerUtil.logMissingParentBookmark(X);
+continue
+}var c=N.Name;
+LoggerUtil.logRevision(l.Type,N,X);
+if(Q.modificationType==RevisionType.Insert){F(Q,X,c);
+if(c.indexOf(prefixSectionName)>=0){if(Q.processedInserts.ItemByName(c)==null){Q.processedInserts.AddItemByName(c,N)
+}}else{if(c.indexOf(prefixClauseName)>=0){var Z=Q.bookmarksContainer.BookmarkProxy(c);
+var b=Q.bookmarksContainer.DomRange(c);
+var U=sfGetClauseSummaryAllByRange(b);
+var n=XMLUtil.createBookmarkNode(Q.xmlDOM,XML_TAG_SET_SUMMARY,U,Z);
+Q.xmlNode_editList.appendChild(n);
+var p=sfWithinGenBookmarkInSelection(sfRangeProxyForBookmark(N),false);
+if(Q.processedInserts.ItemByName(p.Name)==null){Q.processedInserts.AddItemByName(p.Name,p)
+}}}}else{if(Q.modificationType==RevisionType.Delete){if(sfIsEmptyText(X)){LoggerUtil.logEmptyRange(X);
+continue
+}var P=X.BookmarkProxies;
+var e=new sfObjectArray();
+for(var h=1;
+h<=P.Count;
+++h){var V=false;
+var o=P.Item(h);
+if(sfBookmarkIncluded(X,o)){for(var g=1;
+g<=e.Count;
+++g){if(sfBookmarkIncluded(e.Item(g),o)){V=true;
+break
+}}if(!V){e.AddItem(o)
+}}else{if(sfBookmarkFullyIncluded(N,o)){var R=Q.getAgreementDocument().Bookmarks.Item(o.Name);
+XMLUtil.appendBookmarkSummaryNode(Q.xmlDOM,R,sfGetClauseSummaryAll(R),Q.xmlNode_editList)
+}}}if(e.Count>0){for(var g=1;
+g<=e.Count;
+++g){var f=Q.xmlDOM.createElement(XML_TAG_DELETE_ENTITY);
+f.setAttribute(XML_ATTRIBUTE_BOOKMARK,e.Item(g).Name);
+Q.xmlNode_editList.appendChild(f);
+if(Q.deletedBookmarks.ItemByName(e.Item(g).Name)==null){Q.deletedBookmarks.AddItemByName(e.Item(g).Name,e.Item(g))
+}}var p=null;
+if(N.Name==GlobalContractBookmarkName){p=N
+}else{p=sfWithinGenBookmarkInSelection(sfRangeProxyForBookmark(N),false)
+}if(Q.processedDeletes.ItemByName(p.Name)==null){Q.processedDeletes.AddItemByName(p.Name,p)
+}}else{if(c.indexOf(prefixClauseGenName)>=0&&sfBookmarkFullyIncluded(N,X)){var Z=Q.bookmarksContainer.BookmarkProxy(c);
+var b=Q.bookmarksContainer.DomRange(c);
+var U=sfGetClauseSummaryAllByRange(b);
+XMLUtil.appendBookmarkSummaryNode(Q.xmlDOM,Z,U,Q.xmlNode_editList);
+var p=sfWithinGenBookmarkInSelection(sfRangeProxyForBookmark(N),false);
+if(Q.processedDeletes.ItemByName(p.Name)==null){Q.processedDeletes.AddItemByName(p.Name,p)
+}}}}}}}function K(N){LoggerUtil.logBegin("Step: sfISCGenerateXML");
+LoggerUtil.updateWindowStatus(WindowStatus.SCAN_SECTIONS);
+D(N);
+LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_REVISIONS);
+var O=N.getAgreementDocument().TrackRevisions;
+var M=N.getAgreementDocument().Revisions.Count;
+if(!O||(O&&M==0)){LoggerUtil.logAlert("Using Client Version");
+N.agreementDocumentOverride=N.clientVersion
+}var Q=sfCreateRevisionsNode(N.xmlDOM,N.getAgreementDocument(),sfCreateRevisionProxies(N.getAgreementDocument().Revisions));
+N.agreementDocumentOverride=null;
+N.xmlDocumentElement.appendChild(Q);
+LoggerUtil.logXmlTree("Final XML Tree",N.xmlDocumentElement,1);
+N.processedInserts=null;
+N.processedDeletes=null;
+N.deletedBookmarks=null;
+N.clientVersion.close();
+N.serverVersion.close();
+if(N.xmlNode_editList.hasChildNodes()){sfCopyFile(N.sDocumentLocation,N.sTmpClientFile);
+N.wordApp.Visible=false;
+document.body.style.cursor="wait";
+sfOpenDocumentInWord(N.wordApp,N.wordType,N.sTmpClientFile,false);
+N.clientVersion=N.wordApp.ActiveDocument;
+if(N.clientVersion.ProtectionType!=-1){N.clientVersion.Unprotect()
+}N.clientVersion.Revisions.AcceptAll();
+if(N.xmlDocumentElement.hasChildNodes()){var P=N.urlIncrementalSyncupUrl+"&"+syncupTypeIdKey+"=syncupXml";
+LoggerUtil.updateWindowStatus(WindowStatus.SYNC_TO_SERVER);
+N.returnResponse=sfSendDataToServer(N.xmlDOM.xml,P);
+if(N.returnResponse==SERVER_EXCEPTION){LoggerUtil.updateWindowStatus(WindowStatus.VALIDATION_ERROR)
+}}}LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_PROPERTIES);
+sfRetrieveWordData(N.getAgreementDocument(),N.sPropertyList,N.urlRetrievepropertyAction);
+LoggerUtil.logEnd("Step: sfISCGenerateXML")
+}function C(M){LoggerUtil.logMessage("Tearing Down...");
+M.quitApp();
+sfClearExecutionState(M);
+LoggerUtil.setLogLevel("")
+}function D(N){LoggerUtil.logBegin("sfScanSectionList");
+var Q=N.getAgreementDocument().TrackRevisions;
+var M=N.getAgreementDocument().Revisions.Count;
+if(!Q||(Q&&M==0)){N.agreementDocumentOverride=N.clientVersion
+}var S=N.combinedBookmarks;
+var P=S.Count;
+for(var O=1;
+O<=P;
+++O){var R=sfGetSectionBookmarks(N.getAgreementDocument(),S.Item(O));
+B(N,R,true,false)
+}N.agreementDocumentOverride=null;
+LoggerUtil.logEnd("sfScanSectionList")
+}function B(O,S,M,R){LoggerUtil.logBegin("sfScanBookmarksForSync");
+var Q=S.Count;
+var N=sfCreateNewEntityNode(O);
+for(var P=1;
+P<=Q;
+++P){var T=S.Item(P);
+if(O.deletedBookmarks.ItemByName(T.Name)==null){if(sfIsGenBookmark(T.Name)){sfBookmarkNode(O,O.getAgreementDocument(),T,N,R)
+}else{sfAppendBookmarkOtherNode(O.xmlDOM,T,O.xmlNode_otherBookmarkList)
+}}}if(M){sfParseNewEntities(O.getAgreementDocument(),O.xmlDOM,N)
+}LoggerUtil.logEnd("sfScanBookmarksForSync")
+}function F(V,T,X){var R=V.getAgreementDocument().ActiveWindow.Selection;
+var P=T.BookmarkProxies;
+var U=new sfObjectArray();
+for(var S=1;
+S<=P.Count;
+++S){var N=P.Item(S);
+if(!sfBookmarkIncluded(T,N)){continue
+}if(N.Name.indexOf(prefixClauseGenName)<0&&N.Name.indexOf(prefixSectionGenName)<0){continue
+}var Y=false;
+for(var Q=1;
+Q<=U.Count;
+++Q){if(sfBookmarkIncluded(U.Item(Q),N)){Y=true;
+break
+}}if(!Y){U.AddItem(N)
+}}for(var Q=1;
+Q<=U.Count;
+++Q){var W=U.Item(Q);
+var O=V.xmlDOM.createElement(XML_TAG_MOVE_ENTITY);
+O.setAttribute(XML_ATTRIBUTE_BOOKMARK,W.Name);
+O.setAttribute(XML_ATTRIBUTE_SECTION_BOOKMARK,X);
+var M=sfFindPreviousBookmarkName(R,W.Name,X);
+if(M==null){M=""
+}O.setAttribute(XML_ATTRIBUTE_PREVIOUS_BOOKMARK,M);
+V.xmlNode_editList.appendChild(O)
+}}function E(R,S){var Q=R.revisions;
+var P=Q.Count;
+var M;
+for(var O=1;
+O<=P;
+++O){try{M=Q.Item(O)
+}catch(N){continue
+}if(M.type==S){M.Accept()
+}}}function H(V,N,M,T){try{sfOpenDocumentInWord(V,N,M,false);
+var U=V.ActiveDocument;
+if(U.ProtectionType!=-1){U.Unprotect()
+}U.Revisions.AcceptAll();
+U.TrackRevisions=false;
+var P=U.Fields;
+var R=P.Count;
+for(var O=1;
+O<=R;
+++O){try{var Q=P.Item(O)
+}catch(S){continue
+}Q.Result=Q.Code
+}if(T){sfSetDocumentViewType(U,1)
+}U.Save();
+return U
+}catch(S){LoggerUtil.logError(null,MIE+"sfISCAcceptRevisionsOnTempDocument File Name "+M+"Is Client Version? "+T,S);
+return null
+}}}sfcIncrementalSyncUpClause.prototype=new sfcExecutionState;
+function siIncrementalSyncupClause(B){var A=new sfcIncrementalSyncUpClause();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siIncrementalSyncupClause",B);
+A.sfIncrementalSyncupClause(A);
+LoggerUtil.updateWindowStatus("");
+return A.returnResponse
+}catch(C){A.onErrorExit()
+}}function sfSyncupClauseDocument(A){LoggerUtil.logBegin("sfSyncupClauseDocument");
+try{sfSaveOpenDocument(A.wordApp,A.sDocumentLocation);
+sfOpenDocumentInWord(A.wordApp,A.wordType,A.sDocumentLocation,false);
+A.agreementDocument=A.wordApp.ActiveDocument;
+sfSyncupClauseDocumentInternal(A,A.sClauseId,A.urlOriginalDocumentUrl)
+}catch(B){LoggerUtil.logError(null,MIE+"sfSyncupClauseDocument",B);
+throw B
+}LoggerUtil.logEnd("sfSyncupClauseDocument")
+}function sfSyncupClauseDocumentInternal(D,G,F){LoggerUtil.logBegin("sfSyncupClauseDocumentInternal");
+var E=D.getAgreementDocument().ActiveWindow.Selection;
+D.sClauseId=G;
+var B=sfTempClauseCreated(D,E);
+var A=null;
+if(B!=""){A=sfGetFileBytes(B)
+}var H=F;
+if(!sfEmptyString(G)){H=H.concat("&"+ClauseIdKey+"="+G)
+}var C=sfSendDataToServer(A,H);
+LoggerUtil.logEnd("sfSyncupClauseDocumentInternal")
+}function siSyncupClauseDocument(B){var A=sfInitExecutionState(B);
+try{sfLoggerInit(A,"siSyncupClauseDocument",B);
+sfGetApp(A);
+sfSyncupClauseDocument(A);
+A.quitApp()
+}catch(C){A.onErrorExit()
+}}function sfSyncupContentInAgreement(B,D,E){LoggerUtil.logMessage("ContractAuthoring.syncupContentInAgreement start ...");
+B.hideApp();
+B.agreementDocument=sfOpenDocumentInWord(B.wordApp,B.wordType,B.sDocumentLocation,false);
+B.hideApp();
+sfSaveWordSettings(B,B.getAgreementDocument());
+sfSetDocumentViewType(B.getAgreementDocument(),ViewType.ViewTypeNormal);
+B.hideApp();
+B.getAgreementDocument().Activate();
+B.currentSelection=B.getAgreementDocument().ActiveWindow.Selection;
+B.hideApp();
+B.requestType=XmlRequestType.LoadRequest;
+sfXMLNodeSetup(B);
+LoggerUtil.updateWindowStatus(WindowStatus.SCANNING_DOCUMENT);
+B.currentSelection.WholeStory();
+B.hideApp();
+sfScanBookmarksForLoad(B,true,true,B.xmlDocumentElement);
+if(LoggerUtil.enableLogging){LoggerUtil.logXmlTree("CDGenerate:syncupContentInAgreement",B.xmlDocumentElement,1)
+}var C=B.urlActionUrl;
+C=C.concat("&loadTypeIdKey=loadXml");
+var A=sfSendDataToServer(B.xmlDocumentElement.xml,C);
+if(A==SERVER_EXCEPTION){LoggerUtil.updateWindowStatus(VALIDATION_ERROR);
+B.bServerExceptionOnLoad=true
+}else{B.bServerExceptionOnLoad=false;
+sfApplyBookmarksUtil(B,A)
+}sfFixSectionGlobalBookmark(B.getAgreementDocument(),B.currentSelection);
+sfRestoreWordSettings(B,B.getAgreementDocument());
+if(!E){B.getAgreementDocument().TrackRevisions=true
+}if(D){B.getAgreementDocument().Saved=false;
+B.getAgreementDocument().Save()
+}}sfExportFunctions(new Array("siIncrementalSyncupClause",siIncrementalSyncupClause,"siStartSyncUpProperty",siStartSyncUpProperty,"siReadySyncUpProperty",siReadySyncUpProperty,"siSyncUpClause",siSyncUpClause,"siSyncupClauseDocument",siSyncupClauseDocument,"siStartSummarizeClause",siStartSummarizeClause));
+function sfcExportTasks(){this.outlookTasks=null;
+this.activeOutlookTasks=null;
+this.newACMTasks=null;
+this.outlookApp=null;
+this.exportTasks=function(){var A=this;
+document.body.style.cursor="wait";
+this.setUp();
+this.buildOutlookTasksDictionary();
+this.updateOutlookTasksByAcmTask();
+this.deleteOldOutlookTasks();
+this.createNewOutlookTasks();
+this.tearDown()
+};
+this.setUp=function(){LoggerUtil.logMessage("Step setUp");
+var A=this;
+A.newACMTasks=new sfObjectArray();
+A.outlookTasks=new sfObjectArray();
+A.activeOutlookTasks=new sfObjectArray();
+A.outlookApp=new ActiveXObject("Outlook.Application")
+};
+this.tearDown=function(){document.body.style.cursor="auto"
+};
+this.buildOutlookTasksDictionary=function(){LoggerUtil.logMessage("Step buildOutlookTasksDictionary");
+var F=this;
+var B=F.outlookApp.GetNameSpace("MAPI");
+var H=B.GetDefaultFolder(13);
+var E;
+if(F.bUseFilter){E=H.Items.Restrict("[LastModificationTime] >= '"+F.dLastSyncTimestamp+"'")
+}else{E=H.Items
+}var C=E.Count;
+for(var D=1;
+D<=C;
+++D){var I=E.Item(D);
+var A=I.UserProperties.Find(ACMTaskId);
+var G=this.getOutlookTaskId(I);
+if(G!=null){F.outlookTasks.AddItemByName(G,I)
+}}};
+this.getOutlookTaskId=function(A){try{var C=A.UserProperties.Find(ACMTaskId);
+if(C!=null&&C.Value!=null&&C.Value.length>0){return C.Value()
+}else{return null
+}}catch(B){return null
+}};
+this.copyACMTask2OutlookTask=function(E,C,B){if(LoggerUtil.enableLogging){LoggerUtil.logMessage(sfPrintTask(E))
+}C.Subject=E.Title;
+C.DateCompleted=E.TaskCompletionDate;
+C.Status=E.Status;
+var A=E.TaskStartDate!=null?E.TaskStartDate:"";
+var D=E.TaskDueDate!=null?E.TaskDueDate:"";
+if(E.TaskStartDate!=""&&E.TaskDueDate==""){A=""
+}if(A!=""){C.StartDate=A
+}if(D!=""){C.DueDate=D
+}if(B){var F="";
+F=F.concat("Project: ");
+F=F.concat(E.ParenteWorkspaceTitle);
+F=F.concat(lineFeed);
+F=F.concat(lineFeed);
+F=F.concat(E.Description);
+F=F.concat(E.WebJumper);
+C.Body=F
+}C.Save()
+};
+this.updateOutlookTasksByAcmTask=function(){LoggerUtil.logMessage("Step updateOutlookTasksByAcmTask");
+var B=this;
+var E=B.oACMTasks;
+for(var C=1;
+C<=E.Count;
+++C){var D=E.Item(C);
+if(B.outlookTasks.Contains(D.InternalId)){var A=B.outlookTasks.ItemByName(D.InternalId);
+this.copyACMTask2OutlookTask(D,A,false);
+B.activeOutlookTasks.AddItemByName(D.InternalId,D.InternalId)
+}else{B.newACMTasks.AddItemByName(D.InternalId,D.InternalId)
+}}};
+this.deleteOldOutlookTasks=function(){LoggerUtil.logMessage("Step deleteOldOutlookTasks");
+var B=this;
+if(B.bKeepTasks){return 
+}var G=new sfObjectArray();
+var E=B.outlookTasks;
+var F=E.Count;
+for(var D=1;
+D<=F;
+++D){var A=E.Item(D);
+var C=this.getOutlookTaskId(A);
+if(C!=null&&!B.activeOutlookTasks.Contains(C)){G.AddItem(A)
+}}G.DeleteAll()
+};
+this.createNewOutlookTasks=function(){LoggerUtil.logMessage("Step createNewOutlookTasks");
+var B=this;
+var F=B.oACMTasks;
+for(var C=1;
+C<=F.Count;
+++C){var D=F.Item(C);
+if(B.newACMTasks.Contains(D.InternalId)){var A=B.outlookApp.CreateItem(3);
+var E=A.UserProperties.Add(ACMTaskId,1);
+E.Value=D.InternalId;
+this.copyACMTask2OutlookTask(D,A,true)
+}}}
+}sfcExportTasks.prototype=new sfcExecutionState;
+function siExportTasks(B){var A=new sfcExportTasks();
+try{sfInitExecutionStateBasic(A,B);
+sfLoggerInit(A,"siExportTasks",B);
+A.exportTasks()
+}catch(C){LoggerUtil.logErrorOnExit()
+}}sfExportFunctions(new Array("siExportTasks",siExportTasks));

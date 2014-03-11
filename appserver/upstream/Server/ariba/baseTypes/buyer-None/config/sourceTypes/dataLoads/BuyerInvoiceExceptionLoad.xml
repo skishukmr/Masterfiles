@@ -1,0 +1,40 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerInvoiceHeaderException" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="ProcurementUnit.UniqueName"/>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerInvoiceLineItemException" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING InvoiceReconciliationLineItem.LineType
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.contract.core.MasterAgreement INCLUDE INACTIVE USING InvoiceReconciliationLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING InvoiceReconciliationLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="Contract.ContractId"/>
+        <deleteField name="ProcurementUnit.UniqueName"/>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="MasterAgreement.InitialUniqueName"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

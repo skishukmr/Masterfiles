@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!DOCTYPE diff SYSTEM "../xmldiffer/XMLDiff.dtd">
+<diff>
+  <node name="class" lexicallyOrdered="true" 
+        orderMatters="false" strictlyOrdered="false" processAsRecord="true">
+    <lexicalKeyAttribute name="name"/>
+    <diffAttribute name="super"/>
+    <diffChild name="implements" singleton="true"/>
+    <diffChild name="aribaapi" singleton="true"/>
+    <diffChild name="access" singleton="true"/>
+    <diffChild name="method"/>
+    <diffChild name="field"/>
+    <diffChild name="constructor"/>
+  </node>
+
+  <node name="interface" lexicallyOrdered="true" 
+        orderMatters="false" strictlyOrdered="false" processAsRecord="true">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="implements" singleton="true"/>
+    <diffChild name="aribaapi" singleton="true"/>
+    <diffChild name="access" singleton="true"/>
+    <diffChild name="method"/>
+    <diffChild name="field"/>
+  </node>
+
+  <node name="aribaapi">
+    <diffAttribute name="level"/>
+  </node>
+    
+  <node name="access">
+    <diffAttribute name="level"/>
+    <diffAttribute name="static"/>
+    <diffAttribute name="final"/>
+    <diffAttribute name="deprecated"/>
+  </node>
+
+  <node name="className">
+    <lexicalKeyAttribute name="name"/>
+    <lexicalKeyAttribute name="dimension"/>
+    <diffAttribute name="name"/>
+    <diffAttribute name="dimension"/>
+  </node>
+
+  <node name="arguments">
+    <lexicalKeyOffChild name="className"/>
+  </node>
+
+  <node name="return">
+    <diffChild name="className"/>
+  </node>
+
+  <node name="throws">
+    <diffChild name="className"/>
+  </node>
+
+  <node name="implements">
+    <diffChild name="className"/>
+  </node>
+
+  <node name="method">
+    <lexicalKeyAttribute name="name"/>
+    <lexicalKeyOffChild name="arguments"/>
+    <diffChild name="aribaapi" singleton="true"/>
+    <diffChild name="access" singleton="true"/>
+    <diffChild name="return" singleton="true"/>
+    <diffChild name="arguments"/>
+    <diffChild name="throws" singleton="true"/>
+  </node>
+
+  <node name="constructor">
+    <lexicalKeyOffChild name="arguments"/>
+    <diffChild name="aribaapi" singleton="true"/>
+    <diffChild name="access" singleton="true"/>
+    <diffChild name="arguments"/>
+    <diffChild name="throws" singleton="true"/>
+  </node>
+    
+  <node name="throws">
+    <diffChild name="className"/>
+  </node>
+    
+  <node name="field">
+    <lexicalKeyAttribute name="name"/>
+    <diffChild name="aribaapi" singleton="true"/>
+    <diffChild name="access" singleton="true"/>
+    <diffChild name="className"/>
+  </node>
+    
+</diff>

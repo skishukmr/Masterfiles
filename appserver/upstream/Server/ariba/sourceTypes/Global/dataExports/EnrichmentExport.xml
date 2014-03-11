@@ -1,0 +1,274 @@
+<!DOCTYPE allDataExports SYSTEM "../../../../ariba/analytics/core/dataExports.dtd">
+<allDataExports>
+
+<dataExport name="InvoiceDE">
+    <exportStages>
+        <analysisStage fromClause="ariba.analytics.fact.InvoiceLineItem SUBCLASS NONE"
+                       groupByFlag="true"/>
+        <csvStage/>
+    </exportStages>
+    <fieldMappings>
+        <field name="InvoiceLineItem.Amount">
+            <analysisMapping selectField="sum(InvoiceLineItem.Amount)" groupBy=""/>
+            <csvMapping destinationField="InvoiceAmount"/>
+        </field>
+        <field name="RecordCount">
+            <analysisMapping selectField="count(*)" groupBy=""/>
+            <csvMapping destinationField="RecordCount"/>
+        </field>
+
+        <field name="SourceSystem.SourceSystemId">
+            <csvMapping destinationField="SourceSystemId"/>
+            <ccrProperties ccrKey="true"/>
+        </field>
+
+        <field name="ERPCommodity.CommodityId">
+            <csvMapping destinationField="ERPCommodityId"/>
+        </field>
+        <field name="ERPCommodity.SourceSystem">
+            <csvMapping destinationField="ERPCommoditySS"/>
+        </field>
+        <field name="ERPCommodity.CommodityName">
+            <csvMapping destinationField="ERPCommodityName"/>
+            <ccrProperties ccrKey="true"/>
+        </field>
+
+        <field name="Account.AccountId">
+            <csvMapping destinationField="AccountId"/>
+        </field>
+        <field name="Account.SourceSystem">
+            <csvMapping destinationField="AccountSS"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <csvMapping destinationField="AccountCompanyCode"/>
+        </field>
+        <field name="Account.AccountName">
+            <csvMapping destinationField="AccountName"/>
+            <ccrProperties ccrKey="true"/>
+        </field>
+
+        <field name="Supplier.SupplierId">
+            <csvMapping destinationField="SupplierId"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <csvMapping destinationField="SupplierLocationId"/>
+        </field>
+        <field name="Supplier.SourceSystem">
+            <csvMapping destinationField="SupplierSS"/>
+        </field>
+        <field name="Supplier.SupplierName">
+            <csvMapping destinationField="SupplierName"/>
+            <ccrProperties ccrKey="true"/>
+        </field>
+        <field name="Supplier.StreetAddress">
+            <csvMapping destinationField="SupplierStreetAddress"/>
+        </field>
+        <field name="Supplier.City">
+            <csvMapping destinationField="SupplierCity"/>
+        </field>
+        <field name="Supplier.State">
+            <csvMapping destinationField="SupplierState"/>
+        </field>
+        <field name="Supplier.PostalCode">
+            <csvMapping destinationField="SupplierPostalCode"/>
+        </field>
+        <field name="Supplier.Country">
+            <csvMapping destinationField="SupplierCountry"/>
+        </field>
+
+        <field name="Part.SourceSystem">
+            <csvMapping destinationField="PartSS"/>
+        </field>
+        <field name="Part.PartKey1">
+            <csvMapping destinationField="PartKey1"/>
+            <ccrProperties ccrKey="true"/>
+        </field>
+        <field name="Part.PartKey2">
+            <csvMapping destinationField="PartKey2"/>
+            <ccrProperties ccrKey="true"/>
+        </field>
+        <field name="Part.PartKey3">
+            <csvMapping destinationField="PartKey3"/>
+        </field>
+        <field name="Part.Description1">
+            <csvMapping destinationField="PartDescription1"/>
+        </field>
+        <field name="Part.Description2">
+            <csvMapping destinationField="PartDescription2"/>
+        </field>
+
+        <field name="InvoiceLineItem.Description">
+            <csvMapping destinationField="InvoiceDescription"/>
+            <ccrProperties ccrKey="true"/>
+        </field>
+        <field name="InvoiceLineItem.PODescription">
+            <csvMapping destinationField="PODescription"/>
+            <ccrProperties ccrKey="true"/>            
+        </field>
+
+        <field name="UNSPSC.AribaCodeId">
+            <csvMapping destinationField="PrevACTId"/>
+        </field>
+        <field name="InvoiceLineItem.DEConfidence">
+            <csvMapping destinationField="PrevACTConfidence"/>
+        </field>
+        <field name="Supplier.DESupplierId">
+            <csvMapping destinationField="PrevDESupplierID"/>
+        </field>
+        <field name="Supplier.DEConfidence">
+            <csvMapping destinationField="PrevDESupplierConfidence"/>
+        </field>
+    </fieldMappings>
+</dataExport>
+
+
+<dataExport name="AllSupplierDE">
+    <exportStages>
+        <analysisStage fromClause="ariba.analytics.fact.InvoiceLineItem SUBCLASS NONE
+                                   RIGHT OUTER JOIN ariba.analytics.dimension.Supplier SUBCLASS NONE  USING InvoiceLineItem.Supplier"
+                      groupByFlag="true"/>
+        <csvStage/>
+    </exportStages>
+    <fieldMappings>
+        <field name="InvoiceLineItem.Amount">
+            <analysisMapping selectField="sum(InvoiceLineItem.Amount)" groupBy=""/>
+            <csvMapping destinationField="InvoiceAmount"/>
+        </field>
+        <field name="RecordCount">
+            <analysisMapping selectField="count(*)" groupBy=""/>
+            <csvMapping destinationField="RecordCount"/>
+        </field>
+
+        <field name="Supplier.SupplierId">
+            <csvMapping destinationField="SupplierId"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <csvMapping destinationField="SupplierLocationId"/>
+        </field>
+        <field name="Supplier.SourceSystem">
+            <csvMapping destinationField="SupplierSS"/>
+        </field>
+        <field name="Supplier.SupplierName">
+            <csvMapping destinationField="SupplierName"/>
+        </field>
+        <field name="Supplier.StreetAddress">
+            <csvMapping destinationField="SupplierStreetAddress"/>
+        </field>
+        <field name="Supplier.City">
+            <csvMapping destinationField="SupplierCity"/>
+        </field>
+        <field name="Supplier.State">
+            <csvMapping destinationField="SupplierState"/>
+        </field>
+        <field name="Supplier.PostalCode">
+            <csvMapping destinationField="SupplierPostalCode"/>
+        </field>
+        <field name="Supplier.Country">
+            <csvMapping destinationField="SupplierCountry"/>
+        </field>
+        <field name="Supplier.DESupplierId">
+            <csvMapping destinationField="PrevDESupplierID"/>
+        </field>
+        <field name="Supplier.DEConfidence">
+            <csvMapping destinationField="PrevDESupplierConfidence"/>
+        </field>
+    </fieldMappings>
+</dataExport>
+
+<dataExport name="SupplierDE">
+    <exportStages>
+        <analysisStage fromClause="ariba.analytics.fact.InvoiceLineItem SUBCLASS NONE"
+                       groupByFlag="true"/>
+        <csvStage/>
+    </exportStages>
+    <fieldMappings>
+        <field name="InvoiceLineItem.Amount">
+            <analysisMapping selectField="sum(InvoiceLineItem.Amount)" groupBy=""/>
+            <csvMapping destinationField="InvoiceAmount"/>
+        </field>
+        <field name="RecordCount">
+            <analysisMapping selectField="count(*)" groupBy=""/>
+            <csvMapping destinationField="RecordCount"/>
+        </field>
+
+        <field name="Supplier.SupplierId">
+            <csvMapping destinationField="SupplierId"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <csvMapping destinationField="SupplierLocationId"/>
+        </field>
+        <field name="Supplier.SourceSystem">
+            <csvMapping destinationField="SupplierSS"/>
+        </field>
+        <field name="Supplier.SupplierName">
+            <csvMapping destinationField="SupplierName"/>
+        </field>
+        <field name="Supplier.StreetAddress">
+            <csvMapping destinationField="SupplierStreetAddress"/>
+        </field>
+        <field name="Supplier.City">
+            <csvMapping destinationField="SupplierCity"/>
+        </field>
+        <field name="Supplier.State">
+            <csvMapping destinationField="SupplierState"/>
+        </field>
+        <field name="Supplier.PostalCode">
+            <csvMapping destinationField="SupplierPostalCode"/>
+        </field>
+        <field name="Supplier.Country">
+            <csvMapping destinationField="SupplierCountry"/>
+        </field>
+        <field name="Supplier.DESupplierId">
+            <csvMapping destinationField="PrevDESupplierID"/>
+        </field>
+        <field name="Supplier.DEConfidence">
+            <csvMapping destinationField="PrevDESupplierConfidence"/>
+        </field>
+    </fieldMappings>
+</dataExport>
+
+<dataExport name="SupplierDiversityDE">
+    <exportStages>
+        <analysisStage fromClause="ariba.analytics.fact.InvoiceLineItem SUBCLASS NONE"
+                      groupByFlag="true"/>
+        <csvStage/>
+    </exportStages>
+    <fieldMappings>
+        <field name="Supplier.DESupplierId">
+            <csvMapping destinationField="SupplierId"/>
+        </field>
+        <field name="Supplier.DESupplierName">
+            <csvMapping destinationField="SupplierName"/>
+        </field>
+        <field name="Source">
+            <analysisMapping enabled="false"/>
+            <csvMapping destinationField="Source"/>
+        </field>
+        <field name="Type">
+            <analysisMapping enabled="false"/>
+            <csvMapping destinationField="Type"/>
+        </field>
+        <field name="Certifier">
+            <analysisMapping enabled="false"/>
+            <csvMapping destinationField="Certifier"/>
+        </field>
+        <field name="CertificateNumber">
+            <analysisMapping enabled="false"/>
+            <csvMapping destinationField="CertificateNumber"/>
+        </field>
+        <field name="IssuedDate">
+            <analysisMapping enabled="false"/>
+            <csvMapping destinationField="CertificateIssuedDate"/>
+        </field>
+        <field name="RenewedDate">
+            <analysisMapping enabled="false"/>
+            <csvMapping destinationField="CertificateRenewedDate"/>
+        </field>
+        <field name="ExpiredDate">
+            <analysisMapping enabled="false"/>
+            <csvMapping destinationField="CertificateExpirationDate"/>
+        </field>
+    </fieldMappings>
+</dataExport>
+
+</allDataExports>

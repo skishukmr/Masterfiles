@@ -1,0 +1,36 @@
+<w:ModalPageWrapper title="A Cool Inspector!">
+    <v:PhaseInvocation append="$setup"/>\
+    This is the sub page!
+    <br/>
+    <br/>
+    <w:SectionHeading title="Change Selection"/>
+    <w:SectionBody>
+        <div style="float:left">
+            $displayGroup.batchStartIndex - $displayGroup.batchEndIndex of $displayGroup.filteredObjects.size
+            <a:TextField value="$rowNum" formatter="$formatters.intFormatter" size="3"/>
+        </div>
+        <w:TextButton action="$gotoRow">Show Row and Return</w:TextButton>\
+    </w:SectionBody>
+
+</w:ModalPageWrapper>
+<server>
+    var displayGroup = null;
+    var returnPage = null;
+    var rowNum = null;
+
+    function setup () {
+        returnPage = ariba.ui.widgets.ModalPageWrapper.returnPage(component);
+        // displayGroup = get(returnPage, "displayGroup");
+    }
+
+    function gotoRow () {
+        if (rowNum) {
+            var list = displayGroup.filteredObjects();
+            var item = list.get(Math.min(rowNum, list.size()-1));
+
+            displayGroup.setItemToForceVisible(item);
+            displayGroup.setSelectedObject(item); // highlight it
+        }
+        return returnPage;
+    }
+</server>

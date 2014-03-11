@@ -1,0 +1,191 @@
+<w:ModalPageWrapper title="$scenario.Name" hasForm="$true"
+        hasSidebarNotch="$false" isSidebarVisible="$false" showBottomButtons="$false">
+<!--
+    <div style="text-align:center">
+        <w:TextButton >Optimize</w:TextButton>
+    </div>
+-->
+    <br>
+<w:TabSet index="$tabIndex">
+  <w:Tab label="General">
+      <w:HintMessage>
+          Please select your optimization goal and then move to the
+          <b><a:Hyperlink action="${1;tabIndex=1;null}">Optimization Constraints</a:Hyperlink></b> tab to configure
+          your criteria
+      </w:HintMessage>
+
+      <w:FormTable>
+          <w:FormRow label="Name">
+              <a:TextField value="$scenario.Name" size="40"/>
+          </w:FormRow>
+          <w:FormRow label="Optimization Status">
+              Draft
+              &nbsp;
+          </w:FormRow>
+
+          <w:FormRow label="Goal">
+              <w:RadioButtonList selection="$scenario.Objective" item="$choice"
+                                  list='$("Minimize Total Extended Price", "Minimize Total Cost", "Minimize Total Transit Time")'>\
+                  $choice <br/>
+              </w:RadioButtonList>
+          </w:FormRow>
+          <br>
+      </w:FormTable>
+  </w:Tab>
+  <w:Tab label="Optimization Constraints">
+    <table width="100%">
+        <tr>
+            <td valign="top" width="30%">
+                <div class="flexContainer">
+                    <t:DataTable list="$scenario.groups" item="${item}" children="$item.children" expandAll="$true" displayGroup="${tocDG}"
+                                  enableScrolling="$true" singleSelect="$true" showSelectionColumn="$false" submitOnSelectionChange="$true"
+                                  title="Item Sets">
+                        <t:Column key="Title">\
+                            <w:OutlineControl>
+                                <a:Content name="icon">\
+                                    <a:Image filename='${isSection() ? "AWXFolderIcon.gif" : (isSupplier() ? "profile.gif" : "request.gif")}'/>\
+                                </a:Content>
+                                <a:If ifTrue="$isSection">
+                                    <b>
+                                        $item.Title\
+                                    </b>
+                                <a:Else/>\
+                                    $item.Title\
+                                </a:If>
+                            </w:OutlineControl>\
+                        </t:Column>
+                        <t:Column>
+                            <a:If ifTrue="$isSection">
+                                <a:Hyperlink action="$addConstraint">Add</a:Hyperlink>
+                            </a:If>
+                        </t:Column>
+<!--
+                        <t:Column>
+                            <a:Checkbox value="$item.isActive:$true"/>
+                        </t:Column>
+-->                        
+                        <t:ButtonArea isVisible="$true">
+                            <w:TextButton action="$null">Delete</w:TextButton>\
+                            <w:TextButton action="$addItemGroup">Add Item Group</w:TextButton>\
+                        </t:ButtonArea>
+                    </t:DataTable>
+                </div>
+            </td>
+
+            <td  style="padding:0px 8px 0px 8px">
+                <div class="brandMd">
+                    <a:Image filename="cleardot.gif" height="600" width="3"/>
+                </div>
+            </td>
+
+            <td valign="top" width="100%">
+                <div class="flexContainer">
+                    <a:If notEqualNull='$includeName'>
+                        <a:IncludeComponent awcomponentName="$includeName" item="$selectedObject"/>
+                    </a:If>
+                </div>
+            </td>
+        </tr>
+    </table>
+  </w:Tab>
+
+  <w:Tab label="Award Proposal Details">
+      <a:InitializeValue pivDG="$null"/>
+      <t:DataTable csvPath="AwardData.csv" displayGroup="$pivDG"
+              enableScrolling="$true" showOptionsMenu="$true" title="Award Details" multiSelect="$false"
+              pivotLayout="$true" rowFields="$(Item, Region, Year, Quarter)" columnFields="$(Supplier)"
+              columnAttributes="$(Price, Quantity)">
+
+          <t:Column key="Item" nowrap>$pivDG.currentItem.Item</t:Column>
+          <t:Column key="Region"/>
+          <t:Column key="Year"/>
+          <t:Column key="Quarter"/>
+          <t:Column key="Supplier"/>
+          <t:Column key="Price">
+              <a:TextField value="$pivDG.currentItem.Price" formatter="$formatters.money" size=9 style="text-align:right"/>
+          </t:Column>
+          <t:Column key="Quantity" formatter="$formatters.integer" align="right"/>
+          <t:Column key="ExtendedPrice" label="E P" formatter="$formatters.money" align="right"/>
+          <t:Column key="Color"/>
+          <t:Column key="Description" wantsSpan="$true">My Extended Price is $pivDG.currentItem.ExtendedPrice</t:Column>
+          <t:Column key="Size"/>
+      </t:DataTable>
+  </w:Tab>
+
+  <w:Tab label="Summary">
+      <w:FormTable>
+          <w:FormRow label="Name">
+              $scenario.Name
+          </w:FormRow>
+          <w:FormRow label="Optimization Status">
+              Draft
+              &nbsp;
+          </w:FormRow>
+
+          <w:FormRow label="Goal">
+              $scenario.Objective
+          </w:FormRow>
+
+          <w:FormRow label="Total Value of Award">
+              \$12,000,000
+          </w:FormRow>
+          <w:FormRow label="Number of Suppliers Selected">
+              3
+          </w:FormRow>
+
+          <br>
+      </w:FormTable>
+      <br/>
+      <t:DataTable title="Awards by Suppliers" singleSelect="$true">
+          <t:CSVData>
+              Supplier,        Lines,   Total Award
+              Universal Transport, 52, "$3,200,000"
+              International Freight, 23, "$5,200,050"
+              North American Trucking, 70, "$1,200,050"
+          </t:CSVData>
+          <t:ButtonArea>
+              <w:TextButton action="$null">Award Contracts</w:TextButton>\
+          </t:ButtonArea>
+      </t:DataTable>
+  </w:Tab>
+</w:TabSet>
+
+</w:ModalPageWrapper>\
+\
+<groovy>
+    def tocDG, displayGroup;
+    def item;
+    def scenario;
+    def tabIndex=0;
+
+    void init () {
+        loadScenario("Sample Scenario", "SampleScenario.csv")
+    }
+
+    def loadScenario (title, path) {
+        scenario = [Name: title, groups: AWTCSVDataSource.dataSourceForPath(path, this).fetchObjects()]
+        return this;
+    }
+    
+    def isSection () { ListUtil.containsIdentical(tocDG.allObjects(), item); }
+    def isSupplier () { item.Type == "Supplier"; }
+    def selectedObject () { tocDG.selectedObject() }
+
+    def addItemGroup () {
+        def o = [children:[], Title:"Untitled Group", Type:"Group"];
+        scenario.groups.add(o);
+        tocDG.setObjectArray(scenario.groups);
+        tocDG.setSelectedObject(o);
+        return null;
+    }
+
+    def addConstraint () {
+        def o = [Title:"Untitled Constraint", Type:"Award"];
+        item.children.add(o);
+        tocDG.setSelectedObject(o);
+        return null;
+    }
+    
+    def includeName () { selectedObject() ? (selectedObject().Type == "Group" ? "Group.htm" : "Constraint.htm") : null }
+
+</groovy>\

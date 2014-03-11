@@ -1,0 +1,34 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <inDataLoad name="BuyerAccount" version="8.2">
+        <fieldMappings>
+            <deleteField name="CompanyCode"/>
+            <field name="CompanyCode">
+                <aqlMapping selectField="CompanyCode.UniqueName"
+                            sourceLookupField="CompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerCostCenter" version="8.2">
+        <fieldMappings>
+            <deleteField name="CompanyCode"/>
+            <field name="CompanyCode">
+                <aqlMapping selectField="CompanyCode.UniqueName"
+                            sourceLookupField="CompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerCompany" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerBusinessUnit" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerProject" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerInternalOrder" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerAsset" version="8.2" disableLoad="true"/>
+
+</allDataLoads>

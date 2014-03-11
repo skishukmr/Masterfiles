@@ -1,0 +1,250 @@
+<PortletProviders>
+    <PortletProvider stringFile="&lt;ProviderURL&gt;/ad/stringFile/PortletProviderActions?stringFile=ariba.sourcing.portlets">
+        <UniqueName>AQS</UniqueName>
+        <DisplayName>$[a001]Ariba Sourcing</DisplayName>
+        <Description>$[a002]Ariba Sourcing</Description>
+        <BusinessKey>ACM</BusinessKey>
+        <HttpURL>&HttpURL;</HttpURL>
+        <ServerURL>&ServerURL;</ServerURL>
+        <Permissions operator="OR">
+            <String>SourcingAuthorized</String>
+            <String>SPMAuthorized</String>
+            <String>ACWAuthorized</String>
+            <String>AnalysisAuthorized</String>
+            <String>SupplierManager</String><!-- remove this permission in Jupiter/Hawk.
+                                                 We really don't need it anymore in Eagle,
+                                                 but since the change to obsolete it took
+                                                 place in an SP, we chose not to do it then
+                                                 because we didn't want the risk-->
+        </Permissions>
+        <Portlets>
+           <!-- message board later -->
+           <!-- MessageBoardPortletController -->
+            <!-- This portlet is no longer needed.  Its content is now displayed in the ToDo portlet
+            <Portlet>
+                <UniqueName>EventList</UniqueName>
+                <DisplayName>$[a003]Event List</DisplayName>
+                <Description>$[a004]List of events owned by the user</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AESRFXListPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                   <String>SourcingAuthorized</String>
+                   <String>Internal</String>
+                </Permissions>
+            </Portlet>
+            -->
+            <Portlet>
+                <UniqueName>EventStatusGrid</UniqueName>
+                <DisplayName>$[a005]Event Status Grid</DisplayName>
+                <Description>$[a006]Event Status Grid for buyers</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AESRFXStatusPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                   <String>SourcingAuthorized</String>
+                   <String>Internal</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>Notifications</UniqueName>
+                <DisplayName>$[a007]Notifications</DisplayName>
+                <Description>$[a008]Notifications for buyers</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/OnlineNotificationPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions operator="OR">
+                   <String>SourcingAuthorized</String>
+                   <String>SPMAuthorized</String>
+                   <String>SupplierManager</String><!-- remove this permission in Jupiter/Hawk-->
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>AQSMainActions</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AESMainActionsController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                    <String>SourcingAuthorized</String>
+                    <String>Internal</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>EventListMyDocs</UniqueName>
+                <DisplayName>$[a030]My Documents Event List</DisplayName>
+                <Description>$[a004]List of events owned by the user for My Documents portlet</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AESMyDocsRFXListPortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>MyDocs</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                   <String>SourcingAuthorized</String>
+                   <String>Internal</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>ASMPreferences</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ASMUserPreferencesPortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions operator="OR">
+                   <String>ACWAuthorized</String>
+                   <String>SourcingAuthorized</String>
+                   <String>Internal</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>EventParticipationToDo</UniqueName>
+                <DisplayName>$[a031]Event Participation To Do</DisplayName>
+                <Description>$[a032]List of active events requiring user participation</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AESToDoListPortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>ToDo</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions operator="OR">
+                   <String>SourcingAuthorized</String>
+                   <String>SPMAuthorized</String>
+                </Permissions>
+            </Portlet>
+            <!-- This portlet is no longer needed.  Its content is now displayed in the ToDo portlet
+            <Portlet>
+                <UniqueName>EventParticipationList</UniqueName>
+                <DisplayName>$[a013]Event Participation</DisplayName>
+                <Description>$[a014]List of events in which the user is participating</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AESParticipatingEventListPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                    <String>SPMAuthorized</String>
+                </Permissions>
+            </Portlet>
+            -->
+            <Portlet>
+                <UniqueName>SMMainActions</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/SMMainActionsController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions operator="OR">
+                   <String>SupplierManager</String><!-- remove this permission in Jupiter/Hawk-->
+                   <String>project.spm.create</String>
+                   <String>project.sourcing.create</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>SMSearch</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/SMSearchController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Search</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions operator="OR">
+                   <String>SupplierManager</String><!-- remove this permission in Jupiter/Hawk-->
+                   <String>project.spm.create</String>
+                   <String>project.sourcing.create</String>
+                </Permissions>
+            </Portlet>
+        </Portlets>
+        <DocTypes>
+            <DocType>
+                <UniqueName>ariba.sourcing.rfx.SourcingProject</UniqueName>
+                <DisplayName>$[a017]Sourcing Project</DisplayName>
+                <Description>$[a018]Workspace for a Sourcing Project</Description>
+                <ActionRank>20</ActionRank>
+                <Permissions>
+                    <String>SourcingAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.sourcing.rfx.RFXDocument</UniqueName>
+                <DisplayName>$[a019]Sourcing Event</DisplayName>
+                <Description>$[a020]RFX Document for a Sourcing Project</Description>
+                <ActionRank>55</ActionRank>
+                <Permissions>
+                    <String>SourcingAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.sourcing.rfx.RFXContentDocument</UniqueName>
+                <DisplayName>$[a021]Sourcing Event Content</DisplayName>
+                <Description>$[a022]RFX Document Content for a Sourcing Project</Description>
+                <ActionRank>60</ActionRank>
+                <Permissions>
+                    <String>SourcingAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.sourcing.rfx.PublicRFX</UniqueName>
+                <DisplayName>$[a023]Supplier Discovery Posting</DisplayName>
+                <Description>$[a024]Supplier Discovery Posting on Ariba SN</Description>
+                <ActionRank>50</ActionRank>
+                <Permissions>
+                    <String>SourcingAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.sourcing.content.profile.ProfileQuestionnaire</UniqueName>
+                <DisplayName>$[a025]Sourcing Profile Questionnaire</DisplayName>
+                <Description>$[a026]Sourcing Profile Questionnaire document</Description>
+                <ActionRank>400</ActionRank>
+                <Permissions>
+                    <String>SourcingAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.sourcing.content.SPMProject</UniqueName>
+                <DisplayName>$[a027]SPM Project</DisplayName>
+                <Description>$[a028]Project workspace for Supplier Performance Management activities</Description>
+                <ActionRank>40</ActionRank>
+                <Permissions>
+                    <String>SPMAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.user.core.Organization</UniqueName>
+                <DisplayName>$[a033]Organization</DisplayName>
+                <Description>$[a034]A business organization (vendor or customer)</Description>
+                <ActionRank>35</ActionRank>
+                <Permissions>
+                    <String>SPMAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.acm.core.CategoryKnowledgeProject</UniqueName>
+                <DisplayName>$[a029]Sourcing Knowledge</DisplayName>
+                <Description>$[a030]Project workspace for managing sourcing knowledge</Description>
+                <ActionRank>45</ActionRank>
+                <Permissions>
+                    <String>SourcingAuthorized</String>
+                </Permissions>
+            </DocType>
+        </DocTypes>
+    </PortletProvider>
+</PortletProviders>

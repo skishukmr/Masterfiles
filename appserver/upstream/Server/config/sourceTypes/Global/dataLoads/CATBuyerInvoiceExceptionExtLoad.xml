@@ -1,0 +1,23 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+<inDataLoad name="BuyerInvoiceLineItemException">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.approvable.core.ApprovalRequest USING InvoiceReconciliation.ApprovalRequests
+	        			LEFT OUTER JOIN ariba.user.core.User AS ApprovedBy INCLUDE INACTIVE USING ApprovalRequest.ApprovedBy"/>
+    </inLoadStages>
+    <fieldMappings>        
+        <field name="Approver.UserId">
+            <aqlMapping selectField="ApprovedBy.UniqueName"/>
+        </field>
+        <field name="Approver.PasswordAdapter">
+            <aqlMapping selectField="ApprovedBy.PasswordAdapter"/>
+        </field>
+        <field name="InvoiceReconciliationStatus">
+            <aqlMapping selectField="InvoiceReconciliation.StatusString"/>
+        </field>
+        <field name="DateApproverReceived">
+            <aqlMapping selectField="ApprovalRequest.ActivationDate"/>
+        </field>        
+    </fieldMappings>
+</inDataLoad>
+</allDataLoads>

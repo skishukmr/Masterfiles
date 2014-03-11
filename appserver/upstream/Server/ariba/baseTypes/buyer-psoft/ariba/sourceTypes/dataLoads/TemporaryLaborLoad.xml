@@ -1,0 +1,62 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+    <inDataLoad name="BuyerTemporaryLaborPO">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.SetId INCLUDE INACTIVE USING SupplierLocation.SetId
+                                            LEFT OUTER JOIN ariba.core.Department INCLUDE INACTIVE USING SplitAccounting.Department
+                                            LEFT OUTER JOIN ariba.core.SetId AS DepSetId INCLUDE INACTIVE USING Department.SetId
+                                            LEFT OUTER JOIN ariba.core.Account INCLUDE INACTIVE USING SplitAccounting.Account
+                                            LEFT OUTER JOIN ariba.core.SetId AS AccSetId INCLUDE INACTIVE USING Account.SetId"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="Department.DepartmentId"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="DepSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="Account.AccountId"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="AccSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+    <inDataLoad name="BuyerBaseTemporaryLaborPO">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.SetId INCLUDE INACTIVE USING SupplierLocation.SetId
+                                            LEFT OUTER JOIN ariba.core.Department INCLUDE INACTIVE USING SplitAccounting.Department
+                                            LEFT OUTER JOIN ariba.core.SetId AS DepSetId INCLUDE INACTIVE USING Department.SetId
+                                            LEFT OUTER JOIN ariba.core.Account INCLUDE INACTIVE USING SplitAccounting.Account
+                                            LEFT OUTER JOIN ariba.core.SetId AS AccSetId INCLUDE INACTIVE USING Account.SetId"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="Department.DepartmentId"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="DepSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="Account.AccountId"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="AccSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+</allDataLoads>

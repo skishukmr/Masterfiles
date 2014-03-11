@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+@@Include=templates/email/common/metalink.htm@@
+@@Include=templates/email/common/styles.htm@@
+</head>
+<body>
+<form name=formPrimary>
+
+<!--header section containing the message subject, requestor and date -->
+@@Include=templates/email/invoicing/topheader.htm@@
+
+<!--top set of action buttons -->
+<div id="navTop">@@Include=templates/email/common/approvebuttons.htm@@</div>
+
+<!--message content -->
+<div id="content">
+@@Include=templates/email/invoicing/lineitems.htm@@
+@@Include=templates/email/common/comments.htm@@
+<br>
+<br>
+@@Include=templates/email/common/approvalflow.htm@@
+</div>
+
+<!--bottom set of action buttons -->
+<div id="navBottom">@@Include=templates/email/common/approvebuttons.htm@@</div>
+
+<!--footer -->
+<div id="footer">@@Include=templates/email/common/copyright.htm@@</div>
+
+<!--debug. Leave in document. Turn off rendering with display property in email.css -->
+<div id="debug">Template: approve.htm</div>
+</form>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- #BeginTemplate "/templates/secondary_template.dwt" --><!-- DW6 -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>Contracts permissions</title>
+<meta name="keywords" content="permissions|contracts,CreateContract permission,DirectReleaseContract permission,ContractManager permission,SourcingAuthorized permission,SourcingPricingTermErrorsEmail permission,ContractTypeImpactReport permission">
+<!-- #EndEditable --> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../library/ariba.css" type="text/css">
+<script type="text/javaScript" src="../../../../library/help.js"></script>
+<!-- #BeginEditable "comments" --> 
+<!-- $File: //ariba/help/buyer/ariba/resource/en_US/help/content/end_user/contracts/permission/ref_contracts_permissions.htm $
+     old path: //ariba/doc/Phoenix_Help/help/Content/procure/approvable/Contracts/permissions/contracts-permissions.htm#3 $
+	Creator: aschulz
+-->
+<link rel="stylesheet" href="../../../../Library/ariba.css" type="text/css">
+<!-- #EndEditable --> 
+
+</head>
+<body style="margin-left: 5px"><div id="help">
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr> 
+      <td height="25" colspan="3" class="helpPageTitle">My Supply Cabinet Online Help</td>
+    </tr>
+    <tr> 
+      <td class="helpBody" height="25" colspan="3" align="right"><a href="../../common/help/contents/content_frames.htm">Contents</a> 
+        | <a href="../../common/help/index/index_frames.htm">Index</a> 
+        | <a href="../../common/help/search/search.htm">Search</a> 
+        &nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </table>
+  
+  
+  <!-- #BeginVariableLibraryItem "/library/secondary_template_section.lbi" --> 
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr align="left"> 
+      <th  class="helpTopicTitle"><!-- #BeginEditable "topic_title" -->Contracts 
+      permissions<!-- #EndEditable --></th>
+    </tr>
+    <tr> 
+      <td valign="top" class="helpBody"><!-- #BeginEditable "body" --> 
+     
+	    <table width="99%" border="0" cellspacing="0" cellpadding="6" >
+          <tr align="left"> 
+            <th width="28%" class="helpBody" scope="col"><b>This permission</b></th>
+            <th width="72%" class="helpBody" scope="col"><b>Authorizes users to</b></th>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">ContractManager</td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>View and edit all contract requests (CRs), view, open, and close 
+                all contracts, and receive against contracts. By default, this 
+                permission is assigned to these roles: Contract Manager, Professional 
+                Buyer, and System Administrator.</p>
+              <p>Users assigned the Contract Manager role also have permission 
+                to create <a href="../process/sourcing_request.htm"> sourcing 
+                requests</a>. 
+              <p>Only users who have the CreateContract or ContractManager permission 
+                can be given edit access to a contract. The creator of a contract 
+                is automatically given edit access to the contract. 
+            </td>
+          </tr>
+          <tr valign="top">
+            <td width="28%" class="helpBody" height="37">ContractTypeImpactReport</td>
+            <td width="72%" class="helpBody" height="37">Receive an impact report 
+              when a catalog type is used by a contract and a new version of the 
+              catalog type is uploaded that might affect existing contracts that 
+              use that type.
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">CreateContract</td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>Create a <a href="javascript: openGlossary('../../../common/glossary/cr.htm');">Contract 
+                Request (CR)</a> and, if the user is the requester or preparer, 
+                or is listed on the CR Edit Access list, change a CR or open and 
+                close a <a href="javascript: openGlossary('../../../common/glossary/contract.htm');"> 
+                contract</a>. This permission applies only in configurations using 
+                Ariba Contract Compliance. By default, this permission is assigned 
+                to these <a href="javascript: openGlossary('../../../common/glossary/roles.htm');">roles</a>: 
+                Contract Agent, Contract Manager, and Category Manager.</p>
+              <p>Users with this permission receive <a href="../../common/notification/about_notifs.htm">notification 
+                messages</a> when a contract they are associated with is <a href="../notification/ref_open.htm">opened</a>, 
+                <a href="../notification/ref_closed.htm">closed</a>, nearing its 
+                <a href="../notification/ref_approaching_expiration.htm">expiration 
+                date</a>, or when it reaches a <a href="../notification/ref_approaching_limit.htm">specified 
+                percentage</a> of the original amount. </p>
+              <p>Only users who have the CreateContract or ContractManager permission 
+                can be given edit access to a contract. The creator of a contract 
+                is automatically given edit access to the contract.</p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">DirectReleaseContract</td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>View the <a href="../contract/contract_tab_create_release.htm"> 
+                Contracts tab</a> when adding items to a requisition, and create 
+                <a href="javascript: openGlossary('../../../common/glossary/release_order.htm');">releases</a> 
+                against a contract selected on the tab. This permission applies 
+                only in configurations using Ariba Contract Compliance. By default, 
+                this permission is assigned to these roles: Contract Agent, Contract 
+                Manager, and Category Manager. 
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">SourcingAuthorized</td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>To create a <a href="javascript: openGlossary('../../../common/glossary/sourcing_request_sr.htm');">spot 
+                purchase sourcing request</a> (SR) when they are asked to approve 
+                a purchase request that contains non-catalog items, and create 
+                <a href="javascript: openGlossary('../../../common/glossary/csr.htm');">contract 
+                sourcing requests</a> (CSRs). By default, this permission is assigned 
+                to these roles: Professional Buyer and Contract Manager. 
+              <p> Authorized users also receive email notification messages from 
+                Ariba Contract Compliance and from Ariba Enterprise Sourcing as 
+                sourcing requests they have created proceed through the approval 
+                and sourcing event processes. 
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">SourcingPricingTermErrorsEmail</td>
+            <td width="72%" class="helpBody" height="37">Receive the <a href="../notification/ref_pricing_terms_error.htm">Error 
+              in Pricing Terms</a> notification message when Ariba Contract Compliance 
+              encounters errors related to pricing terms. The body of the notification 
+              message describes the type of error. By default, this permission 
+              is assigned to the role Professional Buyer.</td>
+          </tr>
+        </table>
+      <!-- #EndEditable --> </td>
+    </tr>
+    <tr> 
+      <td class="helpBody" align="center"> 
+        <hr color="#666699" noshade size="1">
+        Copyright 1996 - 2004 Ariba, Inc. <a href="javascript: openLegal('http://www.ariba.com/copyrights.cfm');">Legal 
+        notices</a>. </td>
+    </tr>
+  </table>
+  <!-- #EndVariableLibraryItem --></div>
+</body>
+<!-- #EndTemplate --></html>

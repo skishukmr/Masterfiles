@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Index SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/cXML.dtd">
+
+<Index>
+  <SupplierID domain="duns">611429481</SupplierID>
+  <Comments xml:lang="en-US">
+    Sample cXML/Index
+  </Comments>
+  <IndexItem>
+    <IndexItemPunchout>
+      <ItemID>
+        <SupplierPartID>PunchoutToContentRealmItem1</SupplierPartID>
+        <SupplierPartAuxiliaryID>aisle</SupplierPartAuxiliaryID>
+      </ItemID>
+      <PunchoutDetail>
+        <Description xml:lang="en-US">This is an aisle level item.  It's used for punchout to Ariba's content only realm.</Description>
+        <URL>http://localhost:8850/Buyer/Catalog/Punchin</URL>
+        <Classification domain="UNSPSC">43232005</Classification>
+      </PunchoutDetail>
+    </IndexItemPunchout>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemPunchout>
+      <ItemID>
+        <SupplierPartID>PunchoutToContentRealmItem2</SupplierPartID>
+        <SupplierPartAuxiliaryID>shelf</SupplierPartAuxiliaryID>
+      </ItemID>
+      <PunchoutDetail>
+        <Description xml:lang="en-US">This is a shelf level item.  It's used for punchout to Ariba's content only realm.</Description>
+        <URL>http://localhost:8850/Buyer/Catalog/Punchin</URL>
+        <Classification domain="UNSPSC">43232005</Classification>
+      </PunchoutDetail>
+    </IndexItemPunchout>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemPunchout>
+      <ItemID>
+        <SupplierPartID>PunchoutToContentRealmItem3</SupplierPartID>
+        <SupplierPartAuxiliaryID>item</SupplierPartAuxiliaryID>
+      </ItemID>
+      <PunchoutDetail>
+        <Description xml:lang="en-US">This is an item level item.  It's used for punchout to Ariba's content only realm.</Description>
+        <URL>http://localhost:8850/Buyer/Catalog/Punchin</URL>
+        <Classification domain="UNSPSC">43232005</Classification>
+      </PunchoutDetail>
+    </IndexItemPunchout>
+  </IndexItem>
+</Index>

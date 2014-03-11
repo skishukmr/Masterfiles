@@ -1,0 +1,2174 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<!-- This revision requires ACM build at Boulder-69 (2003.10.31) or later. -->
+
+<!--
+    This query wants to find all "real" projects and associate them with the latest
+    "process" information from the most current template for the project - analysis should
+    view all projects using uniform terminology from the latest revision of the process,
+    even projects that were started with older versions of the template.  Real projects
+    are not part of a template, not the special clause library project, and not an
+    uncreated subproject.
+
+    Created subprojects typically have WorkspaceType='', Status='Active' or whatever,
+    Created subprojects typically have WorkspaceType='', Status='Active' or whatever,
+    ProjectTemplate=TemplateObject= the top level template that was selected when the
+    subproject was created.  So created subprojects will be returned very nicely from this
+    query.
+
+    In the common case of incremental pulls, the driving criteria should be the
+    TimeUpdate range check, so we only pull rows that have changed.  But we need
+    to pull changed row if either the project or the template end of the join
+    chain have changed.  For best performance we should use two separate queries,
+    one for changed projects, and the other for changed templates, so the
+    optimizer can use the project TimeUpdated index and join toward template in
+    the first query, and use the template TimeUpdated index and join toward
+    project in the second query.  In DataLoadEvents.table, we UNION the two
+    queries together into a single pull.  When the pull is not incremental,
+    we just use an always false criteria to suppress the otherwise duplicate
+    rows from the template query.  In incremental pulls, if both the project
+    and the template have been updated, the UNION will eliminate the duplicate
+    row, but that is not expected to be a common case.
+-->
+<dataLoad name="ACMProjectDimensionForChangedProjects">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Workspace AS Project INCLUDE INACTIVE,
+                              ariba.collaborate.core.Workspace AS CurrentTemplate
+                              LEFT OUTER JOIN ariba.collaborate.core.Workspace AS PreVerTemplate USING CurrentTemplate.PreviousVersion"
+                  whereClause="Project.ProjectTemplate.DocumentId = CurrentTemplate
+                               AND Project.WorkspaceType IN ('', ' ') AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                      Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ProjectInfo"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="ProjectName">
+            <aqlMapping selectField="Project.Title"/>
+        </field>
+        <field name="TemplateId">
+           <aqlMapping selectField="CurrentTemplate.ProcessId"/>
+        </field>
+        <field name="TemplateName">
+        <!--
+            The case expression below ensures that we will use the title of the previous version
+            of the template if the latest version is draft and the previous version exists. In
+            this case, the previous version will be either active or inactive, and thus will be
+            the published version that we should use for analysis. Note the sign function call,
+            which ensures that the outer case value will be 0 in this particular case, and 1 in
+            all other cases. Note that we do not need case expressions for any other template
+            fields because their values will always be the same for the current and previous versions.
+            -->
+            <aqlMapping selectField="CASE Sign((CASE CurrentTemplate.Status WHEN 'Draft' THEN 0 ELSE 1 END) + (CASE PreVerTemplate WHEN NULL THEN 1 ELSE 0 END))  WHEN 1 THEN CurrentTemplate.Title ELSE PreVerTemplate.Title  END"/>
+        </field>
+        <field name="ProjectTypeId">
+           <aqlMapping selectField="CurrentTemplate.ProjectAddin.TemplateProjectAddin.ProjectType.UniqueName"/>
+        </field>
+        <field name="ProjectTypeName">
+           <aqlMapping selectField="CurrentTemplate.ProjectAddin.TemplateProjectAddin.ProjectType.Name"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMProjectDimensionForChangedProjects" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    See the documentation for the ACMProjectDimensionForChangedProjects dataLoad
+    above; it describes this query as well, they are composed into a UNION in
+    DataLoadEvents.table to get the ACMProjectDimension dataLoad.
+-->
+<dataLoad name="ACMProjectDimensionForChangedTemplates">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Workspace AS Project INCLUDE INACTIVE,
+                              ariba.collaborate.core.Workspace AS CurrentTemplate
+                              LEFT OUTER JOIN ariba.collaborate.core.Workspace AS PreVerTemplate USING CurrentTemplate.PreviousVersion"
+                  whereClause="Project.ProjectTemplate.DocumentId = CurrentTemplate
+                               AND Project.WorkspaceType IN ('', ' ') AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= CurrentTemplate.TimeUpdated AND
+                                      CurrentTemplate.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ProjectInfo"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="ProjectName">
+            <aqlMapping selectField="Project.Title"/>
+        </field>
+        <field name="TemplateId">
+           <aqlMapping selectField="CurrentTemplate.ProcessId"/>
+        </field>
+        <field name="TemplateName">
+            <!-- See the comment on the CASE expression in the ACMProjectDimensionForChangedProjects. -->
+            <aqlMapping selectField="CASE Sign((CASE CurrentTemplate.Status WHEN 'Draft' THEN 0 ELSE 1 END) + (CASE PreVerTemplate WHEN NULL THEN 1 ELSE 0 END))  WHEN 1 THEN CurrentTemplate.Title ELSE PreVerTemplate.Title  END"/>
+        </field>
+        <field name="ProjectTypeId">
+           <aqlMapping selectField="CurrentTemplate.ProjectAddin.TemplateProjectAddin.ProjectType.UniqueName"/>
+        </field>
+        <field name="ProjectTypeName">
+           <aqlMapping selectField="CurrentTemplate.ProjectAddin.TemplateProjectAddin.ProjectType.Name"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!--
+    If we are not running incrementally, don't return anything from the
+    ForChangedTemplates side, everything will be returned by the ForChangedProjects
+    side of the ACMProjectDimension union.
+-->
+<inDataLoad name="ACMProjectDimensionForChangedTemplates" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause="0 = 1"/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query wants to find all the "real" projects and associate them with basic
+    information about the project and its owner, without looking at the templates.
+    Requires ProjectTemplate is not null to exclude inconsistent projects that are
+    excluded in the ACMProjectDimension view.
+-->
+<dataLoad name="ACMProject">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Workspace AS Project
+                              JOIN ariba.user.core.User AS ProjectOwner INCLUDE INACTIVE USING Project.Owner
+                              JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin INCLUDE INACTIVE USING Project.ProjectAddin
+                              LEFT OUTER JOIN ariba.collaborate.core.Workspace AS DependsOnProject USING ProjectAddin.FollowOnFrom"
+                  whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL
+                               AND Project.ProjectAddin.ProjectTemplate IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                      Project.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.Project"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"
+                        sourceLookupField="InternalId"/>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="Description">
+            <aqlMapping selectField="Project.Description"/>
+        </field>
+        <field name="Status">
+            <aqlMapping selectField="Project.Alert"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="Project.Status"/>
+        </field>
+        <field name="OnTimeOrLate">
+            <aqlMapping selectField="CASE Sign((CASE Project.ProjectAddin.Plan.EndDate WHEN NULL THEN currenttimestamp() ELSE Project.ProjectAddin.Plan.EndDate END) - (COALESCE(Project.ProjectAddin.Plan.CommittedDueDate, Project.ProjectAddin.Plan.DueDate))) WHEN 1 THEN 'Late' ELSE 'On Time' END"/>
+        </field>
+        <field name="DependsOnProject.ProjectId">
+            <aqlMapping selectField="DependsOnProject.InternalId"/>
+        </field>
+        <field name="Owner.UserId">
+            <aqlMapping selectField="ProjectOwner.UniqueName"/>
+        </field>
+        <field name="Owner.PasswordAdapter">
+            <aqlMapping selectField="ProjectOwner.PasswordAdapter"/>
+        </field>
+        <field name="BeginDate">
+            <aqlMapping selectField="Project.BeginDate"/>
+        </field>
+        <field name="DueDate">
+            <aqlMapping selectField="COALESCE(Project.ProjectAddin.Plan.CommittedDueDate, Project.ProjectAddin.Plan.DueDate)"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="Project.ProjectAddin.Plan.EndDate"/>
+        </field>
+        <field name="Duration">
+            <aqlMapping selectField="CASE Project.ProjectAddin.Plan.EndDate - Project.BeginDate WHEN NULL THEN 0 ELSE Project.ProjectAddin.Plan.EndDate - Project.BeginDate END"/>
+        </field>
+        <field name="Process.BaseProcessId">
+            <aqlMapping selectField="CASE Project.ProjectAddin.ProcessLocation.Level3 WHEN NULL THEN CASE Project.ProjectAddin.ProcessLocation.Level2 WHEN NULL THEN Project.ProjectAddin.ProcessLocation.Level1 ELSE Project.ProjectAddin.ProcessLocation.Level2 END ELSE Project.ProjectAddin.ProcessLocation.Level3 END"/>
+        </field>
+        <field name="IsTestProject">
+            <aqlMapping selectField="Project.IsTest"/>
+        </field>
+        <field name="ProcessStatus">
+            <aqlMapping selectField="Project.ProcessStatus"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMProject" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause="(Project.LastModified &gt;= :IncrementalStartDate AND
+                                               Project.LastModified &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+</inDataLoad>
+<!--
+We don't add the Project.NextVersion is Null clause since it might help to get rid of wrong data
+-->
+    <dataLoad name="ACMProjectDelete">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.core.Workspace AS Project INCLUDE INACTIVE
+                                  JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin INCLUDE INACTIVE USING Project.ProjectAddin"
+                whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                                AND Project.ProjectAddin.ProjectTemplate IS NOT NULL
+                                AND (Project.Active = false
+                                OR Project.NextVersion IS NOT NULL)"
+                incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                    Project.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.Project"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ProjectId">
+                <aqlMapping selectField="Project.InternalId"
+                    sourceLookupField="InternalId"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="ACMSourcingProjectDelete" extendsLoad="ACMProjectDelete">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.sourcing.rfx.SourcingProject AS Project INCLUDE INACTIVE
+                                            JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin INCLUDE INACTIVE USING Project.ProjectAddin,
+                                            ariba.sourcing.rfx.EventType AS EventType"
+                appendToWhereClause="AND Project.EventType = EventType.UniqueName"/>
+            <inAnalysisStage destinationName="ariba.analytics.fact.SourcingProject"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="ACMSPMProjectDelete" extendsLoad="ACMProjectDelete">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.sourcing.content.SPMProject AS Project INCLUDE INACTIVE
+                                           JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin INCLUDE INACTIVE USING Project.ProjectAddin"/>
+            <inAnalysisStage destinationName="ariba.analytics.fact.SPMProject"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <inDataLoad name="ACMProjectDelete" version="1.0,1.1" disableLoad="true"/>
+
+    <inDataLoad name="ACMSourcingProjectDelete" version="1.0,1.1" disableLoad="true"/>
+
+    <inDataLoad name="ACMSPMProjectDelete" version="1.0,1.1" disableLoad="true"/>
+
+<!--
+    This query extends ACMProject to get specialized fields and information for
+    SourcingProjects.
+
+    NOTE: There is another load ("ACMProjectStorageExt" - in ACMLoadStorageExtLoad.xml)
+    that updates the rows loaded here with storage fields. When you update this query
+    (mainly where-clause), make sure you'll update that load as well.
+-->
+<derivedDataLoad name="ACMSourcingProject" extendsLoad="ACMProject">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.rfx.SourcingProject AS Project
+                                       JOIN ariba.user.core.User AS ProjectOwner INCLUDE INACTIVE USING Project.Owner
+                                       JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin INCLUDE INACTIVE USING Project.ProjectAddin
+                                       LEFT OUTER JOIN ariba.collaborate.core.Workspace AS DependsOnProject USING ProjectAddin.FollowOnFrom
+                                       LEFT OUTER JOIN ariba.basic.core.Money as BaselineSpend USING Project.BaselineSpend
+                                       LEFT OUTER JOIN ariba.basic.core.Currency as BaselineSpendCurrency INCLUDE INACTIVE USING BaselineSpend.Currency
+                                       LEFT OUTER JOIN ariba.basic.core.Money as ActualSaving USING Project.ActualSaving
+                                       LEFT OUTER JOIN ariba.basic.core.Currency as ActualSavingCurrency INCLUDE INACTIVE USING ActualSaving.Currency,
+                                       ariba.sourcing.rfx.EventType AS EventType"
+                    appendToWhereClause="AND Project.EventType = EventType.UniqueName"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SourcingProject"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="ContractMonths">
+            <aqlMapping selectField="CASE Project.ContractMonths WHEN NULL THEN 0 ELSE Project.ContractMonths END"/>
+        </field>
+        <field name="TargetSavingsPct">
+            <aqlMapping selectField="CASE Project.TargetSavingPct WHEN NULL THEN 0 ELSE Project.TargetSavingPct END"/>
+        </field>
+        <field name="BaselineSpend.Amount">
+            <aqlMapping selectField="CASE Project.BaselineSpend.Amount WHEN NULL THEN 0.0 ELSE Project.BaselineSpend.Amount END"/>
+        </field>
+        <field name="BaselineSpend.Currency">
+            <aqlMapping selectField="BaselineSpendCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BaselineSpend.Date">
+            <aqlMapping selectField="Project.BaselineSpend.ConversionDate"/>
+        </field>
+        <field name="ActualSaving.Amount">
+            <aqlMapping selectField="CASE Project.ActualSaving.Amount WHEN NULL THEN 0.0 ELSE Project.ActualSaving.Amount END"/>
+        </field>
+        <field name="ActualSaving.Currency">
+            <aqlMapping selectField="ActualSavingCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ActualSaving.Date">
+            <aqlMapping selectField="Project.ActualSaving.ConversionDate"/>
+        </field>
+        <field name="EventType.EventType">
+            <aqlMapping selectField="EventType.UniqueName"/>
+        </field>
+        <field name="ContractEffectiveDate">
+            <aqlMapping selectField="Project.ContractEffectiveDate"/>
+        </field>
+        <field name="ResultsDescription">
+            <aqlMapping selectField="Project.ResultsDescription"/>
+        </field>
+        <field name="AwardJustification">
+            <aqlMapping selectField="Project.AwardJustification"/>
+        </field>
+        <field name="PlannedStartDate">
+            <aqlMapping selectField="Project.PlannedStartDate"/>
+        </field>
+        <field name="PlannedEndDate">
+            <aqlMapping selectField="Project.PlannedEndDate"/>
+        </field>
+        <field name="SourcingMechanism">
+            <aqlMapping selectField="Project.SourcingMechanism"/>
+        </field>
+        <field name="ProjectReason">
+            <aqlMapping selectField="Project.ProjectReason"/>
+        </field>
+        <field name="ExecutionStrategy">
+            <aqlMapping selectField="Project.ExecutionStrategy"/>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<!--
+    This query extends ACMProject to get specialized fields and information for
+    SPMProjects.
+
+    NOTE: There is another load ("ACMProjectStorageExt" - in ACMLoadStorageExtLoad.xml)
+    that updates the rows loaded here with storage fields. When you update this query
+    (mainly where-clause), make sure you'll update that load as well.
+-->
+<derivedDataLoad name="ACMSPMProject" extendsLoad="ACMProject">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.content.SPMProject AS Project
+                                       JOIN ariba.user.core.User AS ProjectOwner INCLUDE INACTIVE USING Project.Owner
+                                       JOIN ariba.user.core.Organization AS Supplier INCLUDE INACTIVE USING Project.Supplier
+                                       JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin INCLUDE INACTIVE USING Project.ProjectAddin
+                                       LEFT OUTER JOIN ariba.collaborate.core.Workspace AS DependsOnProject USING ProjectAddin.FollowOnFrom"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SPMProject"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.SystemID"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<!--
+    This query provides basic Id and Name mapping info for Suppliers.
+-->
+<dataLoad name="ACMSupplier">
+    <loadStages>
+        <aqlStage fromClause="ariba.user.core.Organization AS Supplier
+                              LEFT OUTER JOIN ariba.basic.core.Address INCLUDE INACTIVE USING Supplier.CorporateAddress
+                              LEFT OUTER JOIN ariba.basic.core.PostalAddress INCLUDE INACTIVE USING Address.PostalAddress
+                              LEFT OUTER JOIN ariba.basic.core.Country INCLUDE INACTIVE USING PostalAddress.Country"
+                  whereClause="Supplier.IsSupplier = true"
+                  incrementalClause="(:IncrementalStartDate &lt;= Supplier.TimeUpdated AND
+                                      Supplier.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Supplier"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SupplierId">
+            <aqlMapping selectField="Supplier.SystemID"
+                        sourceLookupField="SystemID"/>
+        </field>
+        <field name="SupplierName">
+            <aqlMapping selectField="Supplier.Name"/>
+        </field>
+        <field name="SupplierLocationId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="OrganizationType">
+            <aqlMapping selectField="Supplier.OrganizationType"/>
+        </field>
+        <field name="CommonSupplierId">
+            <aqlMapping selectField="Supplier.SystemID"/>
+        </field>
+        <field name="CommonSupplierName">
+            <aqlMapping selectField="Supplier.Name"/>
+        </field>
+        <field name="StreetAddress">
+            <aqlMapping selectField="PostalAddress.Lines"/>
+        </field>
+        <field name="City">
+            <aqlMapping selectField="PostalAddress.City"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="PostalAddress.State"/>
+        </field>
+        <field name="PostalCode">
+            <aqlMapping selectField="PostalAddress.PostalCode"/>
+        </field>
+        <field name="Country">
+            <aqlMapping selectField="Country.UniqueName"/>
+        </field>
+        <field name="NumberOfEmployees">
+            <aqlMapping selectField="Supplier.NumberOfEmployees"/>
+        </field>
+        <field name="YearFounded">
+            <aqlMapping selectField="Supplier.YearFounded"/>
+        </field>
+        <field name="MinorityOwned">
+            <aqlMapping selectField="Supplier.MinorityOwned"/>
+        </field>
+        <field name="WomanOwned">
+            <aqlMapping selectField="Supplier.WomanOwned"/>
+        </field>
+        <field name="VeteranOwned">
+            <aqlMapping selectField="Supplier.VeteranOwned"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMSupplier" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query provides basic Id, Name, and hierarchy info for Regions.
+-->
+<dataLoad name="ACMRegion">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.basic.Region INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.collaborate.basic.Region AS ParentRegion INCLUDE INACTIVE USING Region.Parent"
+                  incrementalClause="(:IncrementalStartDate &lt;= Region.TimeUpdated AND
+                                      Region.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Region"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="RegionId">
+            <aqlMapping selectField="Region.Region"
+                        sourceLookupField="Region"/>
+        </field>
+        <field name="RegionName">
+            <aqlMapping selectField="Region.Description"/>
+        </field>
+        <field name="ParentRegionId">
+            <aqlMapping selectField="CASE ParentRegion.Region WHEN NULL THEN Region.Region ELSE CASE ParentRegion.Description WHEN 'All' THEN Region.Region ELSE ParentRegion.Region END END"/>
+        </field>
+        <field name="AnalysisActive">
+            <aqlMapping selectField="Region.&quot;Active&quot;"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMRegion" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query provides basic Id, Name, and hierarchy info for Departments.
+-->
+<dataLoad name="ACMOrganization">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.basic.Department INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.collaborate.basic.Department AS ParentDept INCLUDE INACTIVE USING Department.Parent"
+                  incrementalClause="(:IncrementalStartDate &lt;= Department.TimeUpdated AND
+                                      Department.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Organization"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="OrganizationId">
+            <aqlMapping selectField="Department.DepartmentID"
+                        sourceLookupField="DepartmentID"/>
+        </field>
+        <field name="OrganizationName">
+            <aqlMapping selectField="Department.Description"/>
+        </field>
+        <field name="ParentOrgId">
+            <aqlMapping selectField="CASE ParentDept.DepartmentID WHEN NULL THEN Department.DepartmentID ELSE CASE ParentDept.Description WHEN 'All' THEN Department.DepartmentID ELSE ParentDept.DepartmentID END END"/>
+        </field>
+        <field name="AnalysisActive">
+            <aqlMapping selectField="Department.&quot;Active&quot;"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMOrganization" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+
+
+<!--
+    This query provides the mapping between projects and regions by Ids.  There will be a single
+    record with a null Region for a project if the project has no Regions selected.
+    Requires ProjectTemplate is not null to exclude inconsistent projects that are
+    excluded in the ACMProjectDimension view.
+-->
+<dataLoad name="ACMProjectRegion">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Workspace AS Project
+                              LEFT OUTER JOIN ariba.collaborate.basic.Region USING Project.Region"
+                  whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL AND Project.ProjectAddin.ProjectTemplate IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                      Project.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="Project.InternalId"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.Project"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="Region.RegionId">
+            <aqlMapping selectField="Region.Region"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMProjectRegion" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause="(Project.LastModified &gt;= :IncrementalStartDate AND
+                                               Project.LastModified &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query extends ACMProjectRegion to map only from SourcingProjects to their Region Ids.
+    It is a subset of ACMProjectRegion, worth doing because it is a data stream for analysis.
+-->
+<derivedDataLoad name="ACMSourcingProjectRegion" extendsLoad="ACMProjectRegion">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.rfx.SourcingProject AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Region USING Project.Region"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SourcingProject"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<!--
+    This query extends ACMProjectRegion to map only from SPMProjects to their Region Ids.
+    It is a subset of ACMProjectRegion, worth doing because it is a data stream for analysis.
+-->
+<derivedDataLoad name="ACMSPMProjectRegion" extendsLoad="ACMProjectRegion">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.content.SPMProject AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Region USING Project.Region"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SPMProject"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<!--
+    This query provides the mapping between projects and commodities by Ids.  There will
+    be a single record with a null Commodity for a project if the project has no
+    Commodities selected.
+    Requires ProjectTemplate is not null to exclude inconsistent projects that are
+    excluded in the ACMProjectDimension view.
+-->
+<dataLoad name="ACMProjectCommodity">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Workspace AS Project
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode USING Project.Commodity"
+                  whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL AND Project.ProjectAddin.ProjectTemplate IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                      Project.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="Project.InternalId"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.Project"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="SourceCommodityDomain">
+            <aqlMapping selectField="CommodityCode.Domain"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="CommodityCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMProjectCommodity" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause="(Project.LastModified &gt;= :IncrementalStartDate AND
+                                               Project.LastModified &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query extends ACMProjectCommodity to map only from SourcingProjects to their
+    Commodity Ids.
+    It is a subset of ACMProjectCommodity, worth doing because it is a data stream for analysis.
+-->
+<derivedDataLoad name="ACMSourcingProjectCommodity" extendsLoad="ACMProjectCommodity">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.rfx.SourcingProject AS Project
+                                       LEFT OUTER JOIN ariba.basic.core.CommodityCode USING Project.Commodity"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SourcingProject"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<!--
+    This query extends ACMProjectCommodity to map only from SPMProjects to their
+    Commodity Ids.
+    It is a subset of ACMProjectCommodity, worth doing because it is a data stream for analysis.
+-->
+<derivedDataLoad name="ACMSPMProjectCommodity" extendsLoad="ACMProjectCommodity">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.content.SPMProject AS Project
+                                       LEFT OUTER JOIN ariba.basic.core.CommodityCode USING Project.Commodity"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SPMProject"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<!--
+    This query provides the mapping between projects and Departments by Ids.  There will
+    be a single record with a null Organization for a project if the project has no
+    Departments selected.
+    Requires ProjectTemplate is not null to exclude inconsistent projects that are
+    excluded in the ACMProjectDimension view.
+-->
+<dataLoad name="ACMProjectOrganization">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Workspace AS Project
+                              LEFT OUTER JOIN ariba.collaborate.basic.Department USING Project.Client"
+                  whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL AND Project.ProjectAddin.ProjectTemplate IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                      Project.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="Project.InternalId"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.Project"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="Organization.OrganizationId">
+            <aqlMapping selectField="Department.DepartmentID"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMProjectOrganization" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause="(Project.LastModified &gt;= :IncrementalStartDate AND
+                                               Project.LastModified &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query extends ACMProjectOrganization to map only from SourcingProjects to their
+    Department Ids.
+    It is a subset of ACMProjectOrganization, worth doing because it is a data stream for analysis.
+-->
+<derivedDataLoad name="ACMSourcingProjectOrganization" extendsLoad="ACMProjectOrganization">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.rfx.SourcingProject AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Department USING Project.Client"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SourcingProject"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<!--
+    This query extends ACMProjectOrganization to map only from SPMProjects to their
+    Department Ids.
+    It is a subset of ACMProjectOrganization, worth doing because it is a data stream for analysis.
+-->
+<derivedDataLoad name="ACMSPMProjectOrganization" extendsLoad="ACMProjectOrganization">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.sourcing.content.SPMProject AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Department USING Project.Client"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SPMProject"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<!--
+    This query returns PlanItems which are in the latest published version of a template,
+    or that have been created as ad-hoc plan items in real projects.
+    It properly excludes the hidden root Plan item for each project since it will have a
+    null ParentPlan field.
+    Requires ProjectTemplate is not null to exclude inconsistent projects that are
+    excluded in the ACMProjectDimension view, for ad-hoc plan items.
+
+    Currently InTemplate projects always have Status 'Not Created', so they will always be
+    excluded by this query - An InTemplate project within a template is always a
+    placeholder for a project that will be created from another top level template after
+    the user has created a real project from the template containing the InTemplate
+    subproject.  An example would be a Contract project within a Sourcing template.  We
+    will find the PlanItems in the top level template that the user will select when
+    creating the real subproject that results from the InTemplate project.  A Not Created
+    InTemplate project has a root plan with no contents. 2003.11.06.
+-->
+<dataLoad name="ACMProcess">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.PlanItem
+                                JOIN ariba.collaborate.core.Plan AS ParentPlan USING PlanItem.ParentPlan
+                                  JOIN ariba.collaborate.core.Workspace AS Project USING ParentPlan.Workspace"
+                  whereClause="((Project.WorkspaceType IN ('Template','InTemplate')
+                                 AND Project.Status IN ('Active', 'InActive'))
+                                OR (Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                                    AND Project.ProjectAddin.ProjectTemplate IS NOT NULL
+                                    AND Project.NextVersion IS NULL
+                                    AND PlanItem.TemplateObject IS NULL))"
+                  incrementalClause="(:IncrementalStartDate &lt;= PlanItem.TimeUpdated AND
+                                      PlanItem.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Process"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="BaseProcessId">
+            <aqlMapping selectField="PlanItem.ProcessId"/>
+        </field>
+        <field name="BaseProcessName">
+            <aqlMapping selectField="PlanItem.Title"/>
+        </field>
+        <field name="ParentProcessId">
+            <aqlMapping selectField="CASE PlanItem.ParentPlan.ParentPlan WHEN NULL THEN PlanItem.ProcessId ELSE PlanItem.ParentPlan.ProcessId END"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMProcess" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+
+    This task generates a record for each real project task constructed from a template,
+    and each real project task that is ad-hoc.  It provides the TaskId, TaskName, and
+    ProcessId for each task, and maps them to a "TemplateTaskName" field that is the
+    Title of the corresponding template task in the latest published version of the
+    template for tasks constructed from a template, and is the Title of the actual task
+    for ad-hoc tasks.
+    Task.Status is 'Template' for the prototype task from which recurring tasks are
+    generated, and these are not considered "real" tasks for analysis.
+
+    Interesting use case from customer that resulted in revising the ACMProjectTaskName
+    query: they create an ad-hoc approval task in a project (where TemplateObject is
+    null), and then after the approval cycle is completed/cancelled/withdrawn, they
+    resubmit the ad-hoc approval.  The TemplateObject for both will be null, and the copy
+    gives them both the same processId.  Since in ACM1.1 the Obsoleted task has its title
+    changed to "Obsoleted..." we would get into trouble if we ever used the obsoleted task
+    to get the TemplateTaskName, since we could end up returning two different
+    TemplateTaskName values for the same ProcessId.
+    We check that TemplateTask.ObsoletedBy IS NULL to make sure we will not match
+    an obsolete template task.
+    The ObsoletedBy field was on DocumentTask rather than Task before Core.aml#686 on 2004.02.12,
+    and the ProjectTaskNamePull continued to do a costly OUTER JOIN with DocumentTask
+    to check ObsoletedBy until we belatedly noticed it around 2007.12.10.
+    Checking the field directly on Task is a lot faster.
+
+    Fix 1-4UC95L: We used to match the project task with the corresponding template task
+    in the most recently published version of the project's template (Template.Status IN
+    ('Active', 'InActive')), but that would cause the row to be omitted when the task had
+    been removed from the latest published version of the template, and if the name for
+    the task in the template had changed before it was deleted, this could result in
+    analysis having records with two or more template task names for the same ProcessId,
+    and the old ones weren't getting updated since the rows were omitted after the deletion.
+    Now we match the project task with the corresponding template task in the most
+    recently published version of the project's template that actually contains the task,
+    so we will always return the row, and will always have the most recent template task
+    name, for all tasks that have ever been pulled to analysis with that ProcessId.
+
+    Fix 1-8OSRQX : To get the most recent template task name, we used to have a subquery
+    to find the max TimeCreated for matching tasks in versions of the template,
+    and then select the single version of the template that has exactly
+    the max TimeCreated.
+    This query was causing performance issue, now instead of finding the most recent
+    corresponding template task for each project task, we first generate the list
+    of the last published version of all template tasks. We do this using an independant
+    inner query which would be executed once and only once, the "bet" in this case is that
+    we have much less template tasks then project tasks.
+    Then for each project task we check that the corresponding template task is in this list
+    of last published versions. O(n*m) > O(n)+O(p*q).
+
+    Note : This fix also adds some useful constaints using TemplateObject and TemplateItemAddin fields
+    which help narrowing the query to only get Template tasks.
+    Fix 1-9AXQDZ : Due to some OOTB template tasks not having an TemplateItemAddin, that
+    constraint was removed from the load.  It seems those checks are redundant since
+    checking if the WorkspaceType was 'Template' or 'InTemplate' already ensures
+    the tasks are from a template.
+
+    The ww.Status != 'Draft' check prevents us from returning a name
+    from a draft template that hasn't been published yet; the template Status can be
+    Active, InActive, or Archived.
+
+    Fix 1-9TUI56: Analytics were having dimension validation errors caused by two different
+    template task names with the same ProcessId. This occured when a new version of a
+    template workspace was created and the template task was renamed.  However, the template
+    workspace was not published directly afterwards.  So when an ACMProjectTaskName pull
+    occurred, it used the template task from the last published template workspace. But once
+    the template workspace was published, the TimeUpdated on the template task had already
+    missed the incremental pull timeframe.  The fix is to change the incremental condition to
+    look at the template workspace's TimeUpdated instead of the TemplateTask's TimeUpdated.
+    The template workspace's TimeUpdated will always be later than the TemplateTask's TimeUpdated
+    and once the template workspace is published, the TemplateTask can't be modified by the user.
+
+    Note: If there is old data from previous data loads where the dimension lookup keys
+    have changed, then those lookup key fields need to be updated.
+
+    Sample of what the old data might look like:
+
+    TaskId  ProcessId   TemplateTask.Title
+    123     1           ABC
+    1234    1           ABCD
+    123     1           ABCD
+
+    We need to update the 123 ABC combination to be 123 ABCD in order for the data
+    load to work. In order to do this, we need to include archived and inactive data
+    so that they can be updated by the data load.
+
+    Fix 1-AYAD3B:
+    PROBLEM: This task takes too long and often gets timeout if there are a lot of rows to be pulled.
+    Especially for the migration customers, a full load of this task is required and results in
+    migration failure if this load is timed out and failed after 4 hours.
+    It turned out that if the inner query that gets the latest template task names is running with
+    the outer query that gets project task names, it takes forever and eventually gets
+    'AQL Execution Error: SQL Error ORA-01652: unable to extend temp segment by 128 in tablespace TEMP'.
+    But if each query runs separately, it only takes a couple minites.
+
+    FIX: Separate the inner query from the outer query and make it run as a separate task.
+    Also, Separate a task of pulling adhoc project task names from the query.
+
+    There are 3 different tasks defined in ACMLoads.xml.
+    1. ACMProjectTaskName: Pull unique sets of Task InternalId, ProcessId, and Title that were created from
+    the templates within the incremental time periods into the dimention table first.
+
+    2. ACMTemplateTaskName: Pull the latest template task names within the incremental time periods
+     and set the template task names to the Project Task rows pulled from ACMProjectTaskName
+     by looking up ProcessId.
+
+    3. ACMProjectAdhocTaskName: Pull unique sets of Task InternalId, ProcessId, Title, and Template Title
+     of adhoc project tasks within the incremental time periods into the dimention table.     
+-->
+<dataLoad name="ACMProjectTaskName">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Task AS Task INCLUDE INACTIVE
+                                JOIN ariba.collaborate.core.Plan AS ParentPlan INCLUDE INACTIVE USING Task.ParentPlan
+                                  JOIN ariba.collaborate.core.Workspace AS Project INCLUDE INACTIVE USING ParentPlan.Workspace,
+                              ariba.collaborate.core.Task AS TemplateTask INCLUDE INACTIVE
+                                JOIN ariba.collaborate.core.Plan AS TemplatePlan INCLUDE INACTIVE USING TemplateTask.ParentPlan
+                                  JOIN ariba.collaborate.core.Workspace AS Template INCLUDE INACTIVE USING TemplatePlan.Workspace"
+                  whereClause="Task.Status != 'Template' AND
+                               Project.WorkspaceType = '' AND
+                               Project.Status != 'Not Created' AND
+                               Project.NextVersion IS NULL AND
+                               Project.ProjectAddin.ProjectTemplate IS NOT NULL AND
+                               Task.ProcessId = TemplateTask.ProcessId AND
+                               Task.PartitionNumber = TemplateTask.PartitionNumber AND
+                               (
+                                   Task.TemplateObject IS NOT NULL AND
+                                   Template.WorkspaceType IN ('Template','InTemplate') AND
+                                   TemplateTask.TemplateObject IS NULL
+                               )"
+                  incrementalClause="(:IncrementalStartDate &lt;= Task.TimeUpdated AND
+                                      Task.TimeUpdated &lt; :IncrementalEndDate) OR
+                                      (:IncrementalStartDate &lt;= Template.TimeUpdated AND
+                                      Template.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"
+                  orderByClause="Task.InternalId"
+                  optimizerMode="ALL_ROWS"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ProjectTaskName"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="TaskId">
+            <aqlMapping selectField="Task.InternalId"/>
+        </field>
+        <field name="TaskName">
+            <aqlMapping selectField="Task.Title"/>
+        </field>
+        <field name="ProcessId">
+            <aqlMapping selectField="Task.ProcessId"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMTemplateTaskName">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Task AS TemplateTask
+                                JOIN ariba.collaborate.core.Plan AS TemplatePlan using TemplateTask.ParentPlan
+                                  JOIN ariba.collaborate.core.Workspace AS Template using TemplatePlan.Workspace,
+                                  ariba.collaborate.core.Task AS Task"
+                  whereClause="(
+                                   Task.TemplateObject IS NOT NULL AND
+                                   Task.ProcessId = TemplateTask.ProcessId AND
+                                   Task.PartitionNumber = TemplateTask.PartitionNumber
+                               )
+                               AND Template.ProjectAddin.WorkspaceType IN ('Template','InTemplate')
+                               AND Template.Status != 'Draft'
+                               AND TemplateTask.TemplateObject IS NULL
+                               AND TemplateTask.TimeCreated = (
+                                   SELECT max(TemplateTask2.TimeCreated)
+                                          FROM ariba.collaborate.core.Task AS TemplateTask2
+                                               JOIN ariba.collaborate.core.Plan AS TemplatePlan2 using TemplateTask2.ParentPlan
+                                               JOIN ariba.collaborate.core.Workspace AS Template2 using TemplatePlan2.Workspace
+                                          WHERE TemplateTask2.PartitionNumber = TemplateTask.PartitionNumber AND
+                                                TemplateTask2.TemplateObject IS NULL AND
+                                                TemplateTask2.ProcessId = TemplateTask.ProcessId AND
+                                                Template2.ProjectAddin.WorkspaceType IN ('Template','InTemplate') AND
+                                                Template2.Status != 'Draft')"
+                  incrementalClause="(:IncrementalStartDate &lt;= Task.TimeUpdated AND
+                                      Task.TimeUpdated &lt; :IncrementalEndDate) OR
+                                      (:IncrementalStartDate &lt;= Template.TimeUpdated AND
+                                      Template.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"/>
+            <interfaceSqlStage
+                  fromClause=":InterfaceTable JOIN DIM_PROJECT_TASK_NAME PTN
+                                              ON :InterfaceTable.ProcessId = PTN.PROCESS_ID
+                                              AND :InterfaceTable.PartitionNumber = PTN.ANNONE_PARTITIONNUMBER"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ProjectTaskName"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="TaskId">
+            <interfaceSqlMapping selectColumn="PTN.TASK_ID"/>
+        </field>
+        <field name="ProcessId">
+            <aqlMapping selectField="TemplateTask.ProcessId"/>
+        </field>
+        <field name="TemplateTaskName">
+            <aqlMapping selectField="TemplateTask.Title"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMProjectAdhocTaskName">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Task AS Task INCLUDE INACTIVE
+                                JOIN ariba.collaborate.core.Plan AS ParentPlan INCLUDE INACTIVE USING Task.ParentPlan
+                                  JOIN ariba.collaborate.core.Workspace AS Project INCLUDE INACTIVE USING ParentPlan.Workspace,
+                              ariba.collaborate.core.Task AS TemplateTask INCLUDE INACTIVE
+                                JOIN ariba.collaborate.core.Plan AS TemplatePlan INCLUDE INACTIVE USING TemplateTask.ParentPlan
+                                  JOIN ariba.collaborate.core.Workspace AS Template INCLUDE INACTIVE USING TemplatePlan.Workspace"
+                  whereClause="Task.Status != 'Template' AND
+                               Project.WorkspaceType = '' AND
+                               Project.Status != 'Not Created' AND
+                               Project.NextVersion IS NULL AND
+                               Project.ProjectAddin.ProjectTemplate IS NOT NULL AND
+                               Task.ProcessId = TemplateTask.ProcessId AND
+                               Task.PartitionNumber = TemplateTask.PartitionNumber AND
+                               (
+                                   Project = Template AND
+                                   Task.TemplateObject IS NULL AND
+                                   TemplateTask.TemplateObject IS NULL AND
+                                   TemplateTask.ObsoletedBy IS NULL
+                               )"
+                  incrementalClause="(:IncrementalStartDate &lt;= Task.TimeUpdated AND
+                                      Task.TimeUpdated &lt; :IncrementalEndDate) OR
+                                      (:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                      Project.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"
+                  orderByClause="Task.InternalId,TemplateTask.TimeUpdated"
+                  optimizerMode="ALL_ROWS"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ProjectTaskName"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="TaskId">
+            <aqlMapping selectField="Task.InternalId"/>
+        </field>
+        <field name="TaskName">
+            <aqlMapping selectField="Task.Title"/>
+        </field>
+        <field name="ProcessId">
+            <aqlMapping selectField="Task.ProcessId"/>
+        </field>
+        <field name="TemplateTaskName">
+            <aqlMapping selectField="TemplateTask.Title"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMProjectTaskName" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+<inDataLoad name="ACMTemplateTaskName" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+<inDataLoad name="ACMProjectAdhocTaskName" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query returns information about real Tasks in real projects, joining task fields
+    with useful project and owner fields.
+    Task.Status is 'Template' for the prototype task from which recurring tasks are
+    generated, and these are not considered "real" tasks for analysis.
+-->
+<dataLoad name="ACMProjectTask">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.Task AS Task
+                              JOIN ariba.collaborate.core.Plan AS ParentPlan USING Task.ParentPlan
+                              JOIN ariba.collaborate.core.Workspace AS Project USING ParentPlan.Workspace
+                              JOIN ariba.user.core.User AS ProjectOwner INCLUDE INACTIVE USING Project.Owner"
+                  whereClause="Task.Status NOT IN ('Template') AND
+                               Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL
+                               AND Project.ProjectAddin.ProjectTemplate IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Task.TimeUpdated AND
+                                      Task.TimeUpdated &lt; :IncrementalEndDate)"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.ProjectTask"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="TaskId">
+            <aqlMapping selectField="Task.InternalId"
+                        sourceLookupField="InternalId"/>
+        </field>
+        <field name="TaskName.TaskId">
+            <aqlMapping selectField="Task.InternalId"/>
+        </field>
+        <field name="Description">
+            <aqlMapping selectField="Task.Description"/>
+        </field>
+        <field name="BeginDate">
+            <aqlMapping selectField="Task.BeginDate"/>
+        </field>
+        <field name="DueDate">
+            <aqlMapping selectField="COALESCE(Task.CommittedDueDate, Task.DueDate)"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="Task.EndDate"/>
+        </field>
+        <field name="Duration">
+            <aqlMapping selectField="CASE Task.EndDate - Task.BeginDate WHEN NULL THEN 0 ELSE Task.EndDate - Task.BeginDate END"/>
+        </field>
+        <field name="Status">
+            <aqlMapping selectField="Task.Status"/>
+        </field>
+        <field name="OnTimeOrLate">
+            <aqlMapping selectField="CASE Sign((CASE Task.EndDate WHEN NULL THEN currenttimestamp() ELSE Task.EndDate END) - (COALESCE(Task.CommittedDueDate, Task.DueDate))) WHEN 1 THEN 'Late' ELSE 'On Time' END"/>
+        </field>
+        <field name="TaskType">
+            <aqlMapping selectField="Task.Type"/>
+        </field>
+        <field name="RequiredOrOptional">
+            <aqlMapping selectField="Task.Required"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="true"/>
+                            <entry value="false"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Required"/>
+                            <entry value="Optional"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Project.ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="ProjectOwner.UserId">
+            <aqlMapping selectField="ProjectOwner.UniqueName"/>
+        </field>
+        <field name="ProjectOwner.PasswordAdapter">
+            <aqlMapping selectField="ProjectOwner.PasswordAdapter"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+<!--
+We don't add the Project.NextVersion is Null clause since it might help to get rid of wrong data
+-->
+    <dataLoad name="ACMProjectTaskDelete">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.core.Task AS Task INCLUDE INACTIVE
+                                  JOIN ariba.collaborate.core.Plan AS ParentPlan INCLUDE INACTIVE USING Task.ParentPlan
+                                  JOIN ariba.collaborate.core.Workspace AS Project INCLUDE INACTIVE USING ParentPlan.Workspace"
+                whereClause="Task.Status NOT IN ('Template') AND
+                             Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                             AND Project.ProjectAddin.ProjectTemplate IS NOT NULL
+                             AND Task.Active = false"
+                incrementalClause="(:IncrementalStartDate &lt;= Task.TimeUpdated AND
+                                    Task.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ProjectTask"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="TaskId">
+                <aqlMapping selectField="Task.InternalId"
+                    sourceLookupField="InternalId"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <inDataLoad name="ACMProjectTaskDelete" version="1.0, 1.1" disableLoad="true"/>
+
+<inDataLoad name="ACMProjectTask" version="1.0,1.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause="(Task.LastModified &gt;= :IncrementalStartDate AND
+                                               Task.LastModified &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+</inDataLoad>
+
+<!--
+    This query returns all the Sourcing Event Types.
+-->
+<dataLoad name="ACMSourcingEventType">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.EventType AS EventType"
+                  whereClause="EventType.Enabled = true"
+                  incrementalClause="(:IncrementalStartDate &lt;= EventType.TimeUpdated AND
+                                      EventType.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.EventType"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="EventType">
+            <aqlMapping selectField="EventType.UniqueName"/>
+        </field>
+        <field name="EventTypeName">
+            <aqlMapping selectField="EventType.Name"/>
+        </field>
+        <field name="SystemType">
+            <aqlMapping selectField="EventType.SystemType"/>
+        </field>
+        <field name="Domain">
+            <aqlMapping selectField="EventType.Domain"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSavingsFormDimension">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsForm AS Savings
+                              JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject USING Savings.ParentWorkspace"
+           whereClause="SourcingProject.WorkspaceType != 'Template' AND SourcingProject.Status != 'Not Created'
+                               AND Savings.NextVersion IS NULL
+                               AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND Savings.Status = 'Complete'"
+            incrementalClause="Savings.TimeUpdated &gt;= :IncrementalStartDate AND
+                               Savings.TimeUpdated &lt;= :IncrementalEndDate"/>
+    <analysisStage destinationName="ariba.analytics.dimension.SavingsFormInfo"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsFormId">
+            <aqlMapping selectField="Savings.InternalId"/>
+        </field>
+        <field name="SavingsFormTitle">
+            <aqlMapping selectField="Savings.Title"/>
+        </field>
+        <field name="VersionNumber">
+            <aqlMapping selectField="Savings.DocumentVersion"/>
+        </field>
+        <field name="IsLastVersion">
+            <aqlMapping selectField="CASE Savings.NextVersion WHEN NULL THEN TRUE ELSE FALSE END"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSourcingSavingsTracking">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsForm AS Savings
+                                JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject USING Savings.ParentWorkspace
+                                JOIN ariba.user.core.User AS ProjectOwner INCLUDE INACTIVE USING SourcingProject.Owner
+                                JOIN ariba.basic.core.Currency as ProjectCurrency INCLUDE INACTIVE USING SourcingProject.Currency
+                                LEFT OUTER JOIN ariba.basic.core.Money as BaselineSpend USING Savings.BaselineSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as EstimatedSpend USING Savings.EstimatedSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as EstimatedSaving USING Savings.EstimatedSaving
+                                LEFT OUTER JOIN ariba.basic.core.Money as TargetSaving USING Savings.TargetSaving
+                                LEFT OUTER JOIN ariba.basic.core.Money as AverageInitialBidTotal USING Savings.AverageInitialBidTotal
+                                LEFT OUTER JOIN ariba.basic.core.Money as LowestInitialBidTotal USING Savings.LowestInitialBidTotal
+                                LEFT OUTER JOIN ariba.basic.core.Money as LeadBidTotal USING Savings.LeadBidTotal
+                                LEFT OUTER JOIN ariba.basic.core.Money as NegotiatedSpend USING Savings.NegotiatedSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as NegotiatedSaving USING Savings.NegotiatedSaving
+                                LEFT OUTER JOIN ariba.basic.core.Money as ImplementedSpend USING Savings.ImplementedSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as ImplementedSaving USING Savings.ImplementedSaving
+                                LEFT OUTER JOIN ariba.basic.core.Money as ActualSpend USING Savings.ActualSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as ActualSaving USING Savings.ActualSaving"
+                  whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                               AND Savings.NextVersion IS NULL
+                               AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND Savings.Status = 'Complete'"
+                incrementalClause="(Savings.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    Savings.TimeUpdated &lt; :IncrementalEndDate) OR
+                                   (SourcingProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    SourcingProject.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Title">
+            <aqlMapping selectField="Savings.Title"/>
+        </field>
+        <field name="Description">
+            <aqlMapping selectField="Savings.Description"/>
+        </field>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <aqlMapping selectField="Savings.InternalId" sourceLookupField="InternalId"/>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+                <aqlMapping selectField="Savings.DocumentVersion"/>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="ProjectDescription">
+            <aqlMapping selectField="SourcingProject.Description"/>
+        </field>
+        <field name="Status">
+            <aqlMapping selectField="SourcingProject.Alert"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="SourcingProject.Status"/>
+        </field>
+        <field name="BeginDate">
+            <aqlMapping selectField="COALESCE(SourcingProject.BeginDate, SourcingProject.PlannedStartDate)"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="COALESCE(SourcingProject.ProjectAddin.Plan.EndDate, SourcingProject.PlannedEndDate)"/>
+        </field>
+        <field name="PlannedStartDate">
+            <aqlMapping selectField="SourcingProject.PlannedStartDate"/>
+        </field>
+        <field name="PlannedEndDate">
+            <aqlMapping selectField="SourcingProject.PlannedEndDate"/>
+        </field>
+        <field name="Owner.UserId">
+            <aqlMapping selectField="ProjectOwner.UniqueName"/>
+        </field>
+        <field name="Owner.PasswordAdapter">
+            <aqlMapping selectField="ProjectOwner.PasswordAdapter"/>
+        </field>
+        <field name="ContractNumber">
+            <aqlMapping selectField="Savings.ContractNumber"/>
+        </field>
+        <field name="ContractAwarded">
+            <aqlMapping selectField="Savings.ContractAwarded"/>
+        </field>
+        <field name="AwardToSmallDiverseSuppliers">
+            <aqlMapping selectField="Savings.AwardToSmallDiverseSuppliers"/>
+        </field>
+        <field name="SavingsStartDate">
+            <aqlMapping selectField="Savings.SavingsStartDate"/>
+        </field>
+        <field name="SavingsEndDate">
+            <aqlMapping selectField="Savings.SavingsEndDate"/>
+        </field>
+        <field name="ExecutionStrategy">
+            <aqlMapping selectField="Savings.ExecutionStrategy"/>
+        </field>
+        <field name="SourcingMechanism">
+            <aqlMapping selectField="Savings.SourcingMechanism"/>
+        </field>
+        <field name="ProjectReason">
+            <aqlMapping selectField="SourcingProject.ProjectReason"/>
+        </field>
+        <field name="SavingsType">
+            <aqlMapping selectField="Savings.SavingsType"/>
+        </field>
+        <field name="SpendType">
+            <aqlMapping selectField="Savings.SpendType"/>
+        </field>
+        <field name="BaselineSpend.Amount">
+            <aqlMapping selectField="CASE BaselineSpend.Amount WHEN NULL THEN 0.0 ELSE BaselineSpend.Amount END"/>
+        </field>
+        <field name="BaselineSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BaselineSpend.Date">
+            <aqlMapping selectField="BaselineSpend.ConversionDate"/>
+        </field>
+        <field name="EstimatedSpend.Amount">
+            <aqlMapping selectField="CASE EstimatedSpend.Amount WHEN NULL THEN 0.0 ELSE EstimatedSpend.Amount END"/>
+        </field>
+        <field name="EstimatedSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="EstimatedSpend.Date">
+            <aqlMapping selectField="EstimatedSpend.ConversionDate"/>
+        </field>
+        <field name="EstimatedSavings.Amount">
+            <aqlMapping selectField="CASE EstimatedSaving.Amount WHEN NULL THEN 0.0 ELSE EstimatedSaving.Amount END"/>
+        </field>
+        <field name="EstimatedSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="EstimatedSavings.Date">
+            <aqlMapping selectField="EstimatedSaving.ConversionDate"/>
+        </field>
+        <field name="EstimatedSavingsPct">
+            <aqlMapping selectField="CASE Savings.EstimatedSavingPct WHEN NULL THEN 0 ELSE Savings.EstimatedSavingPct END"/>
+        </field>
+        <field name="TargetSavings.Amount">
+            <aqlMapping selectField="CASE TargetSaving.Amount WHEN NULL THEN 0.0 ELSE TargetSaving.Amount END"/>
+        </field>
+        <field name="TargetSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="TargetSavings.Date">
+            <aqlMapping selectField="TargetSaving.ConversionDate"/>
+        </field>
+        <field name="TargetSavingsPct">
+            <aqlMapping selectField="CASE Savings.TargetSavingPct WHEN NULL THEN 0 ELSE Savings.TargetSavingPct END"/>
+        </field>
+        <field name="AverageInitialBidTotal.Amount">
+            <aqlMapping selectField="CASE AverageInitialBidTotal.Amount WHEN NULL THEN 0.0 ELSE AverageInitialBidTotal.Amount END"/>
+        </field>
+        <field name="AverageInitialBidTotal.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AverageInitialBidTotal.Date">
+            <aqlMapping selectField="AverageInitialBidTotal.ConversionDate"/>
+        </field>
+        <field name="LowestInitialBidTotal.Amount">
+            <aqlMapping selectField="CASE LowestInitialBidTotal.Amount WHEN NULL THEN 0.0 ELSE LowestInitialBidTotal.Amount END"/>
+        </field>
+        <field name="LowestInitialBidTotal.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="LowestInitialBidTotal.Date">
+            <aqlMapping selectField="LowestInitialBidTotal.ConversionDate"/>
+        </field>
+        <field name="LeadBidTotal.Amount">
+            <aqlMapping selectField="CASE LeadBidTotal.Amount WHEN NULL THEN 0.0 ELSE LeadBidTotal.Amount END"/>
+        </field>
+        <field name="LeadBidTotal.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="LeadBidTotal.Date">
+            <aqlMapping selectField="LeadBidTotal.ConversionDate"/>
+        </field>
+        <field name="NegotiatedSpend.Amount">
+            <aqlMapping selectField="CASE NegotiatedSpend.Amount WHEN NULL THEN 0.0 ELSE NegotiatedSpend.Amount END"/>
+        </field>
+        <field name="NegotiatedSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="NegotiatedSpend.Date">
+            <aqlMapping selectField="NegotiatedSpend.ConversionDate"/>
+        </field>
+        <field name="NegotiatedSavings.Amount">
+            <aqlMapping selectField="CASE NegotiatedSaving.Amount WHEN NULL THEN 0.0 ELSE NegotiatedSaving.Amount END"/>
+        </field>
+        <field name="NegotiatedSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="NegotiatedSavings.Date">
+            <aqlMapping selectField="NegotiatedSaving.ConversionDate"/>
+        </field>
+        <field name="NegotiatedSavingsPct">
+            <aqlMapping selectField="CASE Savings.NegotiatedSavingPct WHEN NULL THEN 0 ELSE Savings.NegotiatedSavingPct END"/>
+        </field>
+        <field name="ContractMonths">
+            <aqlMapping selectField="CASE Savings.ContractMonths WHEN NULL THEN 0 ELSE Savings.ContractMonths END"/>
+        </field>
+        <field name="ImplementedSpend.Amount">
+            <aqlMapping selectField="CASE ImplementedSpend.Amount WHEN NULL THEN 0.0 ELSE ImplementedSpend.Amount END"/>
+        </field>
+        <field name="ImplementedSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ImplementedSpend.Date">
+            <aqlMapping selectField="ImplementedSpend.ConversionDate"/>
+        </field>
+        <field name="ImplementedSavings.Amount">
+            <aqlMapping selectField="CASE ImplementedSaving.Amount WHEN NULL THEN 0.0 ELSE ImplementedSaving.Amount END"/>
+        </field>
+        <field name="ImplementedSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ImplementedSavings.Date">
+            <aqlMapping selectField="ImplementedSaving.ConversionDate"/>
+        </field>
+        <field name="ImplementedSavingsPct">
+            <aqlMapping selectField="CASE Savings.ImplementedSavingPct WHEN NULL THEN 0 ELSE Savings.ImplementedSavingPct END"/>
+        </field>
+        <field name="ActualSpend.Amount">
+            <aqlMapping selectField="CASE ActualSpend.Amount WHEN NULL THEN 0.0 ELSE ActualSpend.Amount END"/>
+        </field>
+        <field name="ActualSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ActualSpend.Date">
+            <aqlMapping selectField="ActualSpend.ConversionDate"/>
+        </field>
+        <field name="ActualSavings.Amount">
+            <aqlMapping selectField="CASE ActualSaving.Amount WHEN NULL THEN 0.0 ELSE ActualSaving.Amount END"/>
+        </field>
+        <field name="ActualSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ActualSavings.Date">
+            <aqlMapping selectField="ActualSaving.ConversionDate"/>
+        </field>
+        <field name="ActualSavingsPct">
+            <aqlMapping selectField="CASE Savings.ActualSavingPct WHEN NULL THEN 0 ELSE Savings.ActualSavingPct END"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+<dataLoad name="ACMSourcingProjectWithoutSavingsTracking">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SourcingProject AS Project
+                                       JOIN ariba.user.core.User AS ProjectOwner INCLUDE INACTIVE USING Project.Owner
+                                       JOIN ariba.basic.core.Currency as ProjectCurrency INCLUDE INACTIVE USING Project.Currency
+                                       LEFT OUTER JOIN ariba.basic.core.Money as BaselineSpend USING Project.BaselineSpend
+                                       LEFT OUTER JOIN ariba.basic.core.Money as ActualSaving USING Project.ActualSaving"
+                  whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL
+                               AND Project.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND Project NOT IN (SELECT Project1
+                                                   FROM ariba.sourcing.rfx.SavingsForm as Savings
+                                                   JOIN ariba.sourcing.rfx.SourcingProject AS Project1 USING Savings.ParentWorkspace
+                                                   WHERE Project1.WorkspaceType = '' AND Project1.Status != 'Not Created'
+                                                   AND Project1.NextVersion IS NULL
+                                                   AND Savings.Status = 'Complete')"
+                incrementalClause="(Project.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="Project.InternalId" sourceLookupField="InternalId"/>
+        </field>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ProjectDescription">
+            <aqlMapping selectField="Project.Description"/>
+        </field>
+        <field name="Status">
+            <aqlMapping selectField="Project.Alert"/>
+        </field>
+        <field name="State">
+            <aqlMapping selectField="Project.Status"/>
+        </field>
+        <field name="BeginDate">
+            <aqlMapping selectField="COALESCE(Project.BeginDate, Project.PlannedStartDate)"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="COALESCE(Project.ProjectAddin.Plan.EndDate, Project.PlannedEndDate)"/>
+        </field>
+        <field name="PlannedStartDate">
+            <aqlMapping selectField="Project.PlannedStartDate"/>
+        </field>
+        <field name="PlannedEndDate">
+            <aqlMapping selectField="Project.PlannedEndDate"/>
+        </field>
+        <field name="Owner.UserId">
+            <aqlMapping selectField="ProjectOwner.UniqueName"/>
+        </field>
+        <field name="Owner.PasswordAdapter">
+            <aqlMapping selectField="ProjectOwner.PasswordAdapter"/>
+        </field>
+        <field name="ExecutionStrategy">
+            <aqlMapping selectField="Project.ExecutionStrategy"/>
+        </field>
+        <field name="SourcingMechanism">
+            <aqlMapping selectField="Project.SourcingMechanism"/>
+        </field>
+        <field name="ProjectReason">
+            <aqlMapping selectField="Project.ProjectReason"/>
+        </field>
+        <field name="BaselineSpend.Amount">
+            <aqlMapping selectField="CASE Project.BaselineSpend.Amount WHEN NULL THEN 0.0 ELSE Project.BaselineSpend.Amount END"/>
+        </field>
+        <field name="BaselineSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BaselineSpend.Date">
+            <aqlMapping selectField="Project.BaselineSpend.ConversionDate"/>
+        </field>
+        <field name="TargetSavingsPct">
+            <aqlMapping selectField="CASE Project.TargetSavingPct WHEN NULL THEN 0 ELSE Project.TargetSavingPct END"/>
+        </field>
+        <field name="ContractMonths">
+            <aqlMapping selectField="CASE Project.ContractMonths WHEN NULL THEN 0 ELSE Project.ContractMonths END"/>
+        </field>
+        <field name="ActualSavings.Amount">
+            <aqlMapping selectField="CASE Project.ActualSaving.Amount WHEN NULL THEN 0.0 ELSE Project.ActualSaving.Amount END"/>
+        </field>
+        <field name="ActualSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ActualSavings.Date">
+            <aqlMapping selectField="Project.ActualSaving.ConversionDate"/>
+        </field>
+        <field name="ActualSavingsPct">
+            <aqlMapping selectField="CASE Project.ActualSavingPct WHEN NULL THEN 0 ELSE Project.ActualSavingPct END"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSourcingSavingsTrackingRegion">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsForm AS Savings
+                              JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject USING Savings.ParentWorkspace
+                              LEFT OUTER JOIN ariba.collaborate.basic.Region USING Savings.Region"
+                  whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                               AND Savings.NextVersion IS NULL AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND Savings.Status = 'Complete'"
+                  incrementalClause="(:IncrementalStartDate &lt;= Savings.TimeUpdated AND
+                                      Savings.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="Savings.InternalId"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <aqlMapping selectField="Savings.InternalId"/>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+            <aqlMapping selectField="Savings.DocumentVersion"/>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="Region.RegionId">
+            <aqlMapping selectField="Region.Region"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSourcingWithoutSavingsTrackingRegion">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SourcingProject AS SourcingProject
+                              LEFT OUTER JOIN ariba.collaborate.basic.Region USING SourcingProject.Region"
+                  whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                               AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND SourcingProject NOT IN (SELECT Project1
+                                                   FROM ariba.sourcing.rfx.SavingsForm as Savings
+                                                   JOIN ariba.sourcing.rfx.SourcingProject AS Project1 USING Savings.ParentWorkspace
+                                                   WHERE Project1.WorkspaceType = '' AND Project1.Status != 'Not Created'
+                                                   AND Project1.NextVersion IS NULL
+                                                   AND Savings.Status = 'Complete')"
+                  incrementalClause="(:IncrementalStartDate &lt;= SourcingProject.TimeUpdated AND
+                                      SourcingProject.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="SourcingProject.InternalId"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="Region.RegionId">
+            <aqlMapping selectField="Region.Region"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSourcingSavingsTrackingDepartment">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsForm AS Savings
+                              JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject USING Savings.ParentWorkspace
+                              LEFT OUTER JOIN ariba.collaborate.basic.Department AS Department USING Savings.Client"
+              whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                           AND Savings.NextVersion IS NULL AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                           AND Savings.Status = 'Complete'"
+              incrementalClause="(:IncrementalStartDate &lt;= Savings.TimeUpdated AND
+                                  Savings.TimeUpdated &lt; :IncrementalEndDate)"
+              orderByClause="Savings.InternalId"
+              distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <aqlMapping selectField="Savings.InternalId"/>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+            <aqlMapping selectField="Savings.DocumentVersion"/>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="Organization.OrganizationId">
+            <aqlMapping selectField="Department.DepartmentID"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+<dataLoad name="ACMSourcingWithoutSavingsTrackingDepartment">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SourcingProject AS SourcingProject
+                              LEFT OUTER JOIN ariba.collaborate.basic.Department AS Department USING SourcingProject.Client"
+              whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                           AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                           AND SourcingProject NOT IN (SELECT Project1
+                                                       FROM ariba.sourcing.rfx.SavingsForm as Savings
+                                                       JOIN ariba.sourcing.rfx.SourcingProject AS Project1 USING Savings.ParentWorkspace
+                                                       WHERE Project1.WorkspaceType = '' AND Project1.Status != 'Not Created'
+                                                       AND Project1.NextVersion IS NULL
+                                                       AND Savings.Status = 'Complete')"
+              incrementalClause="(:IncrementalStartDate &lt;= SourcingProject.TimeUpdated AND
+                                  SourcingProject.TimeUpdated &lt; :IncrementalEndDate)"
+              orderByClause="SourcingProject.InternalId"
+              distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="Organization.OrganizationId">
+            <aqlMapping selectField="Department.DepartmentID"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+<dataLoad name="ACMSourcingSavingsTrackingCommodity">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsForm AS Savings
+                              JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject USING Savings.ParentWorkspace
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode AS Comm Using Savings.Commodity"
+              whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                           AND Savings.NextVersion IS NULL AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                           AND Savings.Status = 'Complete'"
+              incrementalClause="(:IncrementalStartDate &lt;= Savings.TimeUpdated AND
+                                  Savings.TimeUpdated &lt; :IncrementalEndDate)"
+              orderByClause="Savings.InternalId"
+              distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <aqlMapping selectField="Savings.InternalId"/>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+                <aqlMapping selectField="Savings.DocumentVersion"/>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="Comm.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+<dataLoad name="ACMSourcingWithoutSavingsTrackingCommodity">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SourcingProject AS SourcingProject
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode AS Comm Using SourcingProject.Commodity"
+            whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                              AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                              AND SourcingProject NOT IN (SELECT Project1
+                                                          FROM ariba.sourcing.rfx.SavingsForm as Savings
+                                                          JOIN ariba.sourcing.rfx.SourcingProject AS Project1 USING Savings.ParentWorkspace
+                                                          WHERE Project1.WorkspaceType = '' AND Project1.Status != 'Not Created'
+                                                          AND Project1.NextVersion IS NULL
+                                                          AND Savings.Status = 'Complete')"
+              incrementalClause="(:IncrementalStartDate &lt;= SourcingProject.TimeUpdated AND
+                                  SourcingProject.TimeUpdated &lt; :IncrementalEndDate)"
+              orderByClause="SourcingProject.InternalId"
+              distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="Comm.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+<dataLoad name="ACMSourcingSavingsAllocationDetails">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsAllocationDetails AS AllocationDetails
+                                JOIN ariba.sourcing.rfx.SavingsForm AS SavingsForm USING AllocationDetails.SavingsForm
+                                JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject USING SavingsForm.ParentWorkspace
+                                LEFT OUTER JOIN ariba.user.core.Organization AS Supplier INCLUDE INACTIVE USING AllocationDetails.Supplier
+                                LEFT OUTER JOIN ariba.collaborate.basic.Region AS Region USING AllocationDetails.Region
+                                LEFT OUTER JOIN ariba.collaborate.basic.Department AS Department USING AllocationDetails.Client
+                                LEFT OUTER JOIN ariba.basic.core.CommodityCode AS Commodity USING AllocationDetails.Commodity
+                                JOIN ariba.basic.core.Currency as ProjectCurrency INCLUDE INACTIVE USING SourcingProject.Currency
+                                LEFT OUTER JOIN ariba.basic.core.Money as BaselineSpend USING AllocationDetails.BaselineSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as EstimatedSpend USING AllocationDetails.EstimatedSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as EstimatedSaving USING AllocationDetails.EstimatedSaving
+                                LEFT OUTER JOIN ariba.basic.core.Money as NegotiatedSpend USING AllocationDetails.NegotiatedSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as NegotiatedSaving USING AllocationDetails.NegotiatedSaving
+                                LEFT OUTER JOIN ariba.basic.core.Money as ImplementedSpend USING AllocationDetails.ImplementedSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as ImplementedSaving USING AllocationDetails.ImplementedSaving
+                                LEFT OUTER JOIN ariba.basic.core.Money as ActualSpend USING AllocationDetails.ActualSpend
+                                LEFT OUTER JOIN ariba.basic.core.Money as ActualSaving USING AllocationDetails.ActualSaving"
+                  whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                               AND SavingsForm.NextVersion IS NULL
+                               AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND SavingsForm.Status = 'Complete'"
+                incrementalClause="(AllocationDetails.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    AllocationDetails.TimeUpdated &lt; :IncrementalEndDate) OR
+                                   (SavingsForm.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    SavingsForm.TimeUpdated &lt; :IncrementalEndDate) OR
+                                   (SourcingProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    SourcingProject.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsAllocationDetails"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="SavingsAllocationId">
+            <aqlMapping selectField="AllocationDetails.SavingsAllocationId"/>
+        </field>
+        <field name="Description">
+            <aqlMapping selectField="SavingsForm.Description"/>
+        </field>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <aqlMapping selectField="SavingsForm.InternalId" sourceLookupField="InternalId"/>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+                <aqlMapping selectField="SavingsForm.DocumentVersion"/>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+        <field name="ProjectDescription">
+            <aqlMapping selectField="SourcingProject.Description"/>
+        </field>
+        <field name="SavingsStartDate">
+            <aqlMapping selectField="AllocationDetails.SavingsStartDate"/>
+        </field>
+        <field name="SavingsEndDate">
+            <aqlMapping selectField="AllocationDetails.SavingsEndDate"/>
+        </field>
+        <field name="SpendType">
+            <aqlMapping selectField="AllocationDetails.SpendType"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.SystemID"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="Commodity.UniqueName"/>
+        </field>
+        <field name="Region.RegionId">
+            <aqlMapping selectField="Region.Region"/>
+        </field>
+        <field name="Organization.OrganizationId">
+            <aqlMapping selectField="Department.DepartmentID"/>
+        </field>
+        <field name="BaselineSpend.Amount">
+            <aqlMapping selectField="CASE BaselineSpend.Amount WHEN NULL THEN 0.0 ELSE BaselineSpend.Amount END"/>
+        </field>
+        <field name="BaselineSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BaselineSpend.Date">
+            <aqlMapping selectField="BaselineSpend.ConversionDate"/>
+        </field>
+        <field name="EstimatedSpend.Amount">
+            <aqlMapping selectField="CASE EstimatedSpend.Amount WHEN NULL THEN 0.0 ELSE EstimatedSpend.Amount END"/>
+        </field>
+        <field name="EstimatedSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="EstimatedSpend.Date">
+            <aqlMapping selectField="EstimatedSpend.ConversionDate"/>
+        </field>
+        <field name="EstimatedSavings.Amount">
+            <aqlMapping selectField="CASE EstimatedSaving.Amount WHEN NULL THEN 0.0 ELSE EstimatedSaving.Amount END"/>
+        </field>
+        <field name="EstimatedSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="EstimatedSavings.Date">
+            <aqlMapping selectField="EstimatedSaving.ConversionDate"/>
+        </field>
+        <field name="EstimatedSavingsPct">
+            <aqlMapping selectField="CASE AllocationDetails.EstimatedSavingPct WHEN NULL THEN 0 ELSE AllocationDetails.EstimatedSavingPct END"/>
+        </field>
+        <field name="NegotiatedSpend.Amount">
+            <aqlMapping selectField="CASE NegotiatedSpend.Amount WHEN NULL THEN 0.0 ELSE NegotiatedSpend.Amount END"/>
+        </field>
+        <field name="NegotiatedSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="NegotiatedSpend.Date">
+            <aqlMapping selectField="NegotiatedSpend.ConversionDate"/>
+        </field>
+        <field name="NegotiatedSavings.Amount">
+            <aqlMapping selectField="CASE NegotiatedSaving.Amount WHEN NULL THEN 0.0 ELSE NegotiatedSaving.Amount END"/>
+        </field>
+        <field name="NegotiatedSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="NegotiatedSavings.Date">
+            <aqlMapping selectField="NegotiatedSaving.ConversionDate"/>
+        </field>
+        <field name="NegotiatedSavingsPct">
+            <aqlMapping selectField="CASE AllocationDetails.NegotiatedSavingPct WHEN NULL THEN 0 ELSE AllocationDetails.NegotiatedSavingPct END"/>
+        </field>
+        <field name="ImplementedSpend.Amount">
+            <aqlMapping selectField="CASE ImplementedSpend.Amount WHEN NULL THEN 0.0 ELSE ImplementedSpend.Amount END"/>
+        </field>
+        <field name="ImplementedSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ImplementedSpend.Date">
+            <aqlMapping selectField="ImplementedSpend.ConversionDate"/>
+        </field>
+        <field name="ImplementedSavings.Amount">
+            <aqlMapping selectField="CASE ImplementedSaving.Amount WHEN NULL THEN 0.0 ELSE ImplementedSaving.Amount END"/>
+        </field>
+        <field name="ImplementedSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ImplementedSavings.Date">
+            <aqlMapping selectField="ImplementedSaving.ConversionDate"/>
+        </field>
+        <field name="ImplementedSavingsPct">
+            <aqlMapping selectField="CASE AllocationDetails.ImplementedSavingPct WHEN NULL THEN 0 ELSE AllocationDetails.ImplementedSavingPct END"/>
+        </field>
+        <field name="ActualSpend.Amount">
+            <aqlMapping selectField="CASE ActualSpend.Amount WHEN NULL THEN 0.0 ELSE ActualSpend.Amount END"/>
+        </field>
+        <field name="ActualSpend.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ActualSpend.Date">
+            <aqlMapping selectField="ActualSpend.ConversionDate"/>
+        </field>
+        <field name="ActualSavings.Amount">
+            <aqlMapping selectField="CASE ActualSaving.Amount WHEN NULL THEN 0.0 ELSE ActualSaving.Amount END"/>
+        </field>
+        <field name="ActualSavings.Currency">
+            <aqlMapping selectField="ProjectCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ActualSavings.Date">
+            <aqlMapping selectField="ActualSaving.ConversionDate"/>
+        </field>
+        <field name="ActualSavingsPct">
+            <aqlMapping selectField="CASE AllocationDetails.ActualSavingPct WHEN NULL THEN 0 ELSE AllocationDetails.ActualSavingPct END"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSourcingSavingsPlannedEventTypeTracking">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsForm AS Savings
+                              JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject USING Savings.ParentWorkspace,
+                              ariba.sourcing.rfx.EventType AS PlannedEventType"
+                  whereClause="SourcingProject.WorkspaceType = '' AND SourcingProject.Status != 'Not Created'
+                               AND Savings.NextVersion IS NULL
+                               AND SourcingProject.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND Savings.Status = 'Complete'
+                               AND SourcingProject.PlannedEventType = PlannedEventType.UniqueName"
+         incrementalClause="(Savings.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    Savings.TimeUpdated &lt; :IncrementalEndDate) OR
+                                   (SourcingProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    SourcingProject.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+       <field name="SavingsFormInfo.SavingsFormId">
+            <aqlMapping selectField="Savings.InternalId"/>
+        </field>
+       <field name="SavingsFormInfo.VersionNumber">
+            <aqlMapping selectField="Savings.DocumentVersion"/>
+        </field>
+        <field name="ProjectInfo.ProjectId">
+            <aqlMapping selectField="SourcingProject.InternalId"/>
+        </field>
+    <field name="PlannedEventType.EventType">
+          <aqlMapping selectField="PlannedEventType.UniqueName"/>
+     </field>
+     </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSourcingProjectWithoutSavingsPlannedEventTypeTracking">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SourcingProject AS Project,
+                              ariba.sourcing.rfx.EventType AS PlannedEventType"
+                  whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                               AND Project.NextVersion IS NULL
+                               AND Project.ProjectAddin.ProjectTemplate IS NOT NULL
+                               AND Project NOT IN (SELECT Project1
+                                                   FROM ariba.sourcing.rfx.SavingsForm as Savings
+                                                   JOIN ariba.sourcing.rfx.SourcingProject AS Project1 USING Savings.ParentWorkspace
+                                                   WHERE Project1.WorkspaceType = '' AND Project1.Status != 'Not Created'
+                                                   AND Project1.NextVersion IS NULL
+                                                   AND Savings.Status = 'Complete')
+                              AND Project.PlannedEventType = PlannedEventType.UniqueName"
+                 incrementalClause="(Project.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    Project.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.SavingsForm"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectInfo.ProjectId">
+                <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="SavingsFormInfo.SavingsFormId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SavingsFormInfo.VersionNumber">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PlannedEventType.EventType">
+            <aqlMapping selectField="PlannedEventType.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMSourcingProjectPlannedEventType">
+<loadStages>
+    <aqlStage   fromClause="ariba.sourcing.rfx.SourcingProject AS Project,
+                            ariba.sourcing.rfx.EventType AS PlannedEventType"
+                whereClause="Project.WorkspaceType = '' AND Project.Status != 'Not Created'
+                             AND Project.NextVersion IS NULL AND Project.ProjectAddin.ProjectTemplate IS NOT NULL
+                             AND Project.PlannedEventType = PlannedEventType.UniqueName"
+                incrementalClause="(:IncrementalStartDate &lt;= Project.TimeUpdated AND
+                                  Project.TimeUpdated &lt; :IncrementalEndDate)"
+                orderByClause="Project.InternalId"
+                distinctFlag="true"/>
+    <analysisStage destinationName="ariba.analytics.fact.SourcingProject"/>
+</loadStages>
+<fieldMappings>
+    <field name="ProjectId">
+        <aqlMapping selectField="Project.InternalId"/>
+    </field>
+    <field name="PlannedEventType.EventType">
+        <aqlMapping selectField="PlannedEventType.UniqueName"/>
+    </field>
+</fieldMappings>
+</dataLoad>
+<dataLoad name="ACMSavingsFormDimensionVersionUpdate">
+    <loadStages>
+        <aqlStage fromClause="ariba.sourcing.rfx.SavingsForm AS OldSavings INCLUDE INACTIVE,
+                              ariba.sourcing.rfx.SavingsForm AS CurrentSavings INCLUDE INACTIVE
+                              JOIN ariba.sourcing.rfx.SourcingProject AS SourcingProject INCLUDE INACTIVE USING CurrentSavings.ParentWorkspace"
+                  whereClause="SourcingProject.WorkspaceType != 'Template'
+                                AND SourcingProject.Status != 'Not Created'
+                                AND CurrentSavings.Status = 'Complete'
+                                AND OldSavings.Status = 'Complete'
+                                AND CurrentSavings.NextVersion IS NULL
+                                AND CurrentSavings.DocumentId = OldSavings.DocumentId"
+              incrementalClause="CurrentSavings.TimeUpdated &gt;= :IncrementalStartDate AND
+                                 CurrentSavings.TimeUpdated &lt;= :IncrementalEndDate"
+                      orderByClause="CurrentSavings.InternalId"/>
+            <analysisStage destinationName="ariba.analytics.dimension.SavingsFormInfo"/>
+    </loadStages>
+    <fieldMappings>
+         <field name="SavingsFormId">
+            <aqlMapping selectField="CurrentSavings.InternalId"/>
+        </field>
+        <field name="VersionNumber">
+            <aqlMapping selectField="OldSavings.DocumentVersion"/>
+        </field>
+        <field name="IsLastVersion">
+            <aqlMapping selectField="CASE OldSavings.NextVersion WHEN NULL THEN CurrentSavings.Active ELSE FALSE END"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

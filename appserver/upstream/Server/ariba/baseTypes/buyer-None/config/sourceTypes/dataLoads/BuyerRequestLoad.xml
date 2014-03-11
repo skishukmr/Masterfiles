@@ -1,0 +1,24 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<!-- Collape all these 5 loads into 1 once Lokesh change the behavior of inDataLoad -->
+
+
+<inDataLoad name="BuyerRequestMasterAgreement" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.contract.core.MasterAgreementRequest AS Request INCLUDE INACTIVE
+                LEFT OUTER JOIN ariba.contract.core.MARLineItem INCLUDE INACTIVE USING Request.DefaultLineItems
+                LEFT OUTER JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING MARLineItem.Accountings
+                LEFT OUTER JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings
+                LEFT OUTER JOIN ariba.approvable.core.ApprovalRecord AS SimpleRecord USING Request.Records
+                LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Request.Requester"/>
+    </inLoadStages>
+
+</inDataLoad>
+<inDataLoad name="BuyerDeleteRequestMasterAgreement" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.contract.core.MasterAgreementRequest AS Request INCLUDE INACTIVE"/>
+    </inLoadStages>
+</inDataLoad>
+
+</allDataLoads>

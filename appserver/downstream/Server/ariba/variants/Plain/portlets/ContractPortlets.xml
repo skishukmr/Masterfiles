@@ -1,0 +1,15 @@
+<PortletProviders>
+    <PortletProvider stringFile="&lt;ProviderURL&gt;/ad/stringFile/PortletProviderActions?stringFile=ariba.html.contractportlets">
+        <UniqueName>Contracts</UniqueName>
+        <DisplayName>@ContractsAppTitle</DisplayName>
+        <Description>@ContractsAppDesc</Description>
+       	<HttpURL>&HttpURL;</HttpURL>
+	    <ServerURL>&ServerURL;</ServerURL>
+        <Permissions operator="OR">
+            <String>ContractManager</String>
+            <String>BuyerAuthorized</String>
+        </Permissions>
+        <Portlets>
+        </Portlets>
+    </PortletProvider>
+</PortletProviders>

@@ -1,0 +1,9 @@
+# This file lists the dependencies of the tasks in LoadDB*.txt
+#
+# The format is a coma separated list of tasks with the
+# element being the one for which you define the dependencies
+
+pcsv1.Task.LoadExpenseGuidelineParams,pcsv1.IntegrationEvent.ExpensePolicyTypePull
+mfg1.Task.LoadExpenseGuidelineParams,mfg1.IntegrationEvent.ExpensePolicyTypePull
+ezopen.Task.LoadExpenseGuidelineParams,ezopen.IntegrationEvent.ExpensePolicyTypePull
+SAP.Task.LoadExpenseGuidelineParams,SAP.IntegrationEvent.ExpensePolicyTypePull

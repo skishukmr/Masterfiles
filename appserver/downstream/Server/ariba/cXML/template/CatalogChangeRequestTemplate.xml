@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemID@@">
+<cXML version="1.1" payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@">
+   <Header>
+        <From>
+            <Credential domain="NetworkId">
+                <Identity>@@getSupplierIdentity@@</Identity>
+            </Credential>
+        </From>
+        <To>
+            <Credential domain="AribaNetworkUserId">
+                <Identity>@@getToIdentity@@</Identity>
+            </Credential>
+        </To>
+        <Sender>
+            <Credential domain="AribaNetworkUserId">
+                <Identity>@@getSystemParameter(System.Procure.AribaNetwork.Id)@@</Identity>
+                <SharedSecret>@@getSystemParameter(System.Procure.AribaNetwork.Password)@@</SharedSecret>
+            </Credential>
+            <UserAgent>ORMS</UserAgent>
+        </Sender>
+    </Header>
+    <Request>
+        <CatalogChangeRequest location="@@getLocation@@" type="update">
+            <CatalogID>
+                <Identity>@@getCatalogID@@</Identity>
+            </CatalogID>
+            <SubscriberList>
+                <OrganizationID>
+                    <Credential domain="NetworkId">
+                        <Identity>@@getBuyerIdentity@@</Identity>
+                    </Credential>
+                </OrganizationID>
+            </SubscriberList>
+        </CatalogChangeRequest>
+    </Request>
+</cXML>

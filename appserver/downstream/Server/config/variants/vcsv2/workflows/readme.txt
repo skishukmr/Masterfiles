@@ -1,0 +1,1 @@
+This directory contains extensions that apply to workflows in all variants

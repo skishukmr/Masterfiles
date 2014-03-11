@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Index SYSTEM "http://svcqa.ariba.com/schemas/cXML/1.2.014/cXML.dtd">
+<Index loadmode="Full">
+<SupplierID domain="duns">700000075</SupplierID>
+<SupplierID domain="networkid">an70000000075</SupplierID>
+<SupplierID domain="internalsupplierid">1004</SupplierID>
+<SupplierID domain="oracle">4004</SupplierID>
+<SupplierID domain="psoft">share:usa0000017</SupplierID>
+<SupplierID domain="sap">0000001030</SupplierID>
+<SupplierID domain="buyersystemid">sid504</SupplierID>
+<Comments xml:lang="en-US">Item for simulated local punchout</Comments>
+<IndexItem>
+<IndexItemPunchout>
+	<ItemID>
+		<SupplierPartID>OP650</SupplierPartID>
+		<SupplierPartAuxiliaryID>Punchout/Dell/620rssff.htm</SupplierPartAuxiliaryID>
+	</ItemID>
+	<PunchoutDetail>
+		<Description xml:lang="en-US">Dell Optiplex 650</Description>
+		<URL>http://localhost:8050/Buyer/Main/ad/setup/PunchoutUtil</URL>
+		<Classification domain="UNSPSC">55101511</Classification>
+	</PunchoutDetail>
+</IndexItemPunchout>
+</IndexItem>
+</Index>

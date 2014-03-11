@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="@@getEncoding@@"?>
+<!DOCTYPE cXML SYSTEM "@@getCXMLDTD@@/Private.dtd">
+<cXML payloadID="@@getPayloadID@@" timestamp="@@getTimestamp@@">
+    <Header>
+        <From>
+            <Credential domain="@@getAribaNetworkDomain@@">
+                <Identity>@@getAribaNetworkDomainId@@</Identity>
+            </Credential>
+        </From>
+        <To>
+            <Credential domain="@@getContentProviderDomain@@">
+               <Identity>@@getContentProviderId@@</Identity>
+            </Credential>
+        </To>
+        <Sender>
+            <Credential domain="AribaNetworkUserId">
+                <Identity>@@getAribaNetworkId@@</Identity>
+                <SharedSecret>@@getAribaNetworkPassword@@</SharedSecret>
+            </Credential>
+            <UserAgent>@@getUserAgent@@</UserAgent>
+        </Sender>
+    </Header>
+    <Request>
+        <MapSyncRequest>
+            <MapType>UnitOfMeasure</MapType>
+            <!-- forexec getMapHandler.getMapItemEnumeration -->
+            <ListItem>
+                <MapField name="domain">@@getCurrentLoopItem.getDomain@@</MapField>
+                <MapField name="value">@@getCurrentLoopItem.getValue@@</MapField>
+            </ListItem>
+            <!-- end for -->
+        </MapSyncRequest>
+    </Request>
+</cXML>

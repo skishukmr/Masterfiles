@@ -1,0 +1,158 @@
+Dim PreviousBookmarkKey
+
+PreviousBookmarkKey = "previousBookmark"
+
+Sub promoteToSection (documentLocation, promoteUrl, clauseBookmarkName, sectionStyleId, uploadUrl, saveSyncupUrl)
+    On Error Resume Next
+
+    awDebug("---**--- In PromoteToSection")
+    ' msgbox("documentLocation " & documentLocation)
+    ' msgbox("promoteUrl " & promoteUrl)
+    ' msgbox("clauseBookmarkName " & clauseBookmarkName)
+    ' msgbox("sectionStyleId " & sectionStyleId)
+    ' msgbox("uploadUrl " & uploadUrl)
+    ' msgbox("saveSyncupUrl " & saveSyncupUrl)
+
+    Dim wordApplication
+    Dim agreement
+
+    Set wordApplication = contactApp()
+    Set agreement = contactDocument(wordApplication, documentLocation)
+
+    awDebug("Contacted Document " & documentLocation)
+
+    agreement.Activate
+
+    Dim pos
+    Dim sectionRange
+    Dim currentSelection
+
+    Set currentSelection = agreement.ActiveWindow.Selection
+
+    Set sectionRange = currentSelection.GoTo(-1, , , clauseBookmarkName) ' wdGoToBookmark = -1
+    '     Dim currentSectionName
+    '     currentSectionName = withinBookmarkNameInSelection(currentSelection, aRange, True)
+    '     Dim currentPreviousBookmarkName
+    '     currentPreviousBookmarkName = findPreviousBookmarkName(currentSelection, clauseBookmarkName, currentSectionName)
+
+    Dim sectionContent
+    sectionContent = Trim(getRangeContent(currentSelection.Paragraphs(1).Range))
+
+    Dim paragraphIndex
+    paragraphIndex = InStr(1, sectionContent, ChrW(11), vbTextCompare)
+    If (paragraphIndex > 0) Then
+        sectionContent = Mid(sectionContent, 1, paragraphIndex - 1)
+    End If
+
+    ' msgbox("sectionContent " & sectionContent)
+
+    Dim promotedSectionBookmarkName
+    promotedSectionBookmarkName = uploadSection(agreement, sectionContent, clauseBookmarkName, promoteUrl)
+
+    applyStyleInSectionClause agreement, sectionStyleId, currentSelection, contentType(promotedSectionBookmarkName)
+
+    agreement.Saved = false
+    agreement.Save
+
+    awDebug("getFileBytes start")
+    Dim documentValue
+    documentValue = getFileBytes(documentLocation)
+
+    awDebug("sending data to server " & uploadUrl)
+    Dim responseData
+    responseData = sendDataToServer(documentValue, uploadUrl)
+
+    awDebug("Getting Timestamp")
+    Dim ts
+    ts = clientFileTimestamp(documentLocation)
+    If (ts = "") Then
+        Exit Sub
+    End If
+    awDebug("Timestamp = " & ts)
+
+    Dim saveResult
+    saveResult = saveSyncHistory(ts, saveSyncupUrl)
+
+    awDebug("SyncHistory saved to " & saveSyncupUrl)
+
+    agreement = Nothing
+
+    cleanupApplication wordApplication
+End Sub
+
+Function uploadSection (currentDocument, sectionContent, clauseId, originalUrl)
+    On Error Resume Next
+
+    Dim strUrl
+    strUrl = originalUrl
+
+    Dim sData
+    sData = sectionContent
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        Exit Function
+    End If
+
+    If (Not clauseId = "") Then
+        strUrl = strUrl & "&" & ClauseIdKey & "=" & clauseId
+    End If
+
+    ' msgbox "strUrl " & strUrl
+
+    xmlhttp.Open "POST", strUrl, false
+    xmlhttp.Send sData
+
+    Dim responseData
+    responseData = xmlhttp.responseText
+
+    If ((Not responseData = "") AND (Not clauseId = "") AND (currentDocument.Bookmarks.Exists(clauseId))) Then
+        Dim aRange
+        Set aRange = currentDocument.Bookmarks.Item(clauseId).Range
+        Dim aBookmark
+        Set aBookmark = currentDocument.Bookmarks.Add(responseData, aRange)
+        uploadSection = responseData
+        Dim pos
+        pos = currentDocument.Bookmarks.Item(clauseId).Delete
+
+        ' msgbox("responseData " & responseData)
+    Else
+        uploadSection = clauseId
+    End If
+
+    Set xmlhttp = Nothing
+End Function
+
+Sub startPromoteToSectionHandler (keyValues)
+    On Error Resume Next
+
+    logMessage " start promoteToSection ..."
+    awDebug("---**-- In startPromoteToSection!!!!!")
+
+    If logError("") Then
+        Exit Sub
+    End If
+    globalError = false
+
+    Dim doneUrl
+    doneUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "doneUrl"))
+
+    logMessage " start promoteToSection -- doneUrl:" & doneUrl
+    
+    promoteToSection awxsGetValue(keyValues, "documentLocation"), _
+        ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "promoteUrl")), _
+        awxsGetValue(keyValues, "clauseBookmarkName"), _
+        awxsGetValue(keyValues, "sectionStyleId"), _
+        ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "uploadUrl")), _
+        ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "saveSyncupUrl"))
+
+    awDebug("doneUrl " & doneUrl)
+    ariba.Request.setWindowLocation(doneUrl)
+    awDebug("---**-- In startPromoteToSection DONE!!!!!")
+End Sub
+
+Dim eventStartPromoteToSection
+Set eventStartPromoteToSection = awxsCreateEvent("startPromoteToSection", GetRef("startPromoteToSectionHandler"))
+awxsRegisterEvent "startPromoteToSection", eventStartPromoteToSection
+

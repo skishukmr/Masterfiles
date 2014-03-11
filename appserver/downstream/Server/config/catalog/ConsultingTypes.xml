@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v2004 rel. 3 U (http://www.xmlspy.com) by Niall Whelan (Ariba Technologies Ireland Ltd.) -->
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.009/Catalog.dtd">
+<TypeDefinition>
+	<TypeProvider name="System">
+		<OrganizationID>
+			<Credential domain="NETWORKID">
+				<Identity>2</Identity>
+			</Credential>
+		</OrganizationID>
+	</TypeProvider>
+	<Comments>Ariba CatalogItem type definition 1.0, void where prohibited</Comments>
+	<Type name="ConsultingResource" extends="System:CatalogItem">
+		<Name xml:lang="en-US">Consulting Resource</Name>
+		<Name xml:lang="ja">コンサルタント用人材</Name>
+		<Name xml:lang="zh-CN">咨询资源</Name>
+		<Name xml:lang="pt-BR">RecursodeConsultoria</Name>
+		<Name xml:lang="sv">KonsultResurs</Name>
+		<Name xml:lang="nl">ConsultingResource</Name>
+		<Name xml:lang="it">RisorsaConsulenza</Name>
+		<Name xml:lang="fr-CA">Donnéesdeconsultation</Name>
+		<Name xml:lang="fr">Conseil (Ressource)</Name>
+		<Name xml:lang="es">Recurso de consultoría</Name>
+		<Name xml:lang="de">Beratung, Ressource</Name>
+		<Description xml:lang="en-US">Consulting Reource Item</Description>
+		<Description xml:lang="ja">コンサルタント用人材</Description>
+		<Description xml:lang="zh-CN">咨询资源</Description>
+		<Description xml:lang="pt-BR">RecursodeConsultoria</Description>
+		<Description xml:lang="sv">KonsultResurs</Description>
+		<Description xml:lang="nl">ConsultingResource</Description>
+		<Description xml:lang="it">RisorsaConsulenza</Description>
+		<Description xml:lang="fr-CA">Donnéesdeconsultation</Description>
+		<Description xml:lang="fr">Conseil (Ressource)</Description>
+		<Description xml:lang="es">Recurso de consultoría</Description>
+		<Description xml:lang="de">Beratung, Ressource</Description>
+		<TypeAttribute name="Region" type="Name" isRefinable="yes" isSearchable="yes" isCollection="yes" isRequiredForOrdering="yes">
+			<Name xml:lang="en-US">Region</Name>
+			<Name xml:lang="ja">地域</Name>
+			<Name xml:lang="zh-CN">地区</Name>
+			<Name xml:lang="pt-BR">Região</Name>
+			<Name xml:lang="sv">Region</Name>
+			<Name xml:lang="nl">Regio</Name>
+			<Name xml:lang="it">Regione</Name>
+			<Name xml:lang="fr-CA">Région</Name>
+			<Name xml:lang="fr">Région</Name>
+			<Name xml:lang="es">Región</Name>
+			<Name xml:lang="de">Region</Name>
+			<EnumerationValue>
+				<Extrinsic name="CanonicalValue">east</Extrinsic>
+				<Name xml:lang="en-US">East</Name>
+				<Name xml:lang="ja">東日本</Name>
+				<Name xml:lang="zh-CN">东部</Name>
+				<Name xml:lang="pt-BR">Leste</Name>
+				<Name xml:lang="sv">Östra</Name>
+				<Name xml:lang="nl">Oosten</Name>
+				<Name xml:lang="it">Est</Name>
+				<Name xml:lang="fr-CA">Est</Name>
+				<Name xml:lang="fr">Est</Name>
+				<Name xml:lang="es">Este</Name>
+				<Name xml:lang="de">Ost</Name>
+			</EnumerationValue>
+			<EnumerationValue>
+				<Extrinsic name="CanonicalValue">midwest</Extrinsic>
+				<Name xml:lang="en-US">Midwest</Name>
+				<Name xml:lang="ja">中部地方</Name>
+				<Name xml:lang="zh-CN">中西部</Name>
+				<Name xml:lang="pt-BR">Centro-oeste</Name>
+				<Name xml:lang="sv">Mellanvästern</Name>
+				<Name xml:lang="nl">Midwesten</Name>
+				<Name xml:lang="it">America centrale</Name>
+				<Name xml:lang="fr-CA">Midwest</Name>
+				<Name xml:lang="fr">Midwest</Name>
+				<Name xml:lang="es">Medio oeste</Name>
+				<Name xml:lang="de">Mittlerer Westen</Name>
+			</EnumerationValue>
+			<EnumerationValue>
+				<Extrinsic name="CanonicalValue">west</Extrinsic>
+				<Name xml:lang="en-US">West</Name>
+				<Name xml:lang="ja">西日本</Name>
+				<Name xml:lang="zh-CN">西部</Name>
+				<Name xml:lang="pt-BR">Oeste</Name>
+				<Name xml:lang="sv">Västra</Name>
+				<Name xml:lang="nl">Westen</Name>
+				<Name xml:lang="it">Ovest</Name>
+				<Name xml:lang="fr-CA">Ouest</Name>
+				<Name xml:lang="fr">Ouest</Name>
+				<Name xml:lang="es">Oeste</Name>
+				<Name xml:lang="de">West</Name>
+			</EnumerationValue>
+		</TypeAttribute>
+		<TypeAttribute name="YearsExperience" type="Name" isRefinable="yes" isSearchable="yes" isCollection="yes" isRequiredForOrdering="yes">
+			<Name xml:lang="en-US">Years Experience</Name>
+			<Name xml:lang="ja">経験年数</Name>
+			<Name xml:lang="zh-CN">经验</Name>
+			<Name xml:lang="pt-BR">Anos de experiência</Name>
+			<Name xml:lang="sv">Års erfarenhet</Name>
+			<Name xml:lang="nl">Jaren ervaring</Name>
+			<Name xml:lang="it">Anni di esperienza</Name>
+			<Name xml:lang="fr-CA">Années d'expérience</Name>
+			<Name xml:lang="fr">Années d'expérience</Name>
+			<Name xml:lang="es">Años de experiencia</Name>
+			<Name xml:lang="de">Erfahrung (Jahre)</Name>
+			<EnumerationValue>
+				<Extrinsic name="CanonicalValue">new</Extrinsic>
+				<Name xml:lang="en-US">1 to 3 years</Name>
+				<Name xml:lang="ja">1～3年</Name>
+				<Name xml:lang="zh-CN">1-3 年</Name>
+				<Name xml:lang="pt-BR">De 1 a 3 anos</Name>
+				<Name xml:lang="sv">1-3 år</Name>
+				<Name xml:lang="nl">1-3 jaar</Name>
+				<Name xml:lang="it">Da 1 a 3 anni</Name>
+				<Name xml:lang="fr-CA">1 à 3 ans</Name>
+				<Name xml:lang="fr">1-3 ans</Name>
+				<Name xml:lang="es">1-3 años</Name>
+				<Name xml:lang="de">1-3 Jahre</Name>
+			</EnumerationValue>
+			<EnumerationValue>
+				<Extrinsic name="CanonicalValue">experienced</Extrinsic>
+				<Name xml:lang="en-US">3 to 10 years</Name>
+				<Name xml:lang="ja">3～10年</Name>
+				<Name xml:lang="zh-CN">3-10 年</Name>
+				<Name xml:lang="pt-BR">De 3 a 10 anos</Name>
+				<Name xml:lang="sv">3-10 år</Name>
+				<Name xml:lang="nl">3-10 jaar</Name>
+				<Name xml:lang="it">Da 3 a 10 anni</Name>
+				<Name xml:lang="fr-CA">3 à 10 ans</Name>
+				<Name xml:lang="fr">3-10 ans</Name>
+				<Name xml:lang="es">3-10 años</Name>
+				<Name xml:lang="de"> 3-10 Jahre</Name>
+			</EnumerationValue>
+			<EnumerationValue>
+				<Extrinsic name="CanonicalValue">senior</Extrinsic>
+				<Name xml:lang="en-US">More than 10 years</Name>
+				<Name xml:lang="ja">10年以上</Name>
+				<Name xml:lang="zh-CN">10 年以上</Name>
+				<Name xml:lang="pt-BR">Mais de 10 anos</Name>
+				<Name xml:lang="sv">mer än 10 år</Name>
+				<Name xml:lang="nl">Meer dan 10 jaar</Name>
+				<Name xml:lang="it">Più di 10 anni</Name>
+				<Name xml:lang="fr-CA">Plus de 10 ans</Name>
+				<Name xml:lang="fr">Plus de 10 ans</Name>
+				<Name xml:lang="es">Más de 10 años</Name>
+				<Name xml:lang="de">Mehr als 10 Jahre</Name>
+			</EnumerationValue>
+		</TypeAttribute>
+	</Type>
+	<Type name="ConsultingNonResource" extends="System:CatalogItem">
+		<Name xml:lang="en-US">Consulting NonResource</Name>
+		<Name xml:lang="pt-BR">NãoRecursodeConsultoria</Name>
+		<Name xml:lang="sv">KonsultIckeResurs</Name>
+		<Name xml:lang="it">NonRisorsaConsulenza</Name>
+		<Name xml:lang="es">No recurso de consultoría</Name>
+		<Name xml:lang="fr-CA">Nondonnéesdeconsultation</Name>
+		<Name xml:lang="fr">Conseil (Non ressource)</Name>
+		<Name xml:lang="de">Beratung, Nicht-Ressource</Name>
+		<Name xml:lang="zh-CN">咨询非资源</Name>
+		<Name xml:lang="ja">コンサルタント用人材外</Name>
+		<Name xml:lang="nl">ConsultingNon-resource</Name>
+		<Description xml:lang="en-US">Consulting NonResource Item</Description>
+		<Description xml:lang="pt-BR">NãoRecursodeConsultoria</Description>
+		<Description xml:lang="sv">KonsultIckeResurs</Description>
+		<Description xml:lang="it">NonRisorsaConsulenza</Description>
+		<Description xml:lang="es">No recurso de consultoría</Description>
+		<Description xml:lang="fr-CA">Nondonnéesdeconsultation</Description>
+		<Description xml:lang="fr">Conseil (Non ressource)</Description>
+		<Description xml:lang="de">Beratung, Nicht-Ressource</Description>
+		<Description xml:lang="zh-CN">咨询非资源</Description>
+		<Description xml:lang="ja">コンサルタント用人材外</Description>
+		<Description xml:lang="nl">ConsultingNon-resource</Description>
+		<TypeAttribute name="ConsultingNonResource" type="Name" isRefinable="yes" isSearchable="yes" isCollection="yes">
+			<Name xml:lang="en-US">Consulting NonResource</Name>
+			<Name xml:lang="pt-BR">NãoRecursodeConsultoria</Name>
+			<Name xml:lang="sv">KonsultIckeResurs</Name>
+			<Name xml:lang="it">NonRisorsaConsulenza</Name>
+			<Name xml:lang="es">No recurso de consultoría</Name>
+			<Name xml:lang="fr-CA">Nondonnéesdeconsultation</Name>
+			<Name xml:lang="fr">Conseil (Non ressource)</Name>
+			<Name xml:lang="de">Beratung, Nicht-Ressource</Name>
+			<Name xml:lang="zh-CN">咨询非资源</Name>
+			<Name xml:lang="ja">コンサルタント用人材外</Name>
+			<Name xml:lang="nl">ConsultingNon-resource</Name>
+		</TypeAttribute>
+	</Type>
+</TypeDefinition>

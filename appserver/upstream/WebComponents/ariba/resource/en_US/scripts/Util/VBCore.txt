@@ -1,0 +1,28 @@
+function gotoFunctionHandler (keyValues)
+    On Error Resume Next
+    set gotoFunctionHandler = Nothing
+    Dim aSelection
+    set aSelection = awxsGetValue(keyValues, "selection")
+    Dim bookmarkName
+    bookmarkName = awxsGetValue(keyValues, "bookmarkname")
+    Dim aRange
+    Set aRange = aSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+    set gotoFunctionHandler = aRange
+end function
+
+Dim eventGoToFunction
+Set eventGoToFunction = awxsCreateEvent("gotoFunction", GetRef("gotoFunctionHandler"))
+awxsRegisterEvent "gotoFunction", eventGoToFunction
+
+function addTempWordDocumentHandler (keyValues)
+    On Error Resume Next
+    Dim wordApplication
+    set wordApplication = awxsGetValue(keyValues, "wordapplication")
+    Set addTempWordDocumentHandler = wordApplication.Documents.Add( , , , False)
+end function
+
+Dim eventAddTempWordDocument
+Set eventAddTempWordDocument = awxsCreateEvent("addTempWordDocument", GetRef("addTempWordDocumentHandler"))
+awxsRegisterEvent "addTempWordDocument", eventAddTempWordDocument
+
+

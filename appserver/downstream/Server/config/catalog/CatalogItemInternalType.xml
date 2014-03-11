@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/Catalog.dtd">
+<TypeDefinition>
+<TypeProvider name="System">
+    <OrganizationID>
+      <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+    </OrganizationID>
+</TypeProvider>
+
+<Comments>Ariba Internal CatalogItem type definition</Comments>
+
+<Type name="DomainValuePair">
+    <Name xml:lang="en-US">Domain Value Pair</Name>
+    <Description xml:lang="en-US">Helper type encapsulating a domain-value tuple</Description>
+    <TypeAttribute name="Domain"
+                   type="Name"
+                   shortTag="d"
+                   isRequired="yes">
+        <Name xml:lang="en-US">Domain</Name>
+    </TypeAttribute>
+    <TypeAttribute name="Value"
+                   type="Name"
+                   shortTag="v"
+                   isRequired="yes">
+        <Name xml:lang="en-US">Value</Name>
+    </TypeAttribute>
+</Type>
+
+<Type name="Money">
+    <Name xml:lang="en-US">Money</Name>
+    <Name xml:lang="de">Geld</Name>
+    <Name xml:lang="fr">Argent</Name>
+    <Description xml:lang="en-US">Money type encapsulating a currency-price tuple</Description>
+    <TypeAttribute name="Currency"
+                   type="CurrencyCode"
+                   shortTag="c"
+                   isRequired="yes"/>
+    <TypeAttribute name="Amount"
+                   type="Price"
+                   shortTag="a"
+                   isRequired="yes"/>
+</Type>
+
+<!--
+    This type is bootstrapped into the system during initdb and does not use the dynamic
+    type loader.  It is commented here for reference.
+
+    Root item: The overall type of any data loaded from file through our bag
+    loader must derive from Root Item.
+
+<Type name="RootItem">
+    <Description xml:lang="en-US">Root type containing the type name of data loaded from a catalog</Description>
+
+    <TypeAttribute name="TypeName"
+                   type="Id"
+                   shortTag="tn"
+                   isRequired="yes"
+                   isRefinable="yes"
+                   isReadOnly="yes">
+        <Name xml:lang="en-US">Type Name</Name>
+    </TypeAttribute>
+</Type>
+
+-->
+
+<!--
+    CatalogItemDelete: our delete catalog item type.
+-->
+<Type name="CatalogItemDelete" extends="System:RootItem">
+   <Name xml:lang="en-US">Delete Catalog Item</Name>
+   <Description xml:lang="en-US">Type describing CIF 3.0 and cXML delete catalog item data</Description>
+
+   <!-- Our collection of supplier id domain/value pairs -->
+   <TypeAttribute name="SupplierId"
+                  type="DomainValuePair"
+                  shortTag="sid"
+                  isCollection="yes"
+                  isRefinable="yes"
+                  isRequired="yes"
+                  isSearchable="yes"
+                  isHidden="yes"
+                  isInKey="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Supplier Id</Name>
+    </TypeAttribute>
+
+
+   <TypeAttribute name="SupplierName"
+                  type="Name"
+                  shortTag="sn"
+                  mappedFrom="Supplier.Name.PrimaryString"
+                  isInFreeTextSearch="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Supplier Name</Name>
+    </TypeAttribute>
+
+
+   <TypeAttribute name="SupplierPartId"
+                  type="PartId"
+                  shortTag="spid"
+                  isRequired="yes"
+                  isInFreeTextSearch="yes"
+                  isSearchable="yes"
+                  isInKey="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Supplier Part Id</Name>
+    </TypeAttribute>
+
+   <TypeAttribute name="SupplierPartAuxiliaryId"
+                  type="Id"
+                  shortTag="spaid"
+                  isInKey="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Supplier Part Auxiliary Id</Name>
+    </TypeAttribute>
+
+   <TypeAttribute name="Key"
+                   type="Id"
+                   shortTag="ky"
+                   isCaseSensitive="yes"
+                   isHidden="yes"
+                   isSearchable="yes"
+                   isReadOnly="yes">
+        <Name xml:lang="en-US">Key</Name>
+   </TypeAttribute>
+</Type>
+
+<!--
+    CatalogItemInternal: our base catalog item type.
+-->
+<Type name="CatalogItemInternal" extends="System:RootItem">
+   <Name xml:lang="en-US">Internal Catalog Item</Name>
+   <Description xml:lang="en-US">Type describing CIF 3.0 and cXML catalog item data</Description>
+
+   <TypeAttribute name="ExpirationDate"
+                  type="FutureDate"
+                  shortTag="exdt"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">Expiration Date</Name>
+   </TypeAttribute>
+
+    <TypeAttribute name="NodeId"
+                   type="DomainValuePair"
+                   isCaseSensitive="yes"
+                   isCollection="yes"
+                   isHidden="yes"
+                   isRefinable="yes"
+                   isSearchable="yes">
+        <Name xml:lang="en-US">Category</Name>
+    </TypeAttribute>
+
+    <TypeAttribute name="PunchoutStore"
+                   type="Id"
+                   isHidden="yes"
+                   isRefinable="yes">
+        <Name xml:lang="en-US">Shop at</Name>
+    </TypeAttribute>
+
+   <!-- Our collection of supplier id domain/value pairs -->
+   <TypeAttribute name="SupplierId"
+                  type="DomainValuePair"
+                  shortTag="sid"
+                  isCollection="yes"
+                  isRefinable="yes"
+                  isRequired="yes"
+                  isSearchable="yes"
+                  isHidden="yes"
+                  isInKey="yes">
+        <Name xml:lang="en-US">Supplier Id</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="Key"
+                   type="Id"
+                   shortTag="ky"
+                   isCaseSensitive="yes"
+                   isHidden="yes"
+                   isSearchable="yes"
+                   isReadOnly="yes">
+        <Name xml:lang="en-US">Key</Name>
+   </TypeAttribute>
+
+    <TypeAttribute name="DefaultRelevance"
+                   type="PositiveInteger"
+                   isSortable="yes">
+        <Name xml:lang="en-US">Default Relevance</Name>
+    </TypeAttribute>
+
+   <TypeAttribute name="Language"
+                  type="Id"
+                  shortTag="lng"
+                  isRefinable="yes">
+        <Name xml:lang="en-US">Language</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="Price"
+                  type="Money"
+                  shortTag="p"
+                  isRefinable="yes"
+                  isRequired="yes"
+                  isSortable="yes">
+        <Name xml:lang="en-US">Price</Name>
+   </TypeAttribute>
+
+    <TypeAttribute name="SupplierName"
+                  type="Name"
+                  shortTag="sn"
+                  mappedFrom="Supplier.Name.PrimaryString"
+                  isInFreeTextSearch="yes">
+        <Name xml:lang="en-US">Supplier Name</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="CatalogName"
+                  type="Id"
+                  shortTag="catalogname"
+                  mappedFrom="Subscription.Name"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">Catalog Name</Name>
+   </TypeAttribute>
+
+
+   <TypeAttribute name="SupplierPartId"
+                  type="PartId"
+                  shortTag="spid"
+                  isRequired="yes"
+                  isInFreeTextSearch="yes"
+                  isSearchable="yes"
+                  isInKey="yes">
+        <Name xml:lang="en-US">Supplier Part Id</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="SupplierPartAuxiliaryId"
+                  type="Id"
+                  shortTag="spaid"
+                  isInKey="yes">
+        <Name xml:lang="en-US">Supplier Part Auxiliary Id</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="ManufacturerPartId"
+                  type="PartId"
+                  shortTag="mid"
+                  isInFreeTextSearch="yes"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">Manufacturer Part Id</Name>
+    </TypeAttribute>
+
+    <TypeAttribute name="LinkedBuyerPart"
+                  type="Id">
+        <Name xml:lang="en-US">Linked Buyer Part</Name>
+    </TypeAttribute>
+ 
+   <TypeAttribute name="LinkedBuyerFacility"
+                  type="Id">
+        <Name xml:lang="en-US">Linked Buyer Facility</Name>
+    </TypeAttribute>
+
+   <TypeAttribute name="ManufacturerName"
+                  type="Name"
+                  shortTag="mn"
+                  isInFreeTextSearch="yes"
+                  isRefinable="yes">
+        <Name xml:lang="en-US">Manufacturer Name</Name>
+    </TypeAttribute>
+
+
+   <TypeAttribute name="ManufacturerURL"
+		  type="URL"
+                  shortTag="mu">
+        <Name xml:lang="en-US">Manufacturer URL</Name>
+   </TypeAttribute>
+
+
+   <TypeAttribute name="URL"
+                  type="URL"
+                  shortTag="url">
+        <Name xml:lang="en-US">Supplier URL</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="Description"
+                  type="Description"
+                  shortTag="dsc"
+                  isRequired="yes"
+                  isInFreeTextSearch="yes"
+                  isSortable="yes">
+        <Name xml:lang="en-US">Description</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="ShortName"
+                  type="ShortName"
+                  shortTag="shn"
+                  isInFreeTextSearch="yes"
+                  isSortable="yes">
+        <Name xml:lang="en-US">Short Name</Name>
+    </TypeAttribute>
+
+
+   <TypeAttribute name="UnitOfMeasure"
+                  type="DomainValuePair"
+                  shortTag="uom"
+                  isRequired="yes">
+        <Name xml:lang="en-US">Unit of Measure</Name>
+    </TypeAttribute>
+
+
+   <TypeAttribute name="NonContractPrice"
+                  type="Money"
+                  shortTag="ncp"
+                  isHidden="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Non Contract Price</Name>
+    </TypeAttribute>
+
+
+   <TypeAttribute name="ContractPrice"
+                  type="Money"
+                  shortTag="cp"
+                  isHidden="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Contract Price</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="EffectiveDate"
+                  type="Date"
+                  shortTag="efdt">
+        <Name xml:lang="en-US">Effective Date</Name>
+   </TypeAttribute>
+
+
+   <TypeAttribute name="LeadTime"
+                  type="PositiveInteger"
+                  shortTag="lt">
+        <Name xml:lang="en-US">Lead Time</Name>
+    </TypeAttribute>
+
+   <TypeAttribute name="ClassificationCode"
+                  type="DomainValuePair"
+                  shortTag="cc"
+                  isCollection="yes"
+                  isSearchable="yes"
+                  isRequired="yes">
+        <Name xml:lang="en-US">Classification Code</Name>
+    </TypeAttribute>
+
+
+   <TypeAttribute name="TerritoryAvailable"
+                  type="TerritoryCode"
+                  shortTag="ta"
+                  isCollection="yes"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">Territory Available</Name>
+   </TypeAttribute>
+
+
+   <TypeAttribute name="PunchoutEnabled"
+                  type="Flag"
+                  shortTag="pe"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">Punchout Enabled</Name>
+   </TypeAttribute>
+
+
+   <TypeAttribute name="AribaInternalMAId"
+                  type="Id"
+                  shortTag="aribainternalmaid"
+                  isSearchable="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Ariba Internal Master Agreement Id</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="AribaInternalIsContractOrderable"
+                  type="Flag"
+                  shortTag="aribainternaliscontractorderable"
+                  isSearchable="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Ariba Internal contract is orderable</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="IsPartial"
+                  type="Flag"
+                  shortTag="ispartial"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">Partially Specified</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="IsInternalPartId"
+                  type="Flag"
+                  shortTag="isinternalpartid"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">Internally generated part number</Name>
+   </TypeAttribute>
+
+   <TypeAttribute name="Thumbnail" type="URL" shortTag="thumbnail">
+      <Name xml:lang="en-US">Thumbnail Image</Name>
+   </TypeAttribute>
+   <TypeAttribute name="Image" type="URL" shortTag="image">
+      <Name xml:lang="en-US">Full Size Image</Name>
+   </TypeAttribute>
+   <TypeAttribute name="SpecSheet" type="URL" shortTag="specsheet" isHidden="yes">
+      <Name xml:lang="en-US">Specification</Name>
+   </TypeAttribute>
+   <TypeAttribute name="Demo" type="URL" shortTag="demo" isHidden="yes">
+      <Name xml:lang="en-US">Product Demonstration</Name>
+   </TypeAttribute>
+   <TypeAttribute name="HazmatSheet" type="URL" shortTag="hazmatsheet" isHidden="yes">
+      <Name xml:lang="en-US">Hazardous Material Specification</Name>
+   </TypeAttribute>
+   <TypeAttribute name="InKitOnly"
+                  type="flag"
+                  isSearchable="yes">
+        <Name xml:lang="en-US">In Kit Only</Name>
+   </TypeAttribute>
+   <TypeAttribute name="PunchoutLevel"
+                  type="name">
+        <Name xml:lang="en-US">Punchout Level</Name>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">store</Extrinsic>
+            <Name xml:lang="en-US">Store</Name>
+        </EnumerationValue>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">aisle</Extrinsic>
+            <Name xml:lang="en-US">Aisle</Name>
+       </EnumerationValue>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">shelf</Extrinsic>
+            <Name xml:lang="en-US">Shelf</Name>
+       </EnumerationValue>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">product</Extrinsic>
+            <Name xml:lang="en-US">Product</Name>
+       </EnumerationValue>
+   </TypeAttribute>
+   <TypeAttribute name="ProcureItemType"
+                  type="Name"
+                  isHidden="yes"
+                  isSearchable="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Procure Item Type</Name>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">regular</Extrinsic>
+            <Name xml:lang="en-US">Regular</Name>
+        </EnumerationValue>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">fee</Extrinsic>
+            <Name xml:lang="en-US">Fee</Name>
+        </EnumerationValue>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">expense</Extrinsic>
+            <Name xml:lang="en-US">Expense</Name>
+        </EnumerationValue>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">milestone</Extrinsic>
+            <Name xml:lang="en-US">Milestone</Name>
+        </EnumerationValue>
+        <EnumerationValue>
+            <Extrinsic name="CanonicalValue">service</Extrinsic>
+            <Name xml:lang="en-US">Service</Name>
+        </EnumerationValue>
+   </TypeAttribute>
+   <TypeAttribute name="BuyerPartId"
+                  type="PartId"
+                  isInFreeTextSearch="yes"
+                  isSearchable="yes"
+                  isReadOnly="yes">
+        <Name xml:lang="en-US">Buyer Part Id</Name>
+    </TypeAttribute>
+    <TypeAttribute name="Keywords"
+                   type="Id"
+                   isCollection="yes"
+                   isHidden="yes"
+                   isRefinable="yes">
+        <Name xml:lang="en-US">Keywords</Name>
+    </TypeAttribute>
+</Type>
+</TypeDefinition>

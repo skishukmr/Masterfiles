@@ -1,0 +1,77 @@
+//None.IntegrationEvent.CommonSupplierIDMapPull
+//LSAP.IntegrationEvent.ChargeExceptionTypePull
+//LSAP.IntegrationEvent.ChargeExceptionTypeValidationPull
+//LSAP.IntegrationEvent.ChargeTaxCodeMappingPull
+LSAP.IntegrationEvent.ReceiptByCommodityCodePull
+LSAP.IntegrationEvent.ReceiptByPartNumberPull
+LSAP.IntegrationEvent.CollaborationReasonPull
+LSAP.IntegrationEvent.InvoiceExceptionTypePull
+LSAP.IntegrationEvent.InvoiceExceptionTypeValidationPull
+LSAP.IntegrationEvent.BuyerPaymentBankLocationPull
+LSAP.IntegrationEvent.SupplierPaymentBankLocationPull
+LSAP.IntegrationEvent.TaxTypeMapPull
+LSAP.IntegrationEvent.TaxCodeLookupPull
+LSAP.IntegrationEvent.TaxRateLookupByTaxCodePull
+LSAP.IntegrationEvent.PaymentMethodTypePull
+LSAP.IntegrationEvent.RemittanceLocationPull
+LSAP.IntegrationEvent.SupplierLocationRemittanceInformationPull
+LSAP.IntegrationEvent.AllowableHierarchyChoicePull
+LSAP.IntegrationEvent.AutoTypePull
+LSAP.IntegrationEvent.ExpenseCodeMappingPull
+LSAP.IntegrationEvent.ExpenseLineTypePull
+LSAP.IntegrationEvent.ExpensePaymentPull
+LSAP.IntegrationEvent.ExpensePolicyTypePull
+LSAP.IntegrationEvent.ExpenseTaxRateLookupByTaxCodePull
+LSAP.IntegrationEvent.ExpenseTypePull
+LSAP.IntegrationEvent.ExpenseTypeToGroupMapPull
+LSAP.IntegrationEvent.ExpenseHeaderCategoryMapPull
+LSAP.IntegrationEvent.LocationTypePull
+LSAP.IntegrationEvent.BatchAuditPolicyTypePull
+LSAP.IntegrationEvent.ExpenseTaxCodeLookupPull
+LSAP.IntegrationEvent.RealTimeAuditPolicyTypePull
+LSAP.IntegrationEvent.LaborPayCodeMapPull
+
+/*
+
+    These IEs could not be run because of errors
+    --------------------------------------------
+
+     ** schema not found **
+
+    pcsv1.IntegrationEvent.CATContractCountryCodePull
+    pcsv1.IntegrationEvent.CATContractLocationPull
+
+     ** csv files don't exist **
+
+    mfg1.IntegrationEvent.CATBuyerCodeAnalystContactMapPull
+    pcsv1.IntegrationEvent.GEXUserMapPull
+
+     ** Aborted with too many errors message **
+
+    None.Task.BestPracticeGroupRoleMappingsPullTask
+    LLSAP.IntegrationEvent.PurchaseOrgSupplierComboPull
+    LLSAP.IntegrationEvent.CommodityExportMapPull
+    ezopen.IntegrationEvent.CommodityExportMapPull
+    None.Task.PurgeCatalogAndLoadTypes
+    None.Task.LoadCatalogs
+    LLSAP.Task.LoadExpenseGuidelineParams
+    pcsv1.Task.LoadExpenseGuidelineParams
+
+
+    These IEs are not needed while initializing the system
+    ------------------------------------------------------
+
+    mfg1.IntegrationEvent.CATInclusionsPull
+    ezopen.IntegrationEvent.CATInclusionsPull
+    pcsv1.IntegrationEvent.CATInclusionsPull
+    mfg1.IntegrationEvent.CATExclusionsPull
+    ezopen.IntegrationEvent.CATExclusionsPull
+    pcsv1.IntegrationEvent.CATExclusionsPull
+    pcsv1.IntegrationEvent.CATSuperPull
+    pcsv1.IntegrationEvent.CATSupportUserPull
+    mfg1.IntegrationEvent.CATSuperPull
+    mfg1.IntegrationEvent.CATSupportUserPull
+    ezopen.IntegrationEvent.CATSuperPull
+    ezopen.IntegrationEvent.CATSupportUserPull
+    pcsv1.IntegrationEvent.CATLognetPONumberPull
+*/

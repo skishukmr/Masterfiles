@@ -1,0 +1,57 @@
+
+function sfExportFunctions (fns) {
+    for (var i = 0; i < fns.length; i += 2) {
+        awxsRegisterHandler(fns[i], fns[i+1]);
+    }
+}
+
+function sfTrim (str) {
+    if (str == null || str == "") {
+        return str;
+    }
+    
+    var retval = ACW.trim(str);
+    return retval;
+}
+
+function sfTrimStringArray (array)
+{
+    if (array == null) {
+        return;
+    }
+
+    for (var i = 0; i < array.length; ++i) {
+        array[i] = sfTrim(array[i]);
+    }
+}
+
+function sfEmptyString (str) {
+    return str == null || str.length <= 0;
+}
+
+function sfTypeName (obj)
+{
+    var handler = awxsGetEventObject("vbTypeName");
+    handler.setArg("object", obj);
+    return handler.invoke();
+}
+
+function sfvbDoIncrementalGeneration () {
+    var handler = awxsGetEventObject("vbDoIncrementalGeneration");
+    return handler.invoke();
+}
+
+function sfFormatUrl (actionid)
+{
+    return ClientAutomation.ResolvePartialURL(ariba.Request.formatUrl(actionid));
+}
+
+function sfGetItemFromCollection (coll, name)
+{
+    try {
+        return coll.Item(name);
+    }
+    catch (ex) {
+        return null;
+    }
+}

@@ -1,0 +1,224 @@
+Dim app, xmlDomProp, excelActiveWorkbook
+Dim postFieldsActionUrl
+Dim clientFileNameValue
+Dim formFieldsValue
+Dim applicationNameValue
+Dim isWordDocValue
+Dim isExcelDocValue
+Dim checkParseErrorActionUrl
+Dim doneActionUrl
+
+
+Function logError (message)
+    logError = false
+    If Err.number <> 0 Then
+        globalError = true
+        ScriptError.innerHTML = message
+        ActiveXError.style.display = ""
+        cleanup
+        logError = true
+    End If
+End Function
+
+Sub cleanup ()
+    if (not (excelActiveWorkbook is Nothing)) Then
+        set excelActiveWorkbook = Nothing
+    End If
+    If (not (app is Nothing)) Then
+        If (isWordDocValue = True) Then
+            app.NormalTemplate.Saved = True
+        End If
+        app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+    set xmlDomProp = Nothing
+End Sub
+
+Sub createDom ()
+    set xmlDomProp = CreateObject("MSXML2.DOMDocument")
+    If logError(msg1) Then
+        Exit Sub
+    End If
+    xmlDomProp.loadXML("<?xml version=""1.0""?><root/>")
+End Sub
+
+Sub addFieldToDom (fieldName, fieldText)
+    Dim ele, tnode
+    set ele = xmlDomProp.createElement("FormField")
+    ele.setAttribute "name", fieldName
+    set tnode = xmlDomProp.createTextNode(fieldText)
+    ele.appendChild(tnode)
+    xmlDomProp.documentElement.appendChild(ele)
+End Sub
+
+Sub sendXML ()
+    On Error Resume Next
+    Dim xmlhttp
+    strUrl = postFieldsActionUrl
+    set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(msg2) Then
+        Exit Sub
+    End If
+    xmlhttp.Open "POST", strUrl, false
+    xmlhttp.Send xmlDomProp.xml
+    If logError(msg3) Then
+        Exit Sub
+    End If
+    set xmlhttp = Nothing
+End Sub
+
+Sub parseWordData ()
+    On Error Resume Next
+
+        'get file name and open file in Word
+    sfilename = clientFileNameValue
+    ' saveOpenDocument app, sfilename
+    app.Documents.Open sfilename, , True
+
+    If logError(msg4 & sfilename) Then
+        Exit Sub
+    End If
+
+        'parse form fields and add them to xml
+    Dim sField, sText
+    Dim fieldArray
+
+    fieldArray = Split(formFieldsValue, "******")
+
+    For each sField in fieldArray
+        If (Len(sField) > 0) Then
+            sText = app.ActiveDocument.FormFields(sField).Result
+                ' backward compatibility
+            If Err.number <> 0 Then
+                Err.Clear
+                sText = app.ActiveDocument.FormFields(prefixFieldName & sField).Result
+            End If
+                'if form field does not exist, skip and not send it to server
+            If Err.number <> 0 Then
+                sText = ""
+                Err.Clear
+            Else
+                If (Not sText = "") Then
+                    addFieldToDom sField, sText
+                End If
+            End If
+        End If
+    Next
+
+    app.NormalTemplate.Saved = True
+    ' app.Documents.Close wdDoNotSaveChanges
+    app.Quit wdDoNotSaveChanges
+
+End Sub
+
+Sub parseExcelData ()
+    On Error Resume Next
+
+        'get file name and open file in Excel
+    sfilename = clientFileNameValue
+    sfilename = Replace(sfilename, "/", "\")
+    set excelActiveWorkbook = app.Workbooks.Open(sfilename)
+    If logError(msg5 & sfilename) Then
+        Exit Sub
+    End If
+
+        'parse form fields and add them to xml
+    Dim sField, sText
+    Dim fieldArray
+    fieldArray = Split(formFieldsValue, "******")
+
+    For each sField in fieldArray
+        If (Len(sField) > 0) Then
+            sText = app.Evaluate(excelActiveWorkbook.Names(sField).Value)
+                'if form field does not exist, skip and not send it to server
+            If Err.number <> 0 Then
+                sText = ""
+                Err.Clear
+            Else
+                addFieldToDom sField, sText
+            End If
+        End If
+    Next
+
+    app.Workbooks.Close
+    app.Quit wdDoNotSaveChanges
+End Sub
+
+Sub step_contact_app_sub ()
+    On Error Resume Next
+        'launch app
+    set app = CreateObject(applicationNameValue & ".Application")
+    If logError(msg6 & applicationNameValue) Then
+        Exit Sub
+    End If
+    app.Visible = false
+    setStep "step_parsing_data"
+    step_parsing_data_sub
+End Sub
+
+Sub startSyncupPropertyHandler (keyValues)
+    On Error Resume Next
+
+    postFieldsActionUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "postFieldsActionUrl"))
+    clientFileNameValue = awxsGetValue(keyValues, "clientFileNameValue")
+    formFieldsValue = awxsGetValue(keyValues, "formFieldsValue")
+    applicationNameValue = awxsGetValue(keyValues, "applicationNameValue")
+    isWordDocValue = booleanValue(awxsGetValue(keyValues, "isWordDocValue"))
+    isExcelDocValue = booleanValue(awxsGetValue(keyValues, "isExcelDocValue"))
+    checkParseErrorActionUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "checkParseErrorActionUrl"))
+    doneActionUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "doneActionUrl"))
+
+    If logError("") Then
+        Exit Sub
+    End If
+
+    step_contact_app_sub
+End Sub
+
+Sub step_parsing_data_sub ()
+    createDom
+
+    If (isWordDocValue = True) Then
+        parseWordData
+    End If
+    If (isExcelDocValue = True) Then
+        parseExcelData
+    End If
+    sendXML
+
+    ariba.Request.setWindowLocation(checkParseErrorActionUrl)
+End Sub
+
+Sub step_done_sub ()
+    On Error Resume Next
+    cleanup
+        'take user to previous page
+    ariba.Request.setWindowLocation(doneActionUrl)
+End Sub
+
+Sub readySyncupPropertyHandler (keyValues)
+    On Error Resume Next
+
+    doneActionUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "doneActionUrl"))
+
+    setStep "step_done"
+    step_done_sub
+End Sub
+
+Sub setStep (name)
+    step_contact_app.className = "inactiveStep"
+    step_parsing_data.className = "inactiveStep"
+    document.all(name).className = "activeStep"
+    ' setTimeout name & "_sub()", 1, vbscript
+End Sub
+
+Dim CDSyncupPropertyTrigger
+
+Dim eventStartSyncupProperty
+Set eventStartSyncupProperty = awxsCreateEvent("startSyncupProperty", GetRef("startSyncupPropertyHandler"))
+awxsRegisterEvent "startSyncupProperty", eventStartSyncupProperty
+
+Dim eventReadySyncupProperty
+Set eventReadySyncupProperty = awxsCreateEvent("readySyncupProperty", GetRef("readySyncupPropertyHandler"))
+awxsRegisterEvent "readySyncupProperty", eventReadySyncupProperty
+

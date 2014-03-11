@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE um SYSTEM "um.dtd">
+<um>
+  <update baseVersion="9.0" name="sourcing_9.0_sp13" size="311309039" status="installed" time="Mon Jan 10 08:56:43 CST 2011" version="9.0_sp13">
+    <uninstall name="sourcing_9.0_sp13" type="update" version="9.0_sp13"/>
+  </update>
+</um>

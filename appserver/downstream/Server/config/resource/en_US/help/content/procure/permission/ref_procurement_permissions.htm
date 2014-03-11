@@ -1,0 +1,224 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- #BeginTemplate "/templates/secondary_template.dwt" --><!-- DW6 -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>Procurement permissions</title>
+<meta name="keywords" content="permissions|procurement,permissions|purchase requisitions,purchase requisitions|permissions,AdvancedShipNoticeErrorNotification permission,AdvancedShipNoticeSuccessNotification permission,CancelPO permission,ChangePO permission,CreateRequisition permission,ForceProcess permission,NoNonCatalogItems permission,OrderConfirmationErrorNotification permission,OrderConfirmationSuccessNotification permission,OrderFailureImmediateEmail permission,PurchaseOrderCancelEmail permission,PurchaseOrderChangeEmail permission,PurchaseOrderRejectionEmail permission,ReceiveError permission,RequisitionChange permission,SupplierLocationCheckEmail permission">
+<!-- #EndEditable --> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../library/ariba.css" type="text/css">
+<script type="text/javaScript" src="../../../../library/help.js"></script>
+<!-- #BeginEditable "comments" --> 
+<!-- $File: //ariba/help/buyer/ariba/resource/en_US/help/content/end_user/procure/permission/ref_procurement_permissions.htm $
+     old path: //ariba/doc/Phoenix_Help/help/Content/procure/permissions/procurement-permissions.htm#5 $
+	Creator: vsingh
+-->
+<!-- #EndEditable --> 
+
+</head>
+<body style="margin-left: 5px"><div id="help">
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr> 
+      <td height="25" colspan="3" class="helpPageTitle">My Supply Cabinet Online Help</td>
+    </tr>
+    <tr> 
+      <td class="helpBody" height="25" colspan="3" align="right"><a href="../../common/help/contents/content_frames.htm">Contents</a> 
+        | <a href="../../common/help/index/index_frames.htm">Index</a> 
+        | <a href="../../common/help/search/search.htm">Search</a> 
+        &nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </table>
+  
+  
+  <!-- #BeginVariableLibraryItem "/library/secondary_template_section.lbi" --> 
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr align="left"> 
+      <th  class="helpTopicTitle"><!-- #BeginEditable "topic_title" -->Procurement 
+      permissions<!-- #EndEditable --></th>
+    </tr>
+    <tr> 
+      <td valign="top" class="helpBody"><!-- #BeginEditable "body" --> 
+     
+	    <table width="99%" border="0" cellspacing="0" cellpadding="5" >
+          <tr align="left"> 
+            <th width="28%" class="helpBody" scope="col"><b>This permission</b></th>
+            <th width="72%" class="helpBody" scope="col"><b>Authorizes users to</b></th>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >AdvancedShipNoticeErrorNotification</td>
+            <td width="72%" class="helpBody" > 
+              <p>Receive an email notification message (<a href="../notification/ref_asn_error.htm">Notification 
+                75</a>) when a ship notice message is in a different partition 
+                than the related purchase order. This permission applies only 
+                for configurations that retrieve ship notice messages from Ariba 
+                Supplier Network (Ariba SN). By default, this permission is assigned 
+                to the Professional Buyer, Receiving Manager, and System Administrator 
+                roles.</p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >AdvancedShipNoticeSuccessNotification</td>
+            <td width="72%" class="helpBody" > 
+              <p>Receive an email notification message (<a href="../notification/ref_asn_received.htm">Notification 
+                78</a>) when a ship notice message is successfully received for 
+                a purchase order. This permission applies only for configurations 
+                that retrieve ship notice messages from Ariba SN. By default, 
+                this permission is assigned to the Professional Buyer and Receiving 
+                Manager roles.</p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >CancelPO</td>
+            <td width="72%" class="helpBody" > 
+              <p>Cancel a purchase order generated from a requisition you submitted. 
+                If you are a purchasing agent or an administrative user, use this 
+                permission in conjunction with the RequisitionChange permission 
+                to cancel an order generated from a requisition submitted by another 
+                user. </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >ChangePO</td>
+            <td width="72%" class="helpBody" > 
+              <p>Change a purchase order generated from a requisition you submitted. 
+                If you are a purchasing agent or an administrative user, this 
+                permission in conjunction with the RequisitionChange permission 
+                enables you to change an order generated from a requisition submitted 
+                by another user. </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">CreateRequisition</td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>Create purchase requisitions. This permission is not used in 
+                the default configuration. If the My Supply Cabinet PunchIn site is 
+                enabled, this permission can be used to prevent supplier users 
+                from creating requisitions.</p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">ForceProcess</td>
+            <td width="72%" class="helpBody" height="37"> Force a purchase order 
+              to the Ordered status when there is a problem in the ordering process, 
+              or to the Canceled status when there is an interruption in the normal 
+              process. </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >NoNonCatalogItems</td>
+            <td width="72%" class="helpBody" >Order catalog items only; users 
+              with this permission cannot order non-catalog items. Note that this 
+              permission does not control whether a user is able to create non-catalog 
+              items on a contract. </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >OrderConfirmationErrorNotification</td>
+            <td width="72%" class="helpBody" > 
+              <p> Receive an email notification message (<a href="../notification/ref_oc_error.htm">Notification 
+                74</a>) when the unit of measure in the order confirmation message 
+                is different than the unit of measure in the purchase order. This 
+                permission applies only in configurations that retrieve order 
+                confirmation messages from Ariba SN. In the default configuration, 
+                this permission is assigned to the roles Professional Buyer and 
+                System Administrator. </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >OrderConfirmationSuccessNotification</td>
+            <td width="72%" class="helpBody" > Receive (<a href="../notification/ref_oc_received.htm">Notification 
+              77</a>) when an order confirmation message is successfully received 
+              for a purchase order. This permission applies only in configurations 
+              that retrieve order confirmation messages from Ariba SN. In the 
+              default configuration, this permission is assigned to the the Professional 
+              Buyer role. </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">OrderFailureImmediateEmail</td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>Receive email notification messages (<a href="../notification/ref_transmission_error.htm">Notification 
+                20</a> and <a href="../notification/ref_null_params.htm">Notification 
+                23</a>) when an order being sent to a supplier experiences transmission 
+                problems. Users also receive <a href="../notification/ref_transmission_error.htm">Notification 
+                50</a> whenever an order goes to Ariba SN with an attachment that 
+                is not acceptable to Ariba SN. This permission is typically assigned 
+                to purchasing agents. </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">PurchaseOrderCancelEmail</td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>Receive an email notification message (<a href="../notification/ref_cancelled_po.htm">Notification 
+                35</a>) when a user deletes all of the line items from an order 
+                (essentially canceling the order) that was pushed to an ERP system 
+                and canceling orders is not enabled for the ERP. This permission 
+                is typically assigned to purchasing agents, so the purchasing 
+                agent can undo the deletion of at least one of the line items, 
+                ensuring the order is not canceled and a change order is sent. 
+              </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >PurchaseOrderChangeEmail</td>
+            <td width="72%" class="helpBody" >Receive an email notification message 
+              (<a href="../notification/ref_change_order.htm">Notification 58</a>) 
+              when change order integration with ERPs is disabled after a user 
+              has created a change order but before it has been sent to the ERP. 
+              This permission is typically assigned to purchasing agents, so the 
+              purchasing agent can cancel the change order.</td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">PurchaseOrderRejectionEmail 
+            </td>
+            <td width="72%" class="helpBody" height="37"> 
+              <p>Receive an email notification message (<a href="../notification/ref_receipt_rejection.htm">Notification 
+                34</a>) whenever users reject items from a purchase requisition. 
+                This permission is typically assigned to purchasing agents. </p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td width="28%" class="helpBody" >ReceiveError</td>
+            <td width="72%" class="helpBody" >Receive <a href="../notification/ref_receipt_fail.htm">Notification 
+              24</a> when a receipt was not successfully pushed to an ERP. When 
+              such an error occurs, the receipt remains in a &#147;processing&#148; 
+              state and My Supply Cabinet sends a notification message to the specified 
+              permission. In the default configuration, users with the ReceiveError 
+              permission also have the QueryAll permission so receipt managers 
+              can search for and edit any receipt in the system, (including auto-receipts).</td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" >RequisitionChange</td>
+            <td width="72%" class="helpBody" > 
+              <p>Change a requisition that was submitted by another user, and 
+                that has been fully approved. By default, the requester and preparer 
+                of a requisition are able to change a requisition. This permission 
+                authorizes additional administrative users, such as purchasing 
+                agents, to be able to create change orders on other users&#146; 
+                requisitions.</p>
+              <p> Changing a requisition changes the related purchase orders as 
+                well. To cancel or change a specific purchase order generated 
+                from a requisition, the user must also have the CancelPO or ChangePO 
+                permission. </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="28%" class="helpBody" height="37">SupplierLocationCheckEmail</td>
+            <td width="72%" class="helpBody" height="37">Receive an email notification 
+              message (<a href="../notification/ref_invalid_supplier_location.htm">Notification 
+              16</a>) when incorrect supplier contact information, such as an 
+              invalid fax number or missing phone number, exists. This permission 
+              is typically assigned to purchasing agents. </td>
+          </tr>
+        </table>
+    
+      <!-- #EndEditable --> </td>
+    </tr>
+    <tr> 
+      <td class="helpBody" align="center"> 
+        <hr color="#666699" noshade size="1">
+        Copyright 1996 - 2004 Ariba, Inc. <a href="javascript: openLegal('http://www.ariba.com/copyrights.cfm');">Legal 
+        notices</a>. </td>
+    </tr>
+  </table>
+  <!-- #EndVariableLibraryItem --></div>
+</body>
+<!-- #EndTemplate --></html>

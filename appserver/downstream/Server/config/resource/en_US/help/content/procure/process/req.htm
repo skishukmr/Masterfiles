@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- #BeginTemplate "/templates/main_basic_template.dwt" --><!-- DW6 -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>About the purchase requisition process</title>
+<meta name="keywords" content="process flows|purchase requisition,purchase requisitions|about the process">
+<!-- #EndEditable -->
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="file:///D|/Data/CAT%20US/library/ariba.css" type="text/css">
+<script type="text/javaScript" src="file:///D|/Data/CAT%20US/library/help.js"></script>
+<!-- #BeginEditable "comments" --> 
+<!-- $File: //ariba/help/buyer/ariba/resource/en_US/help/content/end_user/procure/process/req.htm $
+     old path: //ariba/release/7.0-P6/current/code/ariba/resource/en_US/help/Content/common/process/purchase-requisition-process.htm#2 $
+	Creator: ddaly
+-->
+<!-- #EndEditable -->
+</head>
+<body style="margin-left: 5px">
+<div id="help">
+  <table width="636" border="0" cellspacing="0" cellpadding="2">
+    <tr align="left">
+      <th height="25" colspan="3" class="helpPageTitle" >My Supply Cabinet Online Help</th>
+    </tr>
+    <tr>
+      <td class="helpBody" height="25" colspan="3" align="right"><a href="file:///D|/Data/CAT%20US/content/end_user/common/help/contents/content_frames.htm">Contents</a> | <a href="file:///D|/Data/CAT%20US/content/end_user/common/help/index/index_frames.htm">Index</a> | <a href="file:///D|/Data/CAT%20US/content/end_user/common/help/search/search.htm">Search</a> &nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </table>
+  <!-- #BeginVariableLibraryItem "/library/main_basic_template_section.lbi" -->
+  <table width="636" border="0" cellspacing="0" cellpadding="2">
+    <tr align="left">
+      <th class="helpSectionTitle" width="218">Tips</th>
+      <th width="10">&nbsp;</th>
+      <th class="helpTopicTitle" width="408"><!-- #BeginEditable "topictitle" -->About 
+        the purchase requisition process<!-- #EndEditable --></th>
+    </tr>
+    <tr>
+      <td valign="top" class="helpBody" width="218" bgcolor="#EEEEEE"><!-- #BeginEditable "tips" --> 
+        <p>You can withdraw an approved request only if it specifies a <a href="javascript: openGlossary('../../../common/glossary/hold_until.htm');"> 
+          Delay Purchase Until</a> date.</p>
+        <p>You can change or cancel a requisition whose status is Ordered. </p>
+        <p>If a requisition specified a Delay Purchase Until date, the requisition's 
+          status remains Approved until the date the related orders are actually 
+          sent to suppliers, at which time the requisition's status changes to 
+          Ordered. If you need to change an approved requisition during the time 
+          it is on hold, click <b>Edit</b> when viewing the requisition's details. 
+          Once the requisition's status changes to Ordered, use the Change button 
+          to change the requisition.</p>
+        <p>If a requisition contains line items that do not require a receipt 
+          (as configured by your system administrator), those line items have 
+          a status of Ordered, and not Received, when the requisition is fully 
+          approved. The status of the line items does not change during the procurement 
+          process; Ordered is the final status of those line items.</p>
+        <p>Although order IDs are typically created in numerical sequence (for 
+          example, DO1, DO2, DO3), one or more numbers can be skipped (for example, 
+          DO15, DO17, DO32) due to intervening internal events. Your system administrator 
+          can run a scheduled task to list all order IDs, if necessary. Note that 
+          the IDs for orders processed using an external Enterprise Resource Planning 
+          (ERP) system are assigned and maintained by the ERP system.</p>
+        <!-- #EndEditable -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="3">
+          <tr align="left">
+            <th class="helpSectionTitle">Related topics</th>
+          </tr>
+          <tr>
+            <td><!-- #BeginEditable "reltopics" --> 
+              <p class="helpBodySingleSpaced"><a href="../req/about_create_request.htm">Create 
+                a purchase requisition</a></p>
+              <p class="helpBodySingleSpaced"><a href="../../common/status/approve_request.htm">Approve 
+                requests</a></p>
+              <p class="helpBodySingleSpaced"><a href="receiving.htm">About the 
+                receiving process</a></p>
+              <p class="helpBodySingleSpaced"><a href="../status/ref_req_statuses.htm">Requisition 
+                statuses</a></p>
+              <p class="helpBodySingleSpaced"><a href="../report/ref_req.htm">Requisition 
+                reports</a></p>
+              <p class="helpBodySingleSpaced"><a href="../req/change_cancel_requests.htm">Change 
+                or cancel a requisition</a></p>
+              <p class="helpBodySingleSpaced"><a href="../../common/approvable/request_withdrawn.htm">Withdraw 
+                a request</a></p>
+              <p class="helpBodySingleSpaced"><a href="../req/approval_flow.htm">View 
+                the approval flow</a></p>
+              <!-- #EndEditable --> </td>
+          </tr>
+        </table></td>
+      <td valign="top"   class="helpBody" width="10">&nbsp;</td>
+      <td valign="top"   class="helpBody" width="408"><!-- #BeginEditable "body" --> 
+        <p>A purchase requisition (PR) is an approvable document created when 
+          you submit a request to purchase items, such as printer supplies. Each 
+          purchase requisition is assigned a unique ID number, such as PR2394, 
+          to help you and My Supply Cabinet identify and track it as it moves through 
+          the requisition process. 
+        <p>Purchase requisitions involve these basic steps (see the <a href="req_flow.htm">process 
+          flow diagram</a> for a detailed description of the process): 
+        <ol>
+          <li>A user requests goods by completing a PR and submitting it for approval. 
+          </li>
+          <li class="helpListPad">My Supply Cabinet routes the requisition to approvers, 
+            based on defined business rules, and notifies the approvers that a 
+            PR requires their approval.
+            <ul>
+               
+              <li class="helpListPad">If the requisition contains collaborative 
+                items, the requisition is routed to pre-collaboration approvers 
+                only, then goes through collaboration, and then continues on to 
+                the remaining approvers.</li>
+            </ul>
+          </li>
+          <li class="helpListPad">Approvers approve or deny the PR: 
+            <ul>
+              <li class="helpListPad">If the PR is fully approved, My Supply Cabinet 
+                reviews the requested items, identifies distinct suppliers, and 
+                creates a purchase order for each supplier. Depending on the items 
+                and system configuration, My Supply Cabinet sends orders to suppliers 
+                by direct order, Ariba SN, or ERP. </li>
+              <li class="helpListPad">If the PR is denied, the user can either 
+                edit and resubmit the PR for approval, or withdraw it. </li>
+            </ul>
+          </li>
+          <li class="helpListPad">The suppliers ship the items, wait for receipt, 
+            and then request payment.</li>
+          <li class="helpListPad"> For each order, My Supply Cabinet determines which 
+            items require receipts and tracks those receipts.</li>
+          <li class="helpListPad">The user receives items and submits receipts 
+            as the items arrive. If items arrive in batches, My Supply Cabinet maintains 
+            partial receipts and keeps the overall receipt open until all items 
+            have been received. My Supply Cabinet can also push the receipts to an ERP 
+            system.</li>
+        </ol>
+        <!-- #EndEditable --> </td>
+    </tr>
+    <tr>
+      <td  class="helpBody" colspan="3" align="center"><hr color="#666699" noshade size="1">
+        Copyright 1996 - 2004 Ariba, Inc. <a href="javascript: openLegal('http://www.ariba.com/copyrights.cfm');">Legal notices</a>. </td>
+    </tr>
+  </table>
+  <!-- #EndVariableLibraryItem -->
+</div>
+</body>
+<!-- #EndTemplate --></html>

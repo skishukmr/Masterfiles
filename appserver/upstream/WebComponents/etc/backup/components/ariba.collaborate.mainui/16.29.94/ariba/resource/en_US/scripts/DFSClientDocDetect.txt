@@ -1,0 +1,25 @@
+Function clientDocumentDetectUtil (dfileName, dlastSyncTimestamp)
+    On Error Resume Next
+
+    clientDocumentDetectUtil = 0
+
+    Dim dfso
+    Set dfso = CreateObject("Scripting.FileSystemObject")
+
+    If dlastSyncTimestamp <> "" AND dfso.FileExists(dfileName) Then
+        If DFS.isFileChanged(dlastSyncTimestamp, dfileName, dfileName) Then
+            clientDocumentDetectUtil = 1
+        End If
+    End If
+End Function
+
+Function clientDocumentDetectHandler (keyValues)
+    On Error Resume Next
+
+    clientDocumentDetectHandler = clientDocumentDetectUtil(awxsGetValue(keyValues, "documentName"), awxsGetValue(keyValues, "documentTimestamp"))
+End Function
+
+Dim eventClientDocumentDetect
+Set eventClientDocumentDetect = awxsCreateEvent("clientDocumentDetect", GetRef("clientDocumentDetectHandler"))
+awxsRegisterEvent "clientDocumentDetect", eventClientDocumentDetect
+

@@ -1,0 +1,190 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="LegacyBuyerRequisitionLineItemCSV">
+    <loadStages>
+	<csvStage/>
+        <analysisStage destinationName="ariba.analytics.fact.RequisitionLineItem"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <csvMapping selectField="CostCenterUniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <csvMapping selectField="DepartmentSetId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <csvMapping selectField="AccountUniqueName"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <csvMapping selectField="SplitAccountSetId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="RequisitionId">
+            <csvMapping selectField="RequisitionUniqueName"/>
+        </field>
+        <field name="RequisitionLineNumber">
+            <csvMapping selectField="ReqLineItemNumberInCollection"/>
+        </field>
+         <field name="SplitAccountingNumber">
+            <csvMapping selectField="SplitAccountingNumberInCollection"/>
+        </field>
+
+        <field name="RequisitionDate">
+            <csvMapping selectField="RequisitionSubmitDate"/>
+        </field>
+        <field name="Description">
+            <csvMapping selectField="ReqLineItemDescriptionDescription"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <csvMapping selectField="SupplierLocationUniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <csvMapping selectField="SupplierUniqueName"/>
+        </field>
+
+        <field name="Requester.UserId">
+            <csvMapping selectField="RequesterUniqueName"/>
+        </field>
+        <field name="Requester.PasswordAdapter">
+            <csvMapping selectField="RequesterPasswordAdapter"/>
+        </field>
+        <field name="Preparer.UserId">
+            <csvMapping selectField="PreparerUniqueName"/>
+        </field>
+        <field name="Preparer.PasswordAdapter">
+            <csvMapping selectField="PreparerPasswordAdapter"/>
+        </field>
+
+        <field name="SourceCommodityDomain">
+            <csvMapping selectField="CommodityCodeDomain"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="UNSPSC">
+            <csvMapping selectField="ReqLineItemDescriptionClassificationCodeAux"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ExtractClassificationCode">
+                    <parameter name="Classification" value="UNSPSC"/>
+                    <parameter name="CodeLength" value="8"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Commodity.CommodityId">
+            <csvMapping selectField="CommodityCodeUniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+            </analysisMapping>
+        </field>
+        <field name="ERPCommodity.CommodityId">
+            <csvMapping selectField="PartitionedCommodityCodeUniqueName"/>
+        </field>
+        <field name="UnitOfMeasure.UnitOfMeasureId">
+            <csvMapping selectField="UnitOfMeasureUniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemUOM"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Quantity">
+            <csvMapping selectField="SplitAccountingQuantity"/>
+        </field>
+        <field name="Amount.Amount">
+            <csvMapping selectField="SplitAccountingAmountAmount"/>
+        </field>
+        <field name="Amount.Currency">
+            <csvMapping selectField="CurrencyUniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <csvMapping selectField="SplitAccountingAmountConversionDate"/>
+        </field>
+
+        <field name="CatalogType">
+            <csvMapping selectField="CatalogType"/>
+            <analysisMapping enabled="false"/>
+        </field>
+
+        <!-- Null out all Part related fields if this is NonCatalog line item -->
+        <field name="Part.PartKey1">
+            <csvMapping selectField="ReqLineItemDescriptionSupplierPartNumber"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                    <parameter name="FieldName"    value="CatalogType"/>
+                    <parameter name="FieldValue"   value="NonCatalog"/>
+                    <parameter name="ReplaceValue" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Part.PartKey2">
+            <csvMapping selectField="ReqLineItemDescriptionSupplierPartAuxiliaryID"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                    <parameter name="FieldName"    value="CatalogType"/>
+                    <parameter name="FieldValue"   value="NonCatalog"/>
+                    <parameter name="ReplaceValue" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Part.PartKey3">
+            <csvMapping selectField="CommonSupplierSystemID"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                    <parameter name="FieldName"    value="CatalogType"/>
+                    <parameter name="FieldValue"   value="NonCatalog"/>
+                    <parameter name="ReplaceValue" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="Contract.ContractId">
+            <csvMapping selectField="ContractInitialUniqueName"/>
+        </field>
+        <field name="LineType">
+            <csvMapping selectField="ProcureLineTypeUniqueName"/>
+        </field>
+        <field name="StatusString">
+            <csvMapping selectField="RequisitionStatusString"/>
+	    </field>
+        <field name="TitleString">
+            <csvMapping selectField="RequisitionName"/>
+	    </field>
+        <field name="POId">
+            <csvMapping selectField="PurchaseOrderUniqueName"/>
+        </field>	
+        <field name="isPunchOutItem">
+            <csvMapping selectField="isPunchOutItem"/>
+	    </field>
+        <field name="ApprovedDate">
+            <csvMapping selectField="RequisitionApprovedDate"/>
+        </field>
+        <field name="AccountingCompany.CompanyId">
+            <csvMapping selectField="AccountingCompanyId"/>
+        </field>
+        <field name="AccountingCompany.BusinessUnitId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PurchasingCompany.BusinessUnitId">
+            <csvMapping selectField="PurchasingCompanyBusinessId"/>
+        </field>
+        <field name="PurchasingCompany.CompanyId">
+            <csvMapping selectField="PurchasingCompanyCompanyId"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

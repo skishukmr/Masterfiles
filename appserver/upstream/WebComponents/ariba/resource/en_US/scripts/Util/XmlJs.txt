@@ -1,0 +1,494 @@
+/**
+    <editList>
+        <deleteEntity>
+            Client: Contains completely deleted bookmarks, ie., the delted text contains
+            the whole bookmark.
+
+            Server: I am not seeing any server code that deals with deleted entities
+        </deleteEntity>
+
+        <setSummary bookmark startPos endPos>
+
+            Client: This node contains the clause summary (this is available only for sections).
+                For example if we delete contents, we need to send the right summary to the server.
+
+            Server: In handle set summary we update the summary information for the clause.
+
+        </setSummary>
+
+        <newEntities>
+
+            Client: all the processed bookmarks (sections, clauses)
+
+            Server: the server drives everything off this node.
+ 
+            <Section bookmark=$bookmarkName startPos=$startPos endPos = $endPos summaryEndPos=$summaryEndPos>
+            </Section>
+            <Clause bookmark=$bookmarkName startPos=$startPos endPos = $endPos summaryEndPos=$summaryEndPos>*
+            </Clause>
+        </newEntities>
+
+    </editList>
+
+    <otherBookmarkList>
+        What does this contain?
+    </otherBookmarkList>
+
+    <revisionList>
+        Client: Contains revisions corresponding to deletes or paragraph changes
+
+        Server: Add documentation
+ 
+        <revision revisionType=2 startPos=8326 endPos=8641>
+        </revision>
+
+    </revisionList>
+*/
+var XMLUtil = new function () {
+
+    this.createDOM = function (xmlString) {
+        /* TODO Gopal - is this okay? */
+        var xmlDoc = new ActiveXObject("Msxml2.DOMDocument.3.0");
+        xmlDoc.async = false;
+        xmlDoc.loadXML(xmlString);
+        return xmlDoc;
+    }
+
+    this.loadRequestDOM = function () {
+        return this.createDOM("<?xml version=\"1.0\" encoding=\"UTF-8\"?><loadRequest/>");
+    }
+
+    this.syncupRequestDOM = function () {
+        return this.createDOM("<?xml version=\"1.0\" encoding=\"UTF-8\"?><syncupRequest/>");
+    }
+
+    this.plainRequestDOM = function () {
+        return this.createDOM("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+    }
+
+    this.addFormField = function (xmlDOM, fieldName, fieldText)
+    {
+        var ele = xmlDOM.createElement("FormField");
+        ele.setAttribute("name", fieldName);
+        var tnode = xmlDOM.createTextNode(fieldText);
+        ele.appendChild(tnode);
+        xmlDOM.documentElement.appendChild(ele);
+    }
+
+    /**
+        Creates a bookmark proxy node
+    */
+    this.createBookmarkNode = function (xmlDOM, tag, cdata, bookmarkProxy) {
+        var xmlNode = xmlDOM.createElement(tag);
+
+        if (cdata != null) {
+            xmlNode.appendChild(xmlDOM.createCDATASection(cdata));
+        }
+
+        xmlNode.setAttribute(XML_ATTRIBUTE_BOOKMARK , bookmarkProxy.Name);
+        xmlNode.setAttribute(XML_ATTRIBUTE_STARTPOS , bookmarkProxy.Start);
+        xmlNode.setAttribute(XML_ATTRIBUTE_ENDPOS , bookmarkProxy.End);
+
+        return xmlNode;
+    }
+
+    this.appendBookmarkOtherNode = function (xmlDOM, bookmarkProxy, parent) {
+        var xmlNode = this.createBookmarkNode(xmlDOM, XML_TAG_OTHER_BOOKMARK, null, bookmarkProxy);
+        parent.appendChild(xmlNode);
+    }
+
+    this.appendBookmarkSectionGlobalNode = function (xmlDOM, bookmarkProxy, parent) {
+        var xmlNode = this.createBookmarkNode(xmlDOM, XML_TAG_SECTION_GLOBAL, null, bookmarkProxy);
+        parent.appendChild(xmlNode);
+    }
+
+    this.appendBookmarkSummaryNode = function (xmlDOM, bookmarkProxy, cdata, parentNode)
+    {
+        var xmlNode = this.createBookmarkNode(xmlDOM, XML_TAG_SET_SUMMARY, cdata, bookmarkProxy);
+        parentNode.appendChild(xmlNode);
+    }
+
+    /**
+        Sets the node attribute for tag
+    */
+    this.setNodeAttribute = function (xmlNode, tag, attribute) {
+        xmlNode.setAttribute(tag, attribute);
+    }
+
+    this.getNodeAttribute = function (xmlNode, tag) {
+        return xmlNode.getAttribute(tag);
+    }
+
+    this.documentElement = function (xmlDOM) {
+        return xmlDOM.documentElement;
+    }
+
+    this.appendChild = function (parent, child) {
+        parent.appendChild(child);
+    }
+
+    /**
+        Used by Load/Syncup to identify the non-bookmarked text.
+        fromPos is called on currentBookmark and toPos is called
+        on the next bookmark to compute the islands of non-bookmarked
+        areas
+    */
+    this.getFromPos = function (xmlNode) {
+        if (xmlNode.nodeName == XML_TAG_SECTION) {
+            return xmlNode.getAttribute(XML_ATTRIBUTE_SUMMARY_ENDPOS);
+        }
+        else if (xmlNode.nodeName == XML_TAG_CLAUSE) {
+            return xmlNode.getAttribute(XML_ATTRIBUTE_ENDPOS);
+        }
+        else if (xmlNode.nodeName == XML_TAG_SECTION_GLOBAL) {
+            return xmlNode.getAttribute(XML_ATTRIBUTE_STARTPOS);
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+        Please see comments for getFromPos
+    */
+    this.getToPos = function (xmlNode) {
+        return xmlNode.getAttribute(XML_ATTRIBUTE_STARTPOS);
+    }
+
+    /**
+        Please see comments for getFromPos
+    */
+    this.getToPosParent = function (xmlNode) {
+        return xmlNode.getAttribute(XML_ATTRIBUTE_ENDPOS);
+    }
+
+    /**
+        Adds a form field
+    */
+    this.addFormFieldToDom = function (xmlDom, fieldName, fieldText) {
+        var element = xmlDom.createElement("FormField");
+        element.setAttribute("name", fieldName);
+        element.appendChild(xmlDom.createTextNode(fieldText));
+        xmlDom.documentElement.appendChild(element);
+    }
+} ();
+
+/****************************************************************************************
+                    XML NODE GENERATION FUNCTIONS
+*****************************************************************************************/
+/**
+    Set up the XML structure
+*/
+function sfXMLNodeSetup (ec)
+{
+    if (ec.requestType == XmlRequestType.SyncUpRequest) {
+        ec.xmlDOM = XMLUtil.syncupRequestDOM();
+    }
+    else if (ec.requestType == XmlRequestType.LoadRequest) {
+        ec.xmlDOM = XMLUtil.loadRequestDOM();
+    }
+
+    ec.xmlDocumentElement = XMLUtil.documentElement(ec.xmlDOM);
+    XMLUtil.setNodeAttribute(ec.xmlDocumentElement, XML_ATTRIBUTE_WORD_TYPE, ec.wordType);
+
+    /* Add Edit List at the root level */
+    ec.xmlNode_editList = ec.xmlDOM.createElement(XML_TAG_EDIT_LIST);
+    ec.xmlDocumentElement.appendChild(ec.xmlNode_editList);
+
+    /* Add Other bookmark list at the root level */
+    ec.xmlNode_otherBookmarkList = ec.xmlDOM.createElement(XML_TAG_OTHER_BOOKMARK_LIST);
+    XMLUtil.appendChild(ec.xmlDocumentElement, ec.xmlNode_otherBookmarkList);
+}
+
+/**
+    Creates a new entity node based on the request type
+    There are multiples of these in the xml
+*/
+function sfCreateNewEntityNode (ec)
+{
+    var newEntityNode = ec.xmlDOM.createElement(XML_TAG_NEW_ENTITIES);
+    ec.xmlNode_editList.appendChild(newEntityNode);
+    return newEntityNode;
+}
+
+function sfAppendBookmarkOtherNode (xmlDOM, bookmarkProxy, parent)
+{
+    var xmlNode = XMLUtil.createBookmarkNode(xmlDOM,
+            XML_TAG_OTHER_BOOKMARK, null, bookmarkProxy);
+    parent.appendChild(xmlNode);
+}
+
+function sfAppendBookmarkSectionGlobalNode (xmlDOM, bookmarkProxy, parent)
+{
+    var xmlNode = XMLUtil.createBookmarkNode(xmlDOM,
+            XML_TAG_SECTION_GLOBAL, null, bookmarkProxy);
+    parent.appendChild(xmlNode);
+}
+
+/**
+    Returns the revision node from a list of revisions
+    @param revisions - ObjectArray() of revisions proxy
+*/
+function sfCreateRevisionsNode (xmlDOM, agreementDocument, revisions) {
+    
+    var nodeList = xmlDOM.createElement(XML_TAG_REVISION_LIST);
+
+    for (var i = 1; i <= revisions.Count; ++i) {
+
+        var rp = revisions.Item(i);
+
+        LoggerUtil.logMessage("sfCreateRevisionsNode: Type " + rp.Type + " Start " + 
+                              rp.RangeProxy.Start + " End " + rp.RangeProxy.End);
+
+        if (rp.Type == RevisionType.Delete || rp.Type == RevisionType.ParagraphNumber) {
+
+            /*
+                Kee: If a non-section range contains paragraph markers, the selection range is shorten by one position
+                in MSWord even with a proper/clean deletion
+                In order to fix it, extend the end position by one
+            */
+            var rangeProxy = rp.RangeProxy;
+            var newRangeEnd = rangeProxy.End;
+            if (rp.Type == RevisionType.Delete) {
+                var aRangeBookmarkName = sfBeginningMatchedBookmark (agreementDocument, rangeProxy);
+                if (aRangeBookmarkName != "" && aRangeBookmarkName.indexOf(prefixSectionGenName) != 0
+                        && rangeProxy.Paragraphs.Count > 1) {
+	                newRangeEnd = rangeProxy.End+1;
+                }
+            }
+            
+            var xmlNode = xmlDOM.createElement(XML_TAG_REVISION);
+            xmlNode.setAttribute(XML_ATTRIBUTE_REVISION_TYPE , rp.Type);
+            xmlNode.setAttribute(XML_ATTRIBUTE_STARTPOS , rp.RangeProxy.Start);
+            xmlNode.setAttribute(XML_ATTRIBUTE_ENDPOS , newRangeEnd);
+            nodeList.appendChild(xmlNode);
+        }
+    }
+
+    return nodeList;
+}
+
+/*
+    This function builds a bookmark subtree for the current section. The subtree is added
+    as child Node to the parent node that is passed. Also, it returns the Position of the
+    next bookmark after the subtree
+*/
+function sfBookmarkNode (ec, aDocument, aBookmark, xmlNode_parent, scanForSummary)
+{
+    if (aBookmark.Name == GlobalContractBookmarkName) {
+        sfAppendBookmarkSectionGlobalNode(ec.xmlDOM, aBookmark, xmlNode_parent);
+    }
+    else if (aBookmark.Name.indexOf(prefixSectionNewName) >= 0 ||
+             aBookmark.Name.indexOf(prefixSectionGenName) >= 0) {
+        sfFixSectionBookmark(aDocument, aBookmark);
+        var xmlNode_bookmark = sfSectionToXml(ec, aDocument, aBookmark);
+        xmlNode_parent.appendChild(xmlNode_bookmark);
+    }
+    else if (aBookmark.Name.indexOf(prefixClauseNewName) >= 0 ||
+             aBookmark.Name.indexOf(prefixClauseGenName) >= 0) {
+        sfFixClauseBookmark(aDocument, aBookmark);
+        var xmlNode_bookmark = sfClauseToXml(ec, aDocument, aBookmark, scanForSummary);
+        xmlNode_parent.appendChild(xmlNode_bookmark);
+    }
+    else {
+        sfAppendBookmarkOtherNode(ec.xmlDOM, aBookmark, xmlNode_parent);
+    }
+}
+
+function sfSectionToXml(ec, aDocument, sectionBookmark)
+{
+    /*
+        even if section summary is not used, this is used to get the
+        end position for section title from where new paragraphs are
+        scanned in the section
+    */
+    var sectionParagraph = sectionBookmark.Range.Paragraphs(1).Range;
+    var sectionXML = XMLUtil.createBookmarkNode(ec.xmlDOM, XML_TAG_SECTION,
+        sfTrim(sfGetRangeContent(sectionParagraph)), sfCreateBookmarkProxy(sectionBookmark));
+    XMLUtil.setNodeAttribute(sectionXML, XML_ATTRIBUTE_SUMMARY_ENDPOS, sectionParagraph.End);
+    return sectionXML;
+}
+
+/**
+    TODO Doc this
+*/
+function sfClauseToXml(ec, aDocument, clauseBookmark, scanForSummary)
+{
+
+    var clauseBookmarkName = clauseBookmark.Name;
+    var prefixIndex = clauseBookmarkName.indexOf(prefixClauseNewName);
+    var clauseXml = ec.xmlDOM.createElement(XML_TAG_CLAUSE);
+
+    var summary = null;
+    if (scanForSummary || prefixIndex >= 0) {
+        summary = sfGetClauseSummary(clauseBookmark);
+    }
+
+    return XMLUtil.createBookmarkNode(ec.xmlDOM, XML_TAG_CLAUSE, summary, clauseBookmark);
+}
+
+/**
+    <newEntities>
+        <Section bookmark=$bookmarkName startPos=$startPos endPos = $endPos summaryEndPos=$summaryEndPos>
+        </Section>
+        <Clause bookmark=$bookmarkName startPos=$startPos endPos = $endPos summaryEndPos=$summaryEndPos>
+        </Clause>
+    </newEntities>
+*/
+function sfParseNewEntities (aDocument, xmlDOM, xmlNode_newEntities) {
+    
+    var rootNode = xmlNode_newEntities.childNodes[0];
+    var nextNodePos = 0;
+
+    // Identify paragraphs between bookmarks
+    while (nextNodePos < xmlNode_newEntities.childNodes.length) {
+        var node = xmlNode_newEntities.childNodes[nextNodePos];
+        var fromPos = XMLUtil.getFromPos(node);
+        var toPos = (node.nextSibling != null) ? XMLUtil.getToPos(node.nextSibling) :
+                    XMLUtil.getToPosParent(rootNode);
+        var fromPosInt = new Number(fromPos);
+        var toPosInt = new Number(toPos);
+
+        if ((fromPosInt+1) < (toPosInt-1)) {
+            var currentBmName = node.getAttribute(XML_ATTRIBUTE_BOOKMARK);
+            var currentBmObject = aDocument.Bookmarks(currentBmName);
+            if (currentBmName != "" && sfContentType(currentBmName) == ContentType.ContentClauseType) {
+                sfFixBookmarkEndToPara(aDocument, currentBmObject);
+                var newBookmarkEnd = currentBmObject.End;
+                if (newBookmarkEnd != fromPosInt) {
+                    // Need to mark the clause as "Non-Standard"
+                    var xmlNode_setSummary = XMLUtil.createBookmarkNode(
+                        xmlDOM, XML_TAG_SET_SUMMARY, sfGetClauseSummaryAll(currentBmObject),
+                        sfCreateBookmarkProxy(currentBmObject));
+                    xmlNode_newEntities.parentNode.appendChild(xmlNode_setSummary);
+                    fromPosInt = newBookmarkEnd;
+                }
+            }
+
+            if ((fromPosInt+1) < (toPosInt-1)) {
+                var theRange = aDocument.Range(fromPosInt+1, toPosInt-1);
+                if (!sfIsEmptyText(theRange)) {
+                    var paragraphArray = sfParagraphsToClauses(xmlDOM, theRange);
+                    var count = paragraphArray.Count;
+                    for (var i = 1; i <= count; ++i) {
+                        var xmlParagraph = paragraphArray.Item(i);
+                        if (node.nextSibling != null) {
+                            var newNode = xmlNode_newEntities.insertBefore(xmlParagraph, node.nextSibling);
+                        }
+                        else {
+                            xmlNode_newEntities.appendChild(xmlParagraph);
+                        }
+                        node = node.nextSibling;
+                        nextNodePos = nextNodePos + 1;
+                    }
+                }
+            }
+        }
+        nextNodePos = nextNodePos + 1;
+    }
+}
+
+/**
+    Converts a range into paragraphs
+*/
+function sfParagraphsToClauses (xmlDOM, theRange)
+{
+    var clauseArray = new sfObjectArray ();
+    var paragraphs = theRange.Paragraphs;
+    var count = paragraphs.Count;
+    
+    for (var i = 1; i <= count; ++i) {
+
+        var pRange = paragraphs(i).Range;
+
+        if (sfIsEmptyParagraph(pRange)) { 
+            continue;
+        }
+
+        var xmlNode_clause = xmlDOM.createElement(XML_TAG_PARAGRAPH);
+        xmlNode_clause.setAttribute(XML_ATTRIBUTE_STARTPOS , pRange.Start);
+        xmlNode_clause.setAttribute(XML_ATTRIBUTE_ENDPOS , pRange.End);
+
+        var summary = sfGetRangeSummary(pRange);
+        xmlNode_clause.appendChild(xmlDOM.createCDATASection(summary));
+        clauseArray.AddItem(xmlNode_clause);
+    }
+
+    return clauseArray;
+}
+
+/**
+    Todo doc this
+*/
+function sfApplyBookmarksUtil (ec, xmlString)
+{
+    LoggerUtil.logBegin("sfApplyBookmarksUtil");
+    var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+
+    var xmlDoc_syncupApply = XMLUtil.createDOM(xmlString);
+    var xmlNode_syncupApply = xmlDoc_syncupApply.documentElement;
+    var xmlNode_applyBookmarkList = xmlNode_syncupApply.childNodes[0];
+    
+    var count = xmlNode_applyBookmarkList.childNodes.length;
+    for (var i = 0; i < count; ++i) {
+        var xmlNode_applyBookmark = xmlNode_applyBookmarkList.childNodes[i];
+        if (xmlNode_applyBookmark.tagName == XML_TAG_APPLY_BOOKMARK_BY_LOCATION) {
+            var newBookmark = xmlNode_applyBookmark.getAttribute(XML_ATTRIBUTE_NEW_BOOKMARK);
+            var startPos = xmlNode_applyBookmark.getAttribute(XML_ATTRIBUTE_STARTPOS);
+            var endPos = xmlNode_applyBookmark.getAttribute(XML_ATTRIBUTE_ENDPOS);
+            sfApplyBookmarkByLocation(ec, currentSelection, newBookmark, startPos, endPos);
+            sfApplyStyleByAttribute(ec, currentSelection, newBookmark, xmlNode_applyBookmark);
+        }
+        else if (xmlNode_applyBookmark.tagName == XML_TAG_APPLY_BOOKMARK_BY_NAME) {
+            var newBookmark = xmlNode_applyBookmark.getAttribute(XML_ATTRIBUTE_NEW_BOOKMARK);
+            var bookmark = xmlNode_applyBookmark.getAttribute(XML_ATTRIBUTE_BOOKMARK);
+            sfApplyBookmarkByName(ec, currentSelection, newBookmark, bookmark);
+            sfApplyStyleByAttribute(ec, currentSelection, newBookmark, xmlNode_applyBookmark);
+        }
+
+        ec.getAgreementDocument().UndoClear();
+    }
+    LoggerUtil.logEnd("sfApplyBookmarksUtil");
+}
+
+/**
+    Appends the clauses
+*/
+function sfAppendChildNewClausesXml(xmlDOM, theRange, xmlNode_parent)
+{
+    var xmlClauseArray = sfParagraphsToClauses(xmlDOM, theRange);
+    var count = xmlClauseArray.Count;
+    for (var i = 1; i <= count; ++i) {
+        xmlNode_parent.appendChild(xmlClauseArray.Item(i));
+    }
+}
+
+/* We need to move this into const strings in the class */
+var XML_ATTRIBUTE_BOOKMARK = "bookmark";
+var XML_ATTRIBUTE_NEW_BOOKMARK = "newBookmark";
+var XML_ATTRIBUTE_STARTPOS = "startPos";
+var XML_ATTRIBUTE_ENDPOS = "endPos";
+var XML_ATTRIBUTE_SUMMARY_ENDPOS = "summaryEndPos";
+var XML_ATTRIBUTE_SECTION_BOOKMARK = "sectionBookmark";
+var XML_ATTRIBUTE_PREVIOUS_BOOKMARK = "previousBookmark";
+var XML_ATTRIBUTE_WORD_TYPE = "wordType";
+var XML_ATTRIBUTE_REVISION_TYPE = "revisionType";
+var XML_ATTRIBUTE_STYLE = "style";
+
+var XML_TAG_EDIT_LIST = "editList";
+var XML_TAG_OTHER_BOOKMARK = "otherBookmark";
+var XML_TAG_OTHER_BOOKMARK_LIST = "otherBookmarkList";
+var XML_TAG_REVISION = "revision";
+var XML_TAG_REVISION_LIST = "revisionList";
+var XML_TAG_SECTION = "section";
+var XML_TAG_SECTION_GLOBAL = "sectionGlobal";
+var XML_TAG_CLAUSE = "clause";
+var XML_TAG_PARAGRAPH = "paragraph";
+var XML_TAG_SET_SUMMARY = "setSummary";
+var XML_TAG_NEW_ENTITIES = "newEntities";
+var XML_TAG_DELETE_ENTITY = "deleteEntity";
+var XML_TAG_MOVE_ENTITY = "moveEntity";
+var XML_TAG_SYNCUP_APPLY = "syncupApply";
+var XML_TAG_APPLY_BOOKMARK_LIST = "applyBookmarkList";
+var XML_TAG_APPLY_BOOKMARK_BY_LOCATION = "applyBookmarkByLocation";
+var XML_TAG_APPLY_BOOKMARK_BY_NAME = "applyBookmarkByName";

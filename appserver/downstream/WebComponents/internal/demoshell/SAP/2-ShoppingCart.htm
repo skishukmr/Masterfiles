@@ -1,0 +1,200 @@
+<a:IncludeComponent awcomponentName="SAPWrapper">
+
+    <style>
+        tr.Dark {
+            background-color:#F7F7FF;
+        }
+        tr.Light {
+            background-color:#FFFFFF;
+        }
+
+        th.Head {
+            padding:2px;
+            background-color:#DDDDFF;
+            border-right: 1px solid #EEEEEE;
+        }
+        td.Body {
+            padding:2px;
+            border-top: 1px solid #EEEEEE;
+            border-right: 1px solid #EEEEEE;
+        }
+
+        bold {
+            font:bold 11px/17px Verdana, Arial, Helvetica, sans-serif;
+        }
+    </style>
+    <img src="2-CartTop.gif"/>
+    <br/>
+    <table style="border:2px solid #DDDDFF" width="100%"  cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="background-color:#DDDDFF;border-bottom:1px solid #FFFFFF;padding:3px">
+                <b>Step 2: Shopping Cart</b>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#F7F7FF;">
+                <div style="padding:10px 4px 8px 4px">
+                    To change item details (assets and cost assignments) select the link below
+                    <br/>
+                    <br/>
+                    <a:SetValue darkRow="$false"/>
+                    <table style="border:1px solid #EEEEEE" width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <th class="Head">Good/Service</th>
+                            <th class="Head">Description</th>
+                            <th class="Head">Category</th>
+                            <th class="Head">Required On</th>
+                            <th class="Head">Quantity</th>
+                            <th class="Head" colspan="2">Price/Limit</th>
+                            <th class="Head">&nbsp;</th>
+                        </tr>
+
+                        <a:For list="$items" item="$item">
+                            <tr class="$nextRowClass">
+                                <td class="Body">&nbsp;</td>
+                                <td class="Body"><a:Hyperlink action="$null">$item.DESCRIPTION</a:Hyperlink></td>
+                                <td class="Body">$item.MATGROUP</td>
+                                <td class="Body">$item.LEADTIME</td>
+                                <td class="Body" align="right">$item.QUANTITY</td>
+                                <td class="Body" align="right">$item.PRICE</td>
+                                <td class="Body">USD</td>
+                                <td class="Body">&nbsp;</td>
+                            </tr>
+                        </a:For>
+
+                        <tr class="$nextRowClass">
+                            <td class="Body bold" colspan="5" align="right">
+                                Total Value (Excluding Tax) :
+                            </td>
+                            <td class="Body bold"  align="right">$computeTotal|$formatters.money</td>
+                            <td class="Body bold">USD</td>
+                            <td class="Body">&nbsp;</td>
+                        </tr>
+                        <tr class="$nextRowClass">
+                            <td class="Body bold" colspan="5" align="right">
+                                Tax Amount :
+                            </td>
+                            <td class="Body bold"  align="right">$tax|$formatters.money</td>
+                            <td class="Body bold" >USD</td>
+                            <td class="Body">&nbsp;</td>
+                        </tr>
+                        <tr class="$nextRowClass">
+                            <td class="Body bold" colspan="5" align="right">
+                                Total Value :
+                            </td>
+                            <td class="Body bold" align="right">$totalWithTax|$formatters.money</td>
+                            <td class="Body bold">USD</td>
+                            <td class="Body">&nbsp;</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <br/>
+    <br/>
+
+    <a:Hyperlink action="$linkOut"><img src="2-CartBottom.gif"/></a:Hyperlink>
+
+    <br/>
+    <br/>
+    <br/>
+    <a:Hyperlink action="$toggleOptions">Options</a:Hyperlink>
+    <br/>
+    <a:If ifTrue="$showOptions">
+        Items: $items
+        <br/>
+        <br/>
+        FormValues: $formValues;
+    </a:If>
+
+</a:IncludeComponent>
+<server>
+    var items = null;
+    var item = null;
+    var formValues = null;
+    var darkRow = true;
+
+    function awake () {
+        if (items) return;
+
+        var itemMap = ariba.util.core.MapUtil.map();
+
+        // if the request is a direct action, then get our form values
+        formValues = component.requestContext().request().formValues();
+        if (!formValues.get("NEW_ITEM-QUANTITY[1]")) {
+            // TEST data
+            formValues = ariba.util.core.MapUtil.map();
+            formValues.put("NEW_ITEM-PRICE[1]", new Array("1.99"));
+            formValues.put("NEW_ITEM-QUANTITY[1]", new Array("1"));
+            formValues.put("NEW_ITEM-MATGROUP[1]", new Array("OFFICE_SUPPLY"));
+            formValues.put("NEW_ITEM-DESCRIPTION[1]", new Array("No. 2 Pencil"));
+            formValues.put("NEW_ITEM-LONGTEXT_1:132[]", new Array("This is item 1 long desc"));
+
+
+            formValues.put("PRICE[2]", new Array("59.99"));
+            formValues.put("QUANTITY[2]", new Array("8"));
+            formValues.put("MATGROUP[2]", new Array("COMP:NETWORKING"));
+            formValues.put("DESCRIPTION[2]", new Array("Wireless ethernet Adapter"));
+            formValues.put("LONGTEXT_2:132[]", new Array("This is item 2 long desc"));
+        }
+
+        var iter = formValues.entrySet().iterator();
+        while (iter.hasNext()) {
+            var entry = iter.next();
+            var key = entry.getKey();
+
+            // Look for "%d:132[]" or [%d]" -- extract number, strip suffix
+            // And strip off "NEW_ITEM-" from Field
+            if (key.match(/(NEW_ITEM\-)?(\w+)\[(\d)+\]/) || key.match(/(NEW_ITEM\-)?(\w+)_(\d)+\:132\[\]/)) {
+                var itemNum = RegExp.\$3;
+                key = RegExp.\$2;
+                var row = itemMap.get(itemNum);
+                if (!row) {
+                    row = ariba.util.core.MapUtil.map();
+                    itemMap.put(itemNum, row);
+                }
+                var val = entry.getValue();
+                val = val[0];
+                row.put(key, val);
+            }
+        }
+        if (!itemMap.isEmpty()) {
+            items = ariba.util.core.MapUtil.elementsList(itemMap);
+        }
+    }
+
+    function computeTotal () {
+        var iter = items.iterator();
+        var total=0.0;
+        while (iter.hasNext()) {
+            var row = iter.next();
+            total += parseFloat(row.get("PRICE")) * parseFloat(row.get("QUANTITY"));
+        }
+        return total;
+    }
+
+    function tax () {
+        return computeTotal() * 0.085;
+    }
+
+    function totalWithTax () {
+        return computeTotal() * 1.085;
+    }
+
+    function linkOut() {
+        return page("3-Checkout.htm");
+    }
+
+    function nextRowClass() {
+        darkRow = !darkRow;
+        return (darkRow) ? "Dark" : "Light";
+    }
+
+    var showOptions = false;
+    function toggleOptions () {
+        showOptions = !showOptions;
+        return null;
+    }
+</server>

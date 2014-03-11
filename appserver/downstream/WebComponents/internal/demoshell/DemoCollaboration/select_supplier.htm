@@ -1,0 +1,68 @@
+<BasicPageWrapper hasSidebarNotch="$false" toc="ASNLoggedInMain.htm" hasForm="$true">
+<table cellpadding=5 cellspacing=0 border=0>
+<tr><td>
+<h2>The user does not exist yet. Please assign a supplier to the $session.dict.demoSession.username .</h2>
+<br/>
+<br/>
+
+
+    <AWXDCLoadAQL value="$supp" query="select distinct Supplier.CommonSupplier.Name.PrimaryString Name from ariba.collaboration.core.CollaborationRequest"/>
+
+<AWConditional ifTrue="$hasItems">
+
+Select a supplier for $session.dict.demoSession.username (suppliers with collaboration requests): <br/><br/>
+
+
+<table cellpadding=0 cellspacing=0 border=0>
+<tr><td>
+    <AWPopup item="$currentItem"
+             list="$supp"
+             selection="$selectedItem">
+        <AWString value="$currentItem.Name"/>\
+    </AWPopup>\
+</td><td>
+    <ARWTextButton action="$goThere" value="Select"/>
+</td></tr></table>
+    
+<br/>
+<br/>
+</AWConditional>
+Or enter the name of a supplier (must match exactly, no validation):<br/><br/>
+
+<table cellpadding=0 cellspacing=0 border=0>
+<tr><td>
+  <AWTextField value="$supn"/> 
+</td><td>  
+  <ARWTextButton action="$goThere2" value="Select"/>
+</td></tr></table>
+</td></tr></table>
+</BasicPageWrapper>
+<server>
+  var selectedItem = null;
+  var usr=null;
+  var supn='';
+  var supp=null;
+
+  function goThere ()
+  {
+     var next = page("Home.htm");
+     set(next, "session.dict.demoSession.supplierName", selectedItem.get("Name"));
+     
+     return next;
+  }
+  
+  function goThere2 ()
+  {
+     var next = page("Home.htm");
+     set(next, "session.dict.demoSession.supplierName", supn);
+       
+     return next;
+  }
+  
+  function hasItems ()
+  {
+     return (supp != null && !supp.isEmpty());
+  } 
+</server>
+
+ 

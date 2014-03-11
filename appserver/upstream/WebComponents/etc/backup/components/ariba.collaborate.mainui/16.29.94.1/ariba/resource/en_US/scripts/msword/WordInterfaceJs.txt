@@ -1,0 +1,489 @@
+function sfGetApp (ec) {
+    try {
+        ec.wordApp = new ActiveXObject("Word.Application");
+        ec.appVersion = ec.wordApp.Version;
+        ec.wordType = sfGetWordType(ec.appVersion);
+        /* XXX Gopal I see a discrepancy in the get app methods in generation vs incremental sync up clause */
+        ec.appVisible = ec.wordType == WordType.Word2000Type;
+        ec.wordApp.Visible = ec.appVisible;
+        document.body.style.cursor = "wait";
+        LoggerUtil.logMessage("Word Type = " + ec.wordType + " App Version " + ec.appVersion);
+    }
+    catch (ex) {
+        LoggerUtil.logError(GeneratingErr.contactApplicationErrorMessage, MIE + "sfGetApp", ex);
+        throw ex;
+    }
+}
+
+/**
+    Quit the app - it is the callers responsibility to set the app to null
+*/
+function sfQuitApp (wordApp)
+{
+    if (wordApp == null) {
+        LoggerUtil.logError(null, MIE + "sfQuitApp: Null word app", null);
+        return;
+    }
+
+    try {
+        wordApp.Visible = false;
+        wordApp.NormalTemplate.Saved = true;
+        wordApp.quit(0); // wdDoNotSaveChanges = 0
+        document.body.style.cursor = "auto";
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfQuitApp", ex);
+    }
+}
+
+function sfGetWordType (appVersion) {
+    var index = appVersion.indexOf(".");
+    var majorVersion = appVersion.substring(0, index);
+    if (majorVersion == WordVersion.Word2000MajorVersion) {
+        return WordType.Word2000Type;
+    }
+    else if (majorVersion == WordVersion.WordXPMajorVersion ||
+             majorVersion == WordVersion.WordXP2003MajorVersion) {
+        return WordType.WordXPType;
+    }
+    else if (majorVersion == WordVersion.Word2007MajorVersion) {
+        return WordType.Word07Type;
+    }
+    else {
+        return WordType.WordUnknownType;
+    }
+}
+
+function sfSaveWordSettings(ec, aDocument)
+{
+    var aWindow = aDocument.ActiveWindow;
+
+    if (aWindow.View.SplitSpecial == 0) {// wdPaneNone = 0
+        ec.saveSettingViewType = aWindow.ActivePane.View.Type;
+    }
+    else {
+        ec.saveSettingViewType = aWindow.View.Type;
+    }
+
+    // piggy back in this method to hide the hidden bookmarks
+    aDocument.Bookmarks.ShowHidden = false;
+}
+
+function sfRestoreWordSettings(ec, document)
+{
+    var aWindow = document.ActiveWindow;
+
+    if (aWindow.View.SplitSpecial == 0) {// wdPaneNone = 0
+        aWindow.ActivePane.View.Type = ec.saveSettingViewType;
+    }
+    else {
+        aWindow.View.Type = ec.saveSettingViewType;
+    }
+}
+
+function sfGetDocumentViewType (document, bIsSave)
+{
+    var aWindow = document.ActiveWindow;
+    var aView = aWindow.View.SplitSpecial == 0 ? aWindow.ActivePane.View : aWindow.View;
+    var viewType = aView.Type;
+    if (bIsSave) {
+        document.Bookmarks.ShowHidden = false;
+    }
+    return viewType;
+}
+
+function sfSetDocumentViewType (document, viewType)
+{
+    var aWindow = document.ActiveWindow;
+    var aView = aWindow.View.SplitSpecial == 0 ? aWindow.ActivePane.View : aWindow.View;
+    aView.Type = viewType;
+}
+
+/**
+    Saves an *active* open document
+*/
+function sfSaveOpenDocument (wordApp, documentLocation)
+{
+    if (!sfClientFileExists(documentLocation)) {
+        LoggerUtil.logError(null, "sfSaveOpenDocument: Document not found " +
+            documentLocation, null);
+        return false;
+    }
+
+    try {
+        sfSetDocumentAttributes(documentLocation, true);
+        var itemDocument = GetObject(documentLocation);
+        if (itemDocument == null) {
+            return false;
+        }
+
+        if (!itemDocument.Saved) {
+            itemDocument.Save();
+        }
+
+        itemDocument.Close();
+
+        /*
+            var itemApplication = itemDocument.Application;
+            if (itemApplication != null &&
+                itemApplication.Documents.Count == 0 &&
+                itemApplication != wordApp) {
+                itemApplication.NormalTemplate.Saved = true;
+                itemApplication.Quit(0); // wdDoNotSaveChanges
+            }
+            itemApplication = null;
+        */
+        
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, "Method Invokation Error: sfSaveOpenDocument", ex);
+        throw ex;
+    }
+}
+
+/**
+    Open the document in workd
+*/
+function sfOpenDocumentInWord (wordApp, wordType, documentLocation, readOnly)
+{
+    try {
+        var fileName = documentLocation;
+
+        if (wordType == WordType.Word07Type) {
+            var filePath = sfGetFilePath(documentLocation, true);
+            fileName = sfGetFilePath(documentLocation, false);
+            if (filePath != "") {
+                wordApp.ChangeFileOpenDirectory(filePath);
+            }
+        }
+
+        /*
+            Turn off confirm conversions when we open a document so we don't get popups when
+            dealing with Word 2007 documents in Word 2003 or before.
+        */
+        wordApp.Documents.Open(fileName, false, readOnly); // filename, conversion, readonly
+        return wordApp.ActiveDocument;
+    }
+    catch (ex) {
+        LoggerUtil.logError(GeneratingErr.wordOpenErrorMessage,
+                "Method Invokation Error: sfOpenDocumentInWord " +
+            "Document Location " + documentLocation, null);
+        throw ex;
+    }
+}
+
+/**
+    Opens the document and returns the active document
+*/
+function sfContactDocument (ec, documentLocation, bIsReadOnly, bIsSaveFirst)
+{
+    try {
+        ec.hideApp();
+
+        try {
+            if (bIsSaveFirst) {
+                sfSaveOpenDocument(ec.wordApp, documentLocation);
+            }
+            sfOpenDocumentInWord(ec.wordApp, ec.wordType, documentLocation, bIsReadOnly);
+        }
+        catch (ex) {
+            if (bIsSaveFirst) {
+                sfSaveOpenDocument(ec.wordApp, documentLocation);
+            }
+            SmartClientScriptUtil.saveFileToClient(ec.sDocumentLocation);
+            sfOpenDocumentInWord(ec.wordApp, ec.wordType, documentLocation, bIsReadOnly);
+        }
+
+        ec.hideApp();
+
+        return ec.wordApp.ActiveDocument;
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfContactDocument " + ex +
+            " documentName=" + documentLocation, null);
+        throw ex;
+    }
+}
+
+/**
+    Opens a docuement an anchor it with the associated bookmark.
+*/
+function sfOpenDocumentWithbookmark (documentFullName, bookmarkName)
+{
+
+    if (LoggerUtil.enableLogging) { LoggerUtil.logMessage("Enter Fn sfOpenDocumentWithbookmark " +
+        "documentFullName:" + documentFullName + ",bookmarkName:" + bookmarkName) };
+
+    try {
+        var aDocument = GetObject(sfForwardToBackSlash(documentFullName));
+        var anApp = aDocument.Application;
+        if (aDocument != null) {
+            var anApp = aDocument.Application;
+            anApp.Visible = true;
+            if (bookmarkName != null && bookmarkName != "") {
+                anApp.Activate();
+                aDocument.Activate();
+                window.blur();
+                var currentSelection = aDocument.ActiveWindow.Selection;
+                sfGotoBookmarkName(currentSelection, bookmarkName);
+                anApp.NormalTemplate.Saved = true;
+            }
+            else {
+                anApp.Activate();
+                aDocument.Activate();
+                window.blur();
+            }
+
+            /*
+                xxxKKIM (1-A6I0CG)This is a temporary fix by turning on Track Changes whenever the document opens
+                until we fix for deletion to work regardless of Track Changes on/off
+            */
+            aDocument.TrackRevisions = true;
+            aDocument = null;
+            anApp = null;
+        }
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfOpenDocumentWithbookmark + ex", ex);
+        throw ex;
+    }
+}
+
+/**
+    It is a bummer that goto is a keywork in Javascript
+    We need to invoke a vb function for this
+*/
+function sfGotoBookmarkName (selection, bookmarkName)
+{
+    var handler = awxsGetEventObject("gotoFunction");
+    handler.setArg("selection", selection);
+    handler.setArg("bookmarkname", bookmarkName);
+    return handler.invoke();
+}
+
+/**
+ * We seeem to have problems dealing with optional arguments in javascript
+ */
+function sfAddTempWordDocument (ec)
+{
+    var handler = awxsGetEventObject("addTempWordDocument");
+    handler.setArg("wordapplication", ec.wordApp);
+    return handler.invoke();
+}
+
+/**
+    Opens an existing document
+*/
+function sfOpenDocumentWithCheck (es)
+{
+    sfSetDocumentAttributes (es.sDocumentFullName, es.bIsDocumentEditable);
+
+    if (!es.bContractModified) {
+        return sfOpenDocumentWithbookmark(es.sDocumentFullName, es.sBookmarkName);
+    }
+    else {
+        if (!es.bOpenDocForceGeneration && sfIsClientChanged(es.sDocumentFullName, es.dServerTimestamp)) {
+            return sfOpenDocumentWithbookmark(es.sDocumentFullName, es.sBookmarkName);
+        }
+        else {
+            ariba.Request.setWindowLocation(es.urlGeneratingUrl);
+            return false;
+        }
+    }
+}
+
+/**
+    Returns the highlighted bookmark. This seems to be invoked too often
+*/
+function sfHighlightClauseNavigator (documentLocation)
+{
+    try {
+        var aDocument = GetObject(documentLocation);
+        if (aDocument == null) {
+            /* no active application */
+            return "";
+        }
+
+        var currentSelection = aDocument.ActiveWindow.Selection;
+        var allBookmark = currentSelection.Bookmarks;
+        var count = allBookmark.Count;
+        if (count == 0) {
+            return "";
+        }
+
+        var currentBookmark = aDocument.Bookmarks.Item(GlobalContractBookmarkName);
+        for (var i = 1; i <= count; ++i) {
+            var bookmark = allBookmark.Item(i);
+            var bookmarkName = bookmark.Name;
+            if (bookmarkName.indexOf(prefixSectionName) >= 0 || bookmarkName.indexOf(prefixClauseName) >= 0) {
+                if (currentBookmark == null || sfBookmarkIncluded(currentBookmark, bookmark)) {
+                    currentBookmark = bookmark;
+                }
+            }
+        }
+
+        aDocument = null;
+
+        return currentBookmark != null ? currentBookmark.Name : "";
+    }
+    catch (ex) {
+        /* do not log this error as this will be done gazillion times till we fix the highlight navigator stuff */
+        return "";
+    }
+}
+
+/**
+    public api
+*/
+function siOpenDocumentWithCheck (args)
+{
+    var ec = sfInitExecutionState(args);
+    try {
+        sfLoggerInit(ec, "siOpenDocumentWithCheck", args);
+        return sfOpenDocumentWithCheck(ec);
+    }
+    catch (ex) {
+        LoggerUtil.logError(GeneratingErr.openDocumentErrorMessage, "", ex);
+        ec.onErrorExit();
+    }
+}
+
+/**
+    Todo doc this
+*/
+function siOpenClauseNavigator (args)
+{
+    var ec = sfInitExecutionState(args);
+    sfLoggerInit(ec, "siOpenClauseNavigator", args);
+    sfOpenDocumentWithbookmark(ec.sDocumentLocation, ec.sBookmarkName);
+}
+
+/**
+    Todo doc this
+*/
+function siHighlightClauseNavigator (args)
+{
+    try {
+        return sfHighlightClauseNavigator(args[Params.sDocumentLocation]);
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+    }
+}
+
+/**
+    Todo doc this
+*/
+function siSaveOpenDocument (args)
+{
+    try {
+        return sfSaveOpenDocument(null, args[Params.sDocumentLocation]);
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+    }
+}
+
+/**
+    Posts the form data to the action url
+*/
+function sfRetrieveWordData (aDocument, formFieldsValue, actionUrl)
+{
+    try {
+        var xmlDomFields = new ActiveXObject("Msxml2.DOMDocument.3.0");
+        xmlDomFields.async = false;
+        xmlDomFields.loadXML("<?xml version=\"1.0\"?><root/>");
+        /* hokey way of splitting the field values using 6 stars */
+        var fieldArray = formFieldsValue.split("******");
+        for (var i = 0; i < fieldArray.length; ++i) {
+            var sField = fieldArray[i];
+            if (!sfEmptyString(sField)) {
+                var sText = aDocument.FormFields(sField).Result;
+                if (!sfEmptyString(sText)) {
+                    XMLUtil.addFormFieldToDom(xmlDomFields, sField, sText);
+                }
+            }
+        }
+        /*
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logXmlTree("Retrieve word data", xmlDomFields.documentElement, 1);
+        }
+        */
+        sfSendDataToServer(xmlDomFields.xml, actionUrl);
+        xmlDomFields = null;
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfRetrieveWordData", null);
+    }
+}
+
+/**
+ * We go through range fields, pick up DOCPROPERTY field name and it to the document
+ * XXX Gopal - when I looked at the word document, I see two spaces between DOCPROPERTY and the name
+ * @param aRange Selection Range - this is from the clause
+ * @param aDocument target document - this is the agreement document
+ */
+function sfPopulateProperty (aRange, aDocument)
+{
+    var fields = aRange.Fields;
+    if (fields == null) {
+        return;
+    }
+    
+    var count = fields.Count;
+    var props = aDocument.CustomDocumentProperties;
+
+    for (var i = 1; i <= count; ++i) {
+        var field = fields.Item(i);
+
+        if (field.Type != 85) { continue; } // wdFieldDocProperty = 85
+
+        var codeText = field.Code.Text;
+        if (codeText == null) { continue; }
+
+        var index1 = codeText.indexOf(DocumentPropertyKey);
+        if (index1 >= 0) {
+            index1 += (DocumentPropertyKey.length + 1);
+            var index2 = codeText.indexOf(" ", index1);
+            var name = codeText.substring(index1, index2);
+            var result = sfAddADocumentProperty(name, props);
+        }
+    }
+}
+
+/**
+    Add a string default property if it does not exsist
+    Note: This does hide the app; it is the callers responsibility
+*/
+function sfAddADocumentProperty (name, documentProperties)
+{
+    if (name == null || name == "") {
+        return false; // not a valid property
+    }
+
+    try {
+        var prop = documentProperties.Item(name);
+        if (prop != null) {
+            return false;
+        }
+    }
+    catch (ex) {
+        // property does not exist; go ahead and add
+    }
+    
+    documentProperties.Add(name, false, 4, defaultPropertyValue); // msoPropertyTypeString = 4
+    return true;
+}
+
+/****************************************************************************************
+                    Handlers
+*****************************************************************************************/
+sfExportFunctions(
+    new Array(
+        "siOpenDocumentWithCheck", siOpenDocumentWithCheck,
+        "siHighlightClauseNavigator", siHighlightClauseNavigator,
+        "siSaveOpenDocument", siSaveOpenDocument
+    )
+);

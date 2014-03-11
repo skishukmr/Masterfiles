@@ -1,0 +1,1518 @@
+/****************************************************************************************
+                    Position Util Methods
+****************************************************************************************/
+function sfDeleteSelection (selection)
+{
+    selection.Delete(1, 1);
+}
+
+function sfDeleteChar (selection, count)
+{
+    selection.Delete(1, count);
+}
+
+function sfSelectPara (selection)
+{
+    sfGotoBookmarkName(selection, "\\Para");
+}
+
+function sfSelectBookmark (selection, bookmarkName)
+{
+    sfGotoBookmarkName(selection, bookmarkName);
+}
+
+function sfMoveToStartSelection (selection)
+{
+    selection.End = selection.Start;
+}
+
+function sfMoveToEndSelection (selection)
+{
+    selection.Start = selection.End;
+}
+
+function sfMoveToStartDocument (selection)
+{
+    selection.HomeKey(6,0); /* wdStory = 6, wdMove = 0 */
+}
+
+function sfMoveToEndDocument (selection)
+{
+    selection.EndKey(6,0); /* wdStory = 6, wdMove = 0 */
+}
+
+function sfMoveToStartLine (selection)
+{
+    selection.HomeKey(5); /* wdLine = 5 */
+}
+
+function sfMoveToStartPara (selection)
+{
+    sfSelectBookmark(selection, "\\Para");
+    sfMoveToStartSelection(selection);
+}
+
+// XXX Move to end of paragraph does not work with HomeKey(4, 0)
+function sfMoveToEndPara (selection)
+{
+    sfSelectBookmark(selection, "\\Para");
+    sfMoveToEndSelection(selection);
+    sfMoveToLeft(selection, 1);
+}
+
+function sfMoveToPosition (aSelection, position)
+{
+    aSelection.Start = position; aSelection.End = position;
+}
+
+// EndOf(4,1) works well, it does not extend to next para if entire para is selected.
+function sfExtendToEndPara (selection)
+{
+    selection.EndOf(4, 1); // Unit:=wdParagraph, Extend:=wdExtend
+}
+
+function sfMoveToLeft (aSelection, count)
+{
+    aSelection.MoveLeft(1, count); //	 Unit:=wdParagraph, count:=1, Extend:=wdMove
+}
+
+function sfMoveToRight (selection, count)
+{
+    selection.MoveRight(1, count); // Unit:=wdParagraph, count:=1, Extend:=wdMove
+}
+
+/**
+ * Move the cursor to the next paragraph
+ * @param selection
+ */
+function sfMoveToDownPara (selection)
+{
+    selection.MoveDown(4, 1);  // wdParagraph = 4
+    sfMoveToStartPara(selection);
+}
+
+function sfMoveToUpPara (selection)
+{
+    sfMoveToStartPara(selection);
+    sfMoveToLeft(selection, 1);
+    sfMoveToStartPara(selection);
+}
+
+/**
+    Sets the sytle on the previous paragraph        
+*/
+function sfResetStyleOnPrevPara (document, selection)
+{
+    sfMoveToUpPara(selection);
+    sfResetStyleOnPara(document, selection);
+    sfMoveToDownPara(selection);
+}
+
+/**
+    Fix a section bookmark such that if a paragraph marker is just
+    after, then section bookmark is moved.
+*/
+function sfFixSectionBookmark (currentDocument, bookmarkObject)
+{
+    var lastChar = currentDocument.Range(bookmarkObject.End-1, bookmarkObject.End);
+    var afterChar = currentDocument.Range(bookmarkObject.End, bookmarkObject.End+1);
+
+    if (lastChar != paraChar && afterChar == paraChar) {
+        sfSetBookmarkEnd(bookmarkObject, bookmarkObject.End+1);
+    }
+    else if (lastChar != paraChar && afterChar != paraChar) {
+        // TODO Gopal - shouldn't this be End + 1??
+        sfSetBookmarkEnd(bookmarkObject, currentDocument.Range(bookmarkObject.End,
+            bookmarkObject.End+1).Paragraphs(1).Range.End);
+    }
+}
+
+/**
+    Fix a bookmark such that if a paragraph marker is just before
+    the end of bookmark, the bookmarkEnd is moved just before the paragraph
+*/
+function sfFixClauseBookmark (currentDocument, bookmarkObject)
+{
+    var lastChar = currentDocument.Range(bookmarkObject.End-1, bookmarkObject.End);
+    if (lastChar == paraChar) {
+        sfSetBookmarkEnd(bookmarkObject, bookmarkObject.End-1);
+    }
+}
+
+/**
+    Currently, this is done only for clause bookmarks
+    For sections, next paragraph can have some text, other bookmarks
+    XXX Gopal - based on the conversation with Dan, we should do this for sections too
+*/
+function sfRemoveEmptyParaAfterBookmark (
+        currentDocument, currentSelection, bookmarkName, contextSectionBookmarkName)
+{
+    LoggerUtil.logMessage("Attempting to remove empty Paragraph after " + bookmarkName);
+
+    var originalState = currentDocument.TrackRevisions;
+    currentDocument.TrackRevisions = false;
+
+    var ctype = sfContentType(bookmarkName);
+    if (ctype == ContentType.ContentClauseType) {
+
+        if (contextSectionBookmarkName == null) {
+            contextSectionBookmarkName = GlobalContractBookmarkName;
+        }
+
+        var sectionBookmark =  sfGetBookmarkByName(currentDocument, contextSectionBookmarkName);
+        if (sectionBookmark == null) {
+            currentDocument.TrackRevisions = originalState;
+            return;
+        }
+        
+        var sectionEnd = sectionBookmark.End;
+
+        /* recursively delete all the empty paragraphs within the section */
+        while (true) {
+
+            sfSelectBookmark(currentSelection, bookmarkName);
+            sfMoveToEndSelection(currentSelection);
+            sfMoveToDownPara(currentSelection);
+
+            sectionBookmark = sfGetBookmarkByName(currentDocument, contextSectionBookmarkName);
+            sectionEnd = sectionBookmark.End;
+
+            var para = currentSelection.Range.Paragraphs(1);
+            var paraRange = para.Range;
+            if (paraRange.End < sectionEnd && sfIsEmptyParagraph(paraRange)) {
+                LoggerUtil.logMessage("Removedempty Paragraph after " + bookmarkName);
+                sfDeleteChar(currentSelection, 1);
+            }
+            else {
+                break;
+            }
+        }
+        sfFixClauseBookmark(currentDocument, currentDocument.Bookmarks.Item(bookmarkName));
+    }
+
+    currentDocument.TrackRevisions = originalState;
+}
+
+/**
+    Todo doc this
+*/
+function sfFixBookmarkEndToPara (currentDocument, bookmark)
+{
+    var currentSelection = currentDocument.ActiveWindow.Selection;
+    sfMoveToPosition(currentSelection, bookmark.End);
+    sfMoveToEndPara(currentSelection);
+
+    if (currentSelection.End != bookmark.End) {
+        sfSetBookmarkEnd(bookmark, currentSelection.End);
+    }
+}
+
+/**
+    If a section start at same location as sectionGlobalContract
+    then move section down, otherwise sectionGlobalContract may
+    be listed second in the sorted list of bookmarks.
+    Also create extra para in the end if sectionGlobal does
+    not contain para as last character.
+*/
+function sfFixSectionGlobalBookmark (currentDocument, currentSelection)
+{
+    var sgb = currentDocument.Bookmarks(GlobalContractBookmarkName);
+    var lastChar = currentDocument.Range(sgb.End-1, sgb.End);
+    var afterChar = currentDocument.Range(sgb.End, sgb.End+1);
+    var startPos = sgb.Start;
+    var startBookmarks = sfGetBookmarksStartingAt(currentSelection, startPos);
+    var count = startBookmarks.Count;
+    var foundStartingAt = false;
+    for (var i = 1; i <= count; ++i) {
+        var bm = startBookmarks.Item(i);
+        if (bm.Name != GlobalContractBookmarkName) {
+            foundStartingAt = true;
+            break;
+        }
+    }
+
+    if (foundStartingAt) {
+        sfNewPositionClauseSection(currentDocument, currentSelection, "", GlobalContractBookmarkName);
+    }
+
+    /*
+        check if sectionGlobal is at last location in document and lastChar for sectionGlobal is
+        not para char, then create an extra para
+   */
+    currentSelection.WholeStory();
+    if (lastChar != paraChar && currentSelection.End == (sgb.End+1)) {
+        sfMoveToEndSelection(currentSelection);
+        sfCreateNewLine(currentDocument, currentSelection);
+        sgb.End = sgb.End+1;
+        lastChar = paraChar;
+    }
+
+    if (lastChar != paraChar && afterChar == paraChar) {
+        sgb.End = sgb.End+1;
+    }
+}
+
+var EditTypeNewLine = 1;
+var EditTypeSpace = 2;
+var EditTypeBackspace = 3;
+var EditTypeRestoreNewLineByDelete = 4;
+
+function sfEditInternal (aDocument, aSelection, editType)
+{
+    try {
+        var originalState = aDocument.TrackRevisions;
+        aDocument.TrackRevisions = false;
+        if (editType == EditTypeNewLine) {
+            aSelection.TypeParagraph();
+        }
+        else if (editType == EditTypeSpace) {
+            aSelection.TypeText(" ");
+        }
+        else if (editType == EditTypeBackspace) {
+            aSelection.TypeBackspace();
+        }
+        else if (editType == EditTypeRestoreNewLineByDelete) {
+            aSelection.HomeKey(5, 0); // wdLine = 5
+            aSelection.MoveDown(5, 1, 1); // wdLine = 5, wdExtend = 1
+            if (sfIsEmptyRange(aSelection.Range)) {
+                aSelection.Delete(1,1); // wdCharacter = 1
+            }
+        }
+        aDocument.TrackRevisions = originalState;
+    } 
+    catch (ex) {
+        logError(MIE + "sfEditInternal: EditType " + editType);
+        throw ex;
+    }
+}
+
+function sfCreateNewLine (document, selection)
+{
+    sfEditInternal(document, selection, EditTypeNewLine);
+}
+
+function sfCreateASpace (document, selection )
+{
+    sfEditInternal(document, selection, EditTypeSpace);
+}
+
+function sfDoBackspace (document, selection)
+{
+    sfEditInternal(document, selection, EditTypeBackspace);
+}
+
+function sfRestoreNewLine (document, selection)
+{
+    sfDoBackspace(document, selection);
+}
+
+function sfRestoreNewLineByDelete (document, selection)
+{
+    sfEditInternal(document, selection, EditTypeRestoreNewLineByDelete);
+}
+/**
+    This method create a new para after begining of given bookmark
+*/
+function sfInsertAfterBookmarkTitle (document, selection, bookmarkName)
+{
+    LoggerUtil.logBegin("sfInsertAfterBookmarkTitle: " + bookmarkName);
+
+    if (!document.Bookmarks.Exists(bookmarkName)) {
+        return;
+    }
+    sfSelectBookmark(selection, bookmarkName);
+    var bookmarkEnd = selection.End;
+
+    sfMoveToStartSelection(selection);
+    sfMoveToEndPara(selection);
+    sfCreateNewLine(document, selection);
+
+    sfResetStyleOnPara(document, selection);
+
+    var cursorPos = selection.Start;
+
+    if (cursorPos >= bookmarkEnd) {
+        sfCreateNewLine(document, selection);
+        sfCreateNewLine(document, selection);
+        var bookmark = sfGetBookmarkByName(document, bookmarkName);
+        bookmark.End = selection.Start;
+    }
+
+    sfMoveToPosition(selection, cursorPos);
+
+    LoggerUtil.logEnd("sfInsertAfterBookmarkTitle");
+}
+
+/**
+    This method takes the current selection (cursor) to the end of the bookmark,
+    Creates a new paragraph and positions the cursor on the new paragraph
+*/
+function sfInsertAfterBookmarkUtil (aDocument, aSelection, bookmarkName, sectionName)
+{
+    LoggerUtil.logMessage("sfInsertAfterBookmarkUtil: inserting " + sectionName + " after " + bookmarkName);
+
+    // if bookmark is a section, then it is ignored. If its a clause and end
+    // bookmark was after the paragraph end, then its moved to just before
+    sfGoodToGreatBookmark(aDocument, aSelection, bookmarkName);
+
+    var aItemBookmark = sfGetBookmarkByName(aDocument, bookmarkName);
+
+    if (aItemBookmark == null) {
+        // The old vb script code did not handle missing bookmarks
+        sfMoveToEndSelection(aSelection);
+        return;
+    }
+
+    sfSelectBookmark(aSelection, bookmarkName);
+    sfExtendToEndPara(aSelection);
+    sfMoveToEndSelection(aSelection);
+    var endOfParaLoc = aSelection.Start;
+
+
+    // All the bookmarks that start on the next para should be moved down
+	var nextBookmarksToMove = new sfObjectArray();
+    var aRange = aSelection.Range;
+    var overlapBookmarks = aRange.bookmarks;
+    var count = overlapBookmarks.Count;
+
+    for (var i = 1; i <= count; ++i) {
+        var overlapBookmark = overlapBookmarks.Item(i);
+        if (overlapBookmark.Start == aSelection.Start &&
+            overlapBookmark.Name != bookmarkName) {
+            nextBookmarksToMove.AddItem(overlapBookmark);
+        }
+    }
+
+    if (nextBookmarksToMove.Count > 0) {
+        sfCreateNewLine(aDocument, aSelection);
+        sfResetStyleOnPrevPara(aDocument, aSelection);
+        count = nextBookmarksToMove.Count;
+        for (var i=1; i <= count; ++i) {
+            var nextBookmark = nextBookmarksToMove.Item(i);
+            nextBookmark.Start = aSelection.Start;
+        }
+    }
+
+    sfSelectBookmark(aSelection, bookmarkName);
+    sfExtendToEndPara(aSelection);
+
+    // All the bookmarks that end on this para on or after bookmarkEnd should move down to next para
+	var bookmarksToMove = new sfObjectArray();
+    aRange = aSelection.Range;
+    overlapBookmarks = aRange.bookmarks;
+    count = overlapBookmarks.Count;
+    for (var i = 1; i <= count; ++i) {
+        var overlapBookmark = overlapBookmarks.Item(i);
+        if (overlapBookmark.End >= aItemBookmark.End &&
+            overlapBookmark.End <= aSelection.End &&
+            overlapBookmark.Start < aItemBookmark.Start &&
+            overlapBookmark.Name != bookmarkName) {
+            bookmarksToMove.AddItem(overlapBookmark);
+        }
+    }
+    
+    sfMoveToPosition(aSelection, endOfParaLoc);
+    if (bookmarksToMove.Count > 0) {
+        sfCreateNewLine(aDocument, aSelection);
+        count = bookmarksToMove.Count;
+        for (var i = 1; i <= count; ++i) {
+            var moveBookmark = bookmarksToMove.Item(i);
+	    	moveBookmark.End = aSelection.Start;
+        }
+    }
+
+	sfMoveToPosition(aSelection, endOfParaLoc);
+}
+
+/*
+    This method create a new para after begining of given bookmark
+*/
+function sfInsertAfterBookmarkBegin (agreement, aSelection, bookmarkName)
+{
+    sfSelectBookmark(aSelection, bookmarkName);
+    sfMoveToStartSelection(aSelection);
+    sfCreateNewLine(agreement, aSelection);
+    sfMoveToUpPara(aSelection);
+    sfResetStyleOnPara(agreement, aSelection);
+    sfMoveToDownPara(aSelection);
+}
+
+/**
+    insert a paragraph just before bookmark. Note that there could
+    be other bookmarks starting at the same pos - so first move the
+    bookmark start pos by 1, move pointer back, insert a para, and
+    move 1 pare up
+*/
+function sfInsertBeforeBookmark (agreement, aSelection, bookmarkName)
+{
+    // insert a line after bookmark begining
+    sfSelectBookmark(aSelection, bookmarkName);
+    sfMoveToStartSelection(aSelection);
+    var bookmark = agreement.Bookmarks.Item(bookmarkName);
+
+    bookmark.Start = bookmark.Start + 1;
+
+    // Since there could be multiple bookmarks on the start location, for example,
+    // sectionGlobal and firstSection, create additional para and move bookmark to new para
+
+    aSelection.TypeParagraph();
+    var newLocation = aSelection.Start;
+
+    sfMoveToUpPara(aSelection);
+    sfResetStyleOnPara(agreement, aSelection);
+    bookmark.Start = newLocation;
+}
+
+/**
+    This method takes the current selection (cursor) to the end of the bookmark,
+    Creates a new paragraph and positions the cursor on the new paragraph
+*/
+function sfInsertAfterBookmark (aDocument, aSelection, bookmarkName)
+{
+    var sectionName = sfFindSectionName(aSelection, bookmarkName);
+    sfInsertAfterBookmarkUtil(aDocument, aSelection, bookmarkName, sectionName);
+}
+
+/**
+    Todo doc this
+*/
+function sfRemoveBookmarkAndContent(agreement, currentSelection, bookmarkName)
+{
+    // Select the bookmark, extend to end of current paragraph and delete selection
+    LoggerUtil.logBegin("sfRemoveBookmarkAndContent: " + bookmarkName);
+
+    sfSelectBookmark(currentSelection, bookmarkName);
+    sfExtendToEndPara(currentSelection);
+    sfDeleteSelection(currentSelection);
+
+    sfClearupBookmark(sfGetBookmarkByName(agreement, bookmarkName));
+
+    LoggerUtil.logEnd("sfRemoveBookmarkAndContent");
+}
+
+/**
+    find the position to add the new clause. Take into consideration special cases.
+*/
+function sfNewPositionClauseSection (agreement, currentSelection, previousBookmarkName, newSectionName)
+{
+    LoggerUtil.logBegin("sfNewPositionClauseSection" + "(" + agreement + "," + currentSelection + "," +
+                          previousBookmarkName + "," + newSectionName + ")");
+
+    if (previousBookmarkName == "") {
+        if (GlobalContractBookmarkName == newSectionName) {
+            var firstSectionName = sfFindFirstBookmarkNameInSection(agreement, currentSelection, newSectionName);
+
+            if (firstSectionName != "") {
+                // insert a new line before first bookmark inthe newSection
+                var firstSectionBookmark = agreement.Bookmarks.Item(firstSectionName);
+                var aRange = sfGotoBookmarkName(currentSelection, newSectionName); // wdGoToBookmark = -1
+
+                if (firstSectionBookmark.Start == aRange.Start) {
+                    // if sub-bookmark overlaps, then insert before sub-bookmark
+                    var pos = currentSelection.MoveLeft(1, 1); // wdCharacter = 1
+                    sfInsertBeforeBookmark(agreement, currentSelection, firstSectionName);
+                }
+                else {
+                    // For section global, if first sub-bookmark is not overlapping, insert para after bookmark begin
+                    sfInsertAfterBookmarkBegin(agreement, currentSelection, newSectionName);
+                }
+            }
+            else {
+                // For section global, if no sub-bookmark, insert para after begining of bookmark
+                sfInsertAfterBookmarkBegin(agreement, currentSelection, newSectionName);
+            }
+        }
+        else {
+            // For regular section, insert a new line after section title
+            sfInsertAfterBookmarkTitle(agreement, currentSelection, newSectionName);
+        }
+    }
+    else {
+        sfInsertAfterBookmarkUtil(agreement, currentSelection, previousBookmarkName, newSectionName);
+    }
+
+    LoggerUtil.logEnd("sfNewPositionClauseSection");
+}
+
+/**
+    Creates a bookmark
+    XXX We seem to be 
+*/
+function sfAddBookmarkWithOptions (currentDocument, currentSelection, bookmarkName, isCreateNewLine)
+{
+    LoggerUtil.logBegin("sfAddBookmarkWithOptions" + "(" + currentDocument + "," +
+                          currentSelection + "," + bookmarkName + "," + isCreateNewLine + ")");
+
+    if (isCreateNewLine) {
+        sfCreateNewLine(currentDocument, currentSelection);
+        var pos = currentSelection.MoveUp(5, 1); // wdLine = 5
+    }
+
+    // reset the style, its caller's responsibility to apply correct style on the bookmark
+    currentSelection.Style = currentDocument.Styles("Normal");
+
+    var delta = 1;
+    currentSelection.TypeText(" ");
+    var bookmarkRange = currentDocument.Range(currentSelection.Start - delta, currentSelection.Start);
+    var aBookmark = currentDocument.Bookmarks.Add(bookmarkName, bookmarkRange);
+
+    var aRange = sfGotoBookmarkName(currentSelection, bookmarkName); // wdGoToBookmark = -1
+    currentSelection.End = currentSelection.Start;
+    
+    LoggerUtil.logEnd("sfAddBookmarkWithOptions");
+}
+
+/**
+ * Adds a bookmark with new line at the beginning
+ */
+function sfAddBookmark (currentDocument, currentSelection, bookmarkName)
+{
+    sfAddBookmarkWithOptions(currentDocument, currentSelection, bookmarkName, true);
+}
+
+/**
+    Clear all bookmarks within range
+*/
+function sfClearupBookmark (bookmark)
+{
+    if (bookmark == null) {
+        return;
+    }
+    
+    var bookmarkRange = bookmark.Range;
+    var allBookmark = bookmarkRange.Bookmarks;
+    var count = allBookmark.Count;
+    var toBeDeleted = new sfObjectArray();
+    for (var i = 1; i <= count; ++i) {
+        var aBookmark = allBookmark.Item(i);
+        if (sfBookmarkFullyIncluded(bookmarkRange, aBookmark)) {
+            toBeDeleted.AddItem(aBookmark);
+        }
+    }
+
+    toBeDeleted.DeleteAll();
+}
+
+/**
+    TODO Doc this
+*/
+function sfAddGlobalContractBookmarkInDocument (currentDocument)
+{
+    currentDocument.Activate();
+
+    if (currentDocument.Bookmarks.Exists(GlobalContractBookmarkName)) {
+        return; // nothing to do
+    }
+
+    var currentSelection = currentDocument.ActiveWindow.Selection;
+    currentSelection.WholeStory();
+
+    if (currentSelection.Start + 1 >= currentSelection.End) {
+        sfCreateASpace(currentDocument, currentSelection);
+        currentSelection.WholeStory();
+    }
+
+    var needNewLine = false;
+    try {
+        needNewLine = currentSelection.Rows.Count <= 1;
+    }
+    catch (ex) {
+        /*
+            I have noticed that the above throws an exception in some cases
+        */
+        needNewLine = true;
+    }
+
+    if (needNewLine) {
+        var pos = currentSelection.EndKey(6, 0); // wdStory = 6, wdMove = 0
+        sfCreateNewLine(currentDocument, currentSelection);
+        currentSelection.Range.ListFormat.RemoveNumbers();
+        sfCreateNewLine(currentDocument, currentSelection);
+        currentSelection.Range.ListFormat.RemoveNumbers();
+        currentSelection.WholeStory();
+    }
+
+    var bookmarkRange = currentDocument.Range(currentSelection.Start, currentSelection.End);
+    var aBookmark = currentDocument.Bookmarks.Add(GlobalContractBookmarkName, bookmarkRange);
+
+    var aRange = sfGotoBookmarkName(currentSelection, GlobalContractBookmarkName); // wdGoToBookmark = -1
+    var pos = currentSelection.HomeKey(5, 0); // wdLine = 5
+}
+
+/**
+    Adds the global bookmark if dooes not exist
+*/
+function sfAddGlobalContractBookmark (agreement)
+{
+    agreement.Activate();
+
+    if (agreement.Bookmarks.Exists(GlobalContractBookmarkName)) {
+        return;
+    }
+
+    LoggerUtil.logBegin("sfAddGlobalContractBookmark");
+
+    var currentSelection = agreement.ActiveWindow.Selection;
+    var pos = currentSelection.EndKey(6, 0); // wdStory = 6, wdMove = 0
+
+    sfAddBookmark(agreement, currentSelection, GlobalContractBookmarkName);
+    pos = currentSelection.EndKey(6, 0); // wdStory = 6, wdMove = 0
+
+    sfRestoreNewLine(agreement, currentSelection);
+
+    var aRange = sfGotoBookmarkName(currentSelection, GlobalContractBookmarkName); // wdGoToBookmark = -1
+    pos = currentSelection.MoveRight(1, 1); // wdCharacter = 1
+    pos = currentSelection.MoveLeft(1, 1); // wdCharacter = 1
+    sfCreateNewLine(agreement, currentSelection);
+    currentSelection.Range.ListFormat.RemoveNumbers();
+
+    LoggerUtil.logEnd("sfAddGlobalContractBookmark");
+}
+
+/**
+    Returns if the position pointing to a paragraph character
+*/
+function sfIsNextCharPara (currentDocument, position)
+{
+    // Assumes we are not at the very end of the doc, seems reasonable.
+    return currentDocument.Range(position, position + 1) == paraChar;
+}
+
+/**
+    Todo doc this
+*/
+function sfResetContractContent (agreement)
+{
+    agreement.Activate();
+
+    if (agreement.Bookmarks.Exists(GlobalContractBookmarkName)) {
+        var currentSelection = agreement.ActiveWindow.Selection;
+        var aRange = sfGotoBookmarkName(currentSelection, GlobalContractBookmarkName); // wdGoToBookmark = -1
+        var pos = currentSelection.Delete(1, 1); // wdCharacter = 1
+        pos = agreement.Bookmarks.Item(GlobalContractBookmarkName).Delete();
+        sfAddBookmark(agreement, currentSelection, GlobalContractBookmarkName);
+    }
+}
+
+/**
+    Todo doc this
+*/
+function sfApplyBookmarkByLocation(ec, currentSelection, newBookmark, startPos, endPos)
+{
+    var aRange = ec.getAgreementDocument().Range(startPos, endPos-1);   // exclude the paragraph character
+    var aBookmark = ec.getAgreementDocument().Bookmarks.Add(newBookmark, aRange);
+}
+
+function sfApplyBookmarkByName(ec, currentSelection, newBookmark, oldBookmark)
+{
+    var aRange = sfGotoBookmarkName(currentSelection, oldBookmark) // wdGoToBookmark = -1
+    var aBookmark = ec.getAgreementDocument().Bookmarks.Add(newBookmark, aRange);
+    var pos = ec.getAgreementDocument().Bookmarks.Item(oldBookmark).Delete();
+}
+
+function sfApplyStyleByAttribute(ec, currentSelection, newBookmark, xmlNode_applyBookmark)
+{
+    var style = xmlNode_applyBookmark.getAttribute(XML_ATTRIBUTE_STYLE);
+    if (style != "") {
+        sfSelectBookmark(currentSelection, newBookmark);
+        sfApplyStyleInSectionClause(ec.getAgreementDocument(), style, currentSelection, sfContentType(newBookmark));
+    }
+}
+
+/**
+    Todo doc this
+*/
+function sfApplyStyleInSectionClause (agreementDocument, styleId, aSelection, contentType)
+{
+    // XXX : For either case - section or clause, we should apply style only on
+    // the first paragraph. For clause, it may be necessary to apply Default
+    // style on the rest of the paragraphs. Revisit this later.
+    /* 
+       kkim:(1-1WAG7) Because of the above change, if a clause has multiple paragraphs,
+       the style gets lost after the 1st paragraph. The fix is to apply the style to the paragraphs 
+       that have the same left indent, the same level, and the same type (Bullets, SimpleNumbering, NoNumbering, etc.) 
+       as the first paragraph does. 
+       There's an issue where if a paragraph has lower levels of paragraphs,we by-pass applying the style to them 
+       as result of which wrong styles might be applied to those paragraphs. In the future during a release cycle, 
+       we should give the users options of whether to apply the style only to the first paragraph which is the current behavior 
+       or whether to apply to the same kind of paragraph which is the new behavior of this change.
+    */
+
+    if (styleId == null) {
+        /* this is not an error case */
+        return;
+    }
+
+    var aRange;
+    var style;
+
+    try {
+        style =  agreementDocument.Styles(styleId);
+    }
+    catch (ex) {
+        /* did not find the style */
+        LoggerUtil.logError(null, "sfApplyStyleInSectionClause Invalid Args: styleId is "
+                + styleId + ",contentType is " + contentType, null);
+        return;
+    }
+
+    try {
+        if (styleId != noStyle && styleId != AdHocStyle) {
+
+            if (contentType == ContentType.ContentSectionType) {
+                aRange = aSelection.Paragraphs(1).Range;
+                aRange.Style = style;
+            }
+            else if (contentType == ContentType.ContentClauseType) {
+                var aPara = null;
+                var aListFormat = null;
+                var leftIndentAfterApplyStyle = null;
+                var firstParaListLevel = null;
+                var firstParaListType = null;
+                var firstParaLeftIndent = null;
+                var sectionParagraphs = aSelection.Paragraphs;
+                var paragraphCount = sectionParagraphs.count;
+                for (var i = 1; i <= paragraphCount; i++) {
+                    aPara = sectionParagraphs.Item(i);
+                    aRange = aPara.Range;
+                    aListFormat = aRange.ListFormat;
+                    if (i == 1) {
+                        firstParaListLevel  = aListFormat.ListLevelNumber;
+                        firstParaListType   = aListFormat.ListType;
+                        firstParaLeftIndent = aPara.LeftIndent;
+                        aRange.Style = style;
+                        leftIndentAfterApplyStyle = aPara.LeftIndent;
+                    }
+                    else if (firstParaLeftIndent == aPara.LeftIndent &&
+                             firstParaListLevel  == aListFormat.ListLevelNumber &&
+                             firstParaListType   == aListFormat.ListType) {
+                        aRange.Style = style;
+                        aListFormat.RemoveNumbers(1); // 1 = wdNumberParagraph
+                        aPara.LeftIndent  = leftIndentAfterApplyStyle;
+                    }
+                }
+            }
+        }
+    }  
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfApplyStyleInSectionClause: styleId is " +
+                                  styleId + ",contentType is " + contentType, ex);
+        throw ex;
+    }
+}
+
+/**
+    Adds the clause to the agreement document from clauseDocumentName
+    xxx - isAddInBegin does not seem to be used
+*/
+function sfAddClause (ec, clauseDocumentName, clauseName,
+    contextSectionBookmarkName, styleId, previousBookmarkName, isAddInBegin)
+{
+    sfAddClauseToClipboard(ec, clauseDocumentName);
+
+    sfAddClauseFromClipboard(ec, clauseName, contextSectionBookmarkName,
+        styleId, true, previousBookmarkName);
+}
+
+/**
+    Open the document, select the whole document and copy the doocument in the clipboard
+*/
+function sfAddClauseToClipboard (ec, clauseDocumentName)
+{
+    LoggerUtil.logBegin("sfAddClauseToClipboard " + clauseDocumentName);
+
+    /* XXX Gopal - why are we opening the document in read/write mode?? */
+    sfOpenDocumentInWord(ec.wordApp, ec.wordType, clauseDocumentName, false);
+
+    var newSelection = ec.wordApp.ActiveDocument.ActiveWindow.Selection;
+
+    newSelection.WholeStory();
+
+    sfPopulateProperty(newSelection.Range, ec.getAgreementDocument());
+
+    newSelection.Copy();
+
+    ec.wordApp.ActiveDocument.Close();
+
+    LoggerUtil.logEnd("sfAddClauseToClipboard ");
+}
+
+/**
+    Doc this
+*/
+function sfAddClauseFromClipboard (ec, clauseName, contextSectionBookmarkName,
+                                   styleId, isReapplyStyles, previousBookmarkName)
+{
+    var agreement = ec.agreementDocument;
+
+    ec.getAgreementDocument().Activate();
+
+    sfNewPositionClauseSection(agreement, ec.currentSelection,
+            previousBookmarkName, contextSectionBookmarkName);
+
+    var addParagraph = isReapplyStyles;
+
+    sfAddBookmarkWithOptions(agreement, ec.currentSelection, clauseName, addParagraph);
+
+    sfCompatiblePaste(ec.currentSelection, ec.wordType);
+
+    sfDeleteChar(ec.currentSelection, 1);
+
+    /*
+        If not isReapplyStyles, then copySourceClauseToClipboard should have included the
+        end para marker in the clipboard and we will have pasted it within the bookmark.
+        So we delete the para marker right after the selection, and we retract the bookmark
+        by one char to put the copied para marker outside the bookmark.  We check to make
+        sure that the para markers are really where we expect them to be, before
+        we change things.
+    */
+    if (!isReapplyStyles) {
+	    var aBookmark = agreement.Bookmarks(clauseName);
+	    // If there is a para marker just inside the bookmark at the end...
+        if (sfIsNextCharPara(agreement, aBookmark.Range.End - 1)) {
+            // If there is a para marker just outside the bookmark at the end...
+	        if (sfIsNextCharPara(agreement, ec.currentSelection.End)) {
+	            // Then delete the preexisting trailing para marker.
+	            sfDeleteChar(ec.currentSelection, 1);
+	        }
+	        // Then retract the bookmark so the pasted para is after the bookmark.
+		    aBookmark.Range.End = aBookmark.Range.End - 1
+		}
+    }
+
+    /*
+        Note the side effect of changing currentSelection, which is used after the if block;
+        that is why this line is not within the if block.
+    */
+    var aRange = sfGotoBookmarkName(ec.currentSelection, clauseName);  // wdGoToBookmark = -1
+
+    if (isReapplyStyles) {
+        sfApplyStyleInSectionClause(agreement, styleId, ec.currentSelection, sfContentType(clauseName));
+        ec.currentSelection.Font.Reset();
+    }
+
+    sfGoodToGreatBookmark(agreement, ec.currentSelection, clauseName);
+
+    sfRemoveEmptyParaAfterBookmark(agreement, ec.currentSelection,
+            clauseName, contextSectionBookmarkName);
+}
+
+/**
+    Todo doc this
+*/
+function sfAddSection (ec, sectionName, nameId, contextSectionBookmarkName,
+                       styleId, previousBookmarkName, isAddInBegin)
+{
+    LoggerUtil.logBegin("sfAddSection" + sectionName);
+
+    var agreement = ec.agreementDocument;
+
+    ec.hideApp();
+    agreement.Activate();
+
+    sfNewPositionClauseSection(agreement, ec.currentSelection,
+            previousBookmarkName, contextSectionBookmarkName);
+
+    sfAddBookmarkWithOptions(agreement, ec.currentSelection, nameId, false);
+
+    sfApplyStyleInSectionClause(agreement, styleId, ec.currentSelection, sfContentType(nameId));
+    ec.currentSelection.TypeText(sectionName);
+
+    var aRange = sfGotoBookmarkName(ec.currentSelection, nameId); // wdGoToBookmark = -1
+    var pos = ec.currentSelection.MoveRight(1, 1); // wdCharacter = 1
+    pos = ec.currentSelection.MoveLeft(1, 1); // wdCharacter = 1
+    sfCreateNewLine(agreement, ec.currentSelection);
+    ec.currentSelection.Range.ListFormat.RemoveNumbers();
+
+    LoggerUtil.logEnd("sfAddSection" + sectionName);
+}
+
+/**
+    sectionContent - section title
+    styleId - section style
+    keepSectionTitle - if true then the deletion of the section title gets rejected (1-9Y0VEN)
+*/
+function sfSetSection (ec, sectionContent, bookmarkName, styleId, keepSectionTitle)
+{
+    if (ec.getAgreementDocument().Bookmarks.Exists(bookmarkName)) {
+
+        sfSelectBookmark(ec.currentSelection, bookmarkName);
+        sfMoveToStartSelection(ec.currentSelection);
+        sfMoveToEndPara(ec.currentSelection);
+
+        var aRange = ec.currentSelection.Range;
+        if (keepSectionTitle) {
+            var revTemp = null;
+            try {
+	            revTemp = ec.currentSelection.NextRevision();
+            }
+            catch (ex) {
+                LoggerUtil.logInfo(null, "sfSetSection Error with keep section title", ex);
+            }
+
+	        if (revTemp != null && revTemp.Type == 2) { 
+                revTemp.Reject();
+                sfSelectBookmark(ec.currentSelection, bookmarkName);
+	            sfMoveToStartSelection(ec.currentSelection);
+	            sfExtendToEndPara(ec.currentSelection);
+	            sfApplyStyleInSectionClause(ec.getAgreementDocument(), styleId,
+                        ec.currentSelection, sfContentType(bookmarkName));
+	        }
+        }
+        else {
+
+            var sectionParaEnd = ec.currentSelection.End;
+            var bookmarkObject = ec.getAgreementDocument().Bookmarks(bookmarkName);
+            if (sectionParaEnd >= bookmarkObject.End) {
+                sfInsertAfterBookmarkTitle(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+            }
+
+            sfSelectBookmark(ec.currentSelection, bookmarkName);
+            sfMoveToStartSelection(ec.currentSelection);
+            sfExtendToEndPara(ec.currentSelection);
+
+            sfApplyStyleInSectionClause(ec.getAgreementDocument(), styleId,
+                    ec.currentSelection, sfContentType(bookmarkName));
+            ec.currentSelection.TypeText(sectionContent);
+        }
+    }
+    else {
+        sfApplyStyleInSectionClause(ec.getAgreementDocument(), styleId,
+                ec.currentSelection, sfContentType(bookmarkName));
+        ec.currentSelection.TypeText(sectionContent);
+    }
+}
+
+/*
+    This method substitutes the content of a bookmark by new content. Used by
+    both clause substitute and clause soft delete
+*/
+function sfSetClause (ec, clauseDocumentName, contextSectionBookmarkName,
+    previousBookmarkName, bookmarkName, styleId)
+{
+    sfAddClauseToClipboard (ec, clauseDocumentName);
+    sfReplaceClauseFromClipboard(ec, contextSectionBookmarkName, previousBookmarkName, bookmarkName, styleId, true);
+}
+
+/**
+    Todo doc this
+*/
+function sfReplaceClauseFromClipboard (ec, contextSectionBookmarkName,
+    previousBookmarkName, bookmarkName, styleId, isReapplyStyles)
+{
+    ec.currentSelection = ec.wordApp.ActiveDocument.ActiveWindow.Selection;
+    if (contextSectionBookmarkName == null || contextSectionBookmarkName == "") {
+        contextSectionBookmarkName = GlobalContractBookmarkName;
+    }
+    
+    LoggerUtil.logBegin("sfReplaceClauseFromClipboard: " + bookmarkName);
+    ec.getAgreementDocument().Activate();
+    var isRestoreNewLineRequired = false;
+
+    // Delete the existing bookmark and content if exists
+    if (sfIsBookmarkExists(ec.getAgreementDocument(), ec.currentSelection, bookmarkName)) {
+        // This call always does extendToEndPara and deletes the para marker as well.
+        sfRemoveBookmarkAndContent(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+    }
+
+    if (contextSectionBookmarkName == "" && previousBookmarkName == "") {
+        LoggerUtil.logMessage("ERROR: both contextSectionBookmarkName and previousBookmarkName are null");
+    }
+
+    // This call inserts a new para marker in the right place, and positions the
+    // collapsed currentSelection after or before the new para marker.
+    sfNewPositionClauseSection(ec.getAgreementDocument(), ec.currentSelection,
+            previousBookmarkName, contextSectionBookmarkName);
+
+    // False means it doesn't add a para marker in the bookmark, just a space.
+    // The bookmark and currentSelection are set to contain just the added space.
+    sfAddBookmarkWithOptions(ec.getAgreementDocument(), ec.currentSelection, bookmarkName, false);
+
+    // Replace the currentSelection with the clipboard contents.
+    sfCompatiblePaste(ec.currentSelection, ec.wordType);
+
+    // Delete one char after the presumably collapsed selection, presumably an extra para marker?
+    sfDeleteChar(ec.currentSelection, 1);
+
+    /*
+        If not isReapplyStyles, then copySourceClauseToClipboard should have included the
+        end para marker in the clipboard and we will have pasted it within the bookmark.
+        So we delete the para marker right after the selection, and we retract the bookmark
+        by one char to put the copied para marker outside the bookmark.  We check to make
+        sure that the para markers are really where we expect them to be, before
+        we change things.
+    */
+    if (!isReapplyStyles) {
+	    var aBookmark = ec.getAgreementDocument().Bookmarks(bookmarkName);
+	    // If there is a para marker just inside the bookmark at the end...
+        if (sfIsNextCharPara(ec.getAgreementDocument(), aBookmark.Range.End - 1)) {
+            // If there is a para marker just outside the bookmark at the end...
+	        if (sfIsNextCharPara(ec.getAgreementDocument(), ec.currentSelection.End)) {
+	            // Then delete the preexisting trailing para marker.
+	            sfDeleteChar(ec.currentSelection, 1);
+	        }
+	        // Then retract the bookmark so the pasted para is after the bookmark.
+		    aBookmark.Range.End = aBookmark.Range.End - 1;
+		}
+    }
+
+    // Note the side effect of changing currentSelection, which is used after the if block;
+    // that is why this line is not within the if block.
+    var aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+
+    if (isReapplyStyles) {
+	    sfApplyStyleInSectionClause(ec.getAgreementDocument(), styleId, ec.currentSelection, sfContentType(bookmarkName));
+	    ec.currentSelection.Font.Reset();
+	}
+
+    sfGoodToGreatBookmark(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+
+    sfRemoveEmptyParaAfterBookmark(ec.getAgreementDocument(),
+            ec.currentSelection, bookmarkName, contextSectionBookmarkName);
+
+    LoggerUtil.logEnd("sfReplaceClauseFromClipboard");
+}
+
+
+
+/**
+    Todo doc this
+*/
+function sfCopyReplaceClause (ec, isCopyProjectReapplyStyles, contextSectionBookmarkName,
+                              previousBookmarkName, bookmarkName, styleId)
+{
+    if (sfIsBookmarkExists(ec.copyProjectSourceAgreement, ec.currentSelection,  bookmarkName)) {
+            sfCopySourceClauseToClipboard(bookmarkName, isCopyProjectReapplyStyles);
+            sfReplaceClauseFromClipboard(contextSectionBookmarkName, previousBookmarkName,
+                bookmarkName, styleId, isCopyProjectReapplyStyles);
+    }
+    else {
+        // We didn't find the content in the document we're copying to replace from the original template
+        // Delete the existing bookmark and content if exists, to match the document we're copying
+        // originally tried to fix this by clearing the clipboard, but couldn't find a good way to do that
+        if (sfIsBookmarkExists(ec.getAgreementDocument(), bookmarkName)) {
+            // This call always does extendToEndPara and deletes the para marker as well.
+            sfRemoveBookmarkAndContent(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+        }
+    }
+}
+
+/**
+    Todo doc this
+*/
+function sfCopyAddClause (ec, isCopyProjectReapplyStyles, bookmarkName,
+    contextSectionBookmarkName, styleId, previousBookmarkName, isAddInBegin)
+{
+    sfCopySourceClauseToClipboard(bookmarkName, isCopyProjectReapplyStyles);
+    sfAddClauseFromClipboard(bookmarkName, contextSectionBookmarkName, styleId, isCopyProjectReapplyStyles, previousBookmarkName);
+}
+
+/**
+    Copies the bookmark into the clip board
+*/
+function sfCopySourceClauseToClipboard(ec, bookmarkName, isCopyProjectReapplyStyles)
+{
+    // Switch to source doc, and copy source bookmark contents to clipboard.
+    ec.copyProjectSourceAgreement.Activate();
+    var sourceSelection = ec.wordApp.ActiveDocument.ActiveWindow.Selection;
+    sfSelectBookmark(sourceSelection, bookmarkName);
+    /*
+        If we are not going to reapply styles, extend the selection to include the end
+        paragraph marker, since it contains the paragraph formatting like numbering
+        and indentation that we want to copy.  See corresponding extendToEndPara in
+        replaceClauseFromClipboard.
+    */
+    if (!isCopyProjectReapplyStyles) {
+        sfExtendToEndPara(sourceSelection);
+    }
+    sourceSelection.Copy();
+}
+
+/**
+ * Copy the clause from the server to client
+ */
+function sfAutoOpenSyncupClause (ec, fileFullPath, clauseId)
+{
+    sfSaveClauseToClient(fileFullPath, clauseId, ec.urlDocumentUrl);
+}
+
+/**
+    Todo Doc this
+*/
+function sfMoveClauseSection (ec, bookmarkName, oldSectionName, newSectionName, styleId, previousBookmarkName)
+{
+    //??? app.Visible = appVisible
+    window.focus();
+    document.body.style.cursor = "wait";
+
+    ec.getAgreementDocument().Activate();
+
+    var aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+    var currentSectionName = sfWithinBookmarkNameInSelection(ec.currentSelection, aRange, true);
+    if (currentSectionName == newSectionName) {
+        var currentPreviousBookmarkName = sfFindPreviousBookmarkName(ec.currentSelection, bookmarkName, newSectionName);
+        // already right
+        if (currentPreviousBookmarkName == previousBookmarkName) {
+            return;
+        }
+    }
+
+    aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+
+    // Extend the selection to end of para - to get the right styles for the sub-content
+    sfExtendToEndPara(ec.currentSelection);
+    ec.currentSelection.Copy();
+
+    sfRemoveBookmarkAndContent(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+
+    sfNewPositionClauseSection(ec.getAgreementDocument(), ec.currentSelection, previousBookmarkName, newSectionName);
+
+    sfAddBookmarkWithOptions(ec.getAgreementDocument(), ec.currentSelection, bookmarkName, false);
+
+    sfCompatiblePaste(ec.currentSelection, ec.wordType);
+
+    // delete 1 char that was added inside the bookmark during addBookmarkWithOptions
+    var pos = ec.currentSelection.Delete(1, 1);    // Unit:=wdCharacter, Count:=1
+
+    aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+
+    sfApplyStyleInSectionClause(ec.getAgreementDocument(), styleId, ec.currentSelection, sfContentType(bookmarkName));
+
+    sfGoodToGreatBookmark(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+    sfRemoveEmptyParaAfterBookmark(ec.getAgreementDocument(),
+            ec.currentSelection, bookmarkName, newSectionName);
+}
+
+/**
+    Doc this
+*/
+function sfReviseMoveForwardBookmark (currentDocument, currentSelection, bookmarkName)
+{
+    try {
+        var aRange = sfGotoBookmarkName(currentSelection, bookmarkName);  // wdGoToBookmark = -1
+        var pos = currentSelection.MoveRight(1, 1); // wdCharacter = 1
+        pos = currentSelection.MoveLeft(1, 1); // wdCharacter = 1
+
+        var aBookmarkName = sfWithinBookmarkName(currentDocument, currentSelection.Range);
+        if (bookmarkName != aBookmarkName) {
+            var aBookmark = currentDocument.Bookmarks.Item(aBookmarkName);
+            var sourceBookmark = currentDocument.Bookmarks.Item(bookmarkName);
+
+            if (sourceBookmark.End == aBookmark.End) {
+                var aRange = sfGotoBookmarkName(currentSelection, bookmarkName); // wdGoToBookmark = -1
+                pos = currentSelection.MoveRight(1, 1); // wdCharacter = 1
+                sfCreateASpace(currentDocument, currentSelection);
+                sourceBookmark.End = sourceBookmark.End + 1;
+            }
+        }
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfReviseMoveForwardBookmark", ex);
+        throw ex;
+    }
+}
+
+/**
+    Remove a clause or section
+*/
+function sfRemoveClauseSection (ec, bookmarkName)
+{
+    ec.hideApp();
+
+    ec.getAgreementDocument().Activate();
+    sfGoodToGreatBookmark(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+    var aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+
+    // extend to entire Para and delete
+    sfExtendToEndPara(ec.currentSelection);
+    var pos = ec.currentSelection.Delete(1, 1); // wdCharacter = 1
+
+    try {
+        var pos = ec.getAgreementDocument().Bookmarks(bookmarkName).Delete();
+    }
+    catch (ex) {
+        /*
+            This code was copied from the existing vb script.  The bookmark is
+            deleted as well when we delete the paragraph.  I think we are trying to do
+            this in case it is left over from the delete.  The old vb handled the error
+            case on resume next
+        */
+    }
+}
+
+/**
+    Doc this
+*/
+function sfSetSectionContent (ec, bookmarkName, sectionContent, styleId, previousBookmarkName)
+{
+    var newBookmarkAdded = false;
+
+    if (ec.getAgreementDocument().Bookmarks.Exists(bookmarkName)) {
+        var aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+
+        var pos = ec.currentSelection.MoveLeft(1, 1); // wdCharacter = 1
+        pos = ec.currentSelection.EndKey(5, 1); // wdLine = 5, wdExtend = 1
+        pos = ec.currentSelection.MoveLeft(1, 1, 1); // wdCharacter = 1, wdExtend = 1
+        pos = ec.currentSelection.Delete(1, 1); // wdCharacter = 1
+    }
+    else {
+        if (ec.getAgreementDocument().Bookmarks.Exists(previousBookmarkName)) {
+            sfInsertAfterBookmark(ec.getAgreementDocument(), ec.currentSelection, previousBookmarkName);
+            sfAddBookmark(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+            newBookmarkAdded = true;
+        }
+    }
+
+    sfApplyStyleInSectionClause(ec.getAgreementDocument(), styleId, ec.currentSelection, sfContentType(bookmarkName));
+    ec.currentSelection.TypeText(sectionContent);
+
+    if (newBookmarkAdded) {
+        var aRange = sfGotoBookmarkName(currentSelection, bookmarkName); // wdGoToBookmark = -1
+        var pos = ec.currentSelection.MoveRight(1, 1); // wdCharacter = 1
+        pos = ec.currentSelection.MoveRight(1, 1); // wdCharacter = 1
+        pos = ec.currentSelection.Delete(1, 1); // wdCharacter = 1
+
+    }
+}
+
+/**
+*/
+function sfSetClauseContent (ec, bookmarkName, clauseDocumentName, styleId, previousBookmarkName)
+{
+    // app.Visible = appVisible
+    window.focus();
+    document.body.style.cursor = "wait";
+
+    sfOpenDocumentInWord(ec.wordApp, ec.wordType, clauseDocumentName, false);
+    var newSelection = ec.wordApp.ActiveDocument.ActiveWindow.Selection;
+    newSelection.WholeStory();
+
+    sfPopulateProperty(newSelection.Range, ec.getAgreementDocument());
+    newSelection.Copy();
+    ec.wordApp.ActiveDocument.Close();
+
+    ec.getAgreementDocument().Activate();
+
+    var newBookmarkAdded = false;
+
+    if (ec.getAgreementDocument().Bookmarks.Exists(bookmarkName)) {
+        var aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+        ec.currentSelection.End = ec.currentSelection.End - 1;
+
+        var pos = ec.currentSelection.Delete(1, 1); // wdCharacter = 1
+        pos = ec.currentSelection.Delete(1, 1); // wdCharacter = 1
+    }
+    else {
+        if (ec.getAgreementDocument().Bookmarks.Exists(previousBookmarkName)) {
+            sfInsertAfterBookmark(ec.getAgreementDocument(), ec.currentSelection, previousBookmarkName);
+            sfAddBookmark(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+            newBookmarkAdded = true;
+        }
+    }
+
+    sfCompatiblePaste(ec.currentSelection, ec.wordType);
+
+    sfApplyStyleInSectionClause(ec.getAgreementDocument(), styleId, ec.currentSelection, sfContentType(bookmarkName));
+
+    var aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+    var pos = ec.currentSelection.MoveRight(1, 1); // wdCharacter = 1
+    pos = ec.currentSelection.MoveLeft(1, 1); // wdCharacter = 1
+
+    sfRestoreNewLine(ec.getAgreementDocument(), ec.currentSelection);
+
+    if (newBookmarkAdded) {
+        aRange = sfGotoBookmarkName(ec.currentSelection, bookmarkName); // wdGoToBookmark = -1
+        pos = ec.currentSelection.MoveRight(1, 1); // wdCharacter = 1
+        pos = ec.currentSelection.MoveRight(1, 1); // wdCharacter = 1
+        pos = ec.currentSelection.Delete(1, 1); // wdCharacter = 1
+    }
+
+    sfGoodToGreatBookmark(ec.getAgreementDocument(), ec.currentSelection, bookmarkName);
+}
+
+/**
+    Doc this
+*/
+function sfAddCommentForAdHocClause (ec, sectionName, newClauseIndex, xmlNode_parent)
+{
+    var globalRange = sfGotoBookmarkName(currentSelection, GlobalContractBookmarkName);
+    var sectionRange = sfGotoBookmarkName(currentSelection, sectionName);
+    var allBookmark = sectionRange.Bookmarks;
+    var sectionBookmark= allBookmark.Item(sectionName);
+    var bookmarkCount = allBookmark.count;
+
+    var sectionFrom = null;
+    var sectionParagraphs = sectionRange.Paragraphs;
+    var paragraphCount = sectionParagraphs.count;
+    for (var i = 1; i <= paragraphCount; ++i) {
+        var sectionParagraph = sectionParagraphs.Item(i);
+        var tempRange = sectionParagraph.Range;
+        if (!sfIsEmptyRange(tempRange)) {
+            sectionFrom = tempRange.End;
+            break;
+        }
+    }
+    var sectionTo = sectionRange.End;
+    var newClauseIndex = 1;
+    var previousBookmark = null;
+    var fromPosition;
+
+    /*
+        loop thru all bookmarks, and check if there is any content between the bookmarks that need to be bookmarked
+    */
+    for (var i = 1; i <= bookmarkCount; ++i) {
+        var currentBookmark = allBookmark.Item(i);
+        var bookmarkName = currentBookmark.Name;
+
+        var index = bookmarkName.indexOf(prefixSectionGenName);
+        if (index < 0) {
+            index = bookmarkName.indexOf(prefixClauseGenName);
+        }
+
+        if (index >= 0 && currentBookmark.Name != sectionBookmark.Name &&
+                         sfBookmarkIncluded(sectionBookmark, currentBookmark)) {
+            // defined section/clause
+            if (previousBookmark == null) {
+                if (sectionBookmark.Name != GlobalContractBookmarkName) {
+                    newClauseIndex = sfAddNewClauseInComment(ec, sectionFrom, currentBookmark.Start,
+                        ec.getAgreementDocument(), newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent);
+                }
+                else {
+                    newClauseIndex = sfAddNewClauseInComment(ec, globalRange.Start, currentBookmark.Start,
+                        ec.getAgreementDocument(), newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent);
+                }
+
+                previousBookmark = currentBookmark;
+                fromPosition = previousBookmark.End;
+            }
+            else {
+                if (!sfBookmarkIncluded(previousBookmark, currentBookmark)) {
+                    // parallel structure
+                    newClauseIndex = sfAddNewClauseInComment(ec, fromPosition, currentBookmark.Start,
+                            ec.getAgreementDocument(), newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent);
+                    fromPosition = currentBookmark.End;
+                    previousBookmark = currentBookmark;
+                }
+            }
+        }
+
+        ec.getAgreementDocument().Application.Visible = false;
+        ec.getAgreementDocument().Activate();
+    }
+
+    if (previousBookmark != null) {
+        if (sectionBookmark.Name != GlobalContractBookmarkName) {
+            newClauseIndex = sfAddNewClauseInComment(ec, previousBookmark.End, sectionTo, ec.getAgreementDocument(),
+                    newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent);
+        }
+        else {
+            newClauseIndex = sfAddNewClauseInComment(ec, previousBookmark.End, globalRange.End, ec.getAgreementDocument(),
+                    newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent);
+        }
+    }
+    else {
+        newClauseIndex = sfAddNewClauseInComment(ec, sectionFrom, sectionTo, ec.getAgreementDocument(), newClauseIndex,
+                sectionBookmark, previousBookmark, xmlNode_parent);
+    }
+
+    return newClauseIndex;   
+}
+
+/**
+    TODO Doc this
+*/
+function sfAddNewClauseInComment (ec, fromPosition, toPosition, aDocument, newClauseIndex, sectionBookmark, previousBookmark, xmlNode_parent)
+{
+    if ((fromPosition + 1) < toPosition) {
+        // get list of child bookmarks. split the range into unmarked and marked range.
+        // Call unmakedToXml, sectionToXml, clauseToXml for unmarked, sectionBookmark, clauseBookmark respectively
+        var theRange = aDocument.Range(fromPosition, toPosition);
+        var childBookmarks = sfGetChildBookmarksForRange(aDocument,theRange);
+
+        var lastEnd = fromPosition;
+
+        var xmlNode_newEntities = ec.xmlDOM.createElement(XML_TAG_NEW_ENTITIES);
+        xmlNode_newEntities.setAttribute(XML_ATTRIBUTE_SECTION_BOOKMARK , sectionBookmark.Name);
+        if (previousBookmark == null) {
+            xmlNode_newEntities.setAttribute(XML_ATTRIBUTE_PREVIOUS_BOOKMARK , "");
+        }
+        else {
+            xmlNode_newEntities.setAttribute(XML_ATTRIBUTE_PREVIOUS_BOOKMARK , previousBookmark.Name);
+        }
+
+        var count = childBookmarks.Count;
+        for (var i = 1; i <= count; ++i) {
+            var aBookmark = childBookmarks.Item(i);
+            if (aBookmark.Start > lastEnd+1) {
+                sfAppendChildNewClausesXml(ec.xmlDOM,
+                    aDocument.Range(lastEnd, aDocument.Bookmarks.Item(aBookmark.Name).Start),
+                    xmlNode_newEntities);
+            }
+
+            /*
+                TBD : XXX : How to deal with inserted text that has sectionAriba_ bookmark prefix.
+                For now, it is ignored sent as xml tree to server , but server IGNORES it.
+            */
+            var aBookmarkName = aBookmark.Name;
+            if (aBookmarkName.indexOf(prefixSectionName + aribaKeyword) >= 0) {
+                xmlNode_newEntities.appendChild(sfSectionToXml(aDocument,aBookmark));
+            }
+            else if (aBookmarkName.indexOf(prefixClauseName + aribaKeyword) >= 0) {
+                xmlNode_newEntities.appendChild(sfClauseToXml(aDocument, aBookmark, true));
+            }
+
+            lastEnd = aBookmark.End
+        }
+
+        if (toPosition > lastEnd+1) {
+            sfAppendChildNewClausesXml(ec.xmlDOM, aDocument.Range(lastEnd,toPosition),  xmlNode_newEntities);
+        }
+
+        if (xmlNode_newEntities.hasChildNodes) {
+            xmlNode_parent.appendChild(xmlNode_newEntities);
+        }
+    }
+
+    /* xxx why are we passing this? */
+    return newClauseIndex;
+}
+
+/**
+    Todo doc this
+*/
+function sfConvertCommentToBookmarkForAdHocClause (currentDocument)
+{
+    var newClauseIndex = 1;
+
+    var comments = currentDocument.Comments;
+    var count = comments.Count;
+    for (var i = 1; i<= count; ++i) {
+        var currentComment = comments.Item(i);
+        if (currentComment.Initial == aribaKeyword) {
+            var newClauseName = prefixClauseName + aribaKeyword + newClauseIndex;
+            newClauseIndex += 1;
+
+            var newClauseBookmark = currentDocument.Bookmarks.Add(newClauseName, currentComment.Scope);
+        }
+    }
+
+    comments = currentDocument.Comments;
+    count = comments.Count;
+    for (var i = 1; i<= count; ++i) {
+        var currentComment = comments.Item(i);
+        if (currentComment.Initial == aribaKeyword) {
+            currentComment.Delete();
+        }
+    }
+}
+
+/**
+    Resets the style of the current paragraph to be normal
+*/
+function sfResetStyleOnPara (document, selection)
+{
+    sfSelectPara(selection);
+    selection.Style = document.Styles("Normal");
+    sfMoveToStartSelection(selection);
+}
+

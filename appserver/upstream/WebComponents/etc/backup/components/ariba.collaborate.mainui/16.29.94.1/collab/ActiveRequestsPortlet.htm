@@ -1,0 +1,48 @@
+<!--- Title section --->
+<PortletTitle dashboardItem="$^dashboardItem"
+              title="Active Requests">\
+    <!--- Body section --->
+    <AWLoadXML filename=^data value="$activeReqs"/>
+    <AWTDataTable multiSelect="$false" singleSelect="$false"
+        list="$activeReqs.Approval[]"
+        item="$item"
+        batchSize="5" valign="left">
+
+        <AWTColumn key="type.text" label="Type">
+        <AWImage filename="$approvableImage" />
+        </AWTColumn>
+        <AWTColumn key="status.text" label="Status" align="left"/>
+        <AWTColumn key="name.text" label="Title" align="left">
+            <AWHyperlink action="$null">\
+                $item.name.text
+        </AWHyperlink>
+        </AWTColumn>
+        <AWTColumn key="amount.text" label="Amount" align="right"/>
+    </AWTDataTable>
+</PortletTitle>\
+
+<server>
+  var item = null;
+
+  function approvableImage () {
+
+     var type = ariba.util.fieldvalue.FieldValue.getFieldValue(item, "type.text");
+    
+     if (type.equals("MAR")) {
+        return "/resources/mar.gif";
+     }
+     else if (type.equals("MASR")) {
+        return "/resources/masourcing.gif";
+     }
+     else if (type.equals("UP")) {
+        return "/resources/profile.gif";
+     }
+     else if (type.equals("ER")) {
+        return "/resources/travel.gif";
+     }
+     else {
+       return "/resources/request.gif";
+     }
+  }
+
+</server>

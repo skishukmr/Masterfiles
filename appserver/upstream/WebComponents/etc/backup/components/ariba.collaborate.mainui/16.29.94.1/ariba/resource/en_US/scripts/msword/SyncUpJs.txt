@@ -1,0 +1,1235 @@
+/****************************************************************************************
+        Summarize Clause
+****************************************************************************************/
+function sfcStartSummarizeClause ()
+{
+    this.clauseSummarizing = function ()
+    {
+        var ec = this;
+
+        sfGetApp(ec);
+
+        if (ec.bSkipCopyClause) {
+            try {
+                var isClauseExisting = sfClientFileExists(ec.sDocumentLocation);
+                if (!isClauseExisting) {
+                    if (!SmartClientScriptUtil.saveFileToClient(ec.sDocumentLocation)) {
+                        return;  // error path
+                    }
+                }
+            }
+            catch (ex) {
+                LoggerUtil.logError(null, "sfcStartSummarizeClause:clauseSummarizing:", ex);
+                return;
+            }
+        }
+        else {
+            if (!SmartClientScriptUtil.saveFileToClient(ec.sDocumentLocation)) {
+                return;  // error path
+            }
+        }
+
+        ec.hideApp();
+        ec.agreementDocument =  sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+        ec.hideApp();
+
+        ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+        ec.currentSelection.WholeStory();
+
+        var sData = sfGetSelectionContent(ec.currentSelection);
+        var summary = sData.substring(0, MaxSummaryLength);
+        var xmlhttp = sfGetHttp();
+        xmlhttp.Open("POST", ec.urlActionUrl, false);
+        xmlhttp.Send(sData);
+
+        ec.quitApp();
+    }
+}
+sfcStartSummarizeClause.prototype = new sfcExecutionState;
+
+function siStartSummarizeClause (args)
+{
+    var ec = new sfcStartSummarizeClause();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siStartSummarizeClause", args);
+        ec.clauseSummarizing();
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+/****************************************************************************************
+        Sync up property
+****************************************************************************************/
+function sfcSyncUpProperty ()
+{
+    function supSetStep (name, nextStepFu)
+    {
+        step_contact_app.className = "inactiveStep";
+        step_parsing_data.className = "inactiveStep";
+        document.all(name).className = "activeStep"
+        setTimeout(nextStepFu, 1000);
+    }
+
+    function supDoneStep ()
+    {
+        var ec = _syncupProperty;
+
+        /* no need to clean up the excel app */
+        if (ec.wordApp != null) {
+            ec.quitApp();
+        }
+
+        ariba.Request.setWindowLocation(ec.urlDoneUrl);
+    }
+
+    function supContactApp ()
+    {
+        var ec = _syncupProperty;
+        try {
+            if (ec.sApplicationName == ApplicationName.Word) {
+                sfGetApp(ec);
+            }
+            else {
+                ec.excelApp = new ActiveXObject("Excel.Application");
+                ec.excelApp = false;
+            }
+            ec.hideApp();
+
+            supSetStep("step_parsing_data", supParseData);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function supParseData ()
+    {
+        var ec = _syncupProperty;
+        try {
+            //Upgrading xml request to latest API
+            ec.xmlDOM = sfGetXmlDom();
+            ec.xmlDOM.loadXML("<?xml version=\"1.0\"?><root/>");
+ 
+            if (ec.bIsWordDocValue) {
+                supParseWordData();
+            }
+            else {
+                supParseExcelData();
+            }
+
+            var xmlhttp = sfGetHttp();
+            xmlhttp.Open("POST", ec.urlActionUrl, false);
+            xmlhttp.Send(ec.xmlDOM.xml);
+
+            //This call is causing a page refresh, which starts the cycle over and hangs
+            //so removing for now.
+            //ariba.Request.setWindowLocation(ec.urlCheckParseErrorActionUrl);
+            
+            //After we are done parsing we want to use the doneUrl to redirect us to the
+            //Document page to save our changes.
+            supSetStep("step_done", supDoneStep);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function supParseWordData ()
+    {
+        var ec = _syncupProperty;
+        ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, true);
+        var fieldArray = ec.sFormFieldsValue.split("******");
+        for (var i = 0; i < fieldArray.length; ++i) {
+            if (fieldArray[i] == "") {
+                continue;
+            }
+            try {
+                //DocumentFieldParsingPage doesn't use prefixFieldName when building the
+                //form field string, so removing it as part of the lookup key
+                var sText = ec.getAgreementDocument().FormFields(fieldArray[i]).Result;
+                if (sText != "") {
+                    XMLUtil.addFormField(ec.xmlDOM, fieldArray[i], sText);
+                }
+            }
+            catch (ex) {
+                // if form field does not exist, skip and not send it to server
+            }
+        }
+
+        ec.quitApp();
+    }
+
+    function supParseExcelData ()
+    {
+        var ec = _syncupProperty;
+
+        var sfilename = ec.sDocumentLocation;
+        sfilename = sfForwardToBackSlash(sfilename);
+
+        ec.excelActiveWorkbook = ec.excelApp.Workbooks.Open(sfilename);
+
+        // parse form fields and add them to xml
+        var fieldArray = ec.sFormFieldsValue.split("******");
+        for (var i = 0; i < fieldArray.length; ++i) {
+            var sField = fieldArray[i];
+            if (sField.length > 0) {
+                try {
+                    var sText = ec.excelApp.Evaluate(ec.excelActiveWorkbook.Names(sField).Value);
+                    XMLUtil.addFormField(ec.xmlDOM, fieldArray[i], sText);
+                }
+                catch (ex) {
+                    // if form field does not exist, skip and not send it to server
+                }
+            }
+        }
+        ec.excelApp.Workbooks.Close();
+        ec.excelApp.Quit(0); // wdDoNotSaveChanges = 0
+    }
+
+    this.startSyncUpProperty = function ()
+    {
+        supContactApp();
+    }
+
+    this.readySyncUpProperty = function ()
+    {
+        var ec = _syncupProperty;
+        supSetStep("step_done", supDoneStep());
+    }
+}
+sfcSyncUpProperty.prototype = new sfcExecutionState;
+
+var _syncupProperty = null;
+
+function siStartSyncUpProperty (args)
+{
+    _syncupProperty = new sfcSyncUpProperty();
+    var ec = _syncupProperty;
+    sfInitExecutionStateBasic(ec, args);
+    sfLoggerInit(ec, "siStartSyncUpProperty", args);
+    ec.startSyncUpProperty();
+    //We do not want to nullify _syncupProperty, we need it for supParseData
+    //_syncupProperty = null;
+}
+
+function siReadySyncUpProperty (args)
+{
+    _syncupProperty = new sfcSyncUpProperty();
+    var ec = _syncupProperty;
+    sfInitExecutionStateBasic(ec, args);
+    sfLoggerInit(ec, "siStartSyncUpProperty", args);
+    ec.readySyncUpProperty();
+    //_syncupProperty = null;
+}
+/****************************************************************************************
+        Sync up clause
+****************************************************************************************/
+function sfcSyncUpClause ()
+{
+    function supSetStep (name, nextStepFu)
+    {
+        step_contact_app.className = "inactiveStep";
+        step_syncup_data.className = "inactiveStep";
+        step_done.className = "inactiveStep";
+        document.all(name).className = "activeStep";
+        setTimeout(nextStepFu, 1000);
+    }
+
+    this.supContactApp = function ()
+    {
+        var ec = _syncupClause;
+        try {
+            sfGetApp(ec);
+            supSetStep("step_syncup_data", supStepSyncUpData);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function supStepSyncUpData ()
+    {
+        var ec = _syncupClause;
+        try {
+            supSyncUpClause();
+            supSetStep("step_done", supDoneStep);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function supDoneStep ()
+    {
+        var ec = _syncupClause;
+        try {
+            ec.quitApp();
+            ariba.Request.setWindowLocation(ec.urlDoneUrl);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function supSyncUpClause ()
+    {
+        var ec = _syncupClause;
+        ec.hideApp();
+
+        sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+        ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+
+        ec.hideApp();
+
+        ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+        ec.currentSelection.WholeStory();
+        var allBookmark = ec.currentSelection.Bookmarks;
+        var count = allBookmark.count;
+        var sectionStructure = "";
+
+        ec.hideApp();
+        var newClauseIndex = 1;
+
+        for (var i = 1; i <= count; ++i) {
+
+            var currentBookmark = ec.currentSelection.Bookmarks(i);
+            var bookmarkName = currentBookmark.Name;
+            var index = bookmarkName.indexOf(prefixSectionName);
+            if (index >= 0) {
+                var newClauseIndex = sfAddCommentForAdHocClause(ec.getAgreementDocument(),
+                        ec.currentSelection, bookmarkName, newClauseIndex);
+            }
+
+            ec.getAgreementDocument().Activate();
+            ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+            ec.currentSelection.WholeStory();
+        }
+
+        sfConvertCommentToBookmarkForAdHocClause(ec.getAgreementDocument());
+
+        sfSyncupContentInAgreement(ec, true, true);
+
+        ec.quitApp();
+
+        ec.hideApp();
+    }
+}
+sfcSyncUpClause.prototype = new sfcExecutionState;
+
+var _syncupClause = null;
+
+function siSyncUpClause (args)
+{
+    _syncupClause = new sfcSyncUpClause();
+    var ec = _syncupClause;
+    sfInitExecutionStateBasic(ec, args);
+    sfLoggerInit(ec, "siSyncUpClause", args);
+    ec.supContactApp();
+    _syncupClause = null;
+}
+
+/****************************************************************************************
+        incremental sync up
+
+ Client Algorithm:
+
+ Server Algorithm:
+    1) Calls ContractDocumentBaseSyncup.incrementalSyncUpXml() with the posted xml
+    2)
+****************************************************************************************/
+function sfcIncrementalSyncUpClause ()
+{
+    this.sfIncrementalSyncupClause = function (ec)
+    {
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logBegin("sfIncrementalSyncupClause");
+        }
+
+        ec.canContinue = true;
+        ec.returnResponse = "";
+
+        sfISCStepSetup(ec);
+
+        if (ec.canContinue) {
+            sfISCStepAcceptRevisionsOnAgreementDocument(ec);
+        }
+
+        if (ec.canContinue) {
+            //CR 1-9XQKFD, 1-9XQKH9, 1-9XQKIZ
+            sfISCFixCurrentSelection(ec, 0);
+        }
+
+        if (ec.canContinue) {
+            sfISCStepServerClientVersion(ec);
+        }
+
+        if (ec.canContinue) {
+            ec.requestType = XmlRequestType.SyncUpRequest;
+            sfXMLNodeSetup(ec);
+        }
+
+        if (ec.canContinue) {
+            sfISCFixSectionBookmarks(ec);
+        }
+
+        if (ec.canContinue) {
+            sfISCStepProcessModifications(ec);
+        }
+
+        if (ec.canContinue) {
+            sfISCStepGenerateXML(ec);
+        }
+
+        sfISCStepTearDown(ec);
+
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logEnd("sfIncrementalSyncupClause");
+        }
+    }
+
+    /**
+        Simple set up
+    */
+    function sfISCStepSetup (ec)
+    {
+        LoggerUtil.logBegin("sfISCStepSetup");
+
+        sfGetApp(ec);
+
+        /* save the document - why is this necessary ?? */
+        sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+
+        ec.readOnly = false;
+        sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, ec.readOnly);
+
+        // Set the agreement document
+        ec.agreementDocument = ec.wordApp.ActiveDocument;
+
+        // Save the current settings such as View Type, track change
+        ec.viewType = sfGetDocumentViewType(ec.getAgreementDocument(), true);
+
+        // Set the view type to be normal, all regen will be done in this setting
+        sfSetDocumentViewType(ec.getAgreementDocument(), 1); // wdNormalView
+
+        ec.ProtectionType = ec.getAgreementDocument().ProtectionType;
+        if (ec.ProtectionType != -1) { // wdNoProtection = -1
+            ec.getAgreementDocument().Unprotect();
+        }
+
+        ec.defaultBookmark = ec.getAgreementDocument().Bookmarks.Item(GlobalContractBookmarkName);
+        if (ec.defaultBookmark == null) {
+            ec.canContinue = false;
+            LoggerUtil.logMessage("sfISCStepSetup Incomplete!!! Didn't find global bookmark name!!");
+            return;
+        }
+
+        ec.wordApp.Visible = false;
+        document.body.style.cursor = "wait";
+
+        LoggerUtil.logEnd("sfISCStepSetup");
+    }
+
+    /**
+        Step - Accepting revisions of specific type so that they would NOT be
+        considered again when we go through inserts and deletes
+    */
+    function sfISCStepAcceptRevisionsOnAgreementDocument (ec)
+    {
+        LoggerUtil.logBegin("sfISCStepAcceptRevisionsOnAgreementDocument");
+        /*
+            fix defect 1-34AMA, accept revision of type 0 that cause infinite loop
+            of Document.Revisions on Word 2002. Must be called before the following
+            function to avoid infinite loop.
+        */
+        /* TODO Optimization, Message */
+        sfAcceptRevisionsForType(ec.getAgreementDocument(), RevisionType.NoRev);
+
+        /*
+            Accept formatting changes to fix defect where deleted revision is not
+            returned by Word.
+        */
+        sfAcceptRevisionsForType(ec.getAgreementDocument(), RevisionType.ParagraphProperty);
+
+        LoggerUtil.logEnd("sfISCStepAcceptRevisionsOnAgreementDocument");
+    }
+
+    /**
+        Create temp server and client version
+        We will be merging changes from the temp server version to temp client version
+        After this step, both the version are ready to go
+    */
+    function sfISCStepServerClientVersion (ec)
+    {
+        LoggerUtil.logBegin("sfISCStepServerClientVersion");
+
+        ec.sTmpClientFile = sfAppendStringToFileLocation(ec.sDocumentLocation, "Client");
+        ec.sTmpServerFile = sfAppendStringToFileLocation(ec.sDocumentLocation, "Server");
+
+        /* copy the server to tmp server file */
+        if (!sfSaveDocumentToClient(ec.sTmpServerFile, ec.urlOriginalDocumentUrl)) {
+            LoggerUtil.logMessage("sfISCStepServerClientVersion Incomplete!! cannot save tmp server file " +
+                "server Version " + ec.sTmpServerFile);
+            ec.canContinue = false;
+            return;
+        }
+
+        /*
+            copy the dfs (aka agreement document) version into the client file
+            Kee found that the copied client version has different revsions as opposed to the dfs version!!
+        */
+        sfCopyFile(ec.sDocumentLocation, ec.sTmpClientFile);
+
+        ec.wordApp.Visible = false;
+        document.body.style.cursor = "wait";
+
+        ec.serverVersion = sfISCAcceptRevisionsOnTempDocument(ec.wordApp, ec.wordType, ec.sTmpServerFile, false);
+        ec.clientVersion = sfISCAcceptRevisionsOnTempDocument(ec.wordApp, ec.wordType, ec.sTmpClientFile, true);
+
+        /* merge the changes from the tmp server file into the client version */
+        sfCompatibleCompareOrMergeWithOption(ec.clientVersion, ec.sTmpServerFile, ec.wordType, 1, false, true);
+        LoggerUtil.logEnd("sfISCStepServerClientVersion");
+    }
+
+    /**
+        Process inserts and deletes
+    */
+    function sfISCStepProcessModifications (ec)
+    {
+        try {
+            LoggerUtil.logBegin("sfISCStepProcessModifications");
+
+            ec.bookmarksContainer = sfCreateBookmarkContainer(ec.getAgreementDocument());
+
+            LoggerUtil.logBegin("Process Inserts");
+            ec.modificationType = RevisionType.Insert;
+            sfISCStepProcessModificationsByType(ec);
+            LoggerUtil.logEnd("Process Inserts");
+
+            LoggerUtil.logBegin("Process Deletes");
+            ec.modificationType = RevisionType.Delete;
+            sfISCStepProcessModificationsByType(ec);
+            LoggerUtil.logEnd("Process Deletes");
+
+            if (ec.bFullySync) {
+                /*
+                    If fully syncup, then we want to sync the structure of the whole document. We do that
+                    by adding "sectionGlobalContract" bookmark in the list of dirty bookmarks. Note that
+                    combineIntoUniqueBookmarks will keep the sectionGlobal in this case and remove contained
+                    sections. Also, by doing the above processAllInserts and processAllDeletes, we capture
+                    the dirty clauses.
+                */
+                var gb = ec.bookmarksContainer.BookmarkProxy(GlobalContractBookmarkName);
+                ec.processedInserts.AddItemByName(gb.Name, gb);
+            }
+
+            ec.combinedBookmarks = sfCombineIntoUniqueBookmarks(
+                    ec.processedInserts, ec.processedDeletes);
+
+            LoggerUtil.logEnd("sfISCStepProcessModifications");
+        }
+        catch (ex) {
+            LoggerUtil.logError("Error in Processing Changes Step",
+                    "Method Invok Error: sfISCStepProcessModifications", ex);
+            ec.canContinue = false;
+            throw ex;
+        }
+    }
+
+    /**
+        TODO Doc this
+    */
+    function sfISCStepProcessModificationsByType (ec)
+    {
+        // Set up the revisions doc
+        if (ec.modificationType == RevisionType.Insert) {
+            LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_INSERTS);
+            ec.processedInserts = new sfObjectArray ();
+            ec.revisionsDoc = ec.clientVersion;
+        }
+        else if (ec.modificationType == RevisionType.Delete) {
+            LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_DELETES);
+            ec.processedDeletes = new sfObjectArray ();
+            ec.deletedBookmarks = new sfObjectArray ();
+
+            if (ec.wordType == WordType.Word2000Type || ec.wordType == WordType.WordXPType) {
+                ec.revisionsDoc = ec.clientVersion;
+            }
+            else {
+                /*
+                    TODO Add comments on why this is the case
+                    We already a) copied the agreement doc into client version; b) merge the server into the client version
+                    Now we take the client version and merge that into server version??
+                    XXX Gopal - I don't know what the heck is going on here...
+                */
+                ec.wordApp.Visible = false;
+                document.body.style.cursor = "wait";
+                ec.clientVersion.Revisions.AcceptAll();
+                sfCompatibleCompareMergeTargetWithOption(ec.clientVersion, ec.sTmpServerFile, ec.wordType, 0, false);
+                ec.revisionsDoc = ec.serverVersion;
+            }
+        }
+
+        var endPositionForDeleteType = "";
+        var changeList = ec.revisionsDoc.Revisions;
+        var revisionCount = changeList.Count;
+
+        if (revisionCount <= 0) {
+            return;
+        }
+
+        var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+        var revisionDocBookmarks = ec.revisionsDoc.Bookmarks;
+        var globalBoomark = null;
+
+        if (revisionDocBookmarks.Exists(GlobalContractBookmarkName)) {
+            globalBoomark = sfCreateBookmarkProxy(revisionDocBookmarks.Item(GlobalContractBookmarkName));
+        }
+        else {
+            /* Did not find the global bookmark - there is nothing to be done here */
+            LoggerUtil.logMissingGlobalBookmark();
+            return;
+        }
+
+        for (var i = 1; i <= revisionCount; ++i) {
+
+            var revisionProxy = sfCreateRevisionProxy(changeList.Item(i));
+
+            /* remember the end position for delete type */
+            if (revisionProxy.Type == RevisionType.Delete) {
+                endPositionForDeleteType = revisionProxy.RangeProxy.End;
+            }
+
+            /* XXX why are we doing this? */
+            /*
+            if (ec.modificationType == RevisionType.Delete && revisionProxy.Type == RevisionType.Insert) {
+                revisionProxy.DomRevision.Reject();
+            }
+            */
+
+            if (revisionProxy.Type != ec.modificationType) {
+                // wrong type revisionProxy.Type = 1 OR outside the bookmark
+                continue;
+            }
+
+            var rangeProxy = revisionProxy.RangeProxy;
+
+            if (ec.modificationType == RevisionType.Delete) {
+                /*
+                    CR 1-9XQKFD, 1-9XQKH9, 1-9XQKIZ
+                    If the aItem.Range is a bookmark range and a paragraph marker resides before/after the bookmark
+                    then delete the leading/trailing paragraph marker
+                */
+                var domRange = rangeProxy.DomRange;
+                sfRemoveLeadingTailingParaMarkerOfARange(rangeProxy);
+
+                /*
+                    Kee: If non-section range contains paragraph markers,
+                    the selection range is shorten by one position
+                    in MSWord even with a proper/clean deletion
+                    In order to fix it, extend the end position by one
+                */
+                var aRangeBookmarkName = sfBeginningMatchedBookmark(ec.getAgreementDocument(), domRange);
+                if (aRangeBookmarkName != "" && aRangeBookmarkName.indexOf(prefixSectionGenName) < 0
+                        && domRange.Paragraphs.Count > 1) {
+                    domRange.End = domRange.End+1;
+                }
+
+                rangeProxy.resync();
+            }
+
+            if (!sfBookmarkIncluded(globalBoomark, revisionProxy.RangeProxy)) {
+                LoggerUtil.logError(null, "Revision outside Global Bookmark", null);
+                continue;
+            }
+
+            if (ec.modificationType == RevisionType.Insert) {
+                if (endPositionForDeleteType == rangeProxy.Start && sfIsEmptyText(rangeProxy.DomRange)) {
+                    /*
+                        Do not create summary. This range was created from the
+                        previous deletion that includes a paragraph marker
+                    */
+                    continue;
+                }
+            }
+
+            var parentBookmark = sfWithinGenBookmarkInSelection(rangeProxy, false);
+            if (parentBookmark == null) {
+                LoggerUtil.logMissingParentBookmark(rangeProxy);
+                continue;
+            }
+
+            var parentBookmarkName = parentBookmark.Name;
+            LoggerUtil.logRevision(revisionProxy.Type, parentBookmark, rangeProxy);
+
+            if (ec.modificationType == RevisionType.Insert) { //  wdRevisionInsert = 1
+
+                /* deal with moves in the insert */
+                sfISCHandleMovesInInsert(ec, rangeProxy, parentBookmarkName);
+
+                /*
+                    If the parent of inserted text is a section, then it can be a new clause
+                    Else If the parent is a clause, then its a modification
+                */
+                if (parentBookmarkName.indexOf(prefixSectionName) >= 0) {
+                    if (ec.processedInserts.ItemByName(parentBookmarkName) == null) {
+                        ec.processedInserts.AddItemByName(parentBookmarkName, parentBookmark);
+                    }
+                }
+                else if (parentBookmarkName.indexOf(prefixClauseName) >= 0){
+                    var agreementBookmarkProxy = ec.bookmarksContainer.BookmarkProxy(parentBookmarkName);
+                    var range = ec.bookmarksContainer.DomRange(parentBookmarkName);
+                    var summary = sfGetClauseSummaryAllByRange(range);
+
+                    var xmlNode_setSummary = XMLUtil.createBookmarkNode(
+                        ec.xmlDOM, XML_TAG_SET_SUMMARY, summary, agreementBookmarkProxy);
+                    ec.xmlNode_editList.appendChild(xmlNode_setSummary);
+
+                    /*
+                        scan the section that contains this insert. Strictly speaking,
+                        this is not needed, but there are some edge cases when insert
+                        or even delete is shown as insert and syncing the section
+                        will make make server structure to be correct always.
+                    */
+                    /* XXX Gopal - shouldn't this flag be true? */
+                    var parentSectionBookmark = sfWithinGenBookmarkInSelection(sfRangeProxyForBookmark(parentBookmark), false);
+                    if (ec.processedInserts.ItemByName(parentSectionBookmark.Name) == null) {
+                        ec.processedInserts.AddItemByName(parentSectionBookmark.Name, parentSectionBookmark);
+                    }
+                }
+            }
+            else if (ec.modificationType == RevisionType.Delete) { // wdRevisionDelete = 2
+
+                if (sfIsEmptyText(rangeProxy)) {
+                    LoggerUtil.logEmptyRange(rangeProxy);
+                    /* XXX This is gone - need to integrate Kee's changes */
+                    continue;
+                }
+
+
+                var allBookmark = rangeProxy.BookmarkProxies;
+                var winnerSet = new sfObjectArray();
+                for (var j = 1; j <= allBookmark.Count; ++j) {
+
+                    var parentFound = false;
+                    var aBookmark = allBookmark.Item(j);
+                    if (sfBookmarkIncluded(rangeProxy, aBookmark)) {
+                        /*
+                            if range includes a bookmark, then mark the bookmark for deletion.
+                            Else If the bookmark just overlaps, and is contained within parent, then mark for modify
+                        */
+                        for (var k = 1; k <= winnerSet.Count; ++k) {
+                            if (sfBookmarkIncluded(winnerSet.Item(k), aBookmark)) {
+                                parentFound = true;
+                                break;
+                            }
+                        }
+                        if (!parentFound) {
+                            winnerSet.AddItem(aBookmark);
+                        }
+                    }
+                    else {
+                        /*
+                            check for case when deleted range overlaps some part of a clause but is inside a section
+                            for example, trailing portion of C1 and leading portion of C2 deleted where C1,C2
+                            are inside of a section
+                        */
+                        if (sfBookmarkFullyIncluded(parentBookmark, aBookmark)) {
+                            var agreementBookmark = ec.getAgreementDocument().Bookmarks.Item(aBookmark.Name);
+                            XMLUtil.appendBookmarkSummaryNode(ec.xmlDOM,
+                                agreementBookmark, sfGetClauseSummaryAll(agreementBookmark), ec.xmlNode_editList);
+                        }
+                    }
+                }
+
+                if (winnerSet.Count > 0) {
+                    /* deleted text is within a section or spans the clause bookmarks */
+                    /* loop thru deleted OUTERMOST bookmarks and add them to xmlNode delete list */
+                    for (var k = 1; k <= winnerSet.Count; ++k) {
+                        var xmlNode_deleteBookmark = ec.xmlDOM.createElement(XML_TAG_DELETE_ENTITY);
+                        xmlNode_deleteBookmark.setAttribute(XML_ATTRIBUTE_BOOKMARK , winnerSet.Item(k).Name);
+                        ec.xmlNode_editList.appendChild(xmlNode_deleteBookmark);
+
+                        if (ec.deletedBookmarks.ItemByName(winnerSet.Item(k).Name) == null) {
+                            ec.deletedBookmarks.AddItemByName(winnerSet.Item(k).Name, winnerSet.Item(k));
+                        }
+                    }
+
+                    /*
+                        If the deletion is under a section - we fully syncup the section
+                        this may be overkill in some cases, but its safer to do this to handle
+                        edge cases where a clause is moved within a section
+                        Add the section to the scan list
+                    */
+                    var parentSectionBookmark = null;
+                    if (parentBookmark.Name == GlobalContractBookmarkName) {
+                        parentSectionBookmark = parentBookmark;
+                    }
+                    else {
+                        parentSectionBookmark = sfWithinGenBookmarkInSelection(
+                                sfRangeProxyForBookmark(parentBookmark), false);
+                    }
+
+                    if (ec.processedDeletes.ItemByName(parentSectionBookmark.Name) == null) {
+                        ec.processedDeletes.AddItemByName(parentSectionBookmark.Name, parentSectionBookmark);
+                    }
+                }
+                else if (parentBookmarkName.indexOf(prefixClauseGenName) >= 0 &&
+                         sfBookmarkFullyIncluded(parentBookmark, rangeProxy)) {
+
+                    /* delete text is totally contained within the clause  - hence no book mark is deleted */
+                    var agreementBookmarkProxy = ec.bookmarksContainer.BookmarkProxy(parentBookmarkName);
+                    var range = ec.bookmarksContainer.DomRange(parentBookmarkName);
+                    var summary = sfGetClauseSummaryAllByRange(range);
+
+                    XMLUtil.appendBookmarkSummaryNode(ec.xmlDOM, agreementBookmarkProxy,
+                            summary, ec.xmlNode_editList);
+
+                    /*
+                        scan the section as well that contains this bookmark
+                        Strictly speaking, this is not needed, but for some cases,
+                        especially in Word 2000, we get tricked into thinking that a
+                        following clause is modified when a clause is deleted.
+                        Add the section to the scan list - simimlar to inserts
+                    */
+                    var parentSectionBookmark = sfWithinGenBookmarkInSelection(sfRangeProxyForBookmark(parentBookmark), false);
+                    if (ec.processedDeletes.ItemByName(parentSectionBookmark.Name) == null) {
+                        ec.processedDeletes.AddItemByName(parentSectionBookmark.Name, parentSectionBookmark);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+        Doc this
+    */
+    function sfISCStepGenerateXML (ec)
+    {
+        LoggerUtil.logBegin("Step: sfISCGenerateXML");
+
+        LoggerUtil.updateWindowStatus(WindowStatus.SCAN_SECTIONS);
+
+        sfScanSectionList(ec);
+
+        LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_REVISIONS);
+
+         /* use client version if track changes are not active */
+        var trackRevisions = ec.getAgreementDocument().TrackRevisions;
+         /* If a user accepts all changes, all revisions will be deleted from the document */
+        var revisionCount = ec.getAgreementDocument().Revisions.Count;
+        if (!trackRevisions || (trackRevisions && revisionCount == 0)) {
+            LoggerUtil.logAlert("Using Client Version");
+            ec.agreementDocumentOverride = ec.clientVersion;
+        }
+
+        var revisionsNode = sfCreateRevisionsNode(ec.xmlDOM, ec.getAgreementDocument(),
+            sfCreateRevisionProxies(ec.getAgreementDocument().Revisions));
+
+        ec.agreementDocumentOverride = null;
+
+        ec.xmlDocumentElement.appendChild(revisionsNode);
+
+        LoggerUtil.logXmlTree("Final XML Tree", ec.xmlDocumentElement, 1);
+
+        /* Clean up variables */
+        ec.processedInserts = null;
+        ec.processedDeletes = null;
+        ec.deletedBookmarks = null;
+
+        ec.clientVersion.close();
+        ec.serverVersion.close();
+
+        if (ec.xmlNode_editList.hasChildNodes()) {
+            sfCopyFile(ec.sDocumentLocation, ec.sTmpClientFile);
+
+            ec.wordApp.Visible = false;
+            document.body.style.cursor = "wait";
+
+            sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sTmpClientFile, false);
+            ec.clientVersion = ec.wordApp.ActiveDocument;
+            if (ec.clientVersion.ProtectionType != -1) { // wdNoProtection = -1
+                ec.clientVersion.Unprotect();
+            }
+            ec.clientVersion.Revisions.AcceptAll();
+            if (ec.xmlDocumentElement.hasChildNodes()) {
+
+                var strUrl = ec.urlIncrementalSyncupUrl + "&" + syncupTypeIdKey + "=syncupXml";
+                LoggerUtil.updateWindowStatus(WindowStatus.SYNC_TO_SERVER);
+                ec.returnResponse = sfSendDataToServer(ec.xmlDOM.xml, strUrl);
+
+                if (ec.returnResponse == SERVER_EXCEPTION) {
+                    LoggerUtil.updateWindowStatus(WindowStatus.VALIDATION_ERROR);
+                }
+            }
+        }
+
+        LoggerUtil.updateWindowStatus(WindowStatus.PROCESS_PROPERTIES);
+
+        sfRetrieveWordData(ec.getAgreementDocument(),
+            ec.sPropertyList, ec.urlRetrievepropertyAction);
+
+        LoggerUtil.logEnd("Step: sfISCGenerateXML");
+    }
+
+    function sfISCStepTearDown (ec)
+    {
+        LoggerUtil.logMessage("Tearing Down...");
+        ec.quitApp();
+        sfClearExecutionState(ec);
+        LoggerUtil.setLogLevel("");
+    }
+
+    /**
+        Go through each book mark in the combine book mark list (affected sections)
+    */
+    function sfScanSectionList (ec)
+    {
+        LoggerUtil.logBegin("sfScanSectionList");
+
+        /* use client version if track changes are not active */
+        var trackRevisions = ec.getAgreementDocument().TrackRevisions;
+         /* If a user accepts all changes, all revisions will be deleted from the document */
+        var revisionCount = ec.getAgreementDocument().Revisions.Count;
+        if (!trackRevisions || (trackRevisions && revisionCount == 0)) {
+            ec.agreementDocumentOverride = ec.clientVersion;
+        }
+
+        var sections = ec.combinedBookmarks;
+        var count = sections.Count;
+
+        for (var i = 1; i <= count; ++i) {
+            var sectionBookmarkList = sfGetSectionBookmarks(
+                    ec.getAgreementDocument(), sections.Item(i));
+            sfScanBookmarksForSync(ec, sectionBookmarkList, true, false);
+        }
+
+        /* reset the override */
+        ec.agreementDocumentOverride = null;
+
+        LoggerUtil.logEnd("sfScanSectionList");
+    }
+
+    /**
+        Take a list of clause bookmarks within a section, and get the summary, location for
+        each bookmark and non-bookmarked paragraphs. A <NewEntities> node is created.
+    */
+    function sfScanBookmarksForSync (ec, bookmarkList, scanForParagraphs, scanForSummary)
+    {
+        LoggerUtil.logBegin("sfScanBookmarksForSync");
+
+        var count = bookmarkList.Count;
+        var newEntityNode = sfCreateNewEntityNode(ec);
+        for (var i = 1; i <= count; ++i) {
+            var aBookmark = bookmarkList.Item(i);
+            /*  Gopal/Kee - this was added by Xiao-Yu for a fix;
+                but this does not look right.  Need to understand from Xiao-Yu
+            */
+            //if (ec.deletedBookmarks.ItemByName(aBookmark.Name) == null) {
+                if (sfIsGenBookmark(aBookmark.Name)) {
+                    sfBookmarkNode(ec, ec.getAgreementDocument(), aBookmark, newEntityNode, scanForSummary);
+                }
+                else {
+                    sfAppendBookmarkOtherNode(ec.xmlDOM, aBookmark, ec.xmlNode_otherBookmarkList);
+                }
+            //}
+        }
+
+        if (scanForParagraphs) {
+            sfParseNewEntities(ec.getAgreementDocument(), ec.xmlDOM, newEntityNode);
+        }
+
+        LoggerUtil.logEnd("sfScanBookmarksForSync");
+    }
+
+    /**
+     *
+     * @param ec
+     * @param rangeProxy range of the revision
+     * @param parentBookmarkName parent bookmark name of the revision
+     */
+    function sfISCHandleMovesInInsert (ec, rangeProxy, parentBookmarkName)
+    {
+        var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+
+        /*
+            Inserted text may include a bookmark that was moved from other place in the doc.
+            Get all the bookmarks included in the text and mark them as moved
+        */
+        var allBookmark = rangeProxy.BookmarkProxies;
+
+        /* winner set contains the outermost bookmark */
+        var winnerSet = new sfObjectArray();
+
+        for (var j = 1; j <= allBookmark.Count; ++j) {
+
+            var aBookmarkProxy = allBookmark.Item(j);
+
+            if (!sfBookmarkIncluded(rangeProxy, aBookmarkProxy)) {
+                continue;
+            }
+
+            if (aBookmarkProxy.Name.indexOf(prefixClauseGenName) < 0 &&
+                aBookmarkProxy.Name.indexOf(prefixSectionGenName) < 0 ) {
+                continue;
+            }
+
+            var parentFound = false;
+
+            /* We are assuming that the bookmarks are returned in a tree form */
+            for (var k = 1; k <= winnerSet.Count; ++k) {
+                if (sfBookmarkIncluded(winnerSet.Item(k), aBookmarkProxy)) {
+                    parentFound = true;
+                    break;
+                }
+            }
+
+            if (!parentFound) {
+                winnerSet.AddItem(aBookmarkProxy);
+            }
+        }
+
+        for (var k = 1; k <= winnerSet.Count; ++k) {
+            var currBookmark = winnerSet.Item(k);
+            var xmlNode_moveBookmark = ec.xmlDOM.createElement(XML_TAG_MOVE_ENTITY);
+            xmlNode_moveBookmark.setAttribute(XML_ATTRIBUTE_BOOKMARK , currBookmark.Name);
+            xmlNode_moveBookmark.setAttribute(XML_ATTRIBUTE_SECTION_BOOKMARK , parentBookmarkName);
+
+            var previousBookmarkName = sfFindPreviousBookmarkName (
+                currentSelection, currBookmark.Name, parentBookmarkName);
+
+            if (previousBookmarkName == null) {
+                previousBookmarkName = "";
+            }
+
+            xmlNode_moveBookmark.setAttribute(XML_ATTRIBUTE_PREVIOUS_BOOKMARK , previousBookmarkName);
+            ec.xmlNode_editList.appendChild(xmlNode_moveBookmark);
+
+        }
+    }
+
+    function sfAcceptRevisionsForType(agreement, revisionType)
+    {
+        var revisions = agreement.revisions;
+        var count = revisions.Count;
+        var revision;
+        for (var i = 1; i <= count; ++i) {
+            try {
+                revision = revisions.Item(i);
+            }
+            catch (ex) { // XXX Gopal - I don't know what is going here - sometimes I get an exception
+                continue;
+            }
+            if (revision.type == revisionType) {
+                revision.Accept();
+            }
+        }
+    }
+
+    /**
+        1) Open the tmpFile in word, unprotect
+        2) Accept Revisions on the temp file
+        3) Save the document
+        4) Return the document
+    */
+    function sfISCAcceptRevisionsOnTempDocument (wordApp, wordType, tmpFile, isClientVersion) {
+        try {
+            sfOpenDocumentInWord(wordApp, wordType, tmpFile, false);
+            var tmpDoc = wordApp.ActiveDocument;
+            if (tmpDoc.ProtectionType != -1) { // wdNoProtection = -1
+                tmpDoc.Unprotect();
+            }
+
+            tmpDoc.Revisions.AcceptAll();
+            tmpDoc.TrackRevisions = false;
+            var fs = tmpDoc.Fields;
+            var count = fs.Count;
+
+            for (var i = 1; i <= count; ++i) {
+                try {
+                    var f = fs.Item(i);
+                }
+                catch (ex) { // 1-B1LSNJ fkhezzar - I don't know what is going here - sometimes I get an exception
+                    continue;
+                }
+                f.Result = f.Code;
+            }
+
+            // XXX - why do we do this only for the  client version??
+            if (isClientVersion) {
+                sfSetDocumentViewType(tmpDoc, 1); // wdNormalView
+            }
+            tmpDoc.Save();
+            return tmpDoc;
+        }
+        catch (ex) {
+            LoggerUtil.logError(null, MIE + "sfISCAcceptRevisionsOnTempDocument " +
+                "File Name " + tmpFile + "Is Client Version? " + isClientVersion, ex);
+            return null;
+        }
+    }
+}
+
+sfcIncrementalSyncUpClause.prototype = new sfcExecutionState;
+
+function siIncrementalSyncupClause (args)
+{
+    var ec = new sfcIncrementalSyncUpClause();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siIncrementalSyncupClause", args);
+        ec.sfIncrementalSyncupClause(ec);
+        LoggerUtil.updateWindowStatus("");
+        return ec.returnResponse;
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+/*****************************************************************************************
+    Sync up clause - for example publish to clause library
+ * **************************************************************************************/
+function sfSyncupClauseDocument (ec)
+{
+    LoggerUtil.logBegin("sfSyncupClauseDocument");
+
+    try {
+        sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+        sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+        ec.agreementDocument = ec.wordApp.ActiveDocument;
+        sfSyncupClauseDocumentInternal(ec, ec.sClauseId, ec.urlOriginalDocumentUrl);
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfSyncupClauseDocument", ex);
+        throw ex;
+    }
+
+    LoggerUtil.logEnd("sfSyncupClauseDocument");
+}
+
+/**
+    This is used by generate as well
+*/
+function sfSyncupClauseDocumentInternal (ec, clauseId, syncupUrl)
+{
+    LoggerUtil.logBegin("sfSyncupClauseDocumentInternal");
+
+    var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+
+    ec.sClauseId = clauseId;
+    var tempDocumentLocation = sfTempClauseCreated(ec, currentSelection);
+
+    var sData = null;
+    if (tempDocumentLocation != "") {
+        sData = sfGetFileBytes(tempDocumentLocation);
+    }
+
+    var postUrl = syncupUrl;
+    if (!sfEmptyString(clauseId)) {
+        postUrl = postUrl.concat("&" + ClauseIdKey + "=" + clauseId);
+    }
+
+    var response = sfSendDataToServer(sData, postUrl);
+
+    LoggerUtil.logEnd("sfSyncupClauseDocumentInternal");
+}
+
+/**
+    public api
+*/
+function siSyncupClauseDocument (args)
+{
+    var ec = sfInitExecutionState(args);
+
+    try {
+        sfLoggerInit(ec, "siSyncupClauseDocument", args);
+        sfGetApp(ec);
+        sfSyncupClauseDocument(ec);
+        ec.quitApp();
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+/**
+        Todo doc this
+*/
+function sfSyncupContentInAgreement (ec, toSave, isWorkspaceTemplate)
+{
+    LoggerUtil.logMessage("ContractAuthoring.syncupContentInAgreement start ...");
+
+    ec.hideApp();
+
+    ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+
+    ec.hideApp();
+
+    sfSaveWordSettings(ec, ec.getAgreementDocument());
+    sfSetDocumentViewType(ec.getAgreementDocument(), ViewType.ViewTypeNormal);
+
+    ec.hideApp();
+
+    ec.getAgreementDocument().Activate();
+    ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+
+    ec.hideApp();
+
+    ec.requestType = XmlRequestType.LoadRequest;
+    sfXMLNodeSetup(ec);
+
+    LoggerUtil.updateWindowStatus(WindowStatus.SCANNING_DOCUMENT);
+
+    ec.currentSelection.WholeStory();
+
+    ec.hideApp();
+
+    sfScanBookmarksForLoad(ec, true, true, ec.xmlDocumentElement);
+
+    if (LoggerUtil.enableLogging) {
+        LoggerUtil.logXmlTree(
+                "CDGenerate:syncupContentInAgreement", ec.xmlDocumentElement, 1);
+    }
+
+    var syncupUrl = ec.urlActionUrl;
+    syncupUrl = syncupUrl.concat("&loadTypeIdKey=loadXml");
+
+    var applyBookmarksXml = sfSendDataToServer(ec.xmlDocumentElement.xml, syncupUrl);
+
+    if (applyBookmarksXml == SERVER_EXCEPTION)  {
+        LoggerUtil.updateWindowStatus(VALIDATION_ERROR);
+        ec.bServerExceptionOnLoad = true;
+    }
+    else {
+        ec.bServerExceptionOnLoad = false;
+        sfApplyBookmarksUtil(ec, applyBookmarksXml);
+    }
+
+    sfFixSectionGlobalBookmark(ec.getAgreementDocument(), ec.currentSelection);
+
+    sfRestoreWordSettings(ec, ec.getAgreementDocument());
+    if (!isWorkspaceTemplate) {
+        ec.getAgreementDocument().TrackRevisions = true;
+    }
+
+    if (toSave) {
+        ec.getAgreementDocument().Saved = false;
+        ec.getAgreementDocument().Save();
+    }
+}
+
+/****************************************************************************************
+                    Handlers
+*****************************************************************************************/
+sfExportFunctions(
+    new Array(
+        "siIncrementalSyncupClause", siIncrementalSyncupClause,
+        "siStartSyncUpProperty", siStartSyncUpProperty,
+        "siReadySyncUpProperty", siReadySyncUpProperty,
+        "siSyncUpClause", siSyncUpClause,
+        "siSyncupClauseDocument", siSyncupClauseDocument,
+        "siStartSummarizeClause", siStartSummarizeClause
+    )
+);

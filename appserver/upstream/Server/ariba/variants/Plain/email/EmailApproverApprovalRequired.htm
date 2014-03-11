@@ -1,0 +1,70 @@
+<style type="text/css">
+<!--
+    #header {
+        background-color:#D6D6E5;
+        background-position: right top;
+        background-repeat:no-repeat;
+        border-top:1px solid #B3B3CC;
+        border-bottom:1px solid #B3B3CC;
+        margin:0px; padding-left:20px; padding-right:12px; padding-top:8px; padding-bottom:8px
+    }
+
+    #content {
+        background-color:#FFFFFF;
+        padding:25px 50px 35px 50px;
+    }
+
+    #webjumper {
+        background-color:#E5E5EE;
+        padding:6px 12px 8px 50px;
+        margin:0px;
+    }
+
+    .subject {
+        color:#000000;
+        font:bold 8pt Verdana,Arial, Helvetica,sans-serif;
+    }
+
+    .subhead {
+        background-color:#E5E5EE;
+        padding:2px 3px 2px 3px;
+        margin-bottom:10px;
+    }
+-->
+</style>
+<div id="header">
+    <table cellSpacing=0 cellPadding=2 width="98%" border=0>
+        <tr>
+            <td width="1%" valign="absmiddle">
+                <PaddedImage filename="images/html/icon/icn_tkApproval.gif" minWidth="$^minWidth">
+                    <AWImage filename="images/html/icon/icn_tkApproval.gif" fullUrl="$true"/>
+                </PaddedImage>
+            </td>
+            <td class="subject"><EmailFormField name="Title"/></td>
+        </tr>
+    </table>
+</div>
+
+<div id="content">
+	<table cellpadding="0" cellspacing="0" border="0">
+		<tr><td><EmailFormField name="EmailRecipient.Name"/></td><td>,</td></tr>
+	</table>
+    <br>
+    <AWString value="@email.collaborate.EmailApproverApprovalRequired/e001">Please review the attached document(s) and reply to me with any comments or concerns.</AWString>
+
+    <br><br>
+    <AWString value="@email.collaborate.EmailApproverApprovalRequired/e002">The following notes might also be helpful to you:</AWString>
+
+    <br><br>
+    <i><EmailFormField name="EmailComment.Text"/></i>
+    <br><br>
+    <AWString value="@email.collaborate.EmailApproverApprovalRequired/e003">Make sure to attach the revised document(s) to your reply.</AWString>
+
+    <br><br>
+    <EmailFormField name="EmailSender.Name"/>
+    <EmailFormField name="EmailSender.Organization.Name"/>
+</div>
+
+<div id="webjumper">
+    <EmailFormField name="@Webjumper" label="@email.collaborate.EmailApproverApprovalRequired/e004">Task Owner Reference</EmailFormField>
+</div>

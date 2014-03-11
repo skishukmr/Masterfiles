@@ -1,0 +1,856 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/Catalog.dtd">
+<TypeDefinition>
+    <TypeProvider name="System">
+        <OrganizationID>
+            <Credential domain="NETWORKID">
+                <Identity>2</Identity>
+            </Credential>
+        </OrganizationID>
+    </TypeProvider>
+    <Comments>Ariba CatalogItem type definition 1.0, void where prohibited</Comments>
+
+<Type name="TempLabor" extends="System:CatalogItem">
+   <Name xml:lang="en-US">Temp Labor</Name>
+   <Description xml:lang="en-US">temporary labor</Description>
+   <TypeAttribute name="Date"
+                  type="Date"
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Date</Name>
+   </TypeAttribute>
+              
+   <!-- size can apparently be in fractions like "4-5/8" so we treat it like a string -->
+   <TypeAttribute name="ReportTo"
+                  type="Name"
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Report To</Name>
+   </TypeAttribute>              
+                                 
+   <TypeAttribute name="Telephone"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Telephone</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="ReviewResumes"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Review Resumes</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="InterviewRequired"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Interview Required</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="RequestedAssociates"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Requested Associate(s)</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="StartTime"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Start Time</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="EndTime"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">End Time</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="JobTitle"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Job Title</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="TargetedStartDate"
+                  type="Date"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Targeted Start Date</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="TargetedEndDate"
+                  type="Date"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Targeted End Date</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="OvertimeRequired"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Overtime Required</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="Filing"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Filing</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="Copying"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Copying</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="Typing"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Typing</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="MSOutlook"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">MS Outlook</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="DataEntryAlpha"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Data Entry - Alpha</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">beginner</Extrinsic>
+          <Name xml:lang="en-US">Beginner</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">intermediate</Extrinsic>
+          <Name xml:lang="en-US">Intermediate</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">advanced</Extrinsic>
+          <Name xml:lang="en-US">Advanced</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="DataEntryNumeric"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Data Entry - Numeric</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">beginner</Extrinsic>
+          <Name xml:lang="en-US">Beginner</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">intermediate</Extrinsic>
+          <Name xml:lang="en-US">Intermediate</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">advanced</Extrinsic>
+          <Name xml:lang="en-US">Advanced</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="WordProcessing"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Word Processing</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="AnswerPhones"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Answer Phones</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="PersonalComputer"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Personal Computer</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">beginner</Extrinsic>
+          <Name xml:lang="en-US">Beginner</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">intermediate</Extrinsic>
+          <Name xml:lang="en-US">Intermediate</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">advanced</Extrinsic>
+          <Name xml:lang="en-US">Advanced</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="Education"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Education</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">highschool</Extrinsic>
+          <Name xml:lang="en-US">High School/GED</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">associatedegree</Extrinsic>
+          <Name xml:lang="en-US">Associate Degree</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">bachelordegree</Extrinsic>
+          <Name xml:lang="en-US">Bachelor&apos;s Degree</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">masterdegree</Extrinsic>
+          <Name xml:lang="en-US">Master&apos;s Degree</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="MSPowerpoint"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">MS Powerpoint</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">beginner</Extrinsic>
+          <Name xml:lang="en-US">Beginner</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">intermediate</Extrinsic>
+          <Name xml:lang="en-US">Intermediate</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">advanced</Extrinsic>
+          <Name xml:lang="en-US">Advanced</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="Assembly"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Assembly</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">beginner</Extrinsic>
+          <Name xml:lang="en-US">Beginner</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">intermediate</Extrinsic>
+          <Name xml:lang="en-US">Intermediate</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">advanced</Extrinsic>
+          <Name xml:lang="en-US">Advanced</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="MSAccess"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">MS Access</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">beginner</Extrinsic>
+          <Name xml:lang="en-US">Beginner</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">intermediate</Extrinsic>
+          <Name xml:lang="en-US">Intermediate</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">advanced</Extrinsic>
+          <Name xml:lang="en-US">Advanced</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="StandingInOnePosition"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Standing in One Position</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="HeavyFrequentLifting"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Heavy/Frequent Lifting</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="PickingPacking"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Picking/Packing</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="ForkliftOperation"
+                  type="Flag"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Forklift Operation</Name>
+   </TypeAttribute>              
+
+   <TypeAttribute name="SAP"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">SAP</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">notrequired</Extrinsic>
+          <Name xml:lang="en-US">Not Required</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">beginner</Extrinsic>
+          <Name xml:lang="en-US">Beginner</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">intermediate</Extrinsic>
+          <Name xml:lang="en-US">Intermediate</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">advanced</Extrinsic>
+          <Name xml:lang="en-US">Advanced</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+
+   <TypeAttribute name="JobCode"
+                  type="Name"  
+                  isRequiredForOrdering="yes">
+      <Name xml:lang="en-US">Job Code</Name>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">j36tester</Extrinsic>
+          <Name xml:lang="en-US">J36 Tester,Grader,Sorter</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">j20</Extrinsic>
+          <Name xml:lang="en-US">J20 Machine Operator Plastic Molding</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">j36labtechnician</Extrinsic>
+          <Name xml:lang="en-US">J36 Laboratory Technician Industrial</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">j07</Extrinsic>
+          <Name xml:lang="en-US">J07 Packer, Packager</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">b63</Extrinsic>
+          <Name xml:lang="en-US">B63 Machine Operator Crushing, Grinding</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">b15</Extrinsic>
+          <Name xml:lang="en-US">B15 Forklift Operator</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a08</Extrinsic>
+          <Name xml:lang="en-US">A08 Accounting Clerk</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">b52</Extrinsic>
+          <Name xml:lang="en-US">B52 Packer, Packager</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a26</Extrinsic>
+          <Name xml:lang="en-US">A26 Administrative Assistant</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a23</Extrinsic>
+          <Name xml:lang="en-US">A23 Collection Clerk</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a49</Extrinsic>
+          <Name xml:lang="en-US">A49 Customer Services Specialist</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a30</Extrinsic>
+          <Name xml:lang="en-US">A30 File Clerk</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a33</Extrinsic>
+          <Name xml:lang="en-US">A33 General Office Clerk</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a45</Extrinsic>
+          <Name xml:lang="en-US">A45 Inventory Clerk</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a09</Extrinsic>
+          <Name xml:lang="en-US">A09 Payroll Clerk</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a36</Extrinsic>
+          <Name xml:lang="en-US">A36 Receptionist</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a82</Extrinsic>
+          <Name xml:lang="en-US">A82 Secretary</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a74</Extrinsic>
+          <Name xml:lang="en-US">A74 Secretary, Executive</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a58</Extrinsic>
+          <Name xml:lang="en-US">A58 Switchboard Operator Bilingual</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a60</Extrinsic>
+          <Name xml:lang="en-US">A60 Switchboard Operator, Large Console Advanced</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a27</Extrinsic>
+          <Name xml:lang="en-US">A27 Telephone Information,Answering Operator</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a13</Extrinsic>
+          <Name xml:lang="en-US">A13 Word Processing Administrative Assistant</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a25</Extrinsic>
+          <Name xml:lang="en-US">A25 Word Processing Clerk</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">a16</Extrinsic>
+          <Name xml:lang="en-US">A16 Word Processing Secretary</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">p81</Extrinsic>
+          <Name xml:lang="en-US">P81 Customer Service Representative Basic</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">p85</Extrinsic>
+          <Name xml:lang="en-US">P85 Order Entry Representative Basic</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">g27</Extrinsic>
+          <Name xml:lang="en-US">G27 Accountant</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">g63</Extrinsic>
+          <Name xml:lang="en-US">G63 Auditor</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">g22</Extrinsic>
+          <Name xml:lang="en-US">G22 CPA</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">g02</Extrinsic>
+          <Name xml:lang="en-US">G02 Help Desk, User Support Rep</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">g20</Extrinsic>
+          <Name xml:lang="en-US">G20 Human Resources Rep</Name>
+      </EnumerationValue>
+      <EnumerationValue>
+          <Extrinsic name="CanonicalValue">g82</Extrinsic>
+          <Name xml:lang="en-US">G82 Purchasing Agent, Buyer</Name>
+      </EnumerationValue>
+   </TypeAttribute>              
+</Type>
+
+    <!--
+    XXX Test parametric pipe type extension to catalogitemtype
+-->
+    <Type name="Pipe" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Pipe</Name>
+        <Description xml:lang="en-US">Our beloved Pipe type</Description>
+        <TypeAttribute name="Type" type="Name" isRefinable="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Type</Name>
+        </TypeAttribute>
+        <!-- size can apparently be in fractions like "4-5/8" so we treat it like a string -->
+        <TypeAttribute name="Size" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Size</Name>
+        </TypeAttribute>
+        <TypeAttribute name="WeightPerFoot" type="Number" isSearchable="yes">
+            <Name xml:lang="en-US">Weight per Foot</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Diametert" type="Number" isSearchable="yes">
+            <Name xml:lang="en-US">Diameter</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Thickness" type="Number" isSearchable="yes">
+            <Name xml:lang="en-US">Thickness</Name>
+        </TypeAttribute>
+        <TypeAttribute name="ThreadType" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Thread Type</Name>
+        </TypeAttribute>
+        <TypeAttribute name="CouplingType" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Coupling Type</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">regular</Extrinsic>
+                <Name xml:lang="en-US">Regular</Name>
+                <Name xml:lang="fr">Regulier</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">halfcoupling</Extrinsic>
+                <Name xml:lang="en-US">Half Coupling</Name>
+                <Name xml:lang="fr">Demi-connexion</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">fullcoupling</Extrinsic>
+                <Name xml:lang="en-US">Full Coupling</Name>
+                <Name xml:lang="fr">Connexion complete</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">quickcoupling</Extrinsic>
+                <Name xml:lang="en-US">Quick Coupling</Name>
+                <Name xml:lang="fr">Connexion Rapide</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+    </Type>
+    <Type name="LawnService" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Lawn Service</Name>
+        <Description xml:lang="en-US">Lawn and Landscaping Services</Description>
+        <TypeAttribute name="Frequency" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Visits per Month</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">once</Extrinsic>
+                <Name xml:lang="en-US">Once</Name>
+                <Name xml:lang="fr">Un</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">twice</Extrinsic>
+                <Name xml:lang="en-US">Twice</Name>
+                <Name xml:lang="fr">Duex</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">three</Extrinsic>
+                <Name xml:lang="en-US">Three</Name>
+                <Name xml:lang="fr">Troix</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">four</Extrinsic>
+                <Name xml:lang="en-US">Four</Name>
+                <Name xml:lang="fr">Quatre</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="Weeding" type="Flag" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Weeding Performed</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Pruning" type="Flag" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Pruning Performed</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Edging" type="Flag" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Edging Performed</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Mulching" type="Flag" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Mulching Performed</Name>
+        </TypeAttribute>
+        <TypeAttribute name="StartDate" type="Date" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Start Date</Name>
+        </TypeAttribute>
+        <TypeAttribute name="EndDate" type="Date" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">End Date</Name>
+        </TypeAttribute>
+    </Type>
+    <Type name="BizCard" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Business Card</Name>
+        <Description xml:lang="en-US">Business Cards</Description>
+        <TypeAttribute name="Name" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">First and Last Name</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Title" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Title or Position</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Title2" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Title (if necessary)</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Title3" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Title (if necessary)</Name>
+        </TypeAttribute>
+        <TypeAttribute name="CompanyName" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Company Name</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Address1" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Address</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Address2" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Address</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Phone" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Direct Phone</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Fax" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Fax Number</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Other1" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Other</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Other2" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Other</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Email" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">Email Address</Name>
+        </TypeAttribute>
+        <TypeAttribute name="CompanyURL" isRequiredForOrdering="yes" type="Name">
+            <Name xml:lang="en-US">URL</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Logo" isRequiredForOrdering="yes" type="Flag">
+            <Name xml:lang="en-US">Include Logo</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Translation" isRequiredForOrdering="yes" type="Flag">
+            <Name xml:lang="en-US">Translation</Name>
+        </TypeAttribute>
+    </Type>
+    <Type name="Shirts" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Shirt</Name>
+        <Description xml:lang="en-US">All kinds of Shirts</Description>
+        <TypeAttribute name="Collared" type="Flag" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Shirt has a collar</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Color" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Color of Shirt</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">red</Extrinsic>
+                <Name xml:lang="en-US">Red</Name>
+                <Name xml:lang="fr">Rouge</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">blue</Extrinsic>
+                <Name xml:lang="en-US">Blue</Name>
+                <Name xml:lang="fr">Bleu</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">green</Extrinsic>
+                <Name xml:lang="en-US">Green</Name>
+                <Name xml:lang="fr">Vert</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">orange</Extrinsic>
+                <Name xml:lang="en-US">Orange</Name>
+                <Name xml:lang="fr">Orange</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="Size" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Size of Shirt</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">small</Extrinsic>
+                <Name xml:lang="en-US">Small</Name>
+                <Name xml:lang="fr">Petit</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">medium</Extrinsic>
+                <Name xml:lang="en-US">Medium</Name>
+                <Name xml:lang="fr">Moyen</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">large</Extrinsic>
+                <Name xml:lang="en-US">Large</Name>
+                <Name xml:lang="fr">Grand</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+    </Type>
+    <Type name="ITTempLabor" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Temporary Labor For IT</Name>
+        <Description xml:lang="en-US">Contract Help for IT Service</Description>
+        <TypeAttribute name="NumberOfHours" type="Number" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Hours in the Contract</Name>
+        </TypeAttribute>
+        <TypeAttribute name="HelpType" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Type of Help Required</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">networking</Extrinsic>
+                <Name xml:lang="en-US">Networking</Name>
+                <Name xml:lang="fr">Reseau</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">pcspecialist</Extrinsic>
+                <Name xml:lang="en-US">PC Specialist</Name>
+                <Name xml:lang="fr">Specialiste PC</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">securityexpert</Extrinsic>
+                <Name xml:lang="en-US">Security Expert</Name>
+                <Name xml:lang="fr">Expert Securite</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">packagedsoftware</Extrinsic>
+                <Name xml:lang="en-US">Packaged Software</Name>
+                <Name xml:lang="fr">Logiciel</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+    </Type>
+    <Type name="PC" extends="System:CatalogItem">
+        <Name xml:lang="en-US">PC</Name>
+        <Description xml:lang="en-US">Personal Computer</Description>
+        <TypeAttribute name="Processor" type="Name" isRefinable="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Processor</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Memory" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Memory</Name>
+        </TypeAttribute>
+        <TypeAttribute name="HardDrive" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Hard Drive</Name>
+        </TypeAttribute>
+    </Type>
+    <Type name="Laptop" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Laptop</Name>
+        <Description xml:lang="en-US">Laptop</Description>
+        <TypeAttribute name="Processor" type="Name" isRefinable="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Processor</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Memory" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Memory</Name>
+        </TypeAttribute>
+        <TypeAttribute name="HardDrive" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Hard Drive</Name>
+        </TypeAttribute>
+    </Type>
+    <Type name="StorageBox" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Storage Box</Name>
+        <Description xml:lang="en-US">Storage Box</Description>
+        <TypeAttribute name="Length" type="Name" isRefinable="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Length</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Width" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Width</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Height" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Height</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Thick" type="Name" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Thick</Name>
+        </TypeAttribute>
+    </Type>
+    <Type name="CellPhoneActivationService" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Cell Phone Activation Service</Name>
+        <Description xml:lang="en-US">Cell Phone Activation Service</Description>
+        <TypeAttribute name="CorporateCardNumber" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Corporate Card Number</Name>
+        </TypeAttribute>
+        <TypeAttribute name="CallPlan" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Call Plan</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">50min</Extrinsic>
+                <Name xml:lang="en-US">50 minutes</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">100min</Extrinsic>
+                <Name xml:lang="en-US">100 minutes</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">500min</Extrinsic>
+                <Name xml:lang="en-US">500 minutes</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="StartDate" type="Date" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Start Date</Name>
+        </TypeAttribute>
+        <TypeAttribute name="HasTextMessaging" type="Flag" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Has Text Messaging</Name>
+        </TypeAttribute>
+    </Type>
+    <Type name="OfficeMoveService" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Office/Cube Move/Add/Change Service</Name>
+        <Description xml:lang="en-US">Offic/Cube Move/Add/Change Service</Description>
+        <TypeAttribute name="MoveDate" type="Date" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Move Date</Name>
+        </TypeAttribute>
+        <TypeAttribute name="FromOffice" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">From Office/Cube</Name>
+        </TypeAttribute>
+        <TypeAttribute name="ToOffice" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">To Office/Cube</Name>
+        </TypeAttribute>
+        <TypeAttribute name="IncludeComputer" type="Flag" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Include Computer</Name>
+        </TypeAttribute>
+    </Type>
+    <Type name="MagazineSubscription" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Magazine Subscription</Name>
+        <Description xml:lang="en-US">Magazine Subscription</Description>
+        <TypeAttribute name="StartDate" type="Date" isRequiredForOrdering="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Start Date</Name>
+        </TypeAttribute>
+        <TypeAttribute name="BillingCycle" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Billing Cycle</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">Monthly</Extrinsic>
+                <Name xml:lang="en-US">Monthly</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">Bimonthly</Extrinsic>
+                <Name xml:lang="en-US">Bimonthly</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">Quarterly</Extrinsic>
+                <Name xml:lang="en-US">Quarterly</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">Yearly</Extrinsic>
+                <Name xml:lang="en-US">Yearly</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+    </Type>
+    <Type name="DesktopComputer" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Desktop Computer</Name>
+        <Description xml:lang="en-US">Desktop Computer</Description>
+        <TypeAttribute name="Processor" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Processor</Name>
+        </TypeAttribute>
+        <TypeAttribute name="Memory" type="Name" isRefinable="yes" isRequiredForOrdering="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Memory</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">256</Extrinsic>
+                <Name xml:lang="en-US">256</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">512</Extrinsic>
+                <Name xml:lang="en-US">512</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">768</Extrinsic>
+                <Name xml:lang="en-US">768</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">1gb</Extrinsic>
+                <Name xml:lang="en-US">1 GB</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">2gb</Extrinsic>
+                <Name xml:lang="en-US">2 GB</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">4gb</Extrinsic>
+                <Name xml:lang="en-US">4 GB</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="HardDrive" type="Name" isRequiredForOrdering="yes" isRefinable="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Hard Drive</Name>
+        </TypeAttribute>
+        <TypeAttribute name="OS" type="Name" isRequiredForOrdering="yes" isRefinable="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Operating System</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">MSWindowsXP</Extrinsic>
+                <Name xml:lang="en-US">MS Windows XP</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">MSWindows2003</Extrinsic>
+                <Name xml:lang="en-US">MS Windows 2003</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="CaseType" type="Name" isRequiredForOrdering="yes" isRefinable="yes" isCollection="yes" isInFreeTextSearch="yes" isSearchable="yes">
+            <Name xml:lang="en-US">Case Type</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">Small</Extrinsic>
+                <Name xml:lang="en-US">Small</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">Mini-tower</Extrinsic>
+                <Name xml:lang="en-US">Mini-tower</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+    </Type>
+</TypeDefinition>

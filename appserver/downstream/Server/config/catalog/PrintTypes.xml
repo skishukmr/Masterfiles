@@ -1,0 +1,819 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.009/Catalog.dtd">
+<TypeDefinition>
+	<TypeProvider name="System">
+		<OrganizationID>
+			<Credential domain="NETWORKID">
+				<Identity>2</Identity>
+			</Credential>
+		</OrganizationID>
+	</TypeProvider>
+	<Comments>Ariba CatalogItem type definition 1.0, void where prohibited</Comments>
+    <Type name="StockPrintSheet" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Stock Print Sheet</Name>
+<Name xml:lang="ja-JP">標準印刷用紙</Name>
+<Name xml:lang="zh-CN">常用打印纸</Name>
+<Name xml:lang="pt-BR">Folha para impressão em série</Name>
+<Name xml:lang="sv">Tryckpapper</Name>
+<Name xml:lang="nl">Voorraadafdrukvel</Name>
+<Name xml:lang="it">Stampa stock su foglio</Name>
+<Name xml:lang="es">Imprimir en hojas</Name>
+<Name xml:lang="fr-CA">Feuille de papier d'impression</Name>
+<Name xml:lang="fr">Impression Feuille</Name>
+<Name xml:lang="de">"Materialdruck, Blatt"</Name>
+        <Description xml:lang="en-US">Stock Print Sheet Item</Description>
+<Description xml:lang="ja-JP">標準印刷用紙品目</Description>
+<Description xml:lang="zh-CN">常用打印纸项目</Description>
+<Description xml:lang="pt-BR">Item de folha para impressão em série</Description>
+<Description xml:lang="sv">Tryckpapperstyp</Description>
+<Description xml:lang="nl">Voorraadafdrukvel item</Description>
+<Description xml:lang="it">Elemento di stampa stock su foglio</Description>
+<Description xml:lang="es">Imprimir en una hoja</Description>
+<Description xml:lang="fr-CA">Article de feuille de papier d'impression</Description>
+<Description xml:lang="fr">Article d'impression Feuille</Description>
+<Description xml:lang="de">"Materialdruck, Blattelement"</Description>
+        <TypeAttribute name="PageSize" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Page Size</Name>
+<Name xml:lang="zh-CN">页面大小</Name>
+<Name xml:lang="pt-BR">Tamanho da página</Name>
+<Name xml:lang="sv">Sidstorlek</Name>
+<Name xml:lang="nl">Paginaformaat</Name>
+<Name xml:lang="it">Formato pagina</Name>
+<Name xml:lang="es">Tamaño de página</Name>
+<Name xml:lang="fr-CA">Format de la page</Name>
+<Name xml:lang="fr">Format de papier</Name>
+<Name xml:lang="de">Seitenformat</Name>
+<Name xml:lang="ja-JP">用紙サイズ</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">5x7</Extrinsic>
+                <Name xml:lang="en-US">5 1/2 x 7</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">6x8</Extrinsic>
+                <Name xml:lang="en-US">6 x 8</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">7x9</Extrinsic>
+                <Name xml:lang="en-US">7 x 9</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">8x11</Extrinsic>
+                <Name xml:lang="en-US">8 1/2 x 11</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">8x14</Extrinsic>
+                <Name xml:lang="en-US">8 1/2 x 14</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">11x14</Extrinsic>
+                <Name xml:lang="en-US">11x14</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">11x17</Extrinsic>
+                <Name xml:lang="en-US">11x17</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="PaperType" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Paper Type</Name>
+<Name xml:lang="zh-CN">纸张类型</Name>
+<Name xml:lang="pt-BR">Tipo de papel</Name>
+<Name xml:lang="sv">Papperstyp</Name>
+<Name xml:lang="nl">Papiertype</Name>
+<Name xml:lang="it">Tipo di carta</Name>
+<Name xml:lang="es">Tipo de papel</Name>
+<Name xml:lang="fr-CA">Type de papier</Name>
+<Name xml:lang="fr">Type de papier</Name>
+<Name xml:lang="de">Papierart</Name>
+<Name xml:lang="ja-JP">用紙の種類</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated50</Extrinsic>
+                <Name xml:lang="en-US">Coated 50 lb</Name>
+<Name xml:lang="zh-CN">涂层 50 磅</Name>
+<Name xml:lang="pt-BR">50 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 50 lb</Name>
+<Name xml:lang="nl">Gecoat 50 lb</Name>
+<Name xml:lang="it">Patinata 50 lb</Name>
+<Name xml:lang="es">Revestido de 50 lb</Name>
+<Name xml:lang="fr-CA">"Couché 22,72 kg"</Name>
+<Name xml:lang="fr">Couché 50 lb</Name>
+<Name xml:lang="de">Gestrichen 50 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 50ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated60</Extrinsic>
+                <Name xml:lang="en-US">Coated 60 lb</Name>
+<Name xml:lang="zh-CN">涂层 60 磅</Name>
+<Name xml:lang="pt-BR">60 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 60 lb</Name>
+<Name xml:lang="nl">Gecoat 60 lb</Name>
+<Name xml:lang="it">Patinata 60 lb</Name>
+<Name xml:lang="es">Revestido de 60 lb</Name>
+<Name xml:lang="fr-CA">"Couché 27,22 kg"</Name>
+<Name xml:lang="fr">Couché 60 lb</Name>
+<Name xml:lang="de">Gestrichen 60 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 60ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated65</Extrinsic>
+                <Name xml:lang="en-US">Coated 65 lb</Name>
+<Name xml:lang="zh-CN">涂层 65 磅</Name>
+<Name xml:lang="pt-BR">65 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 65 lb</Name>
+<Name xml:lang="nl">Gecoat 65 lb</Name>
+<Name xml:lang="it">Patinata 65 lb</Name>
+<Name xml:lang="es">Revestido de 65 lb</Name>
+<Name xml:lang="fr-CA">"Couché 29,48 kg"</Name>
+<Name xml:lang="fr">Couché 65 lb</Name>
+<Name xml:lang="de">Gestrichen 65 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 65ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated70</Extrinsic>
+                <Name xml:lang="en-US">Coated 70 lb</Name>
+<Name xml:lang="zh-CN">涂层 70 磅</Name>
+<Name xml:lang="pt-BR">70 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 70 lb</Name>
+<Name xml:lang="nl">Gecoat 70 lb</Name>
+<Name xml:lang="it">Patinata 70 lb</Name>
+<Name xml:lang="es">Revestido de 70 lb</Name>
+<Name xml:lang="fr-CA">"Couché 31,75 kg"</Name>
+<Name xml:lang="fr">Couché 70 lb</Name>
+<Name xml:lang="de">Gestrichen 70 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 70ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated50</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 50 lb</Name>
+<Name xml:lang="zh-CN">无涂层 50 磅</Name>
+<Name xml:lang="pt-BR">50 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 50 lb</Name>
+<Name xml:lang="nl">Ongecoat 50 lb</Name>
+<Name xml:lang="it">Non patinata 50 lb</Name>
+<Name xml:lang="es">No revestido de 50 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 22,72 kg"</Name>
+<Name xml:lang="fr">Non couché 50 lb</Name>
+<Name xml:lang="de">Ungestrichen 50 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 50ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated60</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 60 lb</Name>
+<Name xml:lang="zh-CN">无涂层 60 磅</Name>
+<Name xml:lang="pt-BR">60 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 60 lb</Name>
+<Name xml:lang="nl">Ongecoat 60 lb</Name>
+<Name xml:lang="it">Non patinata 60 lb</Name>
+<Name xml:lang="es">No revestido de 60 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 27,22 kg"</Name>
+<Name xml:lang="fr">Non couché 60 lb</Name>
+<Name xml:lang="de">Ungestrichen 60 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 60ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated65</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 65 lb</Name>
+<Name xml:lang="zh-CN">无涂层 65 磅</Name>
+<Name xml:lang="pt-BR">65 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 65 lb</Name>
+<Name xml:lang="nl">Ongecoat 65 lb</Name>
+<Name xml:lang="it">Non patinata 65 lb</Name>
+<Name xml:lang="es">No revestido de 65 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 29,48 kg"</Name>
+<Name xml:lang="fr">Non couché 65 lb</Name>
+<Name xml:lang="de">Ungestrichen 65 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 65ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated70</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 70 lb</Name>
+<Name xml:lang="zh-CN">无涂层 70 磅</Name>
+<Name xml:lang="pt-BR">70 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 70 lb</Name>
+<Name xml:lang="nl">Ongecoat 70 lb</Name>
+<Name xml:lang="it">Non patinata 70 lb</Name>
+<Name xml:lang="es">No revestido de 70 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 31,75 kg"</Name>
+<Name xml:lang="fr">Non couché 70 lb</Name>
+<Name xml:lang="de">Ungestrichen 70 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 70ポンド</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="Colors" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Colors Per Side</Name>
+<Name xml:lang="zh-CN">每面颜色数</Name>
+<Name xml:lang="pt-BR">Cores em cada lado</Name>
+<Name xml:lang="sv">Färger per sida</Name>
+<Name xml:lang="nl">Kleuren per zijde</Name>
+<Name xml:lang="it">Colori per lato</Name>
+<Name xml:lang="es">Colores por lado</Name>
+<Name xml:lang="fr-CA">Couleurs par côté</Name>
+<Name xml:lang="fr">Couleurs par côté</Name>
+<Name xml:lang="de">Farben pro Seite</Name>
+<Name xml:lang="ja-JP">表/裏面の色</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">1</Extrinsic>
+                <Name xml:lang="en-US">1</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">2</Extrinsic>
+                <Name xml:lang="en-US">2</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">3</Extrinsic>
+                <Name xml:lang="en-US">3</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="Finishing" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Finishing</Name>
+<Name xml:lang="zh-CN">修整</Name>
+<Name xml:lang="pt-BR">Acabamento</Name>
+<Name xml:lang="sv">Behandling</Name>
+<Name xml:lang="nl">Afwerking</Name>
+<Name xml:lang="it">Finitura</Name>
+<Name xml:lang="es">Acabado</Name>
+<Name xml:lang="fr-CA">Fini</Name>
+<Name xml:lang="fr">Finition</Name>
+<Name xml:lang="de">Endverarbeitung</Name>
+<Name xml:lang="ja-JP">表面仕上げ</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">standard</Extrinsic>
+                <Name xml:lang="en-US">Standard</Name>
+<Name xml:lang="zh-CN">标准</Name>
+<Name xml:lang="pt-BR">Padrão</Name>
+<Name xml:lang="sv">Standard</Name>
+<Name xml:lang="nl">Standaard</Name>
+<Name xml:lang="it">Standard</Name>
+<Name xml:lang="es">Estándar</Name>
+<Name xml:lang="fr-CA">Standard</Name>
+<Name xml:lang="fr">Normal</Name>
+<Name xml:lang="de">Standard</Name>
+<Name xml:lang="ja-JP">標準</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">medium</Extrinsic>
+                <Name xml:lang="en-US">Medium Gloss</Name>
+<Name xml:lang="zh-CN">中等光泽</Name>
+<Name xml:lang="pt-BR">Brilho médio</Name>
+<Name xml:lang="sv">Halvmatt</Name>
+<Name xml:lang="nl">Medium glanzend</Name>
+<Name xml:lang="it">Lucentezza media</Name>
+<Name xml:lang="es">Brillo medio</Name>
+<Name xml:lang="fr-CA">Semi-brillant</Name>
+<Name xml:lang="fr">Glacé moyen</Name>
+<Name xml:lang="de">Mittlerer Glanz</Name>
+<Name xml:lang="ja-JP">中光沢</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">high</Extrinsic>
+                <Name xml:lang="en-US">High Gloss</Name>
+<Name xml:lang="zh-CN">高光泽</Name>
+<Name xml:lang="pt-BR">Alto brilho</Name>
+<Name xml:lang="sv">Högglättat</Name>
+<Name xml:lang="nl">Hoogglanzend</Name>
+<Name xml:lang="it">Lucentezza massima</Name>
+<Name xml:lang="es">Brillo alto</Name>
+<Name xml:lang="fr-CA">Brillant élevé</Name>
+<Name xml:lang="fr">Glacé </Name>
+<Name xml:lang="de">Hochglanz</Name>
+<Name xml:lang="ja-JP">高光沢</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="Bindery" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Bindery</Name>
+<Name xml:lang="zh-CN">装订</Name>
+<Name xml:lang="pt-BR">Encadernação</Name>
+<Name xml:lang="sv">Bindning</Name>
+<Name xml:lang="nl">Binding</Name>
+<Name xml:lang="it">Rilegatura</Name>
+<Name xml:lang="es">Encuadernación</Name>
+<Name xml:lang="fr-CA">Reliure</Name>
+<Name xml:lang="fr">Reliure</Name>
+<Name xml:lang="de">Bindung</Name>
+<Name xml:lang="ja-JP">製本</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">spiral</Extrinsic>
+                <Name xml:lang="en-US">Spiral</Name>
+<Name xml:lang="zh-CN">螺旋</Name>
+<Name xml:lang="pt-BR">Espiral 1</Name>
+<Name xml:lang="sv">Spiralbindning</Name>
+<Name xml:lang="nl">Spiraal</Name>
+<Name xml:lang="it">Rilegatura a spirale</Name>
+<Name xml:lang="es">Gusanillo</Name>
+<Name xml:lang="fr-CA">Spirale</Name>
+<Name xml:lang="fr">Spirale</Name>
+<Name xml:lang="de">Spiralbindung</Name>
+<Name xml:lang="ja-JP">らせん綴じ</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">comb</Extrinsic>
+                <Name xml:lang="en-US">Comb</Name>
+<Name xml:lang="zh-CN">梳状折叠</Name>
+<Name xml:lang="pt-BR">Espiral 2</Name>
+<Name xml:lang="sv">Spiralbindning</Name>
+<Name xml:lang="nl">Kam</Name>
+<Name xml:lang="it">Rilegatura a pettine</Name>
+<Name xml:lang="es">Gusanillo de plástico</Name>
+<Name xml:lang="fr-CA">Peigne</Name>
+<Name xml:lang="fr">Reliure souple</Name>
+<Name xml:lang="de">Kammbindung</Name>
+<Name xml:lang="ja-JP">コーム綴じ</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">saddle</Extrinsic>
+                <Name xml:lang="en-US">Saddle Stitch</Name>
+<Name xml:lang="zh-CN">骑马订</Name>
+<Name xml:lang="pt-BR">Grampeamento de lombada</Name>
+<Name xml:lang="sv">Sadelhäftning</Name>
+<Name xml:lang="nl">Zadelsteek</Name>
+<Name xml:lang="it">Rilegatura a sella</Name>
+<Name xml:lang="es">Cosido por lomo</Name>
+<Name xml:lang="fr-CA">Point sellier</Name>
+<Name xml:lang="fr">Agrafage à cheval</Name>
+<Name xml:lang="de">Rückenheftung</Name>
+<Name xml:lang="ja-JP">中綴じ</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">side</Extrinsic>
+                <Name xml:lang="en-US">Side Stitch</Name>
+<Name xml:lang="zh-CN">平订</Name>
+<Name xml:lang="pt-BR">Costurado</Name>
+<Name xml:lang="sv">Sidohäftning</Name>
+<Name xml:lang="nl">Zijsteek</Name>
+<Name xml:lang="it">Rilegatura laterale</Name>
+<Name xml:lang="es">Cosido lateral</Name>
+<Name xml:lang="fr-CA">Piquer à plat</Name>
+<Name xml:lang="fr">Agrafage latéral</Name>
+<Name xml:lang="de">Seitliche Heftung</Name>
+<Name xml:lang="ja-JP">針金綴じ</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+    </Type>
+    <Type name="StockPrintEnvelope" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Stock Print Envelope</Name>
+<Name xml:lang="zh-CN">常用打印信封</Name>
+<Name xml:lang="pt-BR">Envelope para impressão em série</Name>
+<Name xml:lang="sv">Kuvertpapper</Name>
+<Name xml:lang="nl">Voorraadafdrukenvelop</Name>
+<Name xml:lang="it">Stampa stock su busta</Name>
+<Name xml:lang="es">Imprimir en sobres</Name>
+<Name xml:lang="fr-CA">Enveloppe de papier d'impression</Name>
+<Name xml:lang="fr">Impression Enveloppe</Name>
+<Name xml:lang="de">"Materialdruck, Umschlag"</Name>
+<Name xml:lang="ja-JP">カスタム印刷封筒</Name>
+        <Description xml:lang="en-US">Stock Print Envelope Item</Description>
+<Description xml:lang="zh-CN">常用打印信封项目</Description>
+<Description xml:lang="pt-BR">Item de envelope para impressão em série</Description>
+<Description xml:lang="sv">Kuvertpapperstyp</Description>
+<Description xml:lang="nl">Voorraadafdrukenvelop item</Description>
+<Description xml:lang="it">Elemento di stampa stock su busta</Description>
+<Description xml:lang="es">Imprimir en un sobre</Description>
+<Description xml:lang="fr-CA">Article d'enveloppe de papier d'impression</Description>
+<Description xml:lang="fr">Article d'impression Enveloppe</Description>
+<Description xml:lang="de">"Materialdruck, Umschlagselement"</Description>
+<Description xml:lang="ja-JP">カスタム印刷封筒品目</Description>
+        <TypeAttribute name="EnvelopeSize" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Envelope Size</Name>
+<Name xml:lang="zh-CN">信封大小</Name>
+<Name xml:lang="pt-BR">Tamanho do envelope</Name>
+<Name xml:lang="sv">Kuvertstorlek</Name>
+<Name xml:lang="nl">Envelopformaat</Name>
+<Name xml:lang="it">Formato busta</Name>
+<Name xml:lang="es">Tamaño de sobre</Name>
+<Name xml:lang="fr-CA">Format de l'enveloppe</Name>
+<Name xml:lang="fr">Format d'enveloppe</Name>
+<Name xml:lang="de">Umschlaggröße</Name>
+<Name xml:lang="ja-JP">封筒サイズ</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">4x8a</Extrinsic>
+                <Name xml:lang="en-US">4 1/8 x 8</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">4x8b</Extrinsic>
+                <Name xml:lang="en-US">4 1/8 x 8 1/2</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">4x9a</Extrinsic>
+                <Name xml:lang="en-US">4 1/8 x 9 1/8</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">4x9b</Extrinsic>
+                <Name xml:lang="en-US">4 1/8 x 9 1/2</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">6x9</Extrinsic>
+                <Name xml:lang="en-US">6 x 9</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="EnvelopeType" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Envelope Type</Name>
+<Name xml:lang="zh-CN">信封类型</Name>
+<Name xml:lang="pt-BR">Tipo de envelope</Name>
+<Name xml:lang="sv">Kuverttyp</Name>
+<Name xml:lang="nl">Enveloptype</Name>
+<Name xml:lang="it">Tipo di busta</Name>
+<Name xml:lang="es">Tipo de sobre</Name>
+<Name xml:lang="fr-CA">Type d'enveloppe</Name>
+<Name xml:lang="fr">Type d'enveloppe</Name>
+<Name xml:lang="de">Umschlagart</Name>
+<Name xml:lang="ja-JP">封筒の種類</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">business1</Extrinsic>
+                <Name xml:lang="en-US">Business 1</Name>
+<Name xml:lang="zh-CN">商务 1</Name>
+<Name xml:lang="pt-BR">Empresa 1</Name>
+<Name xml:lang="sv">Affärsadress 1</Name>
+<Name xml:lang="nl">Business 1</Name>
+<Name xml:lang="it">Azienda 1</Name>
+<Name xml:lang="es">Negocio 1</Name>
+<Name xml:lang="fr-CA">Affaires 1</Name>
+<Name xml:lang="fr">Commerciale 1</Name>
+<Name xml:lang="de">Geschäftsumschlag 1</Name>
+<Name xml:lang="ja-JP">ビジネス用 1</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">business2</Extrinsic>
+                <Name xml:lang="en-US">Business 2</Name>
+<Name xml:lang="zh-CN">商务 2</Name>
+<Name xml:lang="pt-BR">Empresa 2</Name>
+<Name xml:lang="sv">Affärsadress 2</Name>
+<Name xml:lang="nl">Business 2</Name>
+<Name xml:lang="it">Azienda 2</Name>
+<Name xml:lang="es">Negocio 2</Name>
+<Name xml:lang="fr-CA">Affaires 2</Name>
+<Name xml:lang="fr">Commerciale 2</Name>
+<Name xml:lang="de">Geschäftsumschlag 2</Name>
+<Name xml:lang="ja-JP">ビジネス用 2</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">business3</Extrinsic>
+                <Name xml:lang="en-US">Business 3</Name>
+<Name xml:lang="zh-CN">商务 3</Name>
+<Name xml:lang="pt-BR">Empresa 3</Name>
+<Name xml:lang="sv">Affärsadress 3</Name>
+<Name xml:lang="nl">Business 3</Name>
+<Name xml:lang="it">Azienda 3</Name>
+<Name xml:lang="es">Negocio 3</Name>
+<Name xml:lang="fr-CA">Affaires 3</Name>
+<Name xml:lang="fr">Commerciale 3</Name>
+<Name xml:lang="de">Geschäftsumschlag 3</Name>
+<Name xml:lang="ja-JP">ビジネス用 3</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">campaigne1</Extrinsic>
+                <Name xml:lang="en-US">Campaigne 1</Name>
+<Name xml:lang="zh-CN">活动 1</Name>
+<Name xml:lang="pt-BR">Campanha 1</Name>
+<Name xml:lang="sv">Kampanj 1</Name>
+<Name xml:lang="nl">Campaign 1</Name>
+<Name xml:lang="it">Campagna 1</Name>
+<Name xml:lang="es">Campaña 1</Name>
+<Name xml:lang="fr-CA">Campagne 1</Name>
+<Name xml:lang="fr">Campagne 1</Name>
+<Name xml:lang="de">Campaign 1</Name>
+<Name xml:lang="ja-JP">キャンペーン用 1</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">campaigne2</Extrinsic>
+                <Name xml:lang="en-US">Campaigne 2</Name>
+<Name xml:lang="zh-CN">活动 2</Name>
+<Name xml:lang="pt-BR">Campanha 2</Name>
+<Name xml:lang="sv">Kampanj 2</Name>
+<Name xml:lang="nl">Campaign 2</Name>
+<Name xml:lang="it">Campagna 2</Name>
+<Name xml:lang="es">Campaña 2</Name>
+<Name xml:lang="fr-CA">Campagne 2</Name>
+<Name xml:lang="fr">Campagne 2</Name>
+<Name xml:lang="de">Campaign 2</Name>
+<Name xml:lang="ja-JP">キャンペーン用 2</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">bre1</Extrinsic>
+                <Name xml:lang="en-US">BRE 1</Name>
+<Name xml:lang="zh-CN">商务回邮信封 1</Name>
+<Name xml:lang="pt-BR">BRE 1</Name>
+<Name xml:lang="sv">Frisvar 1</Name>
+<Name xml:lang="nl">Antwoordenvelop 1</Name>
+<Name xml:lang="it">BRE 1</Name>
+<Name xml:lang="es">Sobre de respuesta comercial 1</Name>
+<Name xml:lang="fr-CA">ERA 1</Name>
+<Name xml:lang="fr">Prépayée 1</Name>
+<Name xml:lang="de">Geschäftsrückumschlag 1</Name>
+<Name xml:lang="ja-JP">商用返信封筒 1</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">bre2</Extrinsic>
+                <Name xml:lang="en-US">BRE 2</Name>
+<Name xml:lang="zh-CN">商务回邮信封 2</Name>
+<Name xml:lang="pt-BR">BRE 2</Name>
+<Name xml:lang="sv">Frisvar 2</Name>
+<Name xml:lang="nl">Antwoordenvelop 2</Name>
+<Name xml:lang="it">BRE 2</Name>
+<Name xml:lang="es">Sobre de respuesta comercial 2</Name>
+<Name xml:lang="fr-CA">ERA 2</Name>
+<Name xml:lang="fr">Prépayée 2</Name>
+<Name xml:lang="de">Geschäftsrückumschlag 2</Name>
+<Name xml:lang="ja-JP">商用返信封筒 2</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="Windows" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Windows</Name>
+<Name xml:lang="zh-CN">开窗信封</Name>
+<Name xml:lang="pt-BR">ja-JPnelas</Name>
+<Name xml:lang="sv">Fönster</Name>
+<Name xml:lang="nl">Vensters</Name>
+<Name xml:lang="it">Finestre</Name>
+<Name xml:lang="es">Ventanas</Name>
+<Name xml:lang="fr-CA">Fenêtres</Name>
+<Name xml:lang="fr">Fenêtres</Name>
+<Name xml:lang="de">Fenster</Name>
+<Name xml:lang="ja-JP">窓付き封筒</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">1patch</Extrinsic>
+                <Name xml:lang="en-US">1 Patch Window</Name>
+<Name xml:lang="zh-CN">1 个窗口</Name>
+<Name xml:lang="pt-BR">1 janela</Name>
+<Name xml:lang="sv">1 fönster</Name>
+<Name xml:lang="nl">1 venster</Name>
+<Name xml:lang="it">Busta con 1 finestra</Name>
+<Name xml:lang="es">1 ventana</Name>
+<Name xml:lang="fr-CA">Enveloppe à 1 fenêtre</Name>
+<Name xml:lang="fr">1 Fenêtre</Name>
+<Name xml:lang="de">1 Fenster</Name>
+<Name xml:lang="ja-JP">窓付き封筒１</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">2patch</Extrinsic>
+                <Name xml:lang="en-US">2 Patch Windows</Name>
+<Name xml:lang="zh-CN">2 个窗口</Name>
+<Name xml:lang="pt-BR">2 janelas</Name>
+<Name xml:lang="sv">2 fönster</Name>
+<Name xml:lang="nl">2 vensters</Name>
+<Name xml:lang="it">Busta con 2 finestre</Name>
+<Name xml:lang="es">2 ventanas</Name>
+<Name xml:lang="fr-CA">Enveloppe à 2 fenêtres</Name>
+<Name xml:lang="fr">2 Fenêtres</Name>
+<Name xml:lang="de">2 Fenster</Name>
+<Name xml:lang="ja-JP">窓付き封筒２</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">3patch</Extrinsic>
+                <Name xml:lang="en-US">3 Patch Windows</Name>
+<Name xml:lang="zh-CN">3 个窗口</Name>
+<Name xml:lang="pt-BR">3 janelas</Name>
+<Name xml:lang="sv">3 fönster</Name>
+<Name xml:lang="nl">3 vensters</Name>
+<Name xml:lang="it">Busta con 3 finestre</Name>
+<Name xml:lang="es">3 ventanas</Name>
+<Name xml:lang="fr-CA">Enveloppe à 3 fenêtres</Name>
+<Name xml:lang="fr">3 Fenêtres</Name>
+<Name xml:lang="de">3 Fenster</Name>
+<Name xml:lang="ja-JP">窓付き封筒３</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="PaperType" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Paper Type</Name>
+<Name xml:lang="zh-CN">纸张类型</Name>
+<Name xml:lang="pt-BR">Tipo de papel</Name>
+<Name xml:lang="sv">Papperstyp</Name>
+<Name xml:lang="nl">Papiertype</Name>
+<Name xml:lang="it">Tipo di carta</Name>
+<Name xml:lang="es">Tipo de papel</Name>
+<Name xml:lang="fr-CA">Type de papier</Name>
+<Name xml:lang="fr">Type de papier</Name>
+<Name xml:lang="de">Papierart</Name>
+<Name xml:lang="ja-JP">用紙の種類</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated50</Extrinsic>
+                <Name xml:lang="en-US">Coated 50 lb</Name>
+<Name xml:lang="zh-CN">涂层 50 磅</Name>
+<Name xml:lang="pt-BR">50 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 50 lb</Name>
+<Name xml:lang="nl">Gecoat 50 lb</Name>
+<Name xml:lang="it">Patinata 50 lb</Name>
+<Name xml:lang="es">Revestido de 50 lb</Name>
+<Name xml:lang="fr-CA">"Couché 22,72 kg"</Name>
+<Name xml:lang="fr">Couché 50 lb</Name>
+<Name xml:lang="de">Gestrichen 50 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 50ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated60</Extrinsic>
+                <Name xml:lang="en-US">Coated 60 lb</Name>
+<Name xml:lang="zh-CN">涂层 60 磅</Name>
+<Name xml:lang="pt-BR">60 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 60 lb</Name>
+<Name xml:lang="nl">Gecoat 60 lb</Name>
+<Name xml:lang="it">Patinata 60 lb</Name>
+<Name xml:lang="es">Revestido de 60 lb</Name>
+<Name xml:lang="fr-CA">"Couché 27,22 kg"</Name>
+<Name xml:lang="fr">Couché 60 lb</Name>
+<Name xml:lang="de">Gestrichen 60 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 60ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated65</Extrinsic>
+                <Name xml:lang="en-US">Coated 65 lb</Name>
+<Name xml:lang="zh-CN">涂层 65 磅</Name>
+<Name xml:lang="pt-BR">65 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 65 lb</Name>
+<Name xml:lang="nl">Gecoat 65 lb</Name>
+<Name xml:lang="it">Patinata 65 lb</Name>
+<Name xml:lang="es">Revestido de 65 lb</Name>
+<Name xml:lang="fr-CA">"Couché 29,48 kg"</Name>
+<Name xml:lang="fr">Couché 65 lb</Name>
+<Name xml:lang="de">Gestrichen 65 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 65ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">coated70</Extrinsic>
+                <Name xml:lang="en-US">Coated 70 lb</Name>
+<Name xml:lang="zh-CN">涂层 70 磅</Name>
+<Name xml:lang="pt-BR">70 lb revestido</Name>
+<Name xml:lang="sv">Bestruket 70 lb</Name>
+<Name xml:lang="nl">Gecoat 70 lb</Name>
+<Name xml:lang="it">Patinata 70 lb</Name>
+<Name xml:lang="es">Revestido de 70 lb</Name>
+<Name xml:lang="fr-CA">"Couché 31,75 kg"</Name>
+<Name xml:lang="fr">Couché 70 lb</Name>
+<Name xml:lang="de">Gestrichen 70 Pfd</Name>
+<Name xml:lang="ja-JP">コート紙 70ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated50</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 50 lb</Name>
+<Name xml:lang="zh-CN">无涂层 50 磅</Name>
+<Name xml:lang="pt-BR">50 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 50 lb</Name>
+<Name xml:lang="nl">Ongecoat 50 lb</Name>
+<Name xml:lang="it">Non patinata 50 lb</Name>
+<Name xml:lang="es">No revestido de 50 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 22,72 kg"</Name>
+<Name xml:lang="fr">Non couché 50 lb</Name>
+<Name xml:lang="de">Ungestrichen 50 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 50ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated60</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 60 lb</Name>
+<Name xml:lang="zh-CN">无涂层 60 磅</Name>
+<Name xml:lang="pt-BR">60 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 60 lb</Name>
+<Name xml:lang="nl">Ongecoat 60 lb</Name>
+<Name xml:lang="it">Non patinata 60 lb</Name>
+<Name xml:lang="es">No revestido de 60 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 27,22 kg"</Name>
+<Name xml:lang="fr">Non couché 60 lb</Name>
+<Name xml:lang="de">Ungestrichen 60 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 60ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated65</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 65 lb</Name>
+<Name xml:lang="zh-CN">无涂层 65 磅</Name>
+<Name xml:lang="pt-BR">65 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 65 lb</Name>
+<Name xml:lang="nl">Ongecoat 65 lb</Name>
+<Name xml:lang="it">Non patinata 65 lb</Name>
+<Name xml:lang="es">No revestido de 65 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 29,48 kg"</Name>
+<Name xml:lang="fr">Non couché 65 lb</Name>
+<Name xml:lang="de">Ungestrichen 65 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 65ポンド</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">uncoated70</Extrinsic>
+                <Name xml:lang="en-US">Uncoated 70 lb</Name>
+<Name xml:lang="zh-CN">无涂层 70 磅</Name>
+<Name xml:lang="pt-BR">70 lb não revestido</Name>
+<Name xml:lang="sv">Obestruket 70 lb</Name>
+<Name xml:lang="nl">Ongecoat 70 lb</Name>
+<Name xml:lang="it">Non patinata 70 lb</Name>
+<Name xml:lang="es">No revestido de 70 lb</Name>
+<Name xml:lang="fr-CA">"Non couché 31,75 kg"</Name>
+<Name xml:lang="fr">Non couché 70 lb</Name>
+<Name xml:lang="de">Ungestrichen 70 Pfd</Name>
+<Name xml:lang="ja-JP">非コート紙 70ポンド</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+        <TypeAttribute name="Colors" type="Name" isRefinable="yes" isCollection="yes" isRequiredForOrdering="yes">
+            <Name xml:lang="en-US">Colors (Front / Back)</Name>
+<Name xml:lang="zh-CN">颜色 (正面/背面)</Name>
+<Name xml:lang="pt-BR">Cores (frente/verso)</Name>
+<Name xml:lang="sv">Färger (fram-/baksida)</Name>
+<Name xml:lang="nl">Kleuren (voor-/achterzijde)</Name>
+<Name xml:lang="it">Colori (fronte/retro)</Name>
+<Name xml:lang="es">Colores (delantera / trasera)</Name>
+<Name xml:lang="fr-CA">Couleurs (recto/verso)</Name>
+<Name xml:lang="fr">Couleurs (Recto / Verso)</Name>
+<Name xml:lang="de">Farben (Vorderseite / Rückseite)</Name>
+<Name xml:lang="ja-JP">色 （表面/裏面）</Name>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">10</Extrinsic>
+                <Name xml:lang="en-US">1 Front</Name>
+<Name xml:lang="zh-CN">正面 1 页</Name>
+<Name xml:lang="pt-BR">1 frente</Name>
+<Name xml:lang="sv">1 Framsida</Name>
+<Name xml:lang="nl">1 voorkant</Name>
+<Name xml:lang="it">1 su fronte</Name>
+<Name xml:lang="es">1 frontal</Name>
+<Name xml:lang="fr-CA">1 recto</Name>
+<Name xml:lang="fr">1 Recto</Name>
+<Name xml:lang="de">1 Vorderseite</Name>
+<Name xml:lang="ja-JP">表面1色</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">11</Extrinsic>
+                <Name xml:lang="en-US">1 Front / 1 Back</Name>
+<Name xml:lang="zh-CN">正面 1 页 / 背面 1 页</Name>
+<Name xml:lang="pt-BR">1 frente/1 verso</Name>
+<Name xml:lang="sv">1 Framsida / 1 Baksida</Name>
+<Name xml:lang="nl">1 voorkant / 1 achterkant</Name>
+<Name xml:lang="it">1 su fronte / 1 su retro</Name>
+<Name xml:lang="es">1 frontal / 1 trasera</Name>
+<Name xml:lang="fr-CA">"1 recto, 1 verso"</Name>
+<Name xml:lang="fr">1 Recto / 1 Verso</Name>
+<Name xml:lang="de">1 Vorderseite / 1 Rückseite</Name>
+<Name xml:lang="ja-JP">表面1色/裏面1色</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">20</Extrinsic>
+                <Name xml:lang="en-US">2 Front</Name>
+<Name xml:lang="zh-CN">正面 2 页</Name>
+<Name xml:lang="pt-BR">2 frente</Name>
+<Name xml:lang="sv">2 Framsida</Name>
+<Name xml:lang="nl">2 voorkant</Name>
+<Name xml:lang="it">2 su fronte</Name>
+<Name xml:lang="es">2 frontal</Name>
+<Name xml:lang="fr-CA">2 rectos</Name>
+<Name xml:lang="fr">2 Recto</Name>
+<Name xml:lang="de">2 Vorderseiten</Name>
+<Name xml:lang="ja-JP">表面2色</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">21</Extrinsic>
+                <Name xml:lang="en-US">2 Front / 1 Back</Name>
+<Name xml:lang="zh-CN">正面 2  页 / 背面 1 页</Name>
+<Name xml:lang="pt-BR">2 frente/1 verso</Name>
+<Name xml:lang="sv">2 Framsida / 1 Baksida</Name>
+<Name xml:lang="nl">2 voorkant / 1 achterkant</Name>
+<Name xml:lang="it">2 su fronte / 1 su retro</Name>
+<Name xml:lang="es">2 frontal / 1 trasera</Name>
+<Name xml:lang="fr-CA">"2 rectos, 1 verso"</Name>
+<Name xml:lang="fr">2 Recto / 1 Verso</Name>
+<Name xml:lang="de">2 Vorderseiten / 1 Rückseite</Name>
+<Name xml:lang="ja-JP">表面2色/裏面1色</Name>
+            </EnumerationValue>
+            <EnumerationValue>
+                <Extrinsic name="CanonicalValue">22</Extrinsic>
+                <Name xml:lang="en-US">2 Front / 2 Back</Name>
+<Name xml:lang="zh-CN">正面 2 页 / 背面 2 页</Name>
+<Name xml:lang="pt-BR">2 frente/2 verso</Name>
+<Name xml:lang="sv">2 Framsida / 2 Baksida</Name>
+<Name xml:lang="nl">2 voorkant / 2 achterkant</Name>
+<Name xml:lang="it">2 su fronte / 2 su retro</Name>
+<Name xml:lang="es">2 frontal / 2 trasera</Name>
+<Name xml:lang="fr-CA">"2 rectos, 2 versos"</Name>
+<Name xml:lang="fr">2 Recto / 2 Verso</Name>
+<Name xml:lang="de">2 Vorderseiten / 2 Rückseiten</Name>
+<Name xml:lang="ja-JP">表面2色/裏面2色</Name>
+            </EnumerationValue>
+        </TypeAttribute>
+    </Type>
+    <Type name="CustomPrint" extends="System:CatalogItem">
+        <Name xml:lang="en-US">Custom Print</Name>
+<Name xml:lang="zh-CN">自定义打印</Name>
+<Name xml:lang="pt-BR">Impressão personalizada</Name>
+<Name xml:lang="sv">Anpassat tryck</Name>
+<Name xml:lang="nl">Aangepaste afdruk</Name>
+<Name xml:lang="it">Stampa personalizzata</Name>
+<Name xml:lang="es">Impresión personalizada</Name>
+<Name xml:lang="fr-CA">Impression sur commande</Name>
+<Name xml:lang="fr">Impression personnalisée</Name>
+<Name xml:lang="de">Benutzerspezifischer Druck</Name>
+<Name xml:lang="ja-JP">カスタム印刷</Name>
+        <Description xml:lang="en-US">Custom Print Item</Description>
+<Description xml:lang="zh-CN">自定义打印项目</Description>
+<Description xml:lang="pt-BR">Item de impressão personalizada</Description>
+<Description xml:lang="sv">Anpassad trycksak</Description>
+<Description xml:lang="nl">Aangepaste afdruk item</Description>
+<Description xml:lang="it">Voce di stampa personalizzata</Description>
+<Description xml:lang="es">Artículo de impresión personalizada</Description>
+<Description xml:lang="fr-CA">Article d'impression sur commande</Description>
+<Description xml:lang="fr">Article d'impression personnalisée</Description>
+<Description xml:lang="de">Benutzerspezifisches Druckelement</Description>
+<Description xml:lang="ja-JP">カスタム印刷品目</Description>
+        <TypeAttribute name="CustomPrint" type="Name" isRefinable="yes" isCollection="yes">
+            <Name xml:lang="en-US">Custom Print</Name>
+<Name xml:lang="zh-CN">自定义打印</Name>
+<Name xml:lang="pt-BR">Impressão personalizada</Name>
+<Name xml:lang="sv">Anpassat tryck</Name>
+<Name xml:lang="nl">Aangepaste afdruk</Name>
+<Name xml:lang="it">Stampa personalizzata</Name>
+<Name xml:lang="es">Impresión personalizada</Name>
+<Name xml:lang="fr-CA">Impression sur commande</Name>
+<Name xml:lang="fr">Impression personnalisée</Name>
+<Name xml:lang="de">Benutzerspezifischer Druck</Name>
+<Name xml:lang="ja-JP">カスタム印刷</Name>
+        </TypeAttribute>
+    </Type>
+</TypeDefinition>

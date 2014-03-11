@@ -1,0 +1,273 @@
+/**
+*/
+
+/*
+    Wrapper of sfISCFixCurrentSelectionInternal.
+    This is for a special case on review changes. TargetDocument could end up having
+    TrackRevisions = false after diffDocument() even though there are revisions in the document.
+    Because TrackRevisions is false, the clauses/sections are permanently deleted from the document
+    during fixCurrentSelection.
+    In that case, we temporarily set it to true , fix the document, and put it back to false
+ */
+function sfISCFixCurrentSelection (ec, startPos)
+{
+    var originalState = ec.getAgreementDocument().TrackRevisions;
+
+    ec.getAgreementDocument().TrackRevisions = true;
+    sfISCFixCurrentSelectionInternal(ec, startPos);
+    ec.getAgreementDocument().TrackRevisions = originalState;
+}
+
+/**
+    This is to fix the deleted selections on AgreementDocument if the selections are not appropriate, such as
+    including paragraph markers or starting with double-quotes....
+*/
+function sfISCFixCurrentSelectionInternal (ec, startPos)
+{
+    try {
+        LoggerUtil.logBegin("sfISCFixCurrentSelectionInternal");
+        /*
+            CR 1-9XQKFD, 1-9XQKH9, 1-9XQKIZ
+            When a bookmark to be deleted is selected with heading or tailing paragraph marker, the range is shifted by one
+            as result of which it micalculates position and does not update the deletion on the server properly.
+            In addition, if a selected bookmark start with double quotes, the Word creates a space at the beginning which also
+            ends up miscalculating the position of the selection and not updating the deletion on the server properly either.
+        */
+        var revisions = ec.getAgreementDocument().Revisions;
+        var count = revisions.Count;
+        var sizeOfEmptyRange = 0, endPosOfEmptyRange = -1;
+        var emptyIndex = 0;
+        var modificationType = "";
+        var firstChar = "", lastChar = "";
+
+        for (var i = 1; i <= count; ++i) {
+            var revision = revisions.Item(i);
+            var range = revision.Range;
+
+            var revisionStart = range.Start;
+            var revisionEnd = range.End;
+
+            if (revisionStart > startPos) {
+
+                modificationType = revision.Type;
+
+                /*
+                    Case 1: If a range to be deleted is a bookmark and starts with a double quotes, when a paragraph marker
+                    is selected along side with the bookmark, an empty insert range is created in front of the selection to be deleted
+                    The solution is to detect the empty range, reject the insert and the deletion, and then reselect the bookmark to be deleted
+                */
+                if (modificationType == RevisionType.Insert) {
+                    if (sfIsEmptyText(range)) {
+                        emptyIndex = i;
+                        sizeOfEmptyRange = revisionEnd - revisionStart;
+                        endPosOfEmptyRange = revisionEnd;
+                    }
+                }
+                else if (modificationType == RevisionType.Delete) {
+                    if (sfIsEmptyText(range)) {
+                        continue;
+                    }
+                    //double quotes
+                    if (revisionStart == endPosOfEmptyRange) {
+                        var bookmarksToBeDeleted = sfGetRangeBookmarksWithinEpsilon(
+                            ec.getAgreementDocument(), range, sizeOfEmptyRange, sizeOfEmptyRange);
+                        bookmarksToBeDeleted = sfConvertBookmarksToNames(bookmarksToBeDeleted);
+
+                        if (bookmarksToBeDeleted.Count > 0) {
+                            ec.getAgreementDocument().Revisions(i).Reject();
+                            ec.getAgreementDocument().Revisions(emptyIndex).Reject();
+                            sizeOfEmptyRange = 0;
+                            endPosOfEmptyRange = -1;
+
+                            for (var j = 1; j <= bookmarksToBeDeleted.Count; ++j) {
+                                var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+                                try {
+                                    var aRangeToBeDeleted = sfGotoBookmarkName(currentSelection, bookmarksToBeDeleted.Item(j));
+                                    sfDeleteSelection(aRangeToBeDeleted);
+                                }
+                                catch (ex) {
+                                    /*
+                                        Bookmark likely deleted - for example we return both sections as well clauses
+                                        in no particular order....
+                                    */
+                                }
+                            }
+                            
+                            sfSaveFile(ec.getAgreementDocument());
+                            //call itself because Revisions are changed when revisions are changed
+                            sfISCFixCurrentSelectionInternal(ec, revisionStart);
+                            return;
+                        }
+                    }
+                    else {
+                        /*
+                            Case 2: If the user selected a paragraph char as part of the deleted text, we reject the revison,
+                            exclude the pararaph markers and reselect all the bookmarks;
+                            The positions after the selected are shifted to the right/left
+                            The solution is to detect the paragraph marker and reposition the range to be deleted
+                        */
+
+                        var rangeText = range.Text;
+
+                        if (rangeText != null && rangeText.length > 0) {
+                            firstChar = rangeText.charAt(0);
+                            lastChar = rangeText.charAt(rangeText.length-1);
+                        }
+
+                        if (firstChar == paraChar || lastChar == paraChar) {
+
+                            var leftEpsilon = firstChar == paraChar ? -1: 0;
+                            var rightEpsilon = lastChar == paraChar &&
+                                !sfEndsWithASectionBookmark(range) ? -1: 0;
+
+                            var bookmarksToBeDeleted = sfGetRangeBookmarksWithinEpsilon(
+                                ec.getAgreementDocument(), range, leftEpsilon, rightEpsilon);
+                            /* the above method returns the objects whereas we need names */
+                            bookmarksToBeDeleted = sfConvertBookmarksToNames(bookmarksToBeDeleted);
+
+                            if (bookmarksToBeDeleted.Count > 0) {
+                                ec.getAgreementDocument().Revisions(i).Reject();
+
+                                for (var j = 1; j <= bookmarksToBeDeleted.Count; ++j) {
+                                    var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+                                    try {
+                                        var aRangeToBeDeleted = sfGotoBookmarkName(currentSelection, bookmarksToBeDeleted.Item(j));
+                                        sfDeleteSelection(aRangeToBeDeleted);
+                                    }
+                                    catch (ex) {
+                                        /*
+                                            Bookmark likely deleted - for example we return both sections as well clauses
+                                            in no particular order....
+                                        */
+                                    }
+                                }
+                                sfSaveFile(ec.getAgreementDocument());
+                                /*
+                                    call itself because Revision positions are changed
+                                    when we mutate a specific revision.  From a performance
+                                    perspective it is okay as we do not have too many of these
+                                 */
+                                sfISCFixCurrentSelectionInternal(ec, revisionStart);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        LoggerUtil.logEnd("sfISCFixCurrentSelectionInternal");
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, "Method Invocation Error: sfISCFixCurrentSelectionInternal", null);
+        ec.canContinue = false;
+        throw ex;
+    }
+}
+
+/**
+    TODO Doc this
+*/
+function sfISCFixSectionBookmarks (ec)
+{
+    /*
+        Get all the bookmarks from Merged File
+        ISSUE: When a whole section is deleted, the start position of the next section takes over the start position of
+        the deleted section after merge. I'm not sure if this is a MS merging issue, but because of that
+        when a clause in the next section is deleted along side with the section, the section deletion does not
+        happen because the section belongs to the next section.
+        WORKAROUND FIX: If there are any 2 consecutive
+        sections that have the same start position, then change the start position of the 2nd section to the end
+        position of the previous section.
+        SIDE EFFECT:If a part of a section is deleted with a full section, the changes on the part won't be applied
+    */
+    var preBookmarkName = null;
+    var preBookmarkStart = -1;
+    var preBookmarkEnd = -1;
+    var bookmarks = ec.clientVersion.bookmarks;
+    var count = bookmarks.Count;
+    for (var i = 1; i <= count; ++i) {
+        var mBookmark = bookmarks.Item(i);
+        if (mBookmark.Name != preBookmarkName) {
+            if (mBookmark.Name.indexOf(prefixSectionName) >= 0 && mBookmark.Start == preBookmarkStart) {
+                mBookmark.Start = preBookmarkEnd;
+            }
+            preBookmarkName = mBookmark.Name;
+            preBookmarkStart = mBookmark.Start;
+            preBookmarkEnd = mBookmark.End;
+        }
+    }
+}
+
+function logRangeModified (domRange, isStart)
+{
+    if (LoggerUtil.enableLogging) {
+        if (isStart) {
+            LoggerUtil.logAlert("Range Start Modified" + domRange.Start);
+        }
+        else {
+            LoggerUtil.logAlert("Range End Modified" + domRange.End);
+        }
+    }
+
+}
+
+/**
+    Not sure what the contract is
+*/
+function sfRemoveLeadingTailingParaMarkerOfARange(rangeProxy)
+{
+    LoggerUtil.logBegin("sfRemoveLeadingTailingParaMarkerOfARange");
+
+    if (!sfIsRangeASection(rangeProxy)) {
+        var domRange = rangeProxy.DomRange;
+        var rangeText = domRange.Text;
+        var firstChar = rangeText.charAt(0);
+        var lastChar = rangeText.charAt(rangeText.length-1);
+        var isMoved = false;
+
+        if (firstChar == paraChar) {
+            domRange.Start = domRange.Start + 1;
+            logRangeModified(domRange, true);
+            isMoved = true;
+        }
+
+        if (lastChar == paraChar) {
+            domRange.End = domRange.End -1;
+            logRangeModified(domRange, false);
+            isMoved = true;
+        }
+    }
+
+    LoggerUtil.logEnd("sfRemoveLeadingTailingParaMarkerOfARange");
+}
+
+/**
+    Returns the bookmark NAME that begins at the same position as the range
+    Takes either range or range proxy
+*/
+function sfBeginningMatchedBookmark (currentDocument, rangeProxy)
+{
+    var bookmarks = rangeProxy.Bookmarks;
+    var startPos = rangeProxy.Start;
+    var endPos = rangeProxy.End;
+
+    if (bookmarks == null) {
+        return "";
+    }
+
+    var count = bookmarks.Count;
+    for (var i = 1; i <= count; ++i) {
+        var bookmark = bookmarks.Item(i);
+        if (bookmark.Start == startPos) {
+            if (bookmark.End == endPos ||
+                (bookmark.End < endPos && sfIsEmptyText(currentDocument.Range(bookmark.End, endPos))) ||
+                (bookmark.End > endPos && sfIsEmptyText(currentDocument.Range(endPos, bookmark.End)))) {
+                return bookmark.Name;
+            }
+        }
+    }
+
+    return "";
+}
+

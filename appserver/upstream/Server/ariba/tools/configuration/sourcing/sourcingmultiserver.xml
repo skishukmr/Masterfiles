@@ -1,0 +1,159 @@
+<!-- <!DOCTYPE Configure SYSTEM "Configure.dtd"> -->
+
+<!-- manager class should be optional, default to ariba.configserver.core.ConfigManager -->
+
+<config>
+    <manager name="multiserver" class="ariba.config.core.ConfigManager" id="40" hint="@ariba.configui/MultiserverManagerHint">
+        <agent name="sourcingtopology" class="ariba.config.multiserver.MultiServerNodeCollectionAgent" id="0">
+            <field name="serverlist"/>
+            <field name="nodename">
+                <properties charWidth="40" label="@ariba.configui/MSNodeName"/>
+                <inGroup name="NodesGroup"/>
+            </field>
+            <templates>
+                <agent name="msnode" class="ariba.config.multiserver.MultiServerNodeAgent">
+                    <field name="nodename">
+                        <properties charWidth="40" label="@ariba.configui/MSNodeName"/>
+                        <inGroup name="NodesGroup"/>
+                        <inGroup name="NodeGroup">
+                            <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                        validChoicesClass="ariba.htmlui.config.core.ServerNameValidChoices"
+                                        pickListStyle="Popup"
+                                        rank="0"
+                                        label="@ariba.configui/MSNodeName"
+                                        forceRefresh="false"/>
+                        </inGroup>
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldServerName"
+                                       testField="nodename">
+                                <parameter name="MessageTable" value="ariba.config.condition"/>
+                                <parameter name="MessageKey" value="UniqueFieldHasDuplicates"/>
+                                <parameter name="Collection" value="sourcingtopology"/>
+                            </condition>
+                        </validity>
+                    </field>
+                    <field name="serverrole">
+                        <visibility>
+                            <condition implementation="ariba.config.condition.NotNodesDefault"
+                                       testField="nodename"/>
+                        </visibility>
+                        <properties charWidth="40"
+                                    label="@ariba.configui/ServerRoles"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEEditableList"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="10"/>
+                        </inGroup>
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidServerRoles">
+                                <parameter name="Collection" value="sourcingtopology"/>
+                            </condition>
+                        </validity>
+                    </field>
+                    <field name="host">
+                        <visibility>
+                            <condition implementation="ariba.config.condition.NotNodesDefault"
+                                       testField="nodename"/>
+                        </visibility>
+                        <properties charWidth="40" label="@ariba.configui/Host"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="20"/>
+                        </inGroup>
+                    </field>
+                    <field name="rpcport">
+                        <visibility>
+                            <condition implementation="ariba.config.condition.NotNodesDefault"
+                                       testField="nodename"/>
+                        </visibility>
+                        <properties charWidth="40" label="@ariba.configui/RPCPort"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="40"/>
+                        </inGroup>
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldPortValue"
+                                       testField="rpcport">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                                <parameter name="MessageTable" value="ariba.config.condition"/>
+                                <parameter name="MessageKey" value="UniqueFieldHasDuplicates"/>
+                            </condition>
+                        </validity>
+                    </field>
+                    <field name="internodeport">
+                        <visibility>
+                            <condition implementation="ariba.config.condition.NotNodesDefault"
+                                       testField="nodename"/>
+                        </visibility>
+                        <properties charWidth="40" label="@ariba.configui/InternodePort"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="50"/>
+                        </inGroup>
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldPortValue"
+                                       testField="internodeport">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                                <parameter name="MessageTable" value="ariba.config.condition"/>
+                                <parameter name="MessageKey" value="UniqueFieldHasDuplicates"/>
+                            </condition>
+                        </validity>
+                    </field>
+                    <field name="classname">
+                        <visibility>
+                            <condition implementation="ariba.config.condition.NotNodesDefault"
+                                       testField="nodename"/>
+                        </visibility>
+                        <properties charWidth="40" label="@ariba.configui/ClassName"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="60"/>
+                        </inGroup>
+                        <value>ariba.server.ormsserver.ORMSNode</value>
+                    </field>
+                    <!-- begin optional parameters -->
+                    <field name="objectcachemaxload">
+                        <properties charWidth="40" label="@ariba.configui/ObjectCacheMaxLoad"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="70"/>
+                        </inGroup>
+                    </field>
+                    <field name="objectcachepurgeby">
+                        <properties charWidth="40" label="@ariba.configui/ObjectCachePurgeBy"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="80"/>
+                        </inGroup>
+                    </field>
+                    <field name="objectcachesegments">
+                        <properties charWidth="40" label="@ariba.configui/ObjectCacheSegments"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="90"/>
+                        </inGroup>
+                    </field>
+                    <field name="objectcachesize">
+                        <properties charWidth="40" label="@ariba.configui/ObjectCacheSize"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="100"/>
+                        </inGroup>
+                    </field>
+                    <field name="backgroundqueue">
+                        <properties charWidth="40" label="@ariba.configui/BackgroundQueue"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="110"/>
+                        </inGroup>
+                    </field>
+                    <field name="foregroundqueue">
+                        <properties charWidth="40" label="@ariba.configui/ForegroundQueue"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="120"/>
+                        </inGroup>
+                    </field>
+                    <field name="workflowqueue">
+                        <properties charWidth="40" label="@ariba.configui/WorkflowQueue"/>
+                        <inGroup name="NodeGroup">
+                            <properties rank="130"/>
+                        </inGroup>
+                    </field>
+                    <!-- end optional parameters -->
+                </agent>
+            </templates>
+        </agent>
+    </manager>
+</config>

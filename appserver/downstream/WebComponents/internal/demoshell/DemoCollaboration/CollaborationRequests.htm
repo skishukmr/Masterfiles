@@ -1,0 +1,231 @@
+<BasicPageWrapper hasForm="$true" toc="ASNLoggedInColl.htm">
+<table border=0 cellspacing=0 cellpadding=0 width=100%>
+  <tr>
+    <td class="pageHead"><img border="0" width="25" title="Non-numbered step" height="25" src="resources/t00.gif" alt="Non-numbered step" align="absmiddle" hspace="0">&nbsp;Inbox</td>
+  </tr>
+  <tr>
+    <td>
+      <table border=0 cellpadding=0 cellspacing=0 width=100%>
+        <tr>
+          <td valign="top" width="1%"><img border="0" width="25" title="Substeps" height="20" src="resources/substepsLine.gif" alt="Substeps" vspace="2" hspace="3"></td>
+          <td style="line-height:160%;">
+        <a href="$null"><span class="wizSubstep">Purchase&nbsp;Orders</span></a> : <a href="$null"><span class="wizSubstep">Contracts</span></a>
+        : <span class="wizSubstepCurrent">Collaboration Requests</span>&nbsp;: <a href="$null"><span class="wizSubstep">Payments</span></a> : <a href="Timesheets.htm"><span class="wizSubstep">Time Sheets</span></a> : <a href="$null"><span class="wizSubstep">Notifications</span></a></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><img border="0" width="1" height="3" src="resources/cleardot.gif" class="block"></td>
+  </tr>
+</table>
+<br/>
+<table  class="grayVeryLt" style="padding:10px 10px 3px 5px;border: 1px solid #9C9CB8;" width="100%">
+    <tr>
+        <td>
+            <table cellpadding="0" cellspacing="0">
+                
+                <tr>
+                    <td class="inlineHelpText" colspan="4" valign="top">
+                        <div style="padding-bottom:5px">
+                            
+                        </div>
+                    </td>
+                </tr>
+            <tr>
+               <td>
+                   Search By: 
+                   <select size="1" onMouseDown="AWActionPopupEnabled=true;" name="_4u">
+    <option value="0">
+                       Request #
+                   </option>
+    <option value="1">
+                       Customer
+                   </option>
+    <option value="2">
+                       Title
+                   </option>
+    <option value="3">
+                       Status
+                   </option>
+    
+</select>
+               </td>
+               <td nowrap="true">
+                   <input id="_4v" type="text" value="" name="_4v" awname="value">
+               </td>
+               <td>
+                   <TextButton action="$null">Search</TextButton>
+               </td>
+                <td>
+                   
+                   <AWHyperlink action="$null">Advanced Search</AWHyperlink>
+                   
+               </td>
+            </tr>
+
+            
+            </table>
+        </td>
+    </tr>
+</table>
+
+
+<AWXDCLoadAQL value="$supplierSysId"
+              query="select SystemID from ariba.common.core.CommonSupplier where Name.PrimaryString = :supplierName"
+              supplierName="$session.dict.demoSession.supplierName"
+              scalar="$true"/>
+
+<AWXDCLoadAQL value="$po" query="select CollaborationRequest TheObject from ariba.collaboration.core.CollaborationRequest where Supplier.CommonSupplier.Name.PrimaryString = :suppname and CollaborationRequestState.State in (4,8,16) order by SubmitDate desc" rowLimit="10" suppname="$session.dict.demoSession.supplierName"/>
+
+
+<AWTDataTable multiSelect="$true" list="$po" batchSize="15" showOptionsMenu="$false" item="$item" title="Collaboration Requests" enableScrolling="$true"
+              initialSortKey="SubmitDate" initialSortDirection="descending">
+	<AWTHeadingArea>
+		<SectionHeading title="Collaboration Requests"/>
+	</AWTHeadingArea>
+	<AWTColumn label="Request #" key="UniqueName" action="$punchin"/>
+	<AWTColumn key="Title"/>
+    <AWTColumn label="Customer" key="OriginatingDocument.Requester.Organization.Name.PrimaryString"/>
+	   
+	<AWTColumn label="Received" key="SubmitDate" formatter="$formatters.shortDate"/>
+	<AWTColumn label="Amount" align="right">
+	  <AWString value="$item.getTotalCost.asString"/>
+	</AWTColumn>
+	<AWTColumn label="Status">
+    <AWString value="$getStatus"/> 
+	</AWTColumn>
+	<AWTColumn label="Assigned To"/>
+	<AWTButtonArea>
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td>
+					Assign To:
+					<select name="select">
+						<option>none</option>
+						<option>Frank Herbert</option>
+						<option>China Mieville</option>
+						<option>William Gibson</option>
+						<option>Neil Stephenson</option>
+						<option >---------</option>
+						<option>other...</option>
+					</select>
+				</td>
+       			<td><TextButton action="$null">Assign</TextButton></td>
+			</tr>
+		</table>
+	</AWTButtonArea>
+</AWTDataTable>
+
+</BasicPageWrapper>
+
+<server>
+  var user = null;
+  var supp = null;
+  var selectedItem = { Name:"" };
+  var item = null;
+  var statusMap = {
+"CollaborationThreadBuyerWaiting":"Request Received - Supplier Response Required",
+"CollaborationThreadSupplierWaiting":"Awaiting Response from Buyer",
+"CollaborationThreadAccepted":"Proposal Accepted by Buyer",
+"CollaborationThreadPartiallyAccepted":"Proposal Partially Accepted by Buyer",
+"CollaborationThreadRejected":"Proposal Rejected by Buyer",
+"CollaborationThreadWithdrawn":"Proposal Withdrawn by Supplier",
+"CollaborationThreadDeclined":"Request Declined by Supplier",
+"CollaborationThreadCancelled":"Request Cancelled by Buyer",
+"CollaborationThreadEnded":"Request Closed",
+"CollaborationThreadEndedAccepted":"Proposal Accepted and Request Closed",
+"CollaborationThreadEndedSomeAccepted": "Some Proposals Accepted and Request Closed",
+"CollaborationThreadSomeAccepted": "Some Proposals Accepted by Buyer",
+"CollaborationThreadSomeBuyerWaiting":"Awaiting Response from Supplier for Some Requests",
+"CollaborationThreadSomeRejected":"Some Proposals Rejected by Buyer",
+"CollaborationThreadSomeWithdrawn":"Some Proposals Withdrawn by Supplier",
+"CollaborationThreadSomeSupplierWaiting":"Buyer Response Required for Some Proposals",
+"CollaborationThreadSomeCanceled":"Some Proposals Closed",
+"CollaborationThreadSomeDeclined":"Some Requests Declined by Supplier" };
+
+  function getStatus() 
+  {
+     var x = item.getNetworkRollupState();
+     return statusMap[x];
+  }
+  
+  function punchin ()
+  {
+     var appinfo = ariba.util.parameters.AppInfo.getRunningAppInfo();
+     var rootUrl = appinfo.getInternalURL();               
+     if (rootUrl.toLowerCase().indexOf("https:") >= 0) {
+       Log.javascript.debug("Warning: internal URL is ssl, cooking up my own! Internal URL="+rootUrl);
+       var url = new URL(rootUrl);
+       var p = new java.util.Properties();
+       p.load(new java.io.FileInputStream("config/deployer.properties"));
+       var port = p.get("server1.port");
+       Log.javascript.debug("Found server 1 port:"+port);
+       url = new URL("http", url.getHost(), port, url.getFile());
+       rootUrl = url.toString();
+       Log.javascript.debug("Cooked up non-ssl URL: "+rootUrl);
+     }
+     
+     var url = rootUrl+"/"+
+               appinfo.getContextRoot()+"/"+
+               appinfo.getCXMLServletName();
+                       
+     var returnUrl = appinfo.getIncomingHttpServerURL()+"/"+
+               appinfo.getContextRoot()+"/Main/ad/showPage/Demo?dsID="+
+               get(component,"session.dict.demoSession.sessionId")+
+               "&amp;page=DemoCollaboration/CollaborationRequests.htm";
+     user = get(component, "session.dict.demoSession.username");
+     var p1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE cXML SYSTEM \"http://xml.cxml.org/schemas/cXML/1.2.011/cXML.dtd\"><cXML version=\"1.2.009\" xml:lang=\"en-US\" timestamp=\"2003-07-01T17:47:28-07:00\" payloadID=\"1057106848405.1771336533.000000001@4zBzbqLjvulD1NpvZtmr8BbajUc=\">"+
+              "<Header><From><Credential domain=\"buyersystemid\"><Identity>"+
+              get(component, "supplierSysId")+
+           "</Identity></Credential>"+
+             "</From>"+
+               "<To>"+
+                  "<Credential domain=\"NetworkID\">"+
+                       "<Identity>AN10189911</Identity>"+
+                  "</Credential>"+
+      "</To>"+
+      "<Sender>"+
+        "<Credential domain=\"NetworkID\">"+
+            "<Identity>AN01000000001</Identity>"+
+            "<SharedSecret>"
+            +appinfo.getSharedSecret()+
+            "</SharedSecret>"+
+        "</Credential>      "+
+           "<UserAgent>www.procuron.com</UserAgent>"+
+      "</Sender>"+
+   "</Header>"+
+   "<Request>"+
+      "<ProviderSetupRequest>"+
+            "<OriginatorCookie>"+java.lang.System.currentTimeMillis()+"</OriginatorCookie>"+
+            "<BrowserFormPost><URL></URL></BrowserFormPost>"+
+            "<Followup><URL></URL></Followup>"+
+            "<SelectedService>CollaborationRequestDetails</SelectedService>"+
+            "<Extrinsic name=\"CollaborationRequestID\">"+item.getUniqueName()+"</Extrinsic>"+
+            "<Extrinsic name=\"SupplierName\">"+user+"</Extrinsic>"+
+            "<Extrinsic name=\"SupplierUniqueID\">"+user+"</Extrinsic>"+
+
+
+            "<Extrinsic name=\"ReturnToLinkURL\">"+returnUrl+"</Extrinsic>"+
+            "<Extrinsic name=\"ReturnToLinkLabel\">ASN</Extrinsic>"+
+      "</ProviderSetupRequest>"+
+   "</Request>"+
+  "</cXML>";
+     
+     var responseDoc = ariba.ui.demoshell.XMLFactory.post(url, p1);
+     var resultString = ariba.ui.demoshell.XMLFactory.toString(responseDoc);     
+     var redirectURL = get(responseDoc, "Response.ProviderSetupResponse.StartPage.URL.text");
+     Log.javascript.debug(resultString);
+     if (redirectURL != null && redirectURL.trim() != '') {
+       return ariba.ui.aribaweb.core.AWRedirect.getRedirect(component.requestContext(), redirectURL.trim());
+     } 
+     else {
+       var next = page("PunchinFailure.htm");
+       set(next, "returnPage", "DemoCollaboration/CollaborationRequests.htm");
+       set(next, "isPending", resultString.indexOf("ERR_USER_PENDING_APPROVAL") >= 0); 
+       return next;
+     } 
+     return null;
+  }
+     
+</server>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemID@@">
+<cXML version="1.1" payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@">
+    <Header>
+        <From>
+            <Credential domain="@@getFromDomain@@">
+                <Identity>@@getFromId@@</Identity>
+            </Credential>
+            <!-- if hasRealmSystemID -->
+                <Credential domain="SystemID">
+                    <Identity>@@getRealmSystemID@@</Identity>
+                </Credential>
+            <!-- end if -->
+        </From>
+        <To>
+            <Credential domain="@@getToDomain@@">
+                <Identity>@@getToIdentity@@</Identity>
+            </Credential>
+        </To>
+        <Sender>
+            <Credential domain="@@getSenderDomain@@">
+                <Identity>@@getSenderId@@</Identity>
+                <SharedSecret>@@getBuyerPassword@@</SharedSecret>
+            </Credential>
+            <!-- if hasRealmSystemID -->
+                <Credential domain="SystemID">
+                    <Identity>@@getRealmSystemID@@</Identity>
+                    <SharedSecret>@@getBuyerPassword@@</SharedSecret>
+                </Credential>
+            <!-- end if -->
+            <UserAgent>Catalog Server</UserAgent>
+        </Sender>
+    </Header>
+    <Request>
+        <SubscriptionContentRequest>
+                <InternalID @@getInternalIDDomain@@>@@getInternalID@@</InternalID>
+                <!-- try -->
+                <!-- for supplierPartIds -->
+                <SupplierID domain="@@supplierIDDomain@@">@@supplierID@@</SupplierID>
+                <!-- end for -->
+                <!-- end try -->
+         </SubscriptionContentRequest>
+    </Request>
+</cXML>

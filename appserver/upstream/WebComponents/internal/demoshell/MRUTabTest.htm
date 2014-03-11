@@ -1,0 +1,68 @@
+<w:ModalPageWrapper>
+    <br/>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td class="dbTabWrapper">
+                <w:MRUTabList list="$allTabs" item="$curTab" label="$curTab.lbl" selection="$selectedTab"
+                        rank="$curTabRank"/>
+            </td>
+        </tr>
+        <tr class="mastCmd">
+            <td class="mastCmdContainer">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td class="mastCmd" valign="top" width="1%" align="left">
+                            <div class="cmdTabWrapper noPadding">
+                                <w:MRUTabList list="$subtabs" item="$curSubTab" label="$curSubTab" selection="$selectedSubTab"/>
+                            </div>
+                        </td>
+                        <td width="99%"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <h1>Selected Tab: $selectedTab.lbl</h1>
+
+    <a:TextField value="$newTabLabel"/><w:TextButton action="$add">Add</w:TextButton>
+    <br>/
+    <a:SubmitButton action="$delete" value="Delete Current Tab"/>
+</w:ModalPageWrapper>
+<groovy>
+    String newTabLabel;
+
+    def allTabs = [
+        [lbl : "First", subtabs:["Purchase Order", "Invoice", "Confirmation"]],
+        [lbl : "Second"],
+        [lbl : "Third"],
+        [lbl : "A longer Forth"],
+        [lbl : "Five"],
+        [lbl : "Six is just crazy big"],
+        [lbl : "Seven, okay?"],
+        [lbl : "Eight is also long"],
+        [lbl : "Nine, 9, Nine"],
+        [lbl : "And 10!!!"],
+    ];
+    def curTab, selectedTab = allTabs[9]
+    def curSubTab, selectedSubTab
+
+    def curTabRank () {
+        return curTab == allTabs[0] || curTab == allTabs[1] ? -1 : null;
+    }
+
+    def add () {
+        selectedTab = [lbl: newTabLabel];
+        allTabs += selectedTab;
+        return null;
+    }
+
+    def delete () {
+        allTabs.remove(selectedTab);
+        selectedTab = allTabs[0];
+        return null;
+    }
+
+    def subtabs () { selectedTab.subtabs ?: [ "Def 1", "Def 2", "Def 3"] }
+
+</groovy>
+        

@@ -1,0 +1,94 @@
+<div style="margin-left:10px; margin-top:30px;">
+<AWForm action="$doLogin">
+<table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+    <td>Username:<br><AWTextField value="$session.dict.demoSession.username"/></td>
+  </tr>
+  <tr><td height="10"></td></tr>
+  <tr>
+    <td>Password:<br><AWPasswordField value="$dummy"/></td>
+  </tr>
+  <tr><td height="10"><img src="resources/cleardot.gif" width="1" height="10"></td></tr>
+  <tr>
+    <td align="right">
+      <TextButton isBrandStyle="$true" action="$doLogin">Log In</TextButton>
+      
+      <AWXDCLoadAQL value="$session.dict.demoSession.supplierName" 
+                    query="select Organization.Name.PrimaryString from ariba.user.core.User where UniqueName = :username"
+                    username="$session.dict.demoSession.username"
+                    scalar="$true"
+                    arPhase="$false"
+                    tvPhase="$true"/>      
+    </td>
+  </tr>
+  <tr><td height="10"></td></tr>
+  <tr>
+    <td><AWHyperlink action="$null">Register as New Supplier</AWHyperlink></td>
+  </tr>
+   <tr><td height="10"></td></tr>
+  <tr>
+    <td><AWHyperlink action="$null">Forget Your Password?</AWHyperlink></td>
+  </tr>
+  <tr><td height="10"></td></tr>
+  <tr>
+    <td><AWHyperlink action="$null">Account Problems?</AWHyperlink></td>
+  </tr>
+  <tr><td height="20"></td></tr>
+  <tr>
+    <td class="tocTitle">Quick Links</td>
+  </tr>
+  <tr><td height="8"></td></tr>
+  <tr>
+    <td>&nbsp;<AWHyperlink action="$null">Ariba Supplier Programs</AWHyperlink></td>
+  </tr>
+  <tr><td height="8"></td></tr>
+  <tr>
+    <td>&nbsp;<AWHyperlink action="$null">Supplier Training</AWHyperlink></td>
+  </tr>
+  <tr><td height="8"></td></tr>
+  <tr>
+    <td>&nbsp;<AWHyperlink action="$null">Ariba Customers</AWHyperlink></td>
+  </tr>
+  <tr><td height="8"></td></tr>
+  <tr>
+    <td>&nbsp;<AWHyperlink action="$null">Ariba Alliances</AWHyperlink></td>
+  </tr>
+  <tr><td height="8"></td></tr>
+  <tr>
+    <td>&nbsp;<AWHyperlink action="$null">cXML Standards</AWHyperlink></td>
+  </tr>
+  <tr><td height="8"></td></tr>
+  <tr>
+    <td>&nbsp;<AWHyperlink action="$null">UNSPSC References</AWHyperlink></td>
+  </tr>
+  <tr><td height="8"></td></tr>
+  <tr>
+    <td>&nbsp;<AWHyperlink action="$null">Network Status</AWHyperlink></td>
+  </tr>
+  <tr><td height="20"></td></tr>
+  <tr><td align="center"><img src="resources/icon_webtrust.gif"></td></tr>
+</table>
+</AWForm>
+</div>
+
+<server>
+   var dummy = '';
+
+   function doLogin ()
+   {
+      if (get(component, "session.dict.demoSession.username") == '') {
+        return null;
+      }
+      
+      var sn = get(component, "session.dict.demoSession.supplierName");
+
+      if (sn == null) {
+         var next = page("select_supplier.htm");
+         return next;
+      }
+      else {
+         var next = page("Home.htm");
+         return next;
+      }
+   }
+</server>

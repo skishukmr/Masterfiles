@@ -1,0 +1,1421 @@
+<config>
+    <manager name="buyer" class="ariba.config.buyer.BuyerConfigManager" id="20" hint="@ariba.configui.buyer/BuyerManagerHint">
+        <agent name="erp" class="ariba.config.buyer.erp.ERPCollectionAgent" id="0">
+            <field name="erpTypes" required="false">
+                <value>oracle-11.0</value>
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            pickListStyle="Popup"
+                            charWidth="40"
+                            label="@ariba.configui.buyer/ERPType">
+                    <property name="validChoices">
+                        <table>
+                            <entry key="@ariba.configui.buyer/Oracle11DisplayName"
+                                   value="oracle-11.0"/>
+                            <entry key="@ariba.configui.buyer/Oracle11iDisplayName"
+                                   value="oracle-11i"/>
+                            <entry key="@ariba.configui.buyer/Psoft80DisplayName"
+                                   value="psoft-8.0"/>
+                            <entry key="@ariba.configui.buyer/Psoft84DisplayName"
+                                   value="psoft-8.4"/>
+                            <entry key="@ariba.configui.buyer/Psoft88DisplayName"
+                                   value="psoft-8.8"/>
+                            <entry key="@ariba.configui.buyer/SAPDisplayName"
+                                   value="sap"/>
+                        </table>
+                    </property>
+                    <property name="validChoicesOrder">
+                        <vector>
+                            <entry value="oracle-11.0"/>
+                            <entry value="oracle-11i"/>
+                            <entry value="psoft-8.0"/>
+                            <entry value="psoft-8.4"/>
+                            <entry value="psoft-8.8"/>
+                            <entry value="sap"/>
+                        </vector>
+                    </property>
+                </properties>
+                <inGroup name="ERPConfigGroup">
+                    <properties rank="10"/>
+                </inGroup>
+            </field>
+            <field name="configurationName" required="false">
+                <properties charWidth="40" label="@ariba.configui.buyer/ERPName"/>
+                <inGroup name="ConfiguredERPGroup"/>
+            </field>
+            <field name="configurationType" required="false">
+                <properties charWidth="40" label="@ariba.configui.buyer/ERPTypeShort"/>
+                <inGroup name="ConfiguredERPGroup"/>
+            </field>
+            <templates>
+                <agent name="oracle" class="ariba.config.buyer.erp.OracleAppAgent">
+                    <field name="configurationType" required="false">
+                        <properties charWidth="40" label="@ariba.configui.buyer/ERPTypeShort"/>
+                        <inGroup name="ConfiguredERPGroup"/>
+                    </field>
+                    <field name="configurationName">
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldValue"
+                                       testField="configurationName">
+                                <parameter name="Collection" value="erp"/>
+                                <parameter name="MessageTable" value="ariba.config.buyer.condition"/>
+                                <parameter name="MessageKey" value="ERPNameMustBeUnique"/>
+                            </condition>
+                        </validity>
+                        <properties charWidth="40" label="@ariba.configui.buyer/ERPConfigName"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="10"/>
+                        </inGroup>
+                        <inGroup name="ConfiguredERPGroup"/>
+                    </field>
+                    <field name="interfaceConnection">
+                        <properties charWidth="40" label="@ariba.configui.buyer/OracleInterfaceConnection"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="20"/>
+                        </inGroup>
+                    </field>
+                    <field name="dbHostName">
+                        <properties charWidth="40" label="@ariba.configui.buyer/OracleDBHostName"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="30"/>
+                        </inGroup>
+                    </field>
+                    <field name="dbPortNumber">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <value>1521</value>
+                        <properties charWidth="40" label="@ariba.configui.buyer/OracleDBPortNumber"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="40"/>
+                        </inGroup>
+                    </field>
+                    <field name="dbServerName">
+                        <properties charWidth="40" label="@ariba.configui.buyer/OracleDBServerName"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="50"/>
+                        </inGroup>
+                    </field>
+                    <field name="dbUserName">
+                        <properties charWidth="40" label="@ariba.configui.buyer/OracleDBUserName"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="60"/>
+                        </inGroup>
+                    </field>
+                    <field name="dbPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterPassword"/>
+                        </validity>
+                        <properties charWidth="40"
+                                    label="@ariba.configui.buyer/OracleDBPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="70"/>
+                        </inGroup>
+                    </field>
+                    <field name="reenterPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="dbPassword"/>
+                        </validity>
+                        <properties charWidth="40"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="ConfigOracleAppGroup">
+                            <properties rank="80"/>
+                        </inGroup>
+                    </field>
+                </agent>
+                <agent name="psoft-8.0" class="ariba.config.buyer.erp.Psoft80Agent">
+                    <field name="configurationType" required="false">
+                        <properties charWidth="40" label="@ariba.configui.buyer/ERPTypeShort"/>
+                        <inGroup name="ConfiguredERPGroup"/>
+                    </field>
+                    <field name="configurationName">
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldValue"
+                                       testField="configurationName">
+                                <parameter name="Collection" value="erp"/>
+                                <parameter name="MessageTable" value="ariba.config.buyer.condition"/>
+                                <parameter name="MessageKey" value="ERPNameMustBeUnique"/>
+                            </condition>
+                        </validity>
+                        <properties label="@ariba.configui.buyer/ERPConfigName"/>
+                        <inGroup name="ConfigPsoftHeaderGroup">
+                            <properties rank="10" charWidth="20"/>
+                        </inGroup>
+                        <inGroup name="ConfiguredERPGroup">
+                            <properties charWidth="40"/>
+                        </inGroup>
+                    </field>
+                    <field name="type">
+                        <value>hr</value>
+                        <properties charWidth="20"
+                                    label="@ariba.configui.buyer/PsftERPType"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                    pickListStyle="Popup"
+                                    forceRefresh="true">
+                            <property name="validChoices">
+                                <table>
+                                    <entry key="@ariba.configui.buyer/PsftEP"
+                                           value="ep"/>
+                                    <entry key="@ariba.configui.buyer/PsftHR"
+                                           value="hr"/>
+                                </table>
+                            </property>
+                        </properties>
+                        <inGroup name="ConfigPsoftTypeGroup">
+                            <properties rank="20" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="dbType">
+                        <properties charWidth="20"
+                                    label="@ariba.configui.buyer/PsftDBType"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                    pickListStyle="Popup">
+                            <property name="validChoices">
+                                <table>
+                                    <entry key="@ariba.configui.buyer/PsftDBOracle"
+                                           value="oracle"/>
+                                    <entry key="@ariba.configui.buyer/PsftDBDB2"
+                                           value="db2"/>
+                                    <entry key="@ariba.configui.buyer/PsftDBMssql"
+                                           value="mssql"/>
+                                </table>
+                            </property>
+                        </properties>
+                        <inGroup name="ConfigPsoftTypeGroup">
+                            <properties rank="20" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="epInterfaceConnection">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftEPInterfaceConnection"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="40" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epHostName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftHostName"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="50" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epPortNumber">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftPortNumber"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="60" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epServerName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftServerName"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="70" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epUserName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftUserName"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="80" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterEPPassword"/>
+                        </validity>
+                        <properties rank="90"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/PsftPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Left"/>
+                        <inGroup name="ConfigPsoftEPGroup"/>
+                    </field>
+                    <field name="reenterEPPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="epPassword"/>
+                        </validity>
+                        <properties rank="100"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Left"/>
+                        <inGroup name="ConfigPsoftEPGroup"/>
+                    </field>
+                    <field name="hrInterfaceConnection">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftHRInterfaceConnection"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="40" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrHostName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftHostName"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="50" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrPortNumber">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftPortNumber"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="60" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrServerName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftServerName"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="70" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrUserName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftUserName"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="80" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterHRPassword"/>
+                        </validity>
+                        <properties rank="90"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/PsftPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Right"/>
+                        <inGroup name="ConfigPsoftHRGroup"/>
+                    </field>
+                    <field name="reenterHRPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="hrPassword"/>
+                        </validity>
+                        <properties rank="100"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Right"/>
+                        <inGroup name="ConfigPsoftHRGroup"/>
+                    </field>
+                </agent>
+                <agent name="psoft" class="ariba.config.buyer.erp.PsoftAgent">
+                    <field name="configurationType" required="false">
+                        <properties charWidth="40" label="@ariba.configui.buyer/ERPTypeShort"/>
+                        <inGroup name="ConfiguredERPGroup"/>
+                    </field>
+                    <field name="configurationName">
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldValue"
+                                       testField="configurationName">
+                                <parameter name="Collection" value="erp"/>
+                                <parameter name="MessageTable" value="ariba.config.buyer.condition"/>
+                                <parameter name="MessageKey" value="ERPNameMustBeUnique"/>
+                            </condition>
+                        </validity>
+                        <properties label="@ariba.configui.buyer/ERPConfigName"/>
+                        <inGroup name="ConfigPsoftHeaderGroup">
+                            <properties rank="10" charWidth="20"/>
+                        </inGroup>
+                        <inGroup name="ConfiguredERPGroup">
+                            <properties charWidth="40"/>
+                        </inGroup>
+                    </field>
+                    <field name="type">
+                        <value>hr</value>
+                        <properties charWidth="20"
+                                    label="@ariba.configui.buyer/PsftERPType"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                    pickListStyle="Popup"
+                                    forceRefresh="true">
+                            <property name="validChoices">
+                                <table>
+                                    <entry key="@ariba.configui.buyer/PsftEP"
+                                           value="ep"/>
+                                    <entry key="@ariba.configui.buyer/PsftHR"
+                                           value="hr"/>
+                                </table>
+                            </property>
+                        </properties>
+                        <inGroup name="ConfigPsoftTypeGroup">
+                            <properties rank="20" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="dbType">
+                        <properties charWidth="20"
+                                    label="@ariba.configui.buyer/PsftDBType"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                    pickListStyle="Popup">
+                            <property name="validChoices">
+                                <table>
+                                    <entry key="@ariba.configui.buyer/PsftDBOracle"
+                                           value="oracle"/>
+                                    <entry key="@ariba.configui.buyer/PsftDBDB2"
+                                           value="db2"/>
+                                    <entry key="@ariba.configui.buyer/PsftDBMssql"
+                                           value="mssql"/>
+                                </table>
+                            </property>
+                        </properties>
+                        <inGroup name="ConfigPsoftTypeGroup">
+                            <properties rank="30" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="listenerHost">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftListenerHost"/>
+                        <inGroup name="ConfigPsoftListenerGroup">
+                            <properties rank="40" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="listenerPort">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>                        
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftListenerPort"/>
+                        <inGroup name="ConfigPsoftListenerGroup">
+                            <properties rank="50" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="operatorUserName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftOperatorUserName"/>
+                        <inGroup name="ConfigPsoftOperatorGroup">
+                            <properties rank="60" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="operatorPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterOperatorPassword"/>
+                        </validity>
+                        <properties rank="70"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/PsftOperatorPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Right"/>
+                        <inGroup name="ConfigPsoftOperatorGroup"/>
+                    </field>
+                    <field name="reenterOperatorPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="operatorPassword"/>
+                        </validity>
+                        <properties rank="80"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Right"/>
+                        <inGroup name="ConfigPsoftOperatorGroup"/>
+                    </field>
+                    <field name="epInterfaceConnection">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftEPInterfaceConnection"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="10" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epHostName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftHostName"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="20" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epPortNumber">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftPortNumber"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="30" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epServerName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftServerName"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="40" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epUserName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftUserName"/>
+                        <inGroup name="ConfigPsoftEPGroup">
+                            <properties rank="50" zone="Left"/>
+                        </inGroup>
+                    </field>
+                    <field name="epPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterEPPassword"/>
+                        </validity>
+                        <properties rank="60"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/PsftPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Left"/>
+                        <inGroup name="ConfigPsoftEPGroup"/>
+                    </field>
+                    <field name="reenterEPPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="epPassword"/>
+                        </validity>
+                        <properties rank="70"
+                                    charWidth="20"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    zone="Left"/>
+                        <inGroup name="ConfigPsoftEPGroup"/>
+                    </field>
+                    <field name="hrInterfaceConnection">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftHRInterfaceConnection"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="10" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrHostName">
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="20" charWidth="20" label="@ariba.configui.buyer/PsftHostName" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrPortNumber">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftPortNumber"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="30" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrServerName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftServerName"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="40" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrUserName">
+                        <properties charWidth="20" label="@ariba.configui.buyer/PsftUserName"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="50" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="hrPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterHRPassword"/>
+                        </validity>
+                        <properties charWidth="20"
+                                    label="@ariba.configui.buyer/PsftPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="60" zone="Right"/>
+                        </inGroup>
+                    </field>
+                    <field name="reenterHRPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="hrPassword"/>
+                        </validity>
+                        <properties charWidth="20"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="ConfigPsoftHRGroup">
+                            <properties rank="70" zone="Right"/>
+                        </inGroup>
+                    </field>
+                </agent>
+                <agent name="sap" class="ariba.config.buyer.erp.SAPAgent">
+                    <field name="configurationType" required="false">
+                        <properties charWidth="40" label="@ariba.configui.buyer/ERPTypeShort"/>
+                        <inGroup name="ConfiguredERPGroup"/>
+                    </field>
+                    <field name="configurationName">
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldValue"
+                                       testField="configurationName">
+                                <parameter name="Collection" value="erp"/>
+                                <parameter name="MessageTable" value="ariba.config.buyer.condition"/>
+                                <parameter name="MessageKey" value="ERPNameMustBeUnique"/>
+                            </condition>
+                        </validity>
+                        <properties charWidth="40" label="@ariba.configui.buyer/ERPConfigName"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="10"/>
+                        </inGroup>
+                        <inGroup name="ConfiguredERPGroup"/>
+                    </field>
+                    <field name="instanceName">
+                        <properties charWidth="40" label="@ariba.configui.buyer/SAPInstanceName"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="20"/>
+                        </inGroup>
+                    </field>
+                    <field name="hostName">
+                        <properties charWidth="40" label="@ariba.configui.buyer/SAPHostName"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="30"/>
+                        </inGroup>
+                    </field>
+                    <field name="gateway">
+                        <properties charWidth="40" label="@ariba.configui.buyer/SAPGateway"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="40"/>
+                        </inGroup>
+                    </field>
+                    <field name="gatewayService">
+                        <properties charWidth="40" label="@ariba.configui.buyer/SAPGatewayService"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="50"/>
+                        </inGroup>
+                    </field>
+                    <field name="systemNumber">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger"/>
+                        </validity>                        
+                        <properties charWidth="40" label="@ariba.configui.buyer/SAPSystemNumber"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="60"/>
+                        </inGroup>
+                    </field>
+                    <field name="clientID">
+                        <properties charWidth="40" label="@ariba.configui.buyer/SAPClientID"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="70"/>
+                        </inGroup>
+                    </field>
+                    <field name="userName">
+                        <properties charWidth="40" label="@ariba.configui.buyer/SAPUserName"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="80"/>
+                        </inGroup>
+                    </field>
+                    <field name="password">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterPassword"/>
+                        </validity>
+                        <properties charWidth="40"
+                                    label="@ariba.configui.buyer/SAPPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="90"/>
+                        </inGroup>
+                    </field>
+                    <field name="reenterPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="password"/>
+                        </validity>
+                        <properties charWidth="40"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="ConfigSAPGroup">
+                            <properties rank="100"/>
+                        </inGroup>
+                    </field>
+                </agent>
+            </templates>
+        </agent>
+        <!--  variantpartitions depends on erp -->
+        <agent name="variantpartitions" class="ariba.config.buyer.partition.VariantCollectionAgent" id="1">
+            <templates>
+                <agent name="variant" class="ariba.config.buyer.partition.PartitionCollectionAgent">
+                    <field name="vname">
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueShortJavaIdentifier"
+                                       testField="vname">
+                                <parameter name="Collection" value="variantpartitions"/>
+                                <parameter name="MessageTable" value="ariba.config.buyer.condition"/>
+                                <parameter name="MessageKey" value="VariantNameMustBeUnique"/>
+                            </condition>
+                        </validity>
+                        <properties rank="5" charWidth="40" label="@ariba.configui.buyer/VariantName"/>
+                        <inGroup name="VariantGroup"/>
+                        <inGroup name="VariantTableGroup"/>
+                    </field>
+                    <field name="partitionlist" required="false">
+                        <properties rank="10" charWidth="60" label="@ariba.configui.buyer/PartitionList"/>
+                        <inGroup name="VariantTableGroup"/>
+                    </field>
+                    <templates>
+                        <agent name="partition" class="ariba.config.buyer.partition.PartitionAgent">
+                            <field name="pname">
+                                <validity>
+                                    <condition implementation="ariba.config.condition.UniqueShortJavaIdentifier"
+                                               testField="pname">
+                                        <parameter name="Collection" value="variantpartitions"/>
+                                        <parameter name="MessageTable" value="ariba.config.buyer.condition"/>
+                                        <parameter name="MessageKey" value="PartitionNameMustBeUnique"/>
+                                    </condition>
+                                </validity>
+                                <properties rank="10" charWidth="40" label="@ariba.configui.buyer/PartitionName"/>
+                                <inGroup name="PartitionGroup"/>
+                                <inGroup name="PartitionDisplayGroup"/>
+                            </field>
+                            <field name="displayName">
+                                <validity>
+                                    <condition implementation="ariba.config.condition.UniqueFieldValue"
+                                               testField="displayName">
+                                        <parameter name="Collection" value="variantpartitions"/>
+                                        <parameter name="MessageTable" value="ariba.config.buyer.condition"/>
+                                        <parameter name="MessageKey" value="PartitionNameMustBeUnique"/>
+                                    </condition>
+                                </validity>
+                                <properties rank="20" charWidth="40" label="@ariba.configui.buyer/PartitionDisplayName"/>
+                                <inGroup name="PartitionGroup"/>
+                                <inGroup name="PartitionDisplayGroup"/>
+                            </field>
+                            <field name="erpConfig">
+                                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                            validChoicesClass="ariba.htmlui.config.core.ConfiguredERPChoices"
+                                            pickListStyle="Popup"
+                                            rank="30"
+                                            label="@ariba.configui.buyer/PartitionERPConfiguration"
+                                            forceRefresh="true"/>
+                                <inGroup name="PartitionGroup"/>
+                                <inGroup name="PartitionDisplayGroup"/>
+                            </field>
+                            <field name="erpType">
+                                <properties rank="40"
+                                            charWidth="40"
+                                            label="@ariba.configui.buyer/PartitionERPType"
+                                            editable="false"/>
+                                <inGroup name="PartitionGroup"/>
+                                <inGroup name="PartitionDisplayGroup"/>
+                            </field>
+                            <field name="option">
+                                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                            pickListStyle="Popup"
+                                            rank="50"
+                                            label="@ariba.configui.buyer/PartitionConfigurationOption">
+                                    <property name="validChoices">
+                                        <table>
+                                            <entry key="@ariba.configui.buyer/PartitionOptionBasicVersion"
+                                                   value="CD-basic"/>
+                                            <entry key="@ariba.configui.buyer/PartitionOptionDemoVersion"
+                                                   value="CD-demo"/>
+                                        </table>
+                                    </property>
+                                    <property name="validChoicesOrder">
+                                        <vector>
+                                            <entry value="CD-basic"/>
+                                            <entry value="CD-demo"/>
+                                        </vector>
+                                    </property>
+                                </properties>
+                                <inGroup name="PartitionGroup"/>
+                                <inGroup name="PartitionDisplayGroup"/>
+                            </field>
+                            <field name="channel">
+                                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                            validChoicesClass="ariba.htmlui.config.core.ChannelValidChoicesForPartition"
+                                            pickListStyle="Popup"
+                                            rank="60"
+                                            label="@ariba.configui.buyer/PartitionChannel"
+                                            forceRefresh="false"/>
+                                <inGroup name="PartitionGroup"/>
+                                <inGroup name="PartitionDisplayGroup"/>
+                            </field>
+                        </agent>
+                    </templates>
+                </agent>
+            </templates>
+        </agent>
+        <!-- channel depends on variantpartitions -->
+        <agent name="channel" class="ariba.config.buyer.channel.ChannelCollectionAgent" id="2">
+            <field name="channelSelection" required="false">
+                <value>sql</value>
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.ChannelValidChoices"
+                            pickListStyle="RadioButtons"
+                            label="@ariba.configui.buyer/ChannelSelection"
+                            forceRefresh="true">
+                    <property name="validChoices">
+                        <table>
+                            <entry key="@ariba.configui.buyer/ChannelDefault"
+                                   value="sql"/>
+                            <entry key="@ariba.configui.buyer/ChannelTibco"
+                                   value="tibco"/>
+                            <entry key="@ariba.configui.buyer/ChannelIBM"
+                                   value="ibm"/>
+                            <entry key="@ariba.configui.buyer/ChannelOther"
+                                   value="other"/>
+                        </table>
+                    </property>
+                    <property name="validChoicesOrder">
+                        <vector>
+                            <entry value="sql"/>
+                            <entry value="tibco"/>
+                            <entry value="ibm"/>
+                            <entry value="other"/>
+                        </vector>
+                    </property>
+                </properties>
+                <inGroup name="SelectChannelGroup">
+                    <properties rank="5" charWidth="60"/>
+                </inGroup>
+            </field>
+            <field name="channelName">
+                <editability>
+                    <condition implementation="ariba.base.fields.condition.NotEqualTo">
+                        <parameter name="TargetValue" value="sql"/>
+                        <parameter name="TargetValue1" value="tibco"/>
+                    </condition>
+                </editability>
+                <properties rank="10" charWidth="40" label="@ariba.configui.buyer/ChannelName"/>
+                <inGroup name="ChannelSettingGroup"/>
+            </field>
+            <field name="configFileLocation">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidDirectory"/>
+                </validity>
+                <value>.</value>
+                <properties rank="20"
+                            charWidth="40"
+                            label="@ariba.configui.buyer/ChannelConfigFileLocation"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                            directoriesOnly="true"/>
+                <inGroup name="ChannelSettingGroup"/>
+            </field>
+            <templates>
+                <agent name="tibco" class="ariba.config.buyer.channel.TibcoAgent">
+                    <field name="defaultLocation" required="false">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="10"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoDefaultLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="sapAdapterLocation">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="20"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoSAPAdapterLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="rvLocation">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="50"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoRVLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="designerLocation">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="70"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoDesignerLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="traLocation">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="80"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoTRALocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="psAdapterLocation">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="90"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoPSAdapterLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="bwLocation" required="false">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="100"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoBWLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="tpclLocation">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="110"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoTPCLLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="sapLibraryLocation">
+                        <validity>
+                            <condition implementation="ariba.config.buyer.condition.HasConfiguredSAP"/>
+                        </validity>
+                        <visibility>
+                            <condition implementation="ariba.config.buyer.condition.HasConfiguredSAP"/>
+                        </visibility>
+                        <properties rank="120"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoSAPLibraryLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="psoftLibraryLocation">
+                        <validity>
+                            <condition implementation="ariba.config.buyer.condition.HasConfiguredPsoft"/>
+                        </validity>
+                        <visibility>
+                            <condition implementation="ariba.config.buyer.condition.HasConfiguredPsoft"/>
+                        </visibility>
+                        <properties rank="130"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/TibcoPsoftLibraryLocation"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="TibcoLocationGroup"/>
+                    </field>
+                    <field name="serviceName">
+                        <properties rank="10" charWidth="40" label="@ariba.configui.buyer/TibcoServiceName"/>
+                        <inGroup name="TibcoRVGroup"/>
+                    </field>
+                    <field name="udpPortNumber">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>                                
+                        </validity>
+                        <properties rank="20" charWidth="40" label="@ariba.configui.buyer/TibcoUDPPortNumber"/>
+                        <inGroup name="TibcoRVGroup"/>
+                    </field>
+                    <field name="tcpPortNumber">
+                        <validity>
+                            <condition implementation="ariba.config.buyer.condition.ValidTibcoTcpPort">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <value>7600</value>
+                        <properties rank="30" charWidth="40" label="@ariba.configui.buyer/TibcoTCPPortNumber"/>
+                        <inGroup name="TibcoRVGroup"/>
+                    </field>
+                    <field name="rvNetwork" required="false">
+                        <properties rank="40" charWidth="40" label="@ariba.configui.buyer/TibcoRVNetwork"/>
+                        <inGroup name="TibcoRVGroup"/>
+                    </field>
+                    <!-- begin database -->
+                    <field name="type">
+                        <value>Oracle8</value>
+                        <validity>
+                            <condition implementation="ariba.config.database.condition.ValidDatabaseTypeSelection"/>
+                        </validity>
+                        <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                    validChoicesClass="ariba.htmlui.config.core.DatabaseTypeValidChoices"
+                                    pickListStyle="RadioButtons"
+                                    rank="10"
+                                    label="@ariba.configui.buyer/TibcoDBType"
+                                    forceRefresh="true">
+                            <property name="validChoices">
+                                <table>
+                                    <entry key="@ariba.configui.buyer/TibcoFileBased"
+                                           value="File"/>
+                                    <entry key="@ariba.configui.buyer/TibcoDBOracle"
+                                           value="Oracle8"/>
+                                    <entry key="@ariba.configui.buyer/TibcoDBDB2"
+                                           value="Db2"/>
+                                    <entry key="@ariba.configui.buyer/TibcoDBMssql"
+                                           value="Sql"/>
+                                </table>
+                            </property>
+                            <property name="validChoicesOrder">
+                                <vector>
+                                    <entry value="File"/>
+                                    <entry value="Oracle8"/>
+                                    <entry value="Db2"/>
+                                    <entry value="Sql"/>
+                                </vector>
+                            </property>
+                        </properties>
+                        <inGroup name="TibcoDBTypeGroup"/>
+                    </field>
+                    <field name="jdbcDriverType"/>
+                    <field name="hostname">
+                        <properties charWidth="40" label="@ariba.configui.buyer/DBHostName"/>
+                        <inGroup name="OracleGroup">
+                            <properties rank="20" label="@ariba.configui.buyer/OracleDBHostName"/>
+                        </inGroup>
+                        <inGroup name="MssqlGroup">
+                            <properties rank="20" label="@ariba.configui.buyer/MssqlHostName"/>
+                        </inGroup>
+                    </field>
+                    <field name="server">
+                        <properties charWidth="40" label="@ariba.configui.buyer/DBName"/>
+                        <inGroup name="OracleGroup">
+                            <properties rank="30" label="@ariba.configui.buyer/OracleDBSID"/>
+                        </inGroup>
+                        <inGroup name="DB2Group">
+                            <properties rank="30" label="@ariba.configui.buyer/DB2Alias"/>
+                        </inGroup>
+                        <inGroup name="MssqlGroup">
+                            <properties rank="30" label="@ariba.configui.buyer/MssqlDatabaseName"/>
+                        </inGroup>
+                    </field>
+                    <field name="port">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <properties charWidth="10" label="@ariba.configui.buyer/DBPortNumber"/>
+                        <inGroup name="OracleGroup">
+                            <properties rank="40" label="@ariba.configui.buyer/OracleDBPortNumber"/>
+                        </inGroup>
+                        <inGroup name="DB2Group">
+                            <properties rank="40" label="@ariba.configui.buyer/DB2PortNumber"/>
+                        </inGroup>
+                        <inGroup name="MssqlGroup">
+                            <properties rank="40" label="@ariba.configui.buyer/MssqlPortNumber"/>
+                        </inGroup>
+                    </field>
+                    <field name="username">
+                        <properties charWidth="40" label="@ariba.configui.buyer/DBUserName"/>
+                        <inGroup name="OracleGroup">
+                            <properties rank="50" label="@ariba.configui.buyer/OracleDBUserName"/>
+                        </inGroup>
+                        <inGroup name="DB2Group">
+                            <properties rank="50" label="@ariba.configui.buyer/DB2UserID"/>
+                        </inGroup>
+                        <inGroup name="MssqlGroup">
+                            <properties rank="50" label="@ariba.configui.buyer/MssqlLoginName"/>
+                        </inGroup>
+                    </field>
+                    <field name="password">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="reenterPassword"/>
+                        </validity>
+                        <properties charWidth="40"
+                                    label="@ariba.configui.buyer/DBPassword"
+                                    encrypt="true"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="OracleGroup">
+                            <properties rank="60" label="@ariba.configui.buyer/OracleDBPassword"/>
+                        </inGroup>
+                        <inGroup name="DB2Group">
+                            <properties rank="60" label="@ariba.configui.buyer/DB2Password"/>
+                        </inGroup>
+                        <inGroup name="MssqlGroup">
+                            <properties rank="60" label="@ariba.configui.buyer/MssqlPassword"/>
+                        </inGroup>
+                    </field>
+                    <field name="reenterPassword">
+                        <validity>
+                            <condition implementation="ariba.config.condition.SameFieldValue"
+                                       testField="password"/>
+                        </validity>
+                        <properties rank="80"
+                                    charWidth="40"
+                                    label="@ariba.configui.buyer/ReenterPassword"
+                                    encrypt="true"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                        <inGroup name="OracleGroup"/>
+                        <inGroup name="DB2Group"/>
+                        <inGroup name="MssqlGroup"/>
+                    </field>
+                    <!-- end database -->
+                </agent>
+            </templates>
+        </agent>
+        <agent name="database" class="ariba.config.database.AribaDatabaseAgent" id="3">
+            <field name="schema">
+                <value>Schema1</value>
+            </field>
+            <field name="isDefaultSchema">
+                <value>true</value>
+            </field>
+            <field name="type">
+                <value>oracle</value>
+                <validity>
+                    <condition implementation="ariba.config.database.condition.ValidDatabaseTypeSelection"/>
+                </validity>
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.DatabaseTypeValidChoices"
+                            pickListStyle="RadioButtons"
+                            rank="10"
+                            label="@ariba.configui.buyer/BuyerDBType"
+                            forceRefresh="true">
+                    <property name="validChoices">
+                        <table>
+                            <entry key="@ariba.configui.buyer/BuyerDBOracle"
+                                   value="oracle"/>
+                            <entry key="@ariba.configui.buyer/BuyerDBDB2"
+                                   value="db2"/>
+                            <entry key="@ariba.configui.buyer/BuyerDBSql"
+                                   value="mssql"/>
+                        </table>
+                    </property>
+                    <property name="validChoicesOrder">
+                        <vector>
+                            <entry value="oracle"/>
+                            <entry value="db2"/>
+                            <entry value="mssql"/>
+                        </vector>
+                    </property>
+                </properties>
+                <inGroup name="DBTypeGroup"/>
+            </field>
+            <field name="jdbcDriverType"/>
+            <field name="hostname">
+                <properties charWidth="40" label="@ariba.configui.buyer/DBHostName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="20" label="@ariba.configui.buyer/OracleDBHostName"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="20" label="@ariba.configui.buyer/MssqlHostName"/>
+                </inGroup>
+            </field>
+            <field name="server">
+                <properties charWidth="40" label="@ariba.configui.buyer/DBName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="30" label="@ariba.configui.buyer/OracleDBSID"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="30" label="@ariba.configui.buyer/DB2Alias"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="30" label="@ariba.configui.buyer/MssqlDatabaseName"/>
+                </inGroup>
+            </field>
+            <field name="port">
+                <validity>
+                    <condition implementation="ariba.config.condition.BoundedInteger">
+                        <parameter name="Min" value="1"/>
+                        <parameter name="Max" value="65536"/>
+                    </condition>
+                </validity>
+                <properties charWidth="10"  label="@ariba.configui.buyer/DBPortNumber"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="40" label="@ariba.configui.buyer/OracleDBPortNumber"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="40" label="@ariba.configui.buyer/DB2PortNumber"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="40" label="@ariba.configui.buyer/MssqlPortNumber"/>
+                </inGroup>
+            </field>
+            <field name="username">
+                <properties charWidth="40" label="@ariba.configui.buyer/DBUserName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="50" label="@ariba.configui.buyer/OracleDBUserName"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="50" label="@ariba.configui.buyer/DB2UserID"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="50" label="@ariba.configui.buyer/MssqlLoginName"/>
+                </inGroup>
+            </field>
+            <field name="password">
+                <validity>
+                    <condition implementation="ariba.config.condition.SameFieldValue"
+                               testField="reenterPassword"/>
+                </validity>
+                <properties charWidth="40"
+                            label="@ariba.configui.buyer/DBPassword"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="60" label="@ariba.configui.buyer/OracleDBPassword"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="60" label="@ariba.configui.buyer/DB2Password"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="60" label="@ariba.configui.buyer/MssqlPassword"/>
+                </inGroup>
+            </field>
+            <field name="reenterPassword">
+                <validity>
+                    <condition implementation="ariba.config.condition.SameFieldValue"
+                               testField="password"/>
+                </validity>
+                <properties rank="80"
+                            charWidth="40"
+                            label="@ariba.configui.buyer/ReenterPassword"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="OracleGroup"/>
+                <inGroup name="DB2Group"/>
+                <inGroup name="MssqlGroup"/>
+            </field>
+            <field name="validate" required="false">
+                <value>false</value>
+            </field>
+            <field name="AutoCommit">
+                <value>false</value>
+            </field>
+            <field name="LargeIndexDataFile">
+                <value></value>
+            </field>
+            <field name="LargeTableDataFile">
+                <value></value>
+            </field>
+            <field name="LobDataFile">
+                <value></value>
+            </field>
+            <field name="MediumIndexDataFile">
+                <value></value>
+            </field>
+            <field name="MediumTableDataFile">
+                <value></value>
+            </field>
+            <field name="ReadUncommitted">
+                <value>false</value>
+            </field>
+            <field name="SQLStatementTimeoutInSeconds">
+                <value>0</value>
+            </field>
+            <field name="SmallIndexDataFile">
+                <value></value>
+            </field>
+            <field name="SmallTableDataFile">
+                <value></value>
+            </field>
+            <field name="SupportIndexDataFile">
+                <value></value>
+            </field>
+            <field name="SupportTableDataFile">
+                <value></value>
+            </field>
+            <field name="OpenStatements">
+                <value>5</value>
+            </field>
+            <field name="DatabaseConnections">
+                <value>10</value>
+            </field>
+        </agent>
+        <agent name="appinfo" class="ariba.config.asm.AppInfoUpdateAgent" id="4">
+            <field name="networkAccountIdentity" required="false">
+                <properties rank="10" charWidth="40" label="@ariba.configui.buyer/AribaNetworkID"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+            <field name="networkSharedSecret" required="false">
+                <properties rank="20"
+                            charWidth="40"
+                            label="@ariba.configui.buyer/AribaNetworkSharedSecret"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+            <field name="suiteSharedSecret">
+                <properties required="true"
+                            rank="30"
+                            charWidth="40"
+                            label="@ariba.configui.buyer/SuiteSharedSecret"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+            <field name="sharedLocation">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidASMSharedLocation"/>
+                </validity>
+                <properties required="true"
+                            rank="40"
+                            charWidth="40"
+                            label="@ariba.configui.buyer/SuiteSharedLocation"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                            directoriesOnly="true"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+        </agent>
+        <agent name="customparams" class="ariba.config.buyer.CustomizableParametersAgent" id="5">
+            <field name="resourceURL">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidURL">
+                        <parameter name="ProtocolToUse" value="http,https"/>
+                    </condition>
+                </validity>
+                <properties rank="10" charWidth="40" label="@ariba.configui.buyer/CustomParamResourceURL"/>
+                <inGroup name="CustomParamGroup"/>
+            </field>
+            <field name="docroot">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidDirectory"/>
+                </validity>
+                <properties rank="20"
+                            charWidth="40"
+                            label="@ariba.configui.buyer/CustomParamDocroot"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                            directoriesOnly="true"/>
+                <inGroup name="CustomParamGroup"/>
+            </field>
+        </agent>
+        <agent name="multicast" class="ariba.config.buyer.MulticastParamsAgent" id="6">
+            <field name="javaGroupAddress">
+                <properties rank="10" charWidth="20" label="@ariba.configui.buyer/JavaGroupMulticastAddress"/>
+                <inGroup name="MulticastGroup"/>
+            </field>
+            <field name="javaGroupPort">
+                <validity>
+                    <condition implementation="ariba.config.condition.BoundedInteger">
+                        <parameter name="Min" value="1"/>
+                        <parameter name="Max" value="65536"/>
+                    </condition>
+                </validity>
+                <properties rank="20" charWidth="20" label="@ariba.configui.buyer/JavaGroupMulticastPort"/>
+                <inGroup name="MulticastGroup"/>
+            </field>
+            <field name="jndiAddress">
+                <properties rank="30" charWidth="20" label="@ariba.configui.buyer/JNDIMulticastAddress"/>
+                <inGroup name="MulticastGroup"/>
+            </field>
+            <field name="jndiPort">
+                <validity>
+                    <condition implementation="ariba.config.condition.BoundedInteger">
+                        <parameter name="Min" value="1"/>
+                        <parameter name="Max" value="65536"/>
+                    </condition>
+                </validity>
+                <properties rank="40" charWidth="20" label="@ariba.configui.buyer/JNDIMulticastPort"/>
+                <inGroup name="MulticastGroup"/>
+            </field>
+        </agent>
+        <agent name="languagelocale" class="ariba.config.buyer.LanguageLocaleAgent" id="7">
+            <field name="defaultLanguage">
+                <properties rank="10"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/Language"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.BuyerLanguageChoices"
+                            pickListStyle="Popup"
+                            forceRefresh="true"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="currency">
+                <properties rank="20"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/Currency"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.BuyerCurrencyChoices"
+                            pickListStyle="Popup"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="organicUserLocale">
+                <properties rank="40"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/OrganicUserLocale"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.BuyerLocaleChoices"
+                            pickListStyle="Popup"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="baseCurrency">
+                <properties rank="50"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/BaseCurrency"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.BuyerCurrencyChoices"
+                            pickListStyle="Popup"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="reportingCurrency">
+                <properties rank="60"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/ReportingCurrency"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.BuyerCurrencyChoices"
+                            pickListStyle="Popup"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="defaultLocale">
+                <properties rank="70"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/DefaultLocale"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.BuyerLocaleChoices"
+                            pickListStyle="Popup"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="aribaDBCharset">
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.AribaDBCharsetChoices"
+                            pickListStyle="Popup"
+                            rank="80"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/AribaDatabaseCharset"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="reportCharset">
+                <properties rank="90"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/CSVReportCharset"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.ReportCharsetChoices"
+                            pickListStyle="Popup"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+            <field name="sapLanguage">
+                <visibility>
+                    <condition implementation="ariba.config.buyer.condition.HasConfiguredSAP"/>
+                </visibility>
+                <properties rank="100"
+                            charWidth="20"
+                            label="@ariba.configui.buyer/SAPLanguage"
+                            editable="false"/>
+                <inGroup name="LanguageLocaleGroup"/>
+            </field>
+        </agent>
+        <agent name="instanceupdate" class="ariba.config.buyer.BuyerInstanceUpdateAgent" id="8">
+            <field name="instanceName">
+                <value>buyer</value>
+            </field>
+        </agent>
+        <agent name="updatej2ee" class="ariba.config.appserver.UpdateJ2eeAgent" id="9">
+            <field name="nodeClassname">
+                <value>ariba.server.ormsserver.ORMSNode</value>
+            </field>
+        </agent>
+    </manager>
+</config>

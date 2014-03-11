@@ -1,0 +1,2134 @@
+'// Util methods for load, syncup and regeneration
+'// Responsible: saagarwal
+
+'//Define some constants used in xml messaging
+Const ATTRIBUTE_BOOKMARK = "bookmark"
+Const ATTRIBUTE_NEW_BOOKMARK = "newBookmark"
+Const ATTRIBUTE_STARTPOS = "startPos"
+Const ATTRIBUTE_ENDPOS = "endPos"
+Const ATTRIBUTE_SUMMARY_ENDPOS = "summaryEndPos"
+Const ATTRIBUTE_SECTION_BOOKMARK = "sectionBookmark"
+Const ATTRIBUTE_PREVIOUS_BOOKMARK = "previousBookmark"
+Const ATTRIBUTE_WORD_TYPE = "wordType"
+Const ATTRIBUTE_REVISION_TYPE = "revisionType"
+Const ATTRIBUTE_STYLE = "style"
+
+Const TAG_EDIT_LIST = "editList"
+Const TAG_OTHER_BOOKMARK = "otherBookmark"
+Const TAG_OTHER_BOOKMARK_LIST = "otherBookmarkList"
+Const TAG_REVISION = "revision"
+Const TAG_REVISION_LIST = "revisionList"
+Const TAG_SECTION = "section"
+Const TAG_SECTION_GLOBAL = "sectionGlobal"
+Const TAG_CLAUSE = "clause"
+Const TAG_PARAGRAPH = "paragraph"
+Const TAG_SET_SUMMARY = "setSummary"
+Const TAG_NEW_ENTITIES = "newEntities"
+Const TAG_DELETE_ENTITY = "deleteEntity"
+Const TAG_MOVE_ENTITY = "moveEntity"
+Const TAG_SYNCUP_APPLY = "syncupApply"
+Const TAG_APPLY_BOOKMARK_LIST = "applyBookmarkList"
+Const TAG_APPLY_BOOKMARK_BY_LOCATION = "applyBookmarkByLocation"
+Const TAG_APPLY_BOOKMARK_BY_NAME = "applyBookmarkByName"
+
+Const RevisionTypeNoRev = 0
+Const RevisionTypeInsert = 1
+Const RevisionTypeDelete = 2
+Const RevisionParagraphNumber = 4    '// treat as a change
+Const RevisionParagraphProperty = 10
+
+'//------------ Define Word View Type constants -------
+Const ViewTypeNormal = 1    '// the constant value is used by Word, so do NOT CHANGE
+Const ViewTypePrint  = 3    '// the constant value is used by Word, so do NOT CHANGE
+
+'//------------ Global declaration to create new xml nodes ------
+Dim xmlDOM
+Set xmlDOM = CreateObject("Msxml2.DOMDocument.3.0")
+xmlDOM.async = False
+
+'//------------ Global declaration to save Word settings ------
+Dim saveSettingViewType
+Dim saveSettingTrackingType
+
+
+Sub setDocumentViewType (aDocument, viewType)
+    On Error Resume Next
+
+    LogMessage "    Setting view type to " & viewType
+
+    Dim aWindow
+    Set aWindow = aDocument.ActiveWindow
+    Dim aView
+    If aWindow.View.SplitSpecial = 0 Then '// wdPaneNone = 0
+        Set aView = aWindow.ActivePane.View
+    Else
+        Set aView = aWindow.View
+    End If
+
+    aView.Type = viewType
+End Sub
+
+Sub saveWordSettings(aDocument)
+
+    LogBegin "saveWordSettings"
+
+    Dim aWindow
+    Set aWindow = aDocument.ActiveWindow
+
+    Dim aView
+    If aWindow.View.SplitSpecial = 0 Then '// wdPaneNone = 0
+        Set aView = aWindow.ActivePane.View
+    Else
+        Set aView = aWindow.View
+    End If
+
+    saveSettingViewType = aView.Type
+
+    '// piggy back in this method to hide the hidden bookmarks
+    aDocument.Bookmarks.ShowHidden = False
+
+    LogEnd "saveWordSettings, saveSettingViewType = " & saveSettingViewType
+End Sub
+
+
+Sub restoreWordSettings(document)
+
+    logBegin "restoreWordSettings"
+
+    Dim aWindow
+    Set aWindow = document.ActiveWindow
+
+    Dim aView
+    If aWindow.View.SplitSpecial = 0 Then '// wdPaneNone = 0
+        Set aView = aWindow.ActivePane.View
+    Else
+        Set aView = aWindow.View
+    End If
+
+    aView.Type = saveSettingViewType
+
+    LogEnd "restoreWordSettings, aView.Type = " & aView.Type
+End Sub
+
+
+Sub parseXmlString(xmlString)
+    On Error Resume Next
+
+    Dim xmlDoc
+    Set xmlDoc = CreateObject("Msxml2.DOMDocument.3.0")
+    xmlDoc.async = False
+    xmlDoc.loadXML xmlString
+    If (xmlDoc.parseError.errorCode <> 0) Then
+        Dim myErr
+        Set myErr = xmlDoc.parseError
+        logMessage "Got error"
+        logMessage "Errot = " & myErr.reason
+    Else
+        logMessage "parse xml = " & xmlDoc.xml
+    End If
+End Sub
+
+
+Function getXmlDoc_syncupRequest()
+    On Error Resume Next
+
+    Set getXmlDoc_syncupRequest = Nothing
+
+    Dim xmlDoc_syncupRequest
+    Set xmlDoc_syncupRequest = CreateObject("Msxml2.DOMDocument.3.0")
+    xmlDoc_syncupRequest.async = False
+    xmlDoc_syncupRequest.loadXML "<?xml version=""1.0"" encoding=""UTF-8""?><syncupRequest/>"
+    If (xmlDoc_syncupRequest.parseError.errorCode <> 0) Then
+        Dim myErr
+        Set myErr = xmlDoc_syncupRequest.parseError
+        logMessage "Got error"
+        logMessage "Errot = " & myErr.reason
+    End If
+    Set getXmlDoc_syncupRequest = xmlDoc_syncupRequest
+End Function
+
+Function getXmlDoc_loadRequest()
+    On Error Resume Next
+
+    Set getXmlDoc_loadRequest = Nothing
+
+    Dim xmlDoc_loadRequest
+    Set xmlDoc_loadRequest = CreateObject("Msxml2.DOMDocument.3.0")
+    xmlDoc_loadRequest.async = False
+    xmlDoc_loadRequest.loadXML "<?xml version=""1.0"" encoding=""UTF-8""?><loadRequest/>"
+    If (xmlDoc_loadRequest.parseError.errorCode <> 0) Then
+        Dim myErr
+        Set myErr = xmlDoc_loadRequest.parseError
+        logMessage "Got error"
+        logMessage "Errot = " & myErr.reason
+    End If
+    Set getXmlDoc_loadRequest = xmlDoc_loadRequest
+End Function
+
+Function getXmlNode_setSummary(bookmark, summary)
+    On Error Resume Next
+
+    Dim xmlNode_setSummary
+    Set xmlNode_setSummary = xmlDOM.createElement(TAG_SET_SUMMARY)
+
+    xmlNode_setSummary.setAttribute ATTRIBUTE_BOOKMARK , bookmark.Name
+    xmlNode_setSummary.setAttribute ATTRIBUTE_STARTPOS , bookmark.Start
+    xmlNode_setSummary.setAttribute ATTRIBUTE_ENDPOS , bookmark.End
+
+    Dim xmlNode_summary
+    Set xmlNode_summary = xmlDOM.createCDATASection(summary)
+    xmlNode_setSummary.appendChild xmlNode_summary
+
+    Set getXmlNode_setSummary = xmlNode_setSummary
+End Function
+
+
+Function getEnclosedBookmarksAsXmlNode(document, bookmarkName)
+    On Error Resume Next
+
+    logMessage "    Start getEnclosedBookmarksAsXmlNode"
+
+    Dim currentSelection
+    Set currentSelection = document.ActiveWindow.Selection
+    currentSelection.WholeStory
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+    Dim allBookmark
+    Set allBookmark = currentSelection.Bookmarks
+
+    Dim count
+    count = allBookmark.Count
+
+    Dim bookmarkListInParentNode
+    Set bookmarkListInParentNode = xmlDOM.createElement("bookmarkListInParent")
+
+    Set getEnclosedBookmarksAsXmlNode = bookmarkListInParentNode
+
+    Dim bookmark
+    Dim bookmarkNode
+
+    Dim i
+    For i = 1 to count
+        Set bookmark = allBookmark.Item(i)
+        Set bookmarkNode = xmlDOM.createElement("bookmark")
+        bookmarkNode.setAttribute ATTRIBUTE_BOOKMARK , bookmark.Name
+        bookmarkNode.setAttribute ATTRIBUTE_STARTPOS , bookmark.Start
+        bookmarkNode.setAttribute ATTRIBUTE_ENDPOS , bookmark.End
+        bookmarkListInParentNode.appendChild bookmarkNode
+    Next
+
+End Function
+
+
+'// Identified the bookmarks that have been deleted or changed
+Sub processDeletedText(wordApplication, agreementDocument, revisionsDoc, parentBookmark, deletedRange, xmlNode_editList)
+    On Error Resume Next
+
+    logMessage "    Start processDeletedText"
+    logMessage "    Parent bookmark =  " & parentBookmark
+    logMessage ""
+
+    Dim allBookmark
+    Set allBookmark = deletedRange.Bookmarks
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    If (allBookmark.Count > 0) Then
+        Dim aBookmark
+
+        Dim deletedBookmarksArray(10)
+        Dim pos
+        pos = 0
+
+        For each aBookmark in allBookmark
+
+            '// if range includes a bookmark, then mark the bookmark for deletion.
+            '// Else If the bookmark just overlaps, and is contained within parent, then mark for modify
+            If (bookmarkIncluded(deletedRange, aBookmark) = 1) Then
+                Dim deletedBookmark
+                Dim parentFound
+                parentFound = False
+                Dim cpos
+                For cpos = 0 to (pos-1)
+                    Set deletedBookmark = deletedBookmarksArray(cpos)
+                    If (bookmarkIncluded(deletedBookmark,aBookmark) = 1) Then
+                        parentFound = True
+                        Exit For
+                    End If
+                Next
+                If (Not parentFound) Then
+                    Set deletedBookmarksArray(pos) = aBookmark
+                    pos = pos + 1
+                    If (pos MOD 10 = 0) Then
+                        ReDim Preserve deletedBookmarksArray(pos+10)
+                    End If
+                End If
+            Else
+                '// check for case when deleted range overlaps some part of a clause but is inside a section
+                '// for example, trailing portion of C1 and leading portion of C2 deleted where C1,C2
+                '// are inside of a section
+                If (bookmarkFullyIncluded(parentBookmark,aBookmark) = 1) Then
+                    '// todo : make summary change generic for clause, section
+
+                    Dim agreementBookmark
+                    Set agreementBookmark = agreementDocument.Bookmarks.Item(aBookmark.Name)
+
+                    Dim summary
+                    summary = getClauseSummaryAll(agreementBookmark)
+
+                    Dim xmlNode_setSummary
+                    Set xmlNode_setSummary = getXmlNode_setSummary(agreementBookmark, summary)
+
+                    xmlNode_editList.appendChild xmlNode_setSummary
+                    logMessage    "    added summary node"
+                End If
+            End If
+
+        Next
+
+        '// loop thru deleted bookmarks and add them to xmlNode editList
+        Dim currBookmark
+        Dim currPos
+        currPos = 0
+        For currPos = 0 to (pos-1)
+            Set currBookmark = deletedBookmarksArray(currPos)
+            Dim xmlNode_deleteBookmark
+            Set xmlNode_deleteBookmark = xmlDOM.createElement(TAG_DELETE_ENTITY)
+            xmlNode_deleteBookmark.setAttribute ATTRIBUTE_BOOKMARK , currBookmark.Name
+            xmlNode_editList.appendChild xmlNode_deleteBookmark
+        Next
+    End If
+
+    logMessage "    End processDeletedText"
+    logMessage ""
+
+End Sub
+
+
+Function processAllDeletes(wordApplication, agreementDocument, bookmarkContainer, revisionsDoc, xmlNode_editList)
+    On Error Resume Next
+
+    logMessage ""
+    logMessage "    ************ Start processAllDeletes *************"
+    logMessage ""
+
+    Dim processSections
+    Set processSections = CreateObject("Scripting.Dictionary")
+
+    Set processAllDeletes = processSections
+
+    Dim changeList
+    Set changeList = revisionsDoc.Revisions
+
+    Dim count
+    count = changeList.Count
+
+    logMessage " changeList count = " & count
+
+
+    '// If change list exists, then syncup
+    If (count > 0) Then
+        Dim modificationClauseContent
+        modificationClauseContent = ""
+        Dim newClauseContent
+        newClauseContent = ""
+        Dim deletedClauseContent
+        deletedClauseContent = ""
+        Dim endPositionForDeleteType
+        endPositionForDeleteType = ""
+
+        Dim globalBoomark
+        Set globalBoomark = Nothing
+        If (revisionsDoc.Bookmarks.Exists(GlobalContractBookmarkName) = True) Then
+            Set globalBoomark = revisionsDoc.Bookmarks.Item(GlobalContractBookmarkName)
+        End If
+
+        '// Loop thru changelist
+        logMessage "Start ContractAuthoring.incrementalSyncupClause - loop ChangeList"
+
+        Dim aItem
+        For each aItem in changeList
+            logMessage "    ***** "
+            logMessage "ContractAuthoring.incrementalSyncupClause next changeList"
+
+            logMessage "    Looping changeList, type = " & aItem.Type
+            logMessage "    Looping changeList, range = " & aItem.Range
+            logMessage "    Looping changeList, range start = " & aItem.Range.Start
+            logMessage "    Looping changeList, range end = " & aItem.Range.End
+
+            '//CR 1-9XQKFD, 1-9XQKH9, 1-9XQKIZ
+            '//If the aItem.Range is a bookmark range and a paragraph marker resides before/after the bookmark
+            '//then delete the leading/trailing paragraph marker
+            Dim aRange
+            Set aRange = aItem.Range
+            removeLeadingTailingParaMarkerOfARange revisionDoc, aRange
+
+            '//Kee: If non-section range contains paragraph markers, the selection range is shorten by one position
+            '//in MSWord even with a proper/clean deletion
+            '//In order to fix it, extend the end position by one
+            Dim aRangeBookmarkName
+            aRangeBookmarkName = getABookmarkNameOfARange(revisionsDoc, aRange, 0)
+            If (aItem.Type = RevisionTypeDelete AND Left(aRangeBookmarkName, 10) <> prefixSectionGenName AND aRange.Paragraphs.Count > 1) Then
+                aRange.End = aRange.End+1
+            End If
+
+	        logMessage "    Looping changeList after re-repositioning, aRange = " & aRange
+	        logMessage "    Looping changeList after re-repositioning, aRange start = " & aRange.Start
+            logMessage "    Looping changeList after re-repositioning, aRange end = " & aRange.End
+
+            Dim currentRange
+            Set currentRange = createRangeProxy(aRange)
+
+            Dim isInGlobalBookmark
+            isInGlobalBookmark = 0
+
+            If (Not (globalBoomark is Nothing)) Then
+                isInGlobalBookmark = bookmarkIncluded(globalBoomark, currentRange)
+            End If
+
+            If (isInGlobalBookmark <> 0) Then
+                Dim modificationType
+                modificationType = aItem.Type
+                logMessage "    Looping changeList, enclosing bookmark = " & parentBookmarkName
+                logMessage "    currentRange type, start, and end: " & modificationType & " " & currentRange.Start & " " & currentRange.End
+
+                Dim parentBookmark    '// The parent bookmark that contains the change
+                Dim parentBookmarkName    '// The parent bookmark that contains the change
+                Set parentBookmark = withinGenBookmarkInternal(revisionsDoc, currentRange, True)
+                parentBookmarkName = parentBookmark.Name
+
+                logMessage "    parentBookmarkName " & parentBookmarkName
+
+                If (modificationType = RevisionTypeDelete) Then '// wdRevisionDelete = 2
+                    If (isEmptyText(currentRange.DomRange) = False) Then '// wdStatisticWords = 0
+                        logMessage " Start Calling processDeletedText"
+                        '// if currentRange is fully included in clause bookmark, then handle as modification
+                        If(Instr(1,parentBookmarkName,prefixClauseGenName,vbBinaryCompare)<>0 AND bookmarkFullyIncluded(parentBookmark,currentRange)=1) Then
+
+                            '// We need the dombookmark here as it is needed by getXmlNode_setSummary
+                            Dim agreementBookmarkProxy
+                            Set agreementBookmarkProxy = bookmarkContainer.BookmarkProxy(parentBookmarkName)
+
+                            Dim range
+                            Set range = bookmarkContainer.DomRange(parentBookmarkName)
+                            Dim summary
+                            summary = getClauseSummaryAllByRange(range)
+
+                            Dim xmlNode_setSummary
+                            Set xmlNode_setSummary = getXmlNode_setSummary(agreementBookmarkProxy, summary)
+
+                            xmlNode_editList.appendChild xmlNode_setSummary
+
+                            '// Syncup the section as well that contains this bookmark
+                            '// Strictly speaking, this is not needed, but for some cases,
+                            '// especially in Word 2000, we get tricked into thinking that a
+                            '// following clause is modified when a clause is deleted.
+                            '// Add the section to the scan list
+                            Dim parentSectionBookmark
+                            Set parentSectionBookmark = withinGenBookmark(revisionsDoc, parentBookmark.Range)
+                            If(Not processSections.Exists(parentSectionBookmark.Name)) Then
+                                processSections.Add parentSectionBookmark.Name, parentSectionBookmark
+                            End If
+                        Else
+                            processDeletedText wordApplication, agreementDocument, revisionsDoc, parentBookmark, currentRange, xmlNode_editList
+
+                            '// If the deletion is under a section - we fully syncup the section
+                            '// this may be overkill in some cases, but its safer to do this to handle
+                            '// edge cases where a clause is moved within a section
+                            '// Add the section to the scan list
+                            If(Not processSections.Exists(parentBookmarkName)) Then
+                                processSections.Add parentBookmarkName, parentBookmark
+                            End If
+
+                        End If
+                    Else
+                        logMessage " Empty deleted range found"
+                        logMessage " rangeStart = " & currentRange.Start & " rangeEnd = " & currentRange.End
+                    End If
+                Else
+                    If (modificationType = RevisionTypeInsert) Then '// wdRevisionInsert = 1
+                        logMessage " count = " & changeList.Count
+                        aItem.Reject
+                        logMessage " count = " & changeList.Count
+                    End If
+                End If
+
+            End If
+        Next    '// end loop thru changeList
+    End If    '// if changeList.count > 0
+
+End Function
+
+
+Function getXmlNodeAllRevisions(wordApplication, agreementDocument)
+    On Error Resume Next
+
+    Set getXmlNodeAllRevisions = Nothing
+
+    Dim allRevisions
+    Set allRevisions = agreementDocument.Revisions
+
+    Set getXmlNodeAllRevisions = getXmlNodeRevisions(allRevisions)
+End Function
+
+Function getXmlNodeRevisions(revisions)
+    On Error Resume Next
+
+    logMessage "    ***** "
+    logMessage "     getXmlNodeRevisions"
+
+    Dim xmlNode_revisionList
+    Set xmlNode_revisionList = xmlDOM.createElement(TAG_REVISION_LIST)
+
+    Set getXmlNodeRevisions = xmlNode_revisionList
+
+    Dim aItem
+    For each aItem in revisions
+
+        Dim range
+        Set range = aItem.Range
+
+        Dim revisionStart, revisionEnd
+        revisionStart = range.Start
+        revisionEnd = range.End
+
+        logMessage "    Looping revision, type = " & aItem.Type
+        logMessage "    Looping revision, range start = " & revisionStart
+        logMessage "    Looping revision, range end = " & revisionEnd
+
+        '// For now, we use only deleted type revisions
+        '// Treat RevisionParagraphNumber as a delete type revision
+        If (aItem.Type = RevisionTypeDelete OR aItem.Type = RevisionParagraphNumber) Then
+
+            '//Kee: If a non-section range contains paragraph markers, the selection range is shorten by one position
+            '//in MSWord even with a proper/clean deletion
+            '//In order to fix it, extend the end position by one
+            Dim aRangeBookmarkName
+	    aRangeBookmarkName = getABookmarkNameOfARange(range.Document, range, 0)
+	    If (aItem. Type = RevisionTypeDelete AND Left(aRangeBookmarkName, 10) <> prefixSectionGenName AND range.Paragraphs.Count > 1) Then
+	        revisionEnd = range.End+1+1
+            End If
+
+            logMessage "    Looping revision after move, type = " & aItem.Type
+            logMessage "    Looping revision after move, range start = " & revisionStart
+            logMessage "    Looping revision after move, range end = " & revisionEnd
+
+            Dim xmlNode_revision
+            Set xmlNode_revision = xmlDOM.createElement(TAG_REVISION)
+            xmlNode_revision.setAttribute ATTRIBUTE_REVISION_TYPE , aItem.Type
+            xmlNode_revision.setAttribute ATTRIBUTE_STARTPOS , revisionStart
+            xmlNode_revision.setAttribute ATTRIBUTE_ENDPOS , revisionEnd
+
+            xmlNode_revisionList.appendChild xmlNode_revision
+        End If
+    Next
+End Function
+
+
+Sub processAgreement(wordApplication, agreementDocument, revisionsDoc, xmlNode_editList)
+    On Error Resume Next
+
+    Dim changeList
+    Set changeList = agreementDocument.Revisions
+
+    Dim currentSelection
+    Set currentSelection = agreementDocument.ActiveWindow.Selection
+
+    printRevisions agreementDocument,changeList
+
+    Dim Paragraphs
+    Set Paragraphs = agreementDocument.Paragraphs
+
+    Dim Paragraph
+    For Each Paragraph In Paragraphs
+        logMessage "para start = " & Paragraph.Start & " end = " & Paragraph.End
+        Dim text
+        Set text = Paragraph.Range
+        logMessage "text start = " & text.Start & " end = " & text.End & " text = " & text
+    Next
+
+End Sub
+
+
+Sub acceptRevisionsForType(agreement, revisionType)
+    logMessage "acceptRevisionsForType called with revisionType = " & revisionType
+    Dim revision
+    For each revision in agreement.revisions
+        If (revision.type = revisionType) Then
+            logMessage "Accepting revision, range start = " & revision.range.start & " type = " & revision.type
+            revision.Accept
+        End If
+    Next
+End Sub
+
+
+Sub printRevisions(agreementDocument, changeList)
+    On Error Resume Next
+
+    Dim count
+    count = changeList.Count
+    logMessage " processAgreement changeList count = " & count
+
+    '// If change list exists, then syncup
+    If (count > 0) Then
+        Dim modificationClauseContent
+        modificationClauseContent = ""
+        Dim newClauseContent
+        newClauseContent = ""
+        Dim deletedClauseContent
+        deletedClauseContent = ""
+
+        Dim globalBoomark
+        Set globalBoomark = Nothing
+        If (revisionsDoc.Bookmarks.Exists(GlobalContractBookmarkName) = True) Then
+            Set globalBoomark = revisionsDoc.Bookmarks.Item(GlobalContractBookmarkName)
+        End If
+
+
+        '// Loop thru changelist
+        logMessage "Start ContractAuthoring.incrementalSyncupClause - loop ChangeList"
+
+        Dim newClauseIndex
+        newClauseIndex = 1
+        Dim aItem
+
+        Dim processSections
+        Set processSections = CreateObject("Scripting.Dictionary")
+
+        For each aItem in changeList
+            logMessage "    ***** "
+            logMessage " processAgreement changeList counter: " & i & " startTime: " & Time
+            Dim currentRange
+            Set currentRange = aItem.Range
+
+            logMessage "    Looping changeList, type = " & aItem.Type
+            logMessage "    Looping changeList, range = " & aItem.Range
+            logMessage "    Looping changeList, range start = " & aItem.Range.Start
+            logMessage "    Looping changeList, range end = " & aItem.Range.End
+        Next
+    End If
+End Sub
+
+
+Function processAllInserts(wordApplication, agreementDocument, bookmarksContainer, revisionsDoc, xmlNode_editList)
+    On Error Resume Next
+
+    logMessage ""
+    logMessage "    ************* Start processAllInserts **************"
+    logMessage ""
+
+    Dim processSections
+    Set processSections = CreateObject("Scripting.Dictionary")
+
+    Set processAllInserts = processSections
+
+    Dim changeList
+    Set changeList = revisionsDoc.Revisions
+
+    Dim currentSelection
+    Set currentSelection = agreementDocument.ActiveWindow.Selection
+
+    Dim count
+    count = changeList.Count
+    logMessage " changeList count = " & count
+
+    '// If change list exists, then syncup
+    If (count > 0) Then
+        Dim modificationClauseContent
+        modificationClauseContent = ""
+        Dim newClauseContent
+        newClauseContent = ""
+        Dim deletedClauseContent
+        deletedClauseContent = ""
+        Dim endPositionForDeleteType
+        endPositionForDeleteType = ""
+
+        Dim globalBoomark
+        Set globalBoomark = Nothing
+        If (revisionsDoc.Bookmarks.Exists(GlobalContractBookmarkName) = True) Then
+            Set globalBoomark = revisionsDoc.Bookmarks.Item(GlobalContractBookmarkName)
+        End If
+
+
+        '// Loop thru changelist
+        logMessage "Start ContractAuthoring.incrementalSyncupClause - loop ChangeList"
+
+        Dim newClauseIndex
+        newClauseIndex = 1
+        Dim aItem
+
+        For each aItem in changeList
+            logMessage "    ***** "
+            logMessage "ContractAuthoring.incrementalSyncupClause changeList counter: " & i & " startTime: " & Time
+            Dim currentRange
+            Set currentRange = createRangeProxy(aItem.Range)
+
+            Dim isInGlobalBookmark
+            isInGlobalBookmark = 0
+
+            If (Not (globalBoomark is Nothing)) Then
+                isInGlobalBookmark = bookmarkIncluded(globalBoomark, currentRange)
+            End If
+
+            If (isInGlobalBookmark <> 0) Then
+                Dim modificationType
+                modificationType = aItem.Type
+
+                logMessage "    Looping changeList, type, range, range start, range end " & aItem.Type & " " & aItem.Range & " " & aItem.Range.Start & " " & aItem.Range.End
+
+                Dim parentBookmark    '// The parent bookmark that contains the change
+                Dim parentBookmarkName    '// The parent bookmark that fully contains the change
+
+                Set parentBookmark = withinGenBookmarkInternal(revisionsDoc, currentRange, True)
+
+                parentBookmarkName = parentBookmark.Name
+
+                logMessage "    Looping changeList, enclosing bookmark, Start, End = " & parentBookmarkName & " " & parentBookmark.Start & " " & parentBookmark.End
+
+                If (modificationType = RevisionTypeDelete) Then
+                    endPositionForDeleteType = currentRange.End
+
+                ElseIf (modificationType = RevisionTypeInsert) Then '//  wdRevisionInsert = 1
+                    If (endPositionForDeleteType = currentRange.Start AND isEmptyText(currentRange.DomRange)) Then
+					    '//Do not create summary.
+					    '//This range was created from the previous deletion that includes a paragraph marker
+					    logMessage " processAllInserts: This is an empty range left from the previous deletion"
+                    Else
+						'// Inserted text may include a bookmark that was moved from other place in the doc.
+						'// Get all the bookmarks included in the text and mark them as moved
+						Dim allBookmark
+						Set allBookmark = currentRange.BookmarkProxies
+
+						dim bmCount
+						bmCount = allBookmark.Count
+						If (bmCount > 0) Then
+							Dim movedBookmarksArray(10)
+							Dim pos
+							pos = 0
+							Dim aBookmarkProxy
+
+							For index = 1 to bmCount
+								Set aBookmarkProxy = allBookmark.Item(index)
+								If (bookmarkIncluded(currentRange, aBookmarkProxy) = 1) Then
+									logMessage "    found included = " & aBookmarkProxy
+									'// If bookmark name is generated, then treat as move
+									'// XXX : Test section move case
+									If( (InStr(1, aBookmarkProxy.Name, prefixClauseGenName, vbBinaryCompare) <> 0) OR (InStr(1, aBookmarkProxy.Name, prefixSectionGenName, vbBinaryCompare) <> 0) )    Then
+										'// loop thru current moves and ignore if parent is already in the list
+										Dim movedBookmark
+										Dim parentFound
+										parentFound = False
+										Dim cpos
+										For cpos = 0 to (pos-1)
+											Set movedBookmark = movedBookmarksArray(cpos)
+											If (bookmarkIncluded(movedBookmark,aBookmarkProxy) = 1) Then
+												parentFound = True
+												Exit For
+											End If
+										Next
+										If (Not parentFound) Then
+											Set movedBookmarksArray(pos) = aBookmarkProxy
+											logMessage "    *1 "
+											pos = pos + 1
+											If (pos MOD 10 = 0) Then
+												ReDim Preserve movedBookmarksArray(pos+10)
+											End If
+										End If
+									End If
+								End If
+							Next
+
+							Dim currBookmark
+							Dim currPos
+							currPos = 0
+							For currPos = 0 to (pos-1)
+								Set currBookmark = movedBookmarksArray(currPos)
+								Dim xmlNode_moveBookmark
+								Set xmlNode_moveBookmark = xmlDOM.createElement(TAG_MOVE_ENTITY)
+								xmlNode_moveBookmark.setAttribute ATTRIBUTE_BOOKMARK , currBookmark.Name
+								xmlNode_moveBookmark.setAttribute ATTRIBUTE_SECTION_BOOKMARK , parentBookmarkName
+								Dim previousBookmarkName
+								previousBookmarkName = findPreviousBookmarkName (currentSelection, currBookmark.Name, parentBookmarkName)
+								xmlNode_moveBookmark.setAttribute ATTRIBUTE_PREVIOUS_BOOKMARK , previousBookmarkName
+								xmlNode_editList.appendChild xmlNode_moveBookmark
+							Next
+						End If
+
+						'// If the parent of inserted text is a section, then it can be a new clause
+						'// ElseIf the parent is a clause, then its a modification
+						If (InStr(1,parentBookmarkName,prefixSectionName,vbBinaryCompare) <> 0) Then
+							logMessage "    Inserted text detected under section = " & parentBookmarkName
+							If(NOT processSections.Exists(parentBookmarkName)) Then
+								processSections.add parentBookmarkName, parentBookmark
+							End If
+						ElseIf(InStr(1,parentBookmarkName,prefixClauseName,vbBinaryCompare) <> 0) Then
+							Dim agreementBookmarkProxy
+							Set agreementBookmarkProxy = bookmarksContainer.BookmarkProxy(parentBookmarkName)
+
+							Dim range
+							Set range = bookmarksContainer.DomRange(parentBookmarkName)
+							Dim summary
+							summary = getClauseSummaryAllByRange(range)
+
+							logMessage "processallinserts: create summary cxml"
+
+							Dim xmlNode_setSummary
+							Set xmlNode_setSummary = getXmlNode_setSummary(agreementBookmarkProxy, summary)
+
+							xmlNode_editList.appendChild xmlNode_setSummary
+
+							'// scan the section that contains this insert. Strictly speaking,
+							'// this is not needed, but there are some edge cases when insert
+							'// or even delete is shown as insert and syncing the section
+							'// will make make server structure to be correct always.
+							Dim parentSectionBookmark
+							Set parentSectionBookmark = withinGenBookmark(revisionsDoc, parentBookmark.Range)
+							If(Not processSections.Exists(parentSectionBookmark.Name)) Then
+								processSections.Add parentSectionBookmark.Name, parentSectionBookmark
+							End If
+						End If
+                    End If '// If currentRange is empty
+                End If    '// If modificationType is INSERT
+            End If    '// If change is inside sectionGlobal
+        Next    '// end loop thru changeList
+
+        logMessage "    process all sections"
+
+        logMessage "    processAllInserts " & xmlNode_editList.xml
+    End If    '// if changeList.count > 0
+End Function
+
+
+'// Scan a list of sections and get the child bookmarks and non-bookmarked paragraphs
+'// processSections is a Dictionary object
+Function combineIntoUniqueBookmarks(list1, list2)
+    On Error Resume Next
+
+    logMessage "    Start combineIntoUniqueBookmarks"
+
+    Dim bookmarkList
+    Set bookmarkList = CreateObject("Scripting.Dictionary")
+
+    Set combineIntoUniqueBookmarks = bookmarkList
+
+    Dim bookmark
+    For Each bookmark In list1.Items()
+        If(Not bookmarkList.Exists(bookmark.Name)) Then
+            bookmarkList.Add bookmark.Name, bookmark
+            logMessage "    Added " & bookmark.Name
+        End If
+    Next
+
+    For Each bookmark In list2.Items()
+        If(Not bookmarkList.Exists(bookmark.Name)) Then
+            bookmarkList.Add bookmark.Name, bookmark
+            logMessage "    Added " & bookmark.Name
+        End If
+    Next
+
+    '// Loop thru the list and remove any contained bookmarks in other bookmarks
+    Dim i
+    i = 0
+    While( i <= UBound(bookmarkList.Items()) )
+        Dim iBookmark
+        Set iBookmark = bookmarkList.Items() (i)
+        Dim j
+        j = i+1
+        While( j <= UBound(bookmarkList.Items()) )
+            Dim jBookmark
+            Set jBookmark = bookmarkList.Items() (j)
+            If( BookmarkIncluded(iBookmark,jBookmark) = 1 ) Then
+                logMessage " Found " & iBookmark.Name & " includes " & jbookmark.Name
+                bookmarkList.Remove jBookmark.Name
+                j = j - 1
+            ElseIf( BookmarkIncluded(jBookmark,iBookmark) = 1 ) Then
+                logMessage " Found " & jBookmark & " includes " & iBookmark
+                bookmarkList.Remove iBookmark.Name
+                j = UBound(bookmarkList.Items()) + 1    '// Forced exit from inner while
+                i = i - 1
+            End If
+            j = j + 1
+        Wend
+        i = i + 1
+    Wend
+End Function
+
+
+'// Scan a list of sections and get the child bookmarks and non-bookmarked paragraphs
+'// processSections is a Dictionary object of (bookmarkName, bookmarkObject) pairs
+Sub scanSectionList(agreementDocument, processSections, xmlNode_syncupRequest)
+    On Error Resume Next
+
+    Dim sectionBookmarkList
+    Dim processSection
+
+    Dim scanForParagraphs, scanForSummary
+    scanForParagraphs = True
+    scanForSummary    = False
+
+    For each processSection in processSections.Items()
+        logMessage "    process section = " & processSection
+        Set sectionBookmarkList = getSectionBookmarks(agreementDocument,processSection)
+        scanBookmarksForSync agreementDocument,sectionBookmarkList,scanForParagraphs,scanForSummary,xmlNode_syncupRequest
+    Next
+End Sub
+
+
+Function getSectionBookmarks(aDocument,sectionBookmarkName)
+    On Error Resume Next
+
+    logMessage "    START getSectionBookmarks "
+    logMessage "    START getSectionBookmarks bookmark = " & sectionBookmarkName
+
+    Set getSectionBookmarks = Nothing
+
+    Dim currentSelection
+    Set currentSelection = aDocument.ActiveWindow.Selection
+
+    Set sectionRange = currentSelection.GoTo(-1, , , sectionBookmarkName) '// wdGoToBookmark = -1
+
+    Set getSectionBookmarks = getRangeBookmarks(aDocument, sectionRange)
+End Function
+
+
+Function getRangeBookmarks(aDocument, aRange)
+    On Error Resume Next
+
+    logMessage "    getRangeBookmark"
+
+    Dim rangeBookmarks
+    Set rangeBookmarks = aRange.Bookmarks
+
+    Dim bookmarkList
+    Set bookmarkList = CreateObject("Scripting.Dictionary")
+
+    Dim pos
+    pos = 1
+
+    Dim i
+    If(rangeBookmarks.Count > 0) Then
+        For i = 1 to rangeBookmarks.Count
+            Dim aBookmark
+            Set aBookmark = Nothing
+            Set aBookmark = rangeBookmarks.Item(i)
+            If(Not (aBookmark is Nothing)) Then
+                If(bookmarkIncluded(aRange,aBookmark)) Then
+                    bookmarkList.add pos,aBookmark
+                    pos = pos + 1
+                End If
+            End If
+        Next
+    End If
+
+    Set getRangeBookmarks = bookmarkList
+End Function
+
+
+Function sectionToXml(aDocument,sectionBookmark)
+    On Error Resume Next
+
+    Dim sectionBookmarkName
+    sectionBookmarkName = sectionBookmark.Name
+
+    Set sectionToXml = Nothing
+
+    Dim sectionXml
+    Set sectionXml = sectionToXmlNode(aDocument,sectionBookmark)
+
+    Dim sectionRange
+    Set sectionRange = sectionBookmark.Range
+
+    Dim aBookmark
+    Dim childBookmarks
+
+    logMessage "Start getChildBookmarksForRange"
+    Set childBookmarks = getChildBookmarksForBookmark(aDocument,sectionBookmark)
+    logMessage "End getChildBookmarksForRange"
+
+    For each aBookmark in childBookmarks.Items()
+        If(bookmarkFullyIncluded(sectionBookmark,aBookmark)=1) Then
+            If(Instr(1,aBookmark.Name,prefixSectionName,vbBinaryCompare)<>0) Then
+                sectionXml.appendChild sectionToXml(aDocument,aBookmark)
+            ElseIf(Instr(1,aBookmark.Name,prefixClauseName,vbBinaryCompare)<>0) Then
+                sectionXml.appendChild clauseToXml(aDocument,aBookmark)
+            End If
+        End If
+    Next
+
+    Set sectionToXml = sectionXml
+End Function
+
+Function sectionGlobalNode(aDocument,sectionGlobalBookmark)
+    On Error Resume Next
+
+    Dim sectionGlobalXml
+    Set sectionGlobalXml = xmlDOM.createElement(TAG_SECTION_GLOBAL)
+
+    sectionGlobalXml.setAttribute ATTRIBUTE_BOOKMARK, sectionGlobalBookmark.Name
+    sectionGlobalXml.setAttribute ATTRIBUTE_STARTPOS , sectionGlobalBookmark.Start
+    sectionGlobalXml.setAttribute ATTRIBUTE_ENDPOS , sectionGlobalBookmark.End
+    Set sectionGlobalNode = sectionGlobalXml
+End Function
+
+Function otherBookmarkNode(aDocument,aBookmark)
+    On Error Resume Next
+
+    logMessage "Start otherBookmarkNode"
+
+    Dim otherBookmarkXml
+    Set otherBookmarkXml = xmlDOM.createElement(TAG_OTHER_BOOKMARK)
+
+    otherBookmarkXml.setAttribute ATTRIBUTE_BOOKMARK, aBookmark.Name
+    otherBookmarkXml.setAttribute ATTRIBUTE_STARTPOS , aBookmark.Start
+    otherBookmarkXml.setAttribute ATTRIBUTE_ENDPOS , aBookmark.End
+    Set otherBookmarkNode = otherBookmarkXml
+End Function
+
+Function sectionToXmlNode(aDocument,sectionBookmark)
+    On Error Resume Next
+
+    Dim sectionXml
+    Set sectionXml = xmlDOM.createElement(TAG_SECTION)
+
+    sectionXml.setAttribute ATTRIBUTE_BOOKMARK, sectionBookmark.Name
+    sectionXml.setAttribute ATTRIBUTE_STARTPOS , sectionBookmark.Start
+    sectionXml.setAttribute ATTRIBUTE_ENDPOS , sectionBookmark.End
+
+    '// even if section summary is not used, this is used to get the
+    '// end position for section title from where new paragraphs are
+    '// scanned in the section
+    populateSectionSummary sectionBookmark,sectionXml
+
+    Set sectionToXmlNode = sectionXml
+End Function
+
+
+Function clauseToXml(aDocument,clauseBookmark,scanForSummary)
+    On Error Resume Next
+
+    Dim clauseBookmarkName
+    clauseBookmarkName = clauseBookmark.Name
+
+    Dim prefixIndex
+    prefixIndex = InStr(1, clauseBookmarkName, prefixClauseNewName, vbBinaryCompare)
+
+    Set clauseToXml = Nothing
+
+    Dim clauseXml
+    Set clauseXml = xmlDOM.createElement(TAG_CLAUSE)
+
+    If(scanForSummary Or prefixIndex <> 0) Then
+        Dim summary
+        summary = getClauseSummary(clauseBookmark)
+        Dim cdataSection
+        Set cdataSection = xmlDOM.createCDATASection(summary)
+        clauseXml.appendChild cdataSection
+    End If
+
+    clauseXml.setAttribute ATTRIBUTE_BOOKMARK, clauseBookmark.Name
+    clauseXml.setAttribute ATTRIBUTE_STARTPOS , clauseBookmark.Start
+    clauseXml.setAttribute ATTRIBUTE_ENDPOS , clauseBookmark.End
+
+    Set clauseToXml = clauseXml
+End Function
+
+
+Function paragraphsToClauses(theRange)
+    On Error Resume Next
+
+    paragraphsToClauses = Nothing
+
+    Dim clauseArray
+    Set clauseArray = CreateObject("Scripting.Dictionary")
+    Dim pos
+    pos = 1
+
+    Dim paragraph
+    For each paragraph in theRange.Paragraphs
+        Dim pRange
+        Set pRange = paragraph.Range
+        If (isEmptyRange(pRange) = False) Then '//'// wdStatisticWords = 0
+            logMessage "In paragraphsToClauses, paragraph overlap found"
+            Dim xmlNode_clause
+            Set xmlNode_clause = xmlDOM.createElement(TAG_PARAGRAPH)
+            xmlNode_clause.setAttribute ATTRIBUTE_STARTPOS , pRange.Start
+            xmlNode_clause.setAttribute ATTRIBUTE_ENDPOS , pRange.End
+
+            Dim summary
+            summary = getRangeSummary(pRange)
+            xmlNode_clause.appendChild xmlDOM.createCDATASection(summary)
+
+            clauseArray.add pos,xmlNode_clause
+            pos = pos + 1
+        End If
+    Next
+    Set paragraphsToClauses = clauseArray
+End Function
+
+'// All parallel bookmarks within the range are returned
+Function getChildBookmarksForRange(aDocument,theRange)
+    On Error Resume Next
+    Set getChildBookmarksForRange = getChildBookmarks(aDocument,theRange,False)
+End Function
+
+'// All bookmarks fully contained within the given bookmark are returned
+Function getChildBookmarksForBookmark(aDocument,theBookmark)
+    On Error Resume Next
+    Set getChildBookmarksForBookmark = getChildBookmarks(aDocument,theBookmark.Range,True)
+End Function
+
+Function getChildBookmarks(aDocument,theRange,fullyIncluded)
+    On Error Resume Next
+
+    Set getChildBookmarks = Nothing
+
+    Dim bookmarkArray
+    Set bookmarkArray = CreateObject("Scripting.Dictionary")
+    Dim pos
+    pos = 1
+
+    Dim rangeBookmarks
+    Set rangeBookmarks = theRange.Bookmarks
+
+    Dim aBookmark
+    Dim lastChildBookmark
+    Set lastChildBookmark = Nothing
+
+    For each aBookmark in rangeBookmarks
+        logMessage "        In getChildBookmarks, included bookmark found = "    & aBookmark.Name
+        '// process only child bookmarks, grand child are processed while processing child sections.
+        '// remember lastChildBookmark , so that grand children can be skipped by doing a include check
+        Dim inclusion
+        If (fullyIncluded) Then
+            inclusion = bookmarkFullyIncluded(theRange,aBookmark)
+        Else
+            inclusion = bookmarkIncluded(theRange,aBookmark)
+        End If
+        logMessage "        Inclusion = " & inclusion
+        If(inclusion=1) Then
+            If(lastChildBookmark Is Nothing) Then
+                bookmarkArray.add pos,aBookmark
+                pos = pos + 1
+                Set lastChildBookmark = aBookmark
+                logMessage "        In getChildBookmarks, child bookmark added = "    & aBookmark.Name
+            Else
+                If(bookmarkIncluded(lastChildBookmark, aBookmark)=0) Then
+                    bookmarkArray.add pos,aBookmark
+                    pos = pos + 1
+                    Set lastChildBookmark = aBookmark
+                    logMessage "        In getChildBookmarks, child bookmark added = "    & aBookmark.Name
+                End If
+            End If
+        End If
+    Next
+
+    Set getChildBookmarks = bookmarkArray
+End Function
+
+'// Take a list of bookmarks, and get the summary, location for each bookmark and non-bookmarked
+'// paragraphs
+Sub scanBookmarksForLoad(aDocument, bookmarkList, scanForParagraphs, scanForSummary, xmlNode_loadRequest)
+    On Error Resume Next
+
+    logMessage "        Start getXmlNode_newEntitiesForLoad, scanForParagraphs = " & scanForParagraphs & " scanForSummary = " & scanForSummary
+
+    '// Find the editList
+    Dim editListNodes
+    Set editListNodes = xmlNode_loadRequest.getElementsByTagName(TAG_EDIT_LIST)
+    Dim xmlNode_editList
+    Set xmlNode_editList = editListNodes.item(0)
+
+    '// Find the otherBookmarkList
+    Dim otherBookmarkListNodes
+    Set otherBookmarkListNodes = xmlNode_loadRequest.getElementsByTagName(TAG_OTHER_BOOKMARK_LIST)
+    Dim xmlNode_otherBookmarkList
+    Set xmlNode_otherBookmarkList = otherBookmarkListNodes.item(0)
+
+    Dim xmlNode_newEntities
+    Set xmlNode_newEntities = xmlDOM.createElement(TAG_NEW_ENTITIES)
+
+    xmlNode_editList.appendChild xmlNode_newEntities
+
+    '// Loop thru the bookmarks and compose the xml tree.
+    Dim i
+    Dim aBookmark
+    For i = 1 to bookmarkList.Count
+        Set aBookmark = bookmarkList.item(i)
+
+        '// check for previously generated bookmarks and replace them with new type bookmarks
+        '// We try and keep the names unique so we don't conflict with user added bookmarks
+        Dim bookmarkName
+        bookmarkName = aBookmark.Name
+        Dim genBookmarkType
+        genBookmarkType = isGenBookmarkForLoad(bookmarkName)
+        If (genBookmarkType > 0) Then
+            logMessage "Previously generated bookmark found, fixing " & bookmarkName
+            Dim newBookmarkName
+            '// produce a new bookmark name in the following format <bookmarkType>Ariba_aribaOldGenId<oldDPINumber>
+            If (genBookmarkType = GeneratedSection) Then
+                newBookmarkName = prefixSectionNewName & prefixAribaOldGenId & Right(bookmarkName, Len(bookmarkName) - Len(prefixSectionGenName))
+            Else
+                newBookmarkName = prefixClauseNewName & prefixAribaOldGenId & Right(bookmarkName, Len(bookmarkName) - Len(prefixClauseGenName))
+            End If
+            '// Replace the old book mark with the new one covering the same range
+            Dim aRange
+            Set aRange = aDocument.Bookmarks.Item(bookmarkName).Range
+            Set aBookmark = aDocument.Bookmarks.Add(newBookmarkName, aRange)
+            Dim pos
+            Set pos = aDocument.Bookmarks.Item(bookmarkName).Delete
+        End If
+
+        logMessage "        bookmark = " & aBookmark.Name
+        If(isNewBookmark(aBookmark.Name)) Then
+            bookmarkNode aDocument, aBookmark, xmlNode_newEntities, scanForSummary
+        Else
+            bookmarkOtherNode aDocument, aBookmark, xmlNode_otherBookmarkList
+        End If
+    Next
+
+    logXmlTree xmlNode_newEntities, 1
+
+    If(scanForParagraphs) Then
+        parseNewEntities aDocument, xmlNode_newEntities
+    End If
+End Sub
+
+'// Take a list of bookmarks, and get the summary, location for each bookmark and non-bookmarked
+'// paragraphs
+Sub scanBookmarksForSync(aDocument, bookmarkDictionary, scanForParagraphs, scanForSummary, xmlNode_syncupRequest)
+    On Error Resume Next
+
+    logMessage "        Start scanBookmarksForSync"
+
+    '// Find the editList
+    Dim editListNodes
+    Set editListNodes = xmlNode_syncupRequest.getElementsByTagName(TAG_EDIT_LIST)
+    Dim xmlNode_editList
+    Set xmlNode_editList = editListNodes.item(0)
+
+    '// Find the otherBookmarkList
+    Dim otherBookmarkListNodes
+    Set otherBookmarkListNodes = xmlNode_syncupRequest.getElementsByTagName(TAG_OTHER_BOOKMARK_LIST)
+    Dim xmlNode_otherBookmarkList
+    Set xmlNode_otherBookmarkList = otherBookmarkListNodes.item(0)
+
+    Dim xmlNode_newEntities
+    Set xmlNode_newEntities = xmlDOM.createElement(TAG_NEW_ENTITIES)
+
+    xmlNode_editList.appendChild xmlNode_newEntities
+
+    '// Loop thru the bookmarks and compose the xml tree.
+    Dim aBookmark
+    For each aBookmark in bookmarkDictionary.Items()
+        If(isGenBookmark(aBookmark.Name)) Then
+            logMessage "gen bookmark = " & aBookmark.Name
+            bookmarkNode aDocument, aBookmark, xmlNode_newEntities, scanForSummary
+        Else
+            logMessage "other bookmark = " & aBookmark.Name
+            bookmarkOtherNode aDocument, aBookmark, xmlNode_otherBookmarkList
+        End If
+    Next
+
+    logXmlTree xmlNode_newEntities, 1
+
+    If(scanForParagraphs) Then
+        parseNewEntities aDocument, xmlNode_newEntities
+    End If
+End Sub
+
+'// Take a list of bookmarks, and get the summary, location for each bookmark and non-bookmarked
+'// paragraphs
+Sub parseNewEntities(aDocument, xmlNode_newEntities)
+    On Error Resume Next
+
+    Dim node
+    Dim fromPos
+    Dim toPos
+    Dim rootNode
+    Set rootNode = xmlNode_newEntities.childNodes.Item(0)
+
+    Dim nextNodePos
+    nextNodePos = 0
+
+    '// Identify paragraphs between bookmarks
+    While (nextNodePos < xmlNode_newEntities.childNodes.Length)
+        Set node = xmlNode_newEntities.childNodes.Item(nextNodePos)
+        fromPos = getFromPos(node)
+        If( Not (node.nextSibling Is Nothing) ) Then
+            toPos = getToPos(node.nextSibling)
+        Else
+            toPos = getToPosParent(rootNode)
+        End If
+
+        Dim fromPosInt
+        Dim toPosInt
+        fromPosInt = CLng(fromPos)
+        toPosInt = CLng(toPos)
+
+        logMessage "fromPosInt = " & fromPosInt
+        logMessage "toPosInt = " & toPosInt
+
+        If( fromPosInt+1 < toPosInt-1 ) Then
+            '// If the current node is a clause, then extend the clause end to include trailing text
+            Dim currentBmName, currentBmObject
+            currentBmName = ""
+            currentBmName = node.getAttribute(ATTRIBUTE_BOOKMARK)
+            Set currentBmObject = aDocument.Bookmarks(currentBmName)
+            logMessage "currentBmName = " & currentBmName
+
+            If (currentBmName <> "" And contentType(currentBmName) = ContentClauseType) Then
+                fixBookmarkEndToPara aDocument, currentBmName
+                Dim newBookmarkEnd
+                newBookmarkEnd = currentBmObject.End
+
+                logMessage "newBookmarkEnd: " &  newBookmarkEnd
+
+                If (newBookmarkEnd <> fromPosInt) Then
+                    '// Need to mark the clause as "Non-Standard"
+                    Dim xmlNode_setSummary
+                    Set xmlNode_setSummary = getXmlNode_setSummary(currentBmObject, getClauseSummaryAll(currentBmObject))
+                    xmlNode_newEntities.parentNode.appendChild xmlNode_setSummary
+                    fromPosInt = newBookmarkEnd
+                End If
+            End If
+
+            If( fromPosInt+1 < toPosInt-1 ) Then
+                Dim theRange
+                Set theRange = aDocument.Range(fromPosInt+1, toPosInt-1)
+
+                If (Not isEmptyText(theRange)) Then
+                    Dim paragraphArray
+                    Set paragraphArray = paragraphsToClauses(theRange)
+
+                    logMessage "        getXmlNode_newEntities paragraphArray.Count = " & paragraphArray.Count
+                    If(paragraphArray.Count > 0) Then
+                        Dim xmlParagraph
+                        For each xmlParagraph in paragraphArray.Items()
+                            If( Not (node.nextSibling Is Nothing) ) Then
+                                Dim newNode
+                                Set newNode = xmlNode_newEntities.insertBefore(xmlParagraph,node.nextSibling)
+                            Else
+                                xmlNode_newEntities.appendChild xmlParagraph
+                            End If
+                            Set node = node.nextSibling
+                            nextNodePos = nextNodePos + 1
+                        Next
+                    End If
+                End If
+            End If
+
+        End If
+        nextNodePos = nextNodePos + 1
+        logMessage " node = " & node & " Length = " & xmlNode_newEntities.childNodes.Length
+    Wend
+
+    logMessage "        End getXmlNode_newEntities"
+End Sub
+
+'// Used by Load/Syncup to identify the non-bookmarked text.
+'// fromPos is called on currentBookmark and toPos is called
+'// on the next bookmark to compute the islands of non-bookmarked
+'// areas
+Function getFromPos(node)
+    Dim fromPos
+    If(node.nodeName = TAG_SECTION) Then
+        fromPos = node.getAttribute(ATTRIBUTE_SUMMARY_ENDPOS)
+    ElseIf(node.nodeName = TAG_CLAUSE) Then
+        fromPos = node.getAttribute(ATTRIBUTE_ENDPOS)
+    ElseIf(node.nodeName = TAG_SECTION_GLOBAL) Then
+        fromPos = node.getAttribute(ATTRIBUTE_STARTPOS)
+    End If
+    getFromPos = fromPos
+End Function
+
+'// Please see comments for getFromPos
+Function getToPos(node)
+    Dim toPos
+    toPos = node.getAttribute(ATTRIBUTE_STARTPOS)
+    getToPos = toPos
+End Function
+
+'// Please see comments for getFromPos
+Function getToPosParent(node)
+    Dim toPos
+    toPos = node.getAttribute(ATTRIBUTE_ENDPOS)
+    getToPosParent = toPos
+End Function
+
+'// This function builds a bookmark subtree for the current section. The subtree is added
+'// as child Node to the parent node that is passed. Also, it returns the Position of the
+'// next bookmark after the subtree
+Sub bookmarkNode(aDocument,aBookmark,xmlNode_parent,scanForSummary)
+    On Error Resume Next
+
+    Dim xmlNode_bookmark
+
+    If(aBookmark.Name = GlobalContractBookmarkName) Then
+        Set xmlNode_bookmark = sectionGlobalNode(aDocument,aBookmark)
+        xmlNode_parent.appendChild xmlNode_bookmark
+    ElseIf(Instr(1,aBookmark.Name,prefixSectionNewName,vbBinaryCompare)<>0 Or _
+           Instr(1,aBookmark.Name,prefixSectionGenName,vbBinaryCompare)<>0) Then
+        fixSectionBookmark aDocument, aBookmark
+        Set xmlNode_bookmark = sectionToXmlNode(aDocument,aBookmark)
+        xmlNode_parent.appendChild xmlNode_bookmark
+    ElseIf(Instr(1,aBookmark.Name,prefixClauseNewName,vbBinaryCompare)<>0 Or _
+           Instr(1,aBookmark.Name,prefixClauseGenName,vbBinaryCompare)<>0) Then
+        fixClauseBookmark aDocument, aBookmark
+        Set xmlNode_bookmark = clauseToXml(aDocument,aBookmark,scanForSummary)
+        xmlNode_parent.appendChild xmlNode_bookmark
+    Else
+        Set xmlNode_bookmark = otherBookmarkNode(aDocument,aBookmark)
+        xmlNode_parent.appendChild xmlNode_bookmark
+    End If
+End Sub
+
+Sub bookmarkOtherNode(aDocument,aBookmark,xmlNode_parent)
+    On Error Resume Next
+
+    Dim xmlNode_bookmark
+
+    Set xmlNode_bookmark = otherBookmarkNode(aDocument,aBookmark)
+    xmlNode_parent.appendChild xmlNode_bookmark
+End Sub
+
+'// This function builds a bookmark subtree for the current section. The subtree is added
+'// as child Node to the parent node that is passed. Also, it returns the Position of the
+'// next bookmark after the subtree
+Function bookmarkSubtree(aDocument,rootBookmark, bookmarkList, bookmarkPosition, xmlNode_parent)
+    On Error Resume Next
+
+    bookmarkSubtree = bookmarkPosition+1
+
+    Dim xmlNode_subtreeRoot
+
+    If(Instr(1,rootBookmark.Name,prefixSectionName,vbBinaryCompare)<>0) Then
+        Set xmlNode_subtreeRoot = sectionToXmlNode(aDocument,rootBookmark)
+        xmlNode_parent.appendChild xmlNode_subtreeRoot
+    ElseIf(Instr(1,rootBookmark.Name,prefixClauseName,vbBinaryCompare)<>0) Then
+        Set xmlNode_subtreeRoot = clauseToXml(aDocument,rootBookmark)
+        xmlNode_parent.appendChild xmlNode_subtreeRoot
+        Exit Function
+    End If
+
+    Dim aBookmark
+    Dim nextPosition
+    nextPosition = bookmarkPosition+1
+    Dim continue
+    continue = True
+    Do While(nextPosition <= bookmarkList.count AND continue=True)
+        Set aBookmark = bookmarkList.item(nextPosition)
+        If(bookmarkFullyIncluded(rootBookmark,aBookmark)=1) Then
+            If(Instr(1,aBookmark.Name,prefixSectionName,vbBinaryCompare)<>0) Then
+                nextPosition = bookmarkSubtree(aDocument,aBookmark,bookmarkList,nextPosition,xmlNode_subtreeRoot)
+            ElseIf(Instr(1,aBookmark.Name,prefixClauseName,vbBinaryCompare)<>0) Then
+                xmlNode_subtreeRoot.appendChild clauseToXml(aDocument,aBookmark)
+                nextPosition = nextPosition + 1
+            End If
+        ElseIf(bookmarkIncluded(rootBookmark,aBookmark) <> 1) Then
+            '// We can do some validation here to make sure the bookmark is completely
+            '// outside of rootBookmark - and that it does not overlap with current
+            continue = False
+        End If
+    Loop
+
+    bookmarkSubtree = nextPosition
+End Function
+
+
+'// -------------------------------------------------------------
+'// ----------------- Util Methods for Word ---------------------
+'// -------------------------------------------------------------
+
+Sub applyBookmarksUtil (agreement,applyXmlString)
+    On Error Resume Next
+
+    logMessage "    Start applyBookmarksUtil"
+
+    Dim currentSelection
+    Set currentSelection = agreement.ActiveWindow.Selection
+
+    Dim xmlDoc_syncupApply
+    Set xmlDoc_syncupApply = CreateObject("Msxml2.DOMDocument.3.0")
+    xmlDoc_syncupApply.async = False
+    xmlDoc_syncupApply.loadXML applyXmlString
+    If (xmlDoc_syncupApply.parseError.errorCode <> 0) Then
+        Dim myErr
+        Set myErr = xmlDoc_syncupRequest.parseError
+        logError "Errot = " & myErr.reason
+        logMessage "Got error"
+        logMessage "Errot = " & myErr.reason
+    End If
+
+    Dim xmlNode_syncupApply    '// xml node representing the syncup apply
+    Set xmlNode_syncupApply = xmlDoc_syncupApply.documentElement
+
+    logMessage "    xmlNode_syncupApply xml = " & xmlNode_syncupApply.xml
+
+    Dim xmlNode_applyBookmarkList
+    Set xmlNode_applyBookmarkList = xmlNode_syncupApply.childNodes.item(0)
+
+    logMessage "    xmlNode_applyBookmarkList xml = " & xmlNode_applyBookmarkList.xml
+    logMessage "    Start Traverse syncupApply"
+    logMessage "    xmlNode_applyBookmarkList child count = " & xmlNode_applyBookmarkList.childNodes.Count
+
+    If(xmlNode_applyBookmarkList.hasChildNodes()) Then
+        Dim xmlNode_applyBookmark
+        Dim newBookmark
+        For each xmlNode_applyBookmark in xmlNode_applyBookmarkList.childNodes
+            logMessage "xmlNode_applyBookmark xml = " & xmlNode_applyBookmark.xml
+            logMessage "xmlNode_applyBookmark.tagName = " & xmlNode_applyBookmark.tagName
+            If(xmlNode_applyBookmark.tagName = TAG_APPLY_BOOKMARK_BY_LOCATION) Then
+                newBookmark = xmlNode_applyBookmark.getAttribute(ATTRIBUTE_NEW_BOOKMARK)
+                logMessage "newBookmark = " & newBookmark
+                Dim startPos
+                startPos = xmlNode_applyBookmark.getAttribute(ATTRIBUTE_STARTPOS)
+                logMessage "startPos = " & startPos
+                Dim endPos
+                endPos = xmlNode_applyBookmark.getAttribute(ATTRIBUTE_ENDPOS)
+                logMessage "endPos = " & endPos
+                applyBookmarkByLocation agreement, currentSelection, newBookmark, startPos, endPos
+                applyStyleByAttribute agreement, currentSelection, newBookmark, xmlNode_applyBookmark
+            ElseIf(xmlNode_applyBookmark.tagName = TAG_APPLY_BOOKMARK_BY_NAME) Then
+                newBookmark = xmlNode_applyBookmark.getAttribute(ATTRIBUTE_NEW_BOOKMARK)
+                logMessage "newBookmark = " & newBookmark
+                Dim bookmark
+                bookmark = xmlNode_applyBookmark.getAttribute(ATTRIBUTE_BOOKMARK)
+                applyBookmarkByName agreement, currentSelection, newBookmark, bookmark
+                applyStyleByAttribute agreement, currentSelection, newBookmark, xmlNode_applyBookmark
+            End If
+
+            '// to fix the defect of "Word has insufficient memory ... not be able to undo ..."
+            agreement.UndoClear
+        Next
+
+    End If
+End Sub
+
+
+Sub applyBookmarkByName(agreement, currentSelection, newBookmark, oldBookmark)
+    On Error Resume Next
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , oldBookmark) '// wdGoToBookmark = -1
+
+    Dim aBookmark
+    Set aBookmark = agreement.Bookmarks.Add(newBookmark, aRange)
+
+    Dim pos
+    pos = agreement.Bookmarks.Item(oldBookmark).Delete
+
+    logMessage "End applyBookmarkByName"
+End Sub
+
+
+Sub applyBookmarkByLocation(agreement, currentSelection, newBookmark, startPos, endPos)
+    On Error Resume Next
+
+    Dim aRange
+    Set aRange = agreement.Range(startPos, endPos-1)    '// exclude the paragraph character
+
+    logMessage "    range start = " & aRange.Start
+    logMessage "    range end = " & aRange.End
+
+    Dim aBookmark
+    Set aBookmark = agreement.Bookmarks.Add(newBookmark, aRange)
+
+    logMessage "new Bookmark Name = " & aBookmark.Name
+
+    logMessage "End applyBookmarkByLocation"
+End Sub
+
+Sub applyStyleByAttribute(agreement, currentSelection, newBookmark, xmlNode_applyBookmark)
+    On Error Resume Next
+
+    Dim style
+    style = ""
+    style = xmlNode_applyBookmark.getAttribute(ATTRIBUTE_STYLE)
+    logMessage "    applyStyleByAttribute: Applying style" & style
+
+    If(style <> "") Then
+        selectBookmark currentSelection, newBookmark
+        applyStyleInSectionClause agreement, style, currentSelection, contentType(newBookmark)
+        logMessage "    applyStyleByAttribute: Style applied"
+    End If
+End Sub
+
+Sub removeLeadingTailingParaMarkerOfARange(currentDocument, range)
+    On Error Resume Next
+    logMessage "    starting removeLeadingTailingParaMarkerOfARange"
+
+    Dim firstChar, lastChar
+    firstChar = range.Characters(1).Text
+    lastChar = range.Characters(Len(range)).Text
+
+    logMessage "       End firstChar, Asc(firstChar): " & firstChar & " " & Asc(firstChar)
+    logMessage "       End lastChar, Asc(lastChar): " & lastChar & " " & Asc(lastChar)
+
+    Dim tmpStart, tmpEnd
+    tmpStart = range.Start
+    tmpEnd = range.End
+    If (firstChar = paraChar) Then
+        range.Start = tmpStart+1
+    End If
+
+    If (lastChar = paraChar) Then
+        range.End = tmpEnd-1
+    End If
+
+    logMessage " range.Start and range.End: " & range.Start & "," & range.End
+
+    Set range = currentDocument.Range(range.Start, range.End)
+End Sub
+
+Sub removeLeadingTailingParaMarker(currentDocument, range)
+    On Error Resume Next
+
+    logMessage "    starting removeLeadingTailingParaMarker"
+
+    Dim bookmarksInCurrentSelection
+    Set bookmarksInCurrentSelection = range.Bookmarks
+
+    Dim firstChar, lastChar
+    firstChar = range.Characters(1).Text
+    lastChar = range.Characters(Len(range)).Text
+
+    logMessage "       End firstChar, Asc(firstChar): " & firstChar & " " & Asc(firstChar)
+    logMessage "       End lastChar, Asc(lastChar): " & lastChar & " " & Asc(lastChar)
+
+    Dim sBookmark, isNewPosition
+    For each sBookmark in bookmarksInCurrentSelection
+        logMessage " sBookmark, start, end in removeLeadingTailingParaMarker: " & sBookmark.Name & " " & sBookmark.Start & " " & sBookmark.End
+        isNewPosition = false
+        '//remove leading para marker
+        If ((firstChar = paraChar) OR (lastChar = paraChar)) Then
+            If ((firstChar = paraChar) AND (sBookmark.Start = range.Start+1)) Then
+                range.Start = sBookmark.Start
+                createASpace currentDocument, sBookmark.Range
+                isNewPosition = true
+                logMessage "    change Start position to " & range.Start
+                logMessage "    bookmark: " & sbookmark.Name
+            End If
+            If ((lastChar = paraChar) AND (sBookmark.End = range.End-1)) Then
+                range.End = sBookmark.End
+                isNewPosition = true
+            End If
+            If (isNewPosition) Then
+                Exit For
+            End If
+        End If
+    Next
+
+    Set range = currentDocument.Range(range.Start, range.End)
+End Sub
+
+Sub getLogsOfDocumentBookmarks(currentDocument)
+    On Error Resume Next
+
+    logMessage "     Starting getLogsOfDocumentBookmarks"
+
+    Dim aBookmark
+    For Each aBookmark In currentDocument.Bookmarks
+    logMessage "bookmarks in " & currentDocument & ". Bookmark name, start pos, end pos: " & aBookmark.Name & " " & aBookmark.Start & " " & aBookmark.End
+        Dim aRange
+        Set aRange = aBookmark.Range
+        If (isEmptyText(aRange)) Then
+            logMessage " This is an empty bookmark: " & aBookmark.Name & " " & aBookmark.Start & " " & aBookmark.End
+        End If
+    Next
+
+End Sub
+
+'//Work in progress
+Function getBookmarkNamesInARange (currentDocument, range, tolerance)
+    On Error Resume Next
+
+    logMessage " getBookmarkNamesInARange: range.Start, range.End " & range.Start & " " & range.End
+
+    Set bookmarksList = CreateObject("Scripting.Dictionary")
+
+    Dim index, bookmarksFound
+    index = tolerance
+    bookmarksFound = false
+
+    Do While ((tolerance >=0 AND index >=0) OR (tolerance <0 AND index <= 0) )
+        Dim aSelection
+	Set aSelection = currentDocument.Range(range.Start-index, range.End-index)
+        logMessage " getBookmarkNamesInARange: aSelection.Start, aSelection.End " & aSelection.Start & " " & aSelection.End
+
+        Dim rangeBookmarks
+        Set rangeBookmarks = aSelection.Bookmarks
+
+        Dim aBookmark, startBookmarkPos
+        startBookmarkPos = range.Start-index
+
+        For each aBookmark in rangeBookmarks
+            If (bookmarkIncluded(aSelection, aBookmark) = 1) Then
+                Dim aBookmarkStartPos, aBookmarkEndPos, rangeEndPos
+                aBookmarkStartPos = aBookmark.Start
+                aBookmarkEndPos = aBookmark.End
+                rangeEndPos = range.End
+                '//If (aBookmarkStartPos = startBookmarkPos) Then
+                   logMessage " getBookmarkNamesInARange add to bookmarksList: " & aBookmark.Name
+                   bookmarksFound = true
+                   bookmarksList.Add aBookmark.Name, aBookmark
+                '//ElseIf () Then
+
+                '//End If
+            End If
+        Next
+        If (tolerance >= 0) Then
+            index = index-1
+        Else
+            index = index+1
+        End If
+    Loop
+    If (bookmarksFound = true) Then
+        Set getBookmarkNamesInARange = bookmarksList
+    Else
+        Set getBookmarkNamesInARange = Nothing
+    End If
+End Function
+
+
+Function getABookmarkNameOfARange (currentDocument, range, tolerance)
+    On Error Resume Next
+
+    getABookmarkNameOfARange = ""
+
+    logMessage " getABookmarkNameOfARange: range.Start, range.End " & range.Start & " " & range.End
+
+    Dim aSelection
+    Set aSelection = currentDocument.Range(range.Start-tolerance, range.End-tolerance)
+    logMessage " getABookmarkNameOfARange: aSelection.Start, aSelection.End " & aSelection.Start & " " & aSelection.End
+
+    Dim foundABookmark
+    foundABookmark = false
+
+    Do While (tolerance >= 0 AND foundABookmark = false)
+        Dim startBookmarks
+        Set startBookmarks = aSelection.Bookmarks
+        Dim sBookmark, startBookmarkPos
+        startBookmarkPos = range.Start-tolerance
+        For each sBookmark in startBookmarks
+            logMessage " getABookmarkNameOfARange: sBookmark.Name " & sBookmark.Name & "(" & sBookmark.Start & "," & sBookmark.End & ")"
+            If (sBookmark.Start = startBookmarkPos) Then
+                Dim sbookmarkEndPos, rangeEndPos
+                sbookmarkEndPos = sBookmark.End
+                rangeEndPos = range.End
+                If (sbookmarkEndPos = range.End) Then
+                    foundABookmark = true
+                    getABookmarkNameOfARange = sBookmark.Name
+                    logMessage " getABookmarkNameOfARange: 1"
+                    Exit For
+                '//ElseIf ((sBookmark.End > range.End) AND isEmptyText(currentDocument.Range(range.End, sBookmark.End))) Then
+                ElseIf ((sbookmarkEndPos > rangeEndPos) AND isEmptyText(currentDocument.Range(rangeEndPos, sbookmarkEndPos))) Then
+                    foundABookmark = true
+                    getABookmarkNameOfARange = sBookmark.Name
+                    logMessage " getABookmarkNameOfARange: 2"
+                    Exit For
+                ElseIf ((sbookmarkEndPos < rangeEndPos) AND isEmptyText(currentDocument.Range(sbookmarkEndPos, rangeEndPos))) Then
+                    foundABookmark = true
+                    getABookmarkNameOfARange = sBookmark.Name
+                    logMessage " getABookmarkNameOfARange: 3"
+                    Exit For
+                End If
+            End If
+        Next
+        tolerance = tolerance-1
+    Loop
+
+    logMessage " bookmark name in getABookmarkNameOfARange: " & getABookmarkNameOfARange
+
+End Function
+
+'// -------------------------------------------------------------
+'// ----------------- Util Methods for XML ----------------------
+'// -------------------------------------------------------------
+
+Sub printBookmarkInfo (currentDocument)
+    On Error Resume Next
+
+    logMessage "Start Printing all bookmark info ..."
+    currentDocument.Activate
+
+    Dim currentSelection
+
+    Set currentSelection = currentDocument.ActiveWindow.Selection
+    currentSelection.WholeStory
+
+    Dim allBookmarks
+    Set allBookmarks = currentSelection.Bookmarks
+
+    Dim count
+    count = allBookmarks.Count
+
+    Dim aBookmark
+    For i = 1 to count
+        currentSelection.WholeStory
+        Set aBookmark = allBookmarks.Item(i)
+        logMessage "    BookmarkName = " & aBookmark.Name & " startPos = " & aBookmark.Start & " endPos = " & aBookmark.End
+    Next
+
+    logMessage "End Printing all bookmark info ..."
+End Sub
+
+
+Sub logXmlTree(xmlTree, depth)
+    On Error Resume Next
+
+    If(EnableLogging) Then
+        Dim str
+        str = ""
+          Dim i
+        For i=1 to depth
+            str = str & "  "
+        next
+
+        If xmlTree.hasChildNodes() Then
+            logMessage ""
+            logXmlNode xmlTree, depth
+            Dim node
+            For each node in xmlTree.childNodes
+                logXmlTree node,depth+1
+            Next
+            logMessage str & "&lt;/"  & xmlTree.tagName & "&gt;"
+        Else
+            logXmlNode xmlTree, depth
+            logMessage str & "&lt;/"  & xmlTree.tagName & "&gt;"
+        End If
+    End If
+End Sub
+
+Sub logXmlNode(node,indent)
+    On Error Resume Next
+
+    If(EnableLogging) Then
+        Dim str
+        str = ""
+          Dim i
+        For i=1 to indent
+            str = str & "  "
+        next
+
+        If(node.nodeTypeString = "text") Then
+              str = str & node.text
+        ElseIf(node.nodeTypeString = "cdatasection") Then
+              str = str & node.nodeValue
+        Else
+            str = str & "&lt;"
+            str = str & node.tagName
+              Dim attrib
+              For Each attrib In node.attributes
+                   str = str & " " & attrib.name & "=" & attrib.nodeValue
+              Next
+              str = str & "&gt;"
+        End If
+
+        logMessage str
+    End If
+End Sub
+
+'// --------------------------------------------------------------------------------------
+'// Public Class Bookmark Proxy
+'//
+'// A BookmarkProxy is a local VBScript object that can stand in the place of the
+'// Microsoft DOM Bookmark object and allow other code to get property values without
+'// having to make round trips to Microsoft Word for each property.
+'// --------------------------------------------------------------------------------------
+Class BookmarkProxy
+    Private m_start
+    Private m_end
+    Private m_name
+    Private m_domBookmark
+
+    Public Sub init (domBookmark)
+        On Error Resume Next
+
+        m_start = domBookmark.Start
+        m_end   = domBookmark.End
+        m_name  = domBookmark.Name
+        Set m_domBookmark = domBookmark
+
+        if Err.Number <> 0 then
+            logMessage "Bookmark Proxy init error  - " & Err.Description
+            Exit Sub
+        end if
+    End Sub
+
+    Public Property Get Start
+        Start = m_start
+    End Property
+
+    Public Property Get [End]
+        [End] = m_end
+    End Property
+
+    Public Property Get Name
+        Name = m_name
+    End Property
+
+    Public Property Get DomBookmark
+        Set DomBookmark = m_domBookmark
+    End Property
+End Class
+
+Function createBookmarkProxy (domBookmark)
+    On Error Resume Next
+    dim temp
+    Set temp = new BookmarkProxy
+    temp.init(domBookmark)
+    Set createBookmarkProxy = temp
+End Function
+
+'// --------------------------------------------------------------------------------------
+'// Public Class Range Proxy
+'//
+'// A RangeProxy is a local VBScript object that can stand in the place of the
+'// Microsoft DOM Range object and allow other code to get property values without
+'// having to make round trips to Microsoft Word for each property.
+'// --------------------------------------------------------------------------------------
+Class RangeProxy
+    Private m_start
+    Private m_end
+    Private m_domRange
+    Private  m_bookmarkProxies
+
+    Public Sub init (domRange)
+        On Error Resume Next
+
+        m_start = domRange.Start
+        m_end   = domRange.End
+
+        Set m_domRange = domRange
+
+        '// Create book mark proxies
+        '// TODO We can find the relevant intersecting bookmarks from the container
+        dim wordBM
+        Set wordBMS = domRange.Bookmarks
+
+	    dim count
+	    count = wordBMS.count
+
+        Set m_bookmarkProxies = new AribaStaticArray
+        m_bookmarkProxies.init(count)
+
+        dim index
+        index = 1
+        For Each wordBM In wordBMS
+            m_bookmarkProxies.SetItem index, createBookmarkProxy(wordBM)
+            index = index + 1
+            if Err.Number <> 0 then
+                logMessage "book mark array init error  - " & Err.Description
+            end if
+        Next
+
+        if Err.Number <> 0 then
+            logMessage "Range Proxy init error  - " & Err.Description
+        end if
+    End Sub
+
+    Public Property Get Start
+        Start = m_start
+    End Property
+
+    Public Property Get [End]
+        [End] = m_end
+    End Property
+
+    Public Property Get DomRange
+        Set DomRange = m_domRange
+    End Property
+
+    Public Property Get BookmarkProxies
+        Set BookmarkProxies = m_bookmarkProxies
+    End Property
+End Class
+
+Function createRangeProxy (domRange)
+    On Error Resume Next
+    dim temp
+    set temp = new RangeProxy
+    temp.init(domRange)
+    set createRangeProxy = temp
+End Function
+
+Function createAribaStaticArrayFromCollection (collection)
+    On Error Resume Next
+
+    if Err.Number <> 0 then
+        logMessage "createAribaStaticArrayFromCollection.START  - " & Err.Description
+    end if
+
+    dim temp
+    Set temp = new AribaStaticArray
+    temp.initByCollection(collection)
+
+    if Err.Number <> 0 then
+        logMessage "createAribaStaticArrayFromCollection.END  - " & Err.Description
+    end if
+
+    set createAribaStaticArrayFromCollection = temp
+End Function
+
+'// Ariba Implementation of 1-based static OBJECT array
+Class AribaStaticArray
+    Private m_array()
+    Private m_count
+
+    Public Sub init (count)
+        ReDim m_array(count-1)
+        m_count = count
+    End Sub
+
+    '// Initialize from a collection
+    Public Sub initByCollection(coll)
+        On Error Resume Next
+
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.initByCollection.START  - " & Err.Description
+        end if
+
+        init(coll.count)
+
+        dim index
+        index = 0
+        For Each obj In coll
+            Set m_array(index) = obj
+            index = index + 1
+        Next
+
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.initByCollection.END  - " & Err.Description
+        end if
+
+    End Sub
+
+    '// Returns the number of items in the static array
+    Public Function Count ()
+        On Error Resume Next
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.Count.START: " & Err.Description
+        end if
+
+        Count = m_count
+
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.Count.END: " & Err.Description
+        end if
+    End Function
+
+    '// Usage of Item is 1-based
+    Public Function Item (index)
+        On Error Resume Next
+
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.Item.START: " & Err.Description
+        end if
+
+        Set Item = m_array(index-1)
+
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.Item.END: " & Err.Description
+        end if
+    End Function
+
+    '// Usage of Item is 1-based
+    Public Sub SetItem (index, obj)
+        On Error Resume Next
+
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.SetItem.START: " & Err.Description
+        end if
+
+        Set m_array(index-1) = obj
+
+        if Err.Number <> 0 then
+            logMessage "AribaStaticArray.SetItem.END: " & Err.Description
+        end if
+    End Sub
+End Class
+
+Class BookmarkContainer
+    Private m_bookmarkProxies
+    Private m_ranges
+
+    Public Sub init (wordBookmarks)
+        On Error Resume Next
+
+        if Err.Number <> 0 then
+            logMessage "BookmarkContainer.init.START - " & Err.Description
+        end if
+
+        Set m_bookmarkProxies = CreateObject("Scripting.Dictionary")
+        Set m_ranges = CreateObject("Scripting.Dictionary")
+
+        For each bookmark In wordBookmarks
+
+            dim bookmarkProxy
+            Set bookmarkProxy = createBookmarkProxy(bookmark)
+
+            m_bookmarkProxies.Add bookmarkProxy.Name, bookmarkProxy
+            m_ranges.Add bookmarkProxy.Name, bookmark.Range
+
+            if Err.Number <> 0 then
+                logMessage "BookmarkContainer.inForLoop error  - " & Err.Description
+            end if
+        Next
+
+        if Err.Number <> 0 then
+            logMessage "BookmarkContainer.init.END  - " & Err.Description
+        end if
+    End Sub
+
+    Public Function BookmarkProxy (name)
+        On Error Resume Next
+
+        if Err.Number <> 0 then
+            logMessage "BookmarkContainer.BookmarkProxy.START: " & Err.Description
+        end if
+
+        Set BookmarkProxy = m_bookmarkProxies.Item(name)
+
+        if Err.Number <> 0 then
+            logMessage "BookmarkContainer.BookmarkProxy.START: " & Err.Description
+        end if
+
+    End Function
+
+    Public Function DomRange (name)
+        On Error Resume Next
+
+        if Err.Number <> 0 then
+            logMessage "BookmarkContainer.DomRange.START: " & Err.Description
+        end if
+
+        Set DomRange = m_ranges.Item(name)
+
+        if Err.Number <> 0 then
+            logMessage "BookmarkContainer.DomRange.End: " & Err.Description
+        end if
+    End Function
+End Class
+
+Function createBookmarkContainer (bookmarks)
+    On Error Resume Next
+
+    if Err.Number <> 0 then
+        logMessage "createBookmarkContainer.Start  - " & Err.Description
+    end if
+
+    dim temp
+    Set temp = new BookmarkContainer
+    temp.init(bookmarks)
+    set createBookmarkContainer = temp
+
+    if Err.Number <> 0 then
+        logMessage "createBookmarkContainer.End  - " & Err.Description
+    end if
+End Function

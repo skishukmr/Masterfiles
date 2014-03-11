@@ -1,0 +1,408 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <inDataLoad name="BuyerContract" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.contract.core.MasterAgreement INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING MasterAgreement.ForecastedSpend
+                              LEFT OUTER JOIN ariba.contract.core.MasterAgreement AS ParentMA INCLUDE INACTIVE USING MasterAgreement.ParentAgreement"
+                        replaceWhereClause="MasterAgreement.UniqueName IS NOT NULL AND
+                               MasterAgreement.NextVersion IS NULL"
+                        replaceIncrementalClause="(:IncrementalStartDate &lt;= MasterAgreement.TimeUpdated AND
+                                      MasterAgreement.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ContractId"/>
+            <deleteField name="ContractName"/>
+            <deleteField name="MinLimit"/>
+            <deleteField name="MaxLimit"/>
+            <deleteField name="ContractLevel"/>
+            <deleteField name="ReleaseType"/>
+            <deleteField name="ContractType"/>
+            <deleteField name="SavingsPercentage"/>
+            <field name="ContractId">
+                <aqlMapping selectField="MasterAgreement.InitialUniqueName"
+                            sourceLookupField="InitialUniqueName"/>
+            </field>
+            <field name="ContractName">
+                <aqlMapping selectField="MasterAgreement.Name"/>
+            </field>
+            <field name="MinLimit">
+                <aqlMapping selectField="MasterAgreement.MinAmount.ApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="MaxLimit">
+                <aqlMapping selectField="MasterAgreement.MaxAmount.ApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="ContractLevel">
+                <aqlMapping selectField="MasterAgreement.TermType"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="DefaultValue" value=""/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="0"/>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Supplier"/>
+                                <entry value="Commodity"/>
+                                <entry value="Item"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ContractType">
+                <aqlMapping selectField="MasterAgreement.TermType"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="DefaultValue" value="Non-Contract"/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="0"/>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Contract"/>
+                                <entry value="Contract"/>
+                                <entry value="Contract"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SavingsPercentage">
+                <aqlMapping selectField="MasterAgreement.ForecastedSpend.SavingPercentage / 100"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerDeleteContractFact" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.contract.core.MasterAgreement INCLUDE INACTIVE"
+                        replaceWhereClause="MasterAgreement.NextVersion IS NOT NULL"
+                        replaceIncrementalClause="(:IncrementalStartDate &lt;= MasterAgreement.TimeUpdated AND
+                                      MasterAgreement.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ContractId"/>
+            <field name="ContractId">
+                <aqlMapping selectField="MasterAgreement.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+
+    <inDataLoad name="BuyerContractFact" version="8.2" disableLoad="true">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.contract.core.MasterAgreement INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING MasterAgreement.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.user.core.User AS Contact INCLUDE INACTIVE USING MasterAgreement.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money AS UsedAmount INCLUDE INACTIVE USING MasterAgreement.AmountOrdered
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS UsedAmountCurrency INCLUDE INACTIVE USING UsedAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MinCommitAmount INCLUDE INACTIVE USING MasterAgreement.MinAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MinCommitCurrency INCLUDE INACTIVE USING MinCommitAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MaxCommitAmount INCLUDE INACTIVE USING MasterAgreement.MaxAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MaxCommitCurrency INCLUDE INACTIVE USING MaxCommitAmount.Currency"
+                        replaceWhereClause="MasterAgreement.NextVersion IS NULL"
+                        replaceIncrementalClause="(:IncrementalStartDate &lt;= MasterAgreement.TimeUpdated AND
+                                      MasterAgreement.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="DaysLeft"/>
+            <deleteField name="AmountPercentLeft"/>
+            <deleteField name="AmountReconciledPercentLeft"/>
+            <deleteField name="AmountInvoicedPercentLeft"/>
+            <deleteField name="ContractId"/>
+            <deleteField name="VersionNumber"/>
+            <deleteField name="RelatedContractId"/>
+            <deleteField name="Tolerance"/>
+            <deleteField name="Duration"/>
+            <deleteField name="UsedAmount.Amount"/>
+            <deleteField name="UsedAmount.Date"/>
+            <deleteField name="AmountOrderedCumulated.Amount"/>
+            <deleteField name="AmountOrderedCumulated.Currency"/>
+            <deleteField name="AmountOrderedCumulated.Date"/>
+	    <!-- 
+		Changed by : Arasan Rajendren
+		Changed on : 04/28/2011
+		Changes	   : Commented Amount, Currency & Date Field
+	    -->
+	    <!--
+	    <deleteField name="AmountReconciled.Amount"/>
+	    <deleteField name="AmountReconciled.Currency"/>
+            <deleteField name="AmountReconciled.Date"/>
+            -->
+	    <deleteField name="AmountReconciledCumulated.Amount"/>
+            <deleteField name="AmountReconciledCumulated.Currency"/>
+            <deleteField name="AmountReconciledCumulated.Date"/>
+            <deleteField name="AmountInvoiced.Amount"/>
+            <deleteField name="AmountInvoiced.Currency"/>
+            <deleteField name="AmountInvoiced.Date"/>
+            <deleteField name="AmountInvoicedCumulated.Amount"/>
+            <deleteField name="AmountInvoicedCumulated.Currency"/>
+            <deleteField name="AmountInvoicedCumulated.Date"/>
+            <deleteField name="AmountLeft.Amount"/>
+            <deleteField name="AmountLeft.Currency"/>
+            <deleteField name="AmountLeft.Date"/>
+            <deleteField name="MinCommitment.Amount"/>
+            <deleteField name="MinCommitment.Date"/>
+            <deleteField name="MaxCommitment.Amount"/>
+            <deleteField name="MaxCommitment.Date"/>
+            <deleteField name="ExpirationDate"/>
+            <deleteField name="EffectiveDate"/>
+            <deleteField name="Contract.ContractId"/>
+            <deleteField name="ParentContract.ContractId"/>
+            <deleteField name="Description"/>
+            <deleteField name="Status"/>
+            <deleteField name="Scope"/>
+            <deleteField name="ReleaseType"/>
+            <deleteField name="ContractType"/>
+            <deleteField name="Expiry"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+            <field name="ContractId">
+                <aqlMapping selectField="MasterAgreement.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="VersionNumber">
+                <aqlMapping selectField="MasterAgreement.VersionNumber"/>
+            </field>
+            <field name="RelatedContractId">
+                <aqlMapping selectField="MasterAgreement.ExternalID"/>
+            </field>
+            <field name="Tolerance">
+                <aqlMapping selectField="MasterAgreement.MaxAmountTolerancePercent"/>
+            </field>
+            <field name="Duration">
+                <aqlMapping selectField="(MasterAgreement.ExpirationDate - MasterAgreement.EffectiveDate)/30"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="UsedAmount.Amount">
+                <aqlMapping selectField="MasterAgreement.AmountOrdered.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="UsedAmount.Date">
+                <aqlMapping selectField="MasterAgreement.AmountOrdered.ConversionDate"/>
+            </field>
+            <field name="MinCommitment.Amount">
+                <aqlMapping selectField="MasterAgreement.MinAmount.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="MinCommitment.Date">
+                <aqlMapping selectField="MasterAgreement.MinAmount.ConversionDate"/>
+            </field>
+            <field name="MaxCommitment.Amount">
+                <aqlMapping selectField="MasterAgreement.MaxAmount.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="MaxCommitment.Date">
+                <aqlMapping selectField="MasterAgreement.MaxAmount.ConversionDate"/>
+            </field>
+
+            <field name="ExpirationDate">
+                <aqlMapping selectField="MasterAgreement.ExpirationDate"/>
+            </field>
+            <field name="EffectiveDate">
+                <aqlMapping selectField="MasterAgreement.EffectiveDate"/>
+            </field>
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="MasterAgreement.InitialUniqueName"/>
+            </field>
+
+            <field name="Description">
+                <aqlMapping selectField="MasterAgreement.Description"/>
+            </field>
+            <field name="Status">
+                <aqlMapping selectField="MasterAgreement.StatusString"/>
+            </field>
+            <field name="Scope">
+                <aqlMapping selectField="MasterAgreement.GlobalReleaseFlag"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="DefaultValue" value=""/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Global"/>
+                                <entry value="Global"/>
+                                <entry value="Partitioned"/>
+                                <entry value="Partitioned"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ContractType">
+                <aqlMapping selectField="MasterAgreement.TermType"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="DefaultValue" value=""/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="0"/>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Supplier"/>
+                                <entry value="Commodity"/>
+                                <entry value="Item"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerDeleteForecastedContractSpend" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.contract.core.MasterAgreement INCLUDE INACTIVE
+                              JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING MasterAgreement.ForecastedSpend
+                              JOIN ariba.contract.core.ForecastedSpendItem USING ForecastedSpend.Items"
+                        replaceWhereClause="MasterAgreement.NextVersion IS NOT NULL"
+                        replaceIncrementalClause="(:IncrementalStartDate &lt;= MasterAgreement.TimeUpdated AND
+                                      MasterAgreement.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ContractId"/>
+            <field name="ContractId">
+                <aqlMapping selectField="MasterAgreement.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerForecastedContractSpend" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.contract.core.MasterAgreement INCLUDE INACTIVE
+                              JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING MasterAgreement.ForecastedSpend
+                              JOIN ariba.contract.core.ForecastedSpendItem USING ForecastedSpend.Items
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING MasterAgreement.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.user.core.User AS Contact INCLUDE INACTIVE USING MasterAgreement.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING ForecastedSpendItem.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency"
+                        replaceWhereClause="MasterAgreement.NextVersion IS NULL"
+                        replaceIncrementalClause="(:IncrementalStartDate &lt;= MasterAgreement.TimeUpdated AND
+                                      MasterAgreement.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ContractId"/>
+            <deleteField name="ForecastedSavings.Amount"/>
+            <deleteField name="Contract.ContractId"/>
+            <deleteField name="Description"/>
+            <deleteField name="Status"/>
+            <deleteField name="Scope"/>
+            <deleteField name="ContractType"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+
+            <field name="ContractId">
+                <aqlMapping selectField="MasterAgreement.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ForecastedSavings.Amount">
+                <aqlMapping selectField="(ForecastedSpendItem.Amount.Amount * MasterAgreement.ForecastedSpend.SavingPercentage) / 100"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="MasterAgreement.InitialUniqueName"/>
+            </field>
+
+            <field name="Description">
+                <aqlMapping selectField="MasterAgreement.Description"/>
+            </field>
+            <field name="Status">
+                <aqlMapping selectField="MasterAgreement.StatusString"/>
+            </field>
+            <field name="Scope">
+                <aqlMapping selectField="MasterAgreement.GlobalReleaseFlag"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="DefaultValue" value=""/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Global"/>
+                                <entry value="Global"/>
+                                <entry value="Partitioned"/>
+                                <entry value="Partitioned"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ContractType">
+                <aqlMapping selectField="MasterAgreement.TermType"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="DefaultValue" value=""/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="0"/>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Supplier"/>
+                                <entry value="Commodity"/>
+                                <entry value="Item"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerDeleteContractLineItemFact" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerContractLineItemFact" version="8.2" disableLoad="true"/>
+
+</allDataLoads>

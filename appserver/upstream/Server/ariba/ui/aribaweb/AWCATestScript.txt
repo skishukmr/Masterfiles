@@ -1,0 +1,16 @@
+alert("Initing AWCATestScript!");
+
+function getElt (id) {
+    return document.getElementById ?
+                 document.getElementById(id) :
+                 document.all[id];
+}
+
+function testEvent () {
+    alert ("In testEvent -- calling library func");
+    libraryFunctionTest();
+}
+
+awxsRegisterEvent("testEvent", awxsCreateEvent("testEvent", testEvent));
+
+getElt("AWCADiv").innerHTML = "Secure Script Activated";

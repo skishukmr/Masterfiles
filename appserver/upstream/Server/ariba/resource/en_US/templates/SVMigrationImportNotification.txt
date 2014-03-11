@@ -1,0 +1,5 @@
+Spend Visibility objects migration import has finished with the following status:
+
+Customer Name: $customerName
+Status: $status
+Errors: $error

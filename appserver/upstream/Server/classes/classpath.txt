@@ -1,0 +1,18 @@
+# This file controls the classpath used when running Ariba Buyer programs.
+# It is used as the source of truth for both command-line programs, such as
+# initdb, and is read and processed during J2EE configuration to produce the
+# classpath used by the application sever.
+#
+# THIS FILE MUST NOT BE MODIFIED IN CUSTOMER ENVIRONMENTS.  To extend the
+# classpath, see the file classes/extensions/classpath.txt.
+#
+#  $Id: classpath.txt#11 $
+
+classes/patch.zip
+
+classes/endorsed/*.jar
+classes/extensions/*.jar
+classes/extensions/*.zip
+classes/*.zip
+classes/*.jar
+

@@ -1,0 +1,194 @@
+<w:BasicPageWrapper hasForm="$true">
+    <a:Content name="toc">
+        <b>Create RFX</b><br/>
+        <a:RefreshRegion>
+            <a:DropContainer type="lineItem" dropAction="$itemDropped" tagName="div" style="border:2px blue solid">
+                    <br/>
+                    <b>Drop Here!</b>
+                    (Count: $itemCount)
+                    <br/>
+                    <br/>
+            </a:DropContainer>
+        </a:RefreshRegion>
+        <br/>
+    </a:Content>
+
+    <a:Content name="body">
+            <w:HintMessage showTopLine="$true">
+                <a:RefreshRegion>
+                    This is a sample of dragging items from a table into a container in the TOC.
+                    Message: <b>$message</b>
+                </a:RefreshRegion>
+            </w:HintMessage>
+            <br/>
+
+            <t:DataTable multiSelect="$isMultiSelect" singleSelect="$isSingleSelect"
+                    batchSize="30"  submitForm="$true"
+                    displayGroup="$displayGroup"
+                    isItemSelectable="$currentNotMoved"
+                    tableConfig="$tableConfig"
+                    enableScrolling="$true" dragAction="$itemDragged" dragType="lineItem">
+
+                <t:HeadingArea>
+                    <w:SectionHeading title="Critical Information">
+                        <div style="float:right">
+                            <w:PulldownButton menuId="MyMenu">Create...</w:PulldownButton>\
+                            <w:TextButton action="$null">Take Action</w:TextButton>\
+                            <t:OptionsMenuButton>\
+                                <span style="padding-left:5px">\
+                                    <b>Some Label</b>\
+                                </span>\
+                            </t:OptionsMenuButton>\
+                        </div>
+                    </w:SectionHeading>
+                </t:HeadingArea>
+
+                <t:Column valign="middle">
+                    <w:ToggleImage align="absmiddle" state="$displayGroup.currentItemExtras.expando"/>
+                </t:Column>
+
+                <t:Column label="Department!" key="Department" nowrap>
+                    <a:String value="$displayGroup.currentItem.Department"/>
+                    <a:If ifTrue="$displayGroup.currentItemExtras.expando">(expanded)</a:If>
+                </t:Column>
+
+                <t:Column key="Category">
+                    <a:TextField value="$displayGroup.currentItem.Category"/>
+                </t:Column>
+
+                <t:Column key="Year" formatter="$formatters.shortDate" nowrap/>
+
+                <t:Column key="Amount" formatter="$formatters.money" align="right" nowrap/>
+
+                <t:Column>
+                    <a:If ifTrue="$displayGroup.currentItemExtras.moved">\
+                        <i>Moved</i>
+                    </a:If>
+                </t:Column>
+
+                <t:Column align="right">
+                    <div style="float:right">
+                        <w:TextButton action="$inspectClicked">Inspect</w:TextButton>
+                    </div>
+                </t:Column>
+
+                <t:RowDetail isVisible="$displayGroup.currentItemExtras.expando" showRowLine="$true">
+                    This is a test of the emergency broadcasting...
+                </t:RowDetail>
+                <t:SelectionButtonArea isVisible="$true">
+                    <w:TextButton action="$simulateMove">Move</w:TextButton>\
+                    <w:TextButton action="$simulateDelete">Delete</w:TextButton>
+                </t:SelectionButtonArea>
+
+                <t:ButtonArea isVisible="$true">
+                    <w:TextButton action="$null">Add</w:TextButton>
+                    <w:PopupMenuLink class="awmenuLink hoverLink hoverArrow" menuId="MyMenu" position="this">Do something</w:PopupMenuLink>
+                    &nbsp;
+                    <w:PopupMenuLink class="awmenuLink hoverArrow" menuId="MyMenu" position="this">Do something else</w:PopupMenuLink>
+                </t:ButtonArea>
+
+            </t:DataTable>
+
+        <w:PopupMenu menuId="MyMenu">
+            <w:PopupMenuHeading showSeparator="$false">\
+                Create New Object\
+            </w:PopupMenuHeading>
+
+            <w:PopupMenuItem action="$null" showBullet="$false" disabled="$false">\
+                    New Workspace\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null" showBullet="$false" disabled="$false">\
+                    New Document\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null" showBullet="$false" disabled="$false">\
+                    New RFx\
+            </w:PopupMenuItem>
+        </w:PopupMenu>\
+
+    </a:Content>
+</w:BasicPageWrapper>
+
+
+<server>
+    var displayGroup = null;
+    var message ="";
+    var isMultiSelect = true;
+    var isSingleSelect = false;
+    var draggedItem = null;
+    var itemCount = 0;
+
+    function init () {
+        // initialize the display group and fetch objects ourselves so we can pre-select all
+        var list = ariba.ui.table.AWTCSVDataSource.dataSourceForPath("../Table_Samples.awz/SampleSpend.csv", component).fetchObjects();
+        displayGroup = new ariba.ui.table.AWTDisplayGroup();
+        displayGroup.setObjectArray(list);
+        // displayGroup.setSelectedObjects(list);
+    }
+
+    function itemDragged () {
+        draggedItem = displayGroup.currentItem();
+        return null;
+    }
+
+    function itemDropped () {
+        var v = displayGroup.allObjects();
+        ariba.util.core.ListUtil.removeElementIdentical(v, draggedItem);
+        displayGroup.setObjectArray(v);
+
+        itemCount++;
+        return null;
+    }
+
+    function inspectClicked () {
+        var item = displayGroup.currentItem();
+        message = "You last inspected: " + item;
+        // go to sub page (modally)
+        var next = page("ItemInspector.htm");
+        set(next, "item", item);
+        return next;
+    }
+
+    function inspectClickedSimple () {
+        var item = displayGroup.currentItem();
+        message = "You last inspected: " + item;
+        return null;
+    }
+
+    function simulateMove () {
+        var e = displayGroup.selectedObjects().iterator();
+        while (e.hasNext()) {
+            set(displayGroup.extrasForItem(e.next()), "moved", true);
+        }
+        displayGroup.clearSelection();
+        return null;
+    }
+
+    function simulateDelete () {
+        var v = displayGroup.allObjects();
+        var e = displayGroup.selectedObjects().iterator();
+        while (e.hasNext()) {
+            v.removeElementIdentical(e.next());
+        }
+        displayGroup.setObjectArray(v);
+        return null;
+    }
+
+    function currentNotMoved () {
+        return !get(displayGroup.currentItemExtras(), "moved");
+    }
+
+    function setTableConfig (config)
+    {
+        Log.demoshell.debug("Table Config: %s", config);
+        set(component.session(), "tableConf", config);
+    }
+
+    function tableConfig ()
+    {
+        try {
+            return get(component.session(), "tableConf");
+        } catch (e) {
+        }
+        return null;
+    }
+</server>

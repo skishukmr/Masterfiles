@@ -1,0 +1,107 @@
+        Hello?
+        <w:OBJECT  id="ChartObject" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" WIDTH=500 HEIGHT=400>
+        <w:PARAM NAME=movie VALUE="http://cfdemo:8086/docroot/ariba/ui/aribaweb/Charts/FC_2_3_MSScatter.swf?dataXML=<graph></graph>">
+        <w:PARAM NAME="FlashVars" VALUE="&chartWidth=500&chartHeight=400">
+        <w:PARAM NAME=quality VALUE=high>
+        <w:PARAM NAME=bgcolor VALUE=#FFFFFF>
+        <w:EMBED name="ChartObject" src="http://cfdemo:8086/docroot/ariba/ui/aribaweb/Charts/FC_2_3_MSScatter.swf"
+                FlashVars="&chartWidth=500&chartHeight=400&dataXML=<graph></graph>"
+                quality=high bgcolor=#FFFFFF WIDTH="500" HEIGHT="400"
+                TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer">
+        </w:EMBED>
+        </w:OBJECT>
+
+        <a:ClientSideScript>
+            setTimeout(function(){
+                var FCObject = (IsIE) ? awgetElementById("ChartObject") : document["ChartObject"];
+                // alert ("FCObject = " + FCObject);
+                var strXML = awgetElementById("ChartData").innerHTML;
+
+                //Set the data
+                FCObject.SetVariable('_root.dataURL',"");
+                FCObject.SetVariable('_root.isNewData',"1");
+                // alert ("Updating with Data: " + strXML);
+                FCObject.SetVariable('_root.newData',strXML);
+
+                //Go to the required frame
+                FCObject.TGotoLabel('/', 'JavaScriptHandler');
+            }, 1000);
+        </a:ClientSideScript>
+
+        <pre id="ChartData">
+        <graph canvasBgColor="FFFFFF" numDivLines="9" divLineAlpha="10" yAxisName="Bid" yAxisMinvalue="0" numberPrefix=" $" xAxisName="Time" rotateNames="0" showLegend="1" showNames="1" showAnchors="1" formatNumber="1" formatNumberScale="0" decimalPrecision="2" limitsDecimalPrecision="0" divLineDecimalPrecision="0" outCnvBaseFontSize="10" showhovercap="1" hoverCapSepChar="-">
+            <categories verticalLineColor="666666" verticalLineThickness="1" verticalLineAlpha="10">
+        <category name="4:12 PM" x="1000000" showVerticalLine="1"/>
+        <category name="4:28 PM" x="1764000" showVerticalLine="1" showName="0"/>
+        <category name="4:40 PM" x="2528000" showVerticalLine="1"/>
+        <category name="4:53 PM" x="3292000" showVerticalLine="1" showName="0"/>
+        <category name="5:06 PM" x="4056000" showVerticalLine="1"/>
+        <category name="5:19 PM" x="4820000" showVerticalLine="1" showName="0"/>
+        <category name="5:32 PM" x="5584000" showVerticalLine="1"/>
+        <category name="5:45 PM" x="6348000" showVerticalLine="1" showName="0"/>
+        <category name="5:58 PM" x="7112000" showVerticalLine="1"/>
+        <category name="6:10 PM" x="7876000" showVerticalLine="1" showName="0"/>
+        <category name="6:24 PM" x="8640000" showVerticalLine="1"/>
+        </categories>
+            <dataSet showLegend="1" seriesName="" anchorBgColor="AA0000" anchorBorderColor="AA0000" lineColor="AA0000" lineAlpha="100">
+            <set x="3700000" y="3600.00" name="IBM 12:10 PM"/>
+            <set x="4000000" y="3500.00" name="IBM 12:10 PM"/>
+            <set x="5000000" y="3400.00" name="IBM 12:10 PM"/>
+            <set x="6000000" y="3300.00" name="IBM 12:10 PM"/>
+            <set x="7000000" y="3200.00" name="IBM 12:10 PM"/>
+            <set x="8000000" y="3100.00" name="IBM 12:10 PM"/>
+            <set x="8100000" y="3000.00" name="IBM 12:10 PM"/>
+            <set x="8500000" y="2900.00" name="IBM 12:10 PM"/>
+            </dataSet>
+            <dataSet seriesName="" anchorBgColor="00AA00" anchorBorderColor="00AA00" lineColor="00AA00" lineAlpha="100">
+        <set x="1700000" y="3000.00" name="Sony 14:32"/>
+        <set x="2100000" y="2950.00" name="Sony 14:32"/>
+        <set x="2200000" y="2800.00" name="Sony 14:32"/>
+        <set x="3600000" y="2750.00" name="Sony 14:32"/>
+        <set x="4600000" y="2650.00" name="Sony 14:32"/>
+        <set x="5600000" y="2520.00" name="Sony 14:32"/>
+        <set x="6000000" y="2450.00" name="Sony 14:32"/>
+        <set x="8600000" y="2350.00" name="Sony 14:32"/>
+        </dataSet>
+            <dataSet seriesName="" anchorBgColor="0000FF" anchorBorderColor="0000FF" lineColor="0000FF" lineAlpha="100">
+        <set x="1500000" y="2500.00" name="TYCO 4:50 PM"/>
+        <set x="2100000" y="2450.00" name="TYCO 4:50 PM"/>
+        <set x="3200000" y="1400.00" name="TYCO 4:50 PM"/>
+        <set x="4600000" y="1350.00" name="TYCO 4:50 PM"/>
+        <set x="5600000" y="1150.00" name="TYCO 4:50 PM"/>
+        <set x="6600000" y="1120.00" name="TYCO 4:50 PM"/>
+        <set x="7000000" y="950.00" name="TYCO 4:50 PM"/>
+        <set x="8600000" y="850.00" name="TYCO 4:50 PM"/>
+        </dataSet>
+            <dataSet seriesName="" anchorBgColor="CDC032" anchorBorderColor="CDC032" lineColor="CDC032" lineAlpha="100">
+        <set x="1000000" y="3000.00" name="REI 10:32"/>
+        <set x="1100000" y="2000.00" name="REI 10:32"/>
+        <set x="2200000" y="1000.00" name="REI 10:32"/>
+        <set x="3600000" y="500.00" name="REI 10:32"/>
+        <set x="4600000" y="250.00" name="REI 10:32"/>
+        <set x="5600000" y="100.00" name="REI 10:32"/>
+        <set x="6000000" y="50.00" name="REI 10:32"/>
+        <set x="7600000" y="25.00" name="REI 10:32"/>
+        </dataSet>
+            <dataSet seriesName="" anchorBgColor="00AAAA" anchorBorderColor="00AAAA" lineColor="00AAAA" lineAlpha="100">
+        <set x="3600000" y="3590.00" name="Long Supplier Tech. 10:32"/>
+        <set x="4600000" y="3000.00" name="Long Supplier Tech. 10:32"/>
+        <set x="5600000" y="2000.00" name="Long Supplier Tech. 10:32"/>
+        <set x="6600000" y="1000.00" name="Long Supplier Tech. 10:32"/>
+        <set x="7600000" y="500.00" name="Long Supplier Tech. 10:32"/>
+        <set x="8600000" y="400.00" name="Long Supplier Tech. 10:32"/>
+        <set x="8610000" y="300.00" name="Long Supplier Tech. 10:32"/>
+        <set x="8620000" y="200.00" name="Long Supplier Tech. 10:32"/>
+        </dataSet>
+            <dataSet seriesName="Ceiling" showAnchor="0" anchorBgColor="FF00FF" anchorBorderColor="FF00FF" lineAlpha="100" lineColor="FF00FF">
+        <set x="1000000" y="3700.00"/>
+        <set x="8640000" y="3700.00"/>
+        </dataSet>
+            <dataSet seriesName="Reserve" anchorBgColor="00FFFF" anchorBorderColor="00FFFF" lineAlpha="100" lineColor="00FFFF">
+        <set x="999000" y="3200.00"/>
+        <set x="8650000" y="3200.00"/>
+        </dataSet>
+        </graph>
+
+        </pre>
+

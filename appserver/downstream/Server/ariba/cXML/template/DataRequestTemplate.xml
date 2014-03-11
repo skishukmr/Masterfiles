@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemParameter(System.Procure.AribaNetwork.ANDTDLocator)@@/Private.dtd">
+<cXML payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@">
+    <Header>
+        <From>
+            <Credential domain="@@getSystemParameter(System.Procure.AribaNetwork.Domain)@@">
+                <Identity>@@getSystemParameter(System.Procure.AribaNetwork.DomainId)@@</Identity>
+            </Credential>
+        </From>
+        <To>
+            <Credential domain="NetworkID">
+                <Identity>@@getToIdentity@@</Identity>
+            </Credential>
+        </To>
+        <Sender>
+            <Credential domain="AribaNetworkUserId">
+                <Identity>@@getSystemParameter(System.Procure.AribaNetwork.Id)@@</Identity>
+                <SharedSecret>@@getSystemParameter(System.Procure.AribaNetwork.Password)@@</SharedSecret>
+            </Credential>
+            <UserAgent>@@getUserAgent@@</UserAgent>
+        </Sender>
+    </Header>
+    <Request>
+        <DataRequest>
+            <InternalID domain="@@getDomain@@">@@getInternalID@@</InternalID>
+        </DataRequest>
+    </Request>
+</cXML>

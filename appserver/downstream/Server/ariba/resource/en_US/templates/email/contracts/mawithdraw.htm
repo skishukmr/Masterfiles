@@ -1,0 +1,27 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+@@Include=templates/email/common/metalink.htm@@
+</head>
+<body>
+<form name=formPrimary>
+
+<!--header contains message subject, requestor, date. -->
+@@Include=templates/email/common/header.htm@@
+
+<!--message content -->
+<br />
+<br />
+<div style="padding:0px 50px 35px 50px; background:#FFF;">
+@@Include=templates/email/common/comments.htm@@
+</div>
+
+<!--footer -->
+<div style="text-align:right; color:#555580; font:normal 7pt Verdana, Arial, Helvetica; padding:0px 10px 0px 0px;">@@Include=templates/email/common/copyright.htm@@</div>
+
+<!--debug. Leave in document. Turn off rendering with display property in email.css -->
+<div style="text-align:left; display:none; color:#555580; font:normal 7pt Verdana; padding:2px 0px 2px 10px; background:#FFF;">Template: mawithdraw.htm</div>
+</form>
+</body>
+</html>

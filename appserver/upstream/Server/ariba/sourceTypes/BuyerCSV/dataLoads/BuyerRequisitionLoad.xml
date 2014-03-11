@@ -1,0 +1,64 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerRequisitionLineItem">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.Account INCLUDE INACTIVE USING SplitAccounting.Account
+                                        LEFT OUTER JOIN ariba.common.core.User AS RequesterProfile INCLUDE INACTIVE ON (Requisition.Requester = RequesterProfile.User)
+                                        LEFT OUTER JOIN ariba.common.core.Accounting AS UserAccounting INCLUDE INACTIVE USING RequesterProfile.Accounting
+                                        LEFT OUTER JOIN ariba.core.Product AS Product INCLUDE INACTIVE USING SplitAccounting.Product
+                                        LEFT OUTER JOIN ariba.core.Region AS AccountingRegion INCLUDE INACTIVE USING UserAccounting.Region
+                                        LEFT OUTER JOIN ariba.core.SubAccount AS SubAccount INCLUDE INACTIVE USING SplitAccounting.SubAccount
+                                        LEFT OUTER JOIN ariba.core.Company AS AccountCompany INCLUDE INACTIVE USING SplitAccounting.Company"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <aqlMapping selectField="Account.UniqueName"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AccountingCompany.CompanyId">
+            <aqlMapping selectField="AccountCompany.UniqueName"/>
+        </field>
+        <field name="AccountingCompany.BusinessUnitId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AccountingCompany.CompanyName">
+            <aqlMapping selectField="AccountCompany.Name"/>
+        </field>
+        <field name="AccountingCompany.Description">
+            <aqlMapping selectField="AccountCompany.CompanyDescription"/>
+        </field>
+        <field name="Product.ProductId">
+            <aqlMapping selectField="Product.UniqueName"/>
+        </field>
+        <field name="AccountingRegion.RegionId">
+            <aqlMapping selectField="AccountingRegion.UniqueName"/>
+        </field>
+        <field name="SubAccount.SubAccountId">
+            <aqlMapping selectField="SubAccount.UniqueName"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

@@ -1,0 +1,289 @@
+Dim app
+Dim agreement
+Dim documentLocation
+Dim actionUrl
+Dim tempDocumentName
+Dim uploadDocumentUrl
+Dim doneUrl
+Dim isTemplate
+
+Dim serverExceptionOnLoad 
+serverExceptionOnLoad = False
+
+Sub cleanup ()
+    On Error Resume Next
+
+    If (not (app is Nothing)) Then
+        app.Visible = false
+        document.body.style.cursor = "wait"
+        app.NormalTemplate.Saved = True
+        app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+End Sub
+
+Function logError (message)
+    logError = false
+    If Err.number <> 0 Then
+        globalError = true
+        ScriptError.innerHTML = message
+        ActiveXError.style.display = ""
+        cleanup
+        logError = true
+    End If
+End Function
+
+Sub contactApp ()
+    On Error Resume Next
+
+        'launch app
+    set app = CreateObject("Word.Application")
+    If logError(GeneratingErr.contactApplicationErrorMessage) Then
+        Exit Sub
+    End If
+    app.Visible = false
+    document.body.style.cursor = "wait"
+End Sub
+
+'// Load Document is imeplemented by this method
+'// Also used by Replace Document
+Sub buildClauseTree ()
+    On Error Resume Next
+    
+    logMessage("CDGenerateClauseTree.buildClauseTree start")
+
+    If (not SmartClientScriptUtil.saveFileToClient(documentLocation)) Then
+        Exit Sub
+    End If
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    saveOpenDocument app, documentLocation
+    openDocumentInWord app, documentLocation, False
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+    Set agreement = app.ActiveDocument
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    '// We do not handle track changes during load, which means that deleted track changed
+    '// text will be treated as normal text.
+    agreement.Revisions.AcceptAll
+    
+    Dim isSectionGlobalProvided
+    isSectionGlobalProvided = agreement.Bookmarks.Exist(GlobalContractBookmarkName)
+
+    '// If section global is NOT provided, create sectionGlobal on complete document
+    If(Not isSectionGlobalProvided) Then
+        addGlobalContractBookmarkInDocument agreement
+    End If
+        
+    Dim syncupUrl
+    syncupUrl = actionUrl
+    syncupContentInAgreement app, documentLocation, syncupUrl, tempDocumentName, True, "", True, False, isTemplate
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    app.NormalTemplate.Saved = True
+
+    ' app.Documents.Close wdDoNotSaveChanges
+    app.Quit wdDoNotSaveChanges
+
+    logMessage("CDGenerateClauseTree.buildClauseTree end")
+
+End Sub
+
+Function isParagraphBlank (aParagraph)
+    On Error Resume Next
+
+    isParagraphBlank = False
+
+    Dim aRange
+    Set aRange = aParagraph.Range
+
+    Dim count
+    count = aRange.ComputeStatistics(0) ' wdStatisticWords = 0
+
+    If (count > 0) Then
+        isParagraphBlank = False
+    Else
+        isParagraphBlank = True
+    End If
+End Function
+
+Function findNextSection (paragraphIndex)
+    On Error Resume Next
+
+    findNextSection = -1
+
+    Dim i, count
+
+    count = agreement.Paragraphs.Count
+    i = paragraphIndex + 1
+
+    Dim indent
+    indent = agreement.Paragraphs(paragraphIndex).LeftIndent
+
+    Dim nextParagraphIndex
+    nextParagraphIndex = -1
+    Dim previousIndent
+    previousIndent = -1
+    Do While ((i <= count) And (nextParagraphIndex = -1))
+        Dim nextParagraph
+        Set nextParagraph = agreement.Paragraphs(i)
+        Dim nextIndent
+        nextIndent = nextParagraph.LeftIndent
+        If ((isParagraphBlank(nextParagraph) = False) And _
+            ((indent = nextIndent) OR ((indent > nextIndent) AND (previousIndent = 0)))) Then
+            nextParagraphIndex = i
+        End If
+        previousIndent = nextIndent
+        i = i + 1
+    Loop
+
+    Dim currentSelection
+    Dim pos
+    If (nextParagraphIndex <> -1) Then
+        agreement.Paragraphs(nextParagraphIndex).Range.Select
+        Set currentSelection = agreement.ActiveWindow.Selection
+        pos = currentSelection.HomeKey(5, 0) ' wdLine = 5
+        '// Use MoveLeft. Previous use of MoveUp + End Kye caused hang 
+        '// in Word2000 for some cases
+        pos = currentSelection.MoveLeft(1, 1) ' wdCharacter = 1, Count = 1
+        findNextSection = currentSelection.End
+    Else
+        Set currentSelection = agreement.ActiveWindow.Selection
+        pos = currentSelection.EndKey(6, 0) ' wdStory = 6, wdMove = 0
+        findNextSection = currentSelection.End
+    End If
+End Function
+
+Function isBookmarkProvided (existingBookmarks)
+    On Error Resume Next
+
+    isBookmarkProvided = False
+
+    If (existingBookmarks.Count > 0) Then
+        Dim aBookmark
+        For each aBookmark in existingBookmarks
+            Dim bookmarkName
+            bookmarkName = aBookmark.Name
+
+            Dim index
+            index = InStr(1, bookmarkName, aribaKeyword, vbTextCompare)
+            If (index <> 0) Then
+                isBookmarkProvided = True
+                Exit Function
+            End If
+        Next
+    End If
+End Function
+
+Sub step_contact_app_sub ()
+    On Error Resume Next
+
+    contactApp
+    setStep "step_build_clause"
+    step_build_clause_sub
+End Sub
+
+Sub step_build_clause_sub ()
+    On Error Resume Next
+
+    buildClauseTree
+    setStep "step_done"
+    step_done_sub
+End Sub
+
+Sub step_done_sub ()
+    On Error Resume Next
+
+    cleanup
+
+	logMessage "serverExceptionOnLoad " & serverExceptionOnLoad
+	 
+    If(Not serverExceptionOnLoad) Then
+	    logMessage "getFileBytes " & serverExceptionOnLoad
+        Dim resourceData
+        resourceData = getFileBytes(documentLocation)
+    
+        Dim responseText
+        responseText = sendDataToServer(resourceData, uploadDocumentUrl)
+    
+        ' msgbox("responseText " & responseText)
+    End If
+    
+    ariba.Request.setWindowLocation(doneUrl)
+End Sub
+
+Sub startGenerateClauseTreeHandler (keyValues)
+
+    If logError("") Then
+        Exit Sub
+    End If
+    globalError = false
+
+    documentLocation = awxsGetValue(keyValues, "documentLocation")
+    actionUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl"))
+    tempDocumentName = awxsGetValue(keyValues, "tempDocumentName")
+    uploadDocumentUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "uploadDocumentUrl"))
+    doneUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "doneUrl"))
+    
+    Dim isTemplateString
+    isTemplateString = awxsGetValue(keyValues, "isTemplate")
+    If (isTemplateString = "true") Then
+        isTemplate = True
+    Else
+        isTemplate = False
+    End If
+    
+    setClientLogLevel awxsGetValue(keyValues, "clientLogLevel")
+
+    logMessage "isTemplateString " & isTemplateString
+        
+    step_contact_app_sub
+End Sub
+
+Sub setStep (name)
+    step_contact_app.className = "inactiveStep"
+    step_build_clause.className = "inactiveStep"
+    step_done.className = "inactiveStep"
+    document.all(name).className = "activeStep"
+    ' setTimeout name & "_sub()", 1, vbscript
+End Sub
+
+Dim CDGenerateClauseTreeTrigger
+
+Dim eventStartGenerateClauseTree
+Set eventStartGenerateClauseTree = awxsCreateEvent("startGenerateClauseTree", GetRef("startGenerateClauseTreeHandler"))
+awxsRegisterEvent "startGenerateClauseTree", eventStartGenerateClauseTree
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

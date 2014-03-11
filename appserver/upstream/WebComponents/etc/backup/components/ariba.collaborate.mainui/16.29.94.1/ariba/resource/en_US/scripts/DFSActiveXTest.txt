@@ -1,0 +1,78 @@
+function setStep (name) {
+    document.all("step_test_word").className = "inactiveStep";
+    document.all("step_test_excel").className = "inactiveStep";
+    document.all("step_test_msxml").className = "inactiveStep";
+    document.all("step_test_ado").className = "inactiveStep";
+    document.all("step_test_wshshell").className = "inactiveStep";
+    document.all("step_test_succeed").className = "inactiveStep";
+    document.all(name).className = "activeStep";
+    // window.setTimeout(name + "_sub()", 1);
+}
+
+function step_test_word_sub () {
+    try {
+        var word = new ActiveXObject("Word.Application");
+        word.NormalTemplate.Saved = true;
+        word.quit(0); // wdDoNotSaveChanges = 0
+        word = null;
+        setStep("step_test_excel");
+        step_test_excel_sub();
+        // window.setTimeout("setStep(\"step_test_excel\")", 1);
+    } catch (ex) {
+        logError(msg1);
+    }
+}
+
+function step_test_excel_sub () {
+    try {
+        var excel = new ActiveXObject("Excel.Application");
+        setStep("step_test_msxml");
+        step_test_msxml_sub();
+        // window.setTimeout("setStep(\"step_test_msxml\")", 1);
+    } catch (ex) {
+        logError(msg2);
+    }
+}
+
+function step_test_msxml_sub () {
+    try {
+        var msxml = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+        setStep("step_test_ado");
+        step_test_ado_sub();
+        // window.setTimeout("setStep(\"step_test_ado\")", 1);
+    } catch (ex) {
+        logError(msg3 + " <a href=\"http://www.microsoft.com/downloads/release.asp?ReleaseID=32833\" target=\"_new\">http://www.microsoft.com/downloads/release.asp?ReleaseID=32833</a>");
+    }
+}
+
+function step_test_ado_sub () {
+    try {
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var ado = new ActiveXObject("ADODB.Stream");
+        setStep("step_test_wshshell");
+        step_test_wshshell_sub();
+        // window.setTimeout("setStep(\"step_test_wshshell\")", 1);
+    } catch (ex) {
+        logError(msg4 + " <a href=\"http://www.microsoft.com/data/download_25SP1.htm\" target=\"_new\">http://www.microsoft.com/data/download_25SP1.htm</a>");
+    }
+}
+
+function step_test_wshshell_sub () {
+    try {
+        var wsh = new ActiveXObject("WScript.Shell");
+        setStep("step_test_succeed");
+        step_test_succeed_sub();
+        // window.setTimeout("setStep(\"step_test_succeed\")", 1);
+    } catch (ex) {
+        logError(msg5);
+    }
+}
+
+function step_test_succeed_sub () {
+    logError("");
+}
+
+setStep("step_test_word");
+step_test_word_sub();
+
+

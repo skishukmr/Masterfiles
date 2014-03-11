@@ -1,0 +1,56 @@
+<style type="text/css">
+<!--
+    #header {
+        background-color:#D6D6E5;
+        background-position: right top;
+        background-repeat:no-repeat;
+        border-top:1px solid #B3B3CC;
+        border-bottom:1px solid #B3B3CC;
+        margin:0px; padding-left:20px; padding-right:12px; padding-top:8px; padding-bottom:8px
+    }
+
+    #content {
+        background-color:#FFFFFF;
+        padding:25px 50px 35px 50px;
+    }
+
+    #webjumper {
+        background-color:#E5E5EE;
+        padding:6px 12px 8px 50px;
+        margin:0px;
+    }
+
+    .subject {
+        color:#000000;
+        font:bold 8pt Verdana,Arial, Helvetica,sans-serif;
+    }
+
+    .subhead {
+        background-color:#E5E5EE;
+        padding:2px 3px 2px 3px;
+        margin-bottom:10px;
+    }
+-->
+</style>
+<div id="header">
+    <span class="subject">Response has been submitted in event.</span>
+</div>
+
+<!-- TODO need to include recipient name -->
+<div id="content">
+ <span class="subhead"><b>Event Title</b></span>
+ <EmailFormField name="ContentDocument.Title"/>
+ <br>
+ <span class="subhead"><b>Response ID</b></span>
+ <EmailFormField name="SliceId"/>
+ <span class="subhead"><b>Submission Time</b></span>
+ <EmailFormField name="SubmissionDate"/>
+ <br>
+ <span class="subhead"><b>Response Status</b></span>
+ <br>
+ <EmailFormField name="AlternativeStatus"/>
+</div>
+
+<div id="webjumper">
+    <EmailFormField name="@Webjumper" label="View Details"/>
+</div>

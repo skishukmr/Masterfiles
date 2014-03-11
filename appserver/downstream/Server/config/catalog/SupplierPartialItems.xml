@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Index SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/cXML.dtd">
+
+<Index>
+  <SupplierID domain="buyersystemid">[unspecified]</SupplierID>
+  <Comments>
+      A Catalog with some partial items sans supplier
+  </Comments>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>s1</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency=""></Money>
+        </UnitPrice>
+        <Description xml:lang="en">
+           <ShortName>Cleaning Services</ShortName>
+           Restrooms, Clean and vacuum floors, foyer, waste removal, dusting, kitchen and break room cleaning.
+        </Description>
+        <UnitOfMeasure></UnitOfMeasure>
+        <Classification domain="UNSPSC">76111501</Classification>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+        <Extrinsic name="IsInternalPartID">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime></LeadTime>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>s2</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency=""></Money>
+        </UnitPrice>
+        <Description xml:lang="en">
+           <ShortName>Electrical Maintenance Services</ShortName>
+           Electrical equipment has a useful life expectancy and after this point has been reached it is time to upgrade or replace for reliability and safety. We can efficiently remove your old service then build your new one. We can install your complete indoor or outdoor service including CT Cabinets, disconnects, contactors, panels and control circuits.
+        </Description>
+        <UnitOfMeasure></UnitOfMeasure>
+        <Classification domain="UNSPSC">76111503</Classification>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+        <Extrinsic name="IsInternalPartID">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime></LeadTime>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+</Index>

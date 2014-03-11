@@ -1,0 +1,26 @@
+<!--Line Items -->
+<span style="margin-top:25px; margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/LineItems@@</b></span>
+    <table width="98%" border=0 margin=0 cellPadding="3" cellSpacing="2">
+      <tr style="border:0px; color:#000; font:8pt Verdana, Arial, Helvetica; font-weight:bold;  background:#E5E5EE;">
+        <th align="left">#</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Supplier@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Description@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/Qty@@</th>
+		<th align="right" nowrap>@@@ariba.htmlemail/Unit@@</th>
+		<th align="right" nowrap>@@@ariba.htmlemail/Price@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/Amount@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/NumberShipped@@</th>
+      </tr>
+      @@StartVector1=LineItems@@
+      <tr style="vertical-align:top; border:0px; color:#000; font:8pt Verdana, Arial, Helvetica;">
+        <td>@@POLineItem.NumberInCollection@@</td>
+        <td nowrap>@@POLineItem.Supplier.Name@@</td>
+        <td>@@POLineItem.Description.Description@@</td>
+        <td align="right" nowrap>@@POLineItem.FCN.getQuantity()@@</td>
+        <td align="right" nowrap>@@POLineItem.Description.UnitOfMeasure.Name.FCN.getString()@@</td>
+		<td align="right" nowrap>@@POLineItem.Description.Price.FCN.getAmount()@@ @@Description.Price.Currency.UniqueName@@</td>
+        <td align="right" nowrap>@@POLineItem.Amount.FCN.getAmount()@@ @@Amount.Currency.UniqueName@@</td>
+		<td align="right" nowrap>@@POLineItem.NumberShipped@@</td>
+      </tr>
+      @@EndVector1@@
+    </table>

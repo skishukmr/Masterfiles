@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- #BeginTemplate "/templates/main_basic_template.dwt" --><!-- DW6 -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>Contract statuses</title>
+<meta name="keywords" content="contracts|statuses">
+<!-- #EndEditable -->
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="file:///D|/Data/CAT%20US/library/ariba.css" type="text/css">
+<script type="text/javaScript" src="file:///D|/Data/CAT%20US/library/help.js"></script>
+<!-- #BeginEditable "comments" --> 
+<!-- $File: //ariba/help/buyer/ariba/resource/en_US/help/content/end_user/contracts/status/ref_contract_statuses.htm $
+     old path: //ariba/doc/Phoenix_Help/help/Content/procure/approvable/master-agreement/status/ma-statuses.htm#4 $
+	Creator: ddaly
+-->
+<!-- #EndEditable -->
+</head>
+<body style="margin-left: 5px">
+<div id="help">
+  <table width="636" border="0" cellspacing="0" cellpadding="2">
+    <tr align="left">
+      <th height="25" colspan="3" class="helpPageTitle" >My Supply Cabinet Online Help</th>
+    </tr>
+    <tr>
+      <td class="helpBody" height="25" colspan="3" align="right"><a href="file:///D|/Data/CAT%20US/content/end_user/common/help/contents/content_frames.htm">Contents</a> | <a href="file:///D|/Data/CAT%20US/content/end_user/common/help/index/index_frames.htm">Index</a> | <a href="file:///D|/Data/CAT%20US/content/end_user/common/help/search/search.htm">Search</a> &nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </table>
+  <!-- #BeginVariableLibraryItem "/library/main_basic_template_section.lbi" -->
+  <table width="636" border="0" cellspacing="0" cellpadding="2">
+    <tr align="left">
+      <th class="helpSectionTitle" width="218">Tips</th>
+      <th width="10">&nbsp;</th>
+      <th class="helpTopicTitle" width="408"><!-- #BeginEditable "topictitle" -->Contract 
+        statuses<!-- #EndEditable --></th>
+    </tr>
+    <tr>
+      <td valign="top" class="helpBody" width="218" bgcolor="#EEEEEE"><!-- #BeginEditable "tips" --> 
+        <p>As the CR progresses, Ariba Contract Compliance emails notification 
+          messages to keep relevant users informed and logs the history onto the 
+          <a href="../../common/basics/about_history_tab.htm">History tab</a>. 
+        </p>
+        <p> If you withdraw an CR, its status reverts to Composing<i>, </i>and 
+          the action in the History Tab shows that the request was withdrawn. 
+        </p>
+        <p>Depending on your configuration, the Processing and Processed statuses 
+          may not be displayed for contracts.</p>
+        <!-- #EndEditable -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="3">
+          <tr align="left">
+            <th class="helpSectionTitle">Related topics</th>
+          </tr>
+          <tr>
+            <td><!-- #BeginEditable "reltopics" --> 
+              <p class="helpBodySingleSpaced"><a href="ref_cr_statuses.htm">Contract 
+                request statuses</a> </p>
+              <p class="helpBodySingleSpaced"><a href="../../common/notification/about_notifs.htm">Notif</a><a href="../../common/notification/about_notifs.htm">ications</a> 
+              </p>
+              <!-- #EndEditable --> </td>
+          </tr>
+        </table></td>
+      <td valign="top"   class="helpBody" width="10">&nbsp;</td>
+      <td valign="top"   class="helpBody" width="408"><!-- #BeginEditable "body" --> 
+        <P>After a <a href="javascript: openGlossary('../../../common/glossary/cr.htm');">contract 
+          request (CR)</a> is approved, Ariba Contract Compliance creates the 
+          associated <a href="javascript: openGlossary('../../../common/glossary/contract.htm');">contract</a>.
+          As the request moves through the <a href="../process/cr.htm">business 
+          process</a>, the CR status changes to indicate where it is in the process. 
+        </p>
+        <table width="99%" border="0" cellspacing="0" cellpadding="5" >
+          <tr align="left"> 
+            <th width="22%" class="helpBody" scope="col"><b>This status</b></th>
+            <th width="78%" class="helpBody" scope="col"><b>Indicates</b></th>
+          </tr>
+          <tr valign="top"> 
+            <td width="22%" class="helpBody">Created</td>
+            <td width="78%" class="helpBody"> A contract has been created from 
+              a contract request (CR), but users cannot yet issue <a href="javascript: openGlossary('../../../common/glossary/release_order.htm');">release 
+              orders</a> against it. When the contract status is Created, the 
+              status of the CR from which it was created is Processed. </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="21%" class="helpBody">Processing</td>
+            <td width="79%" class="helpBody">If the contract contains non-catalog 
+              items, Ariba Contract Compliance creates and loads a subscription 
+              for the non-catalog items. Processing is a transitory status and 
+              the contract appears to move directly to the Processed status.</td>
+          </tr>
+          <tr valign="top"> 
+            <td width="21%" class="helpBody">Processed</td>
+            <td width="79%" class="helpBody"> 
+              <p> If the contract contains non-catalog items, the contract changes 
+                to Processed only after Ariba Contract Compliance successfully 
+                loads the subscription. </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="22%" class="helpBody">Open</td>
+            <td width="78%" class="helpBody"> 
+              <p>The effective date has passed, the expiration date has <b>not</b> 
+                passed, there is a valid available balance, and users with the 
+                appropriate privileges can issue release orders against it. <i> 
+                </i>When the contract status is Open, the status of the CR from 
+                which it was created is Processed. </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="22%" class="helpBody">Closed</td>
+            <td width="78%" class="helpBody"> 
+              <p> The expiration date has passed, or there is no longer a valid 
+                available balance (because release orders have reached the tolerance 
+                amount or quantity specified on the contract), or the Contract 
+                Manager has temporarily closed the contract for some business 
+                reason (for example, to resolve a contract dispute, or for some 
+                other reason). When a contract is closed, users cannot issue release 
+                orders against it. </p>
+              <p>When a contract is closed (by a user, because it has expired, 
+                or because it has exceeded the limit), the reason is listed on 
+                the History Tab.</p>
+            </td>
+          </tr>
+        </table>
+        <p>&nbsp;</p>
+        <!-- #EndEditable --> </td>
+    </tr>
+    <tr>
+      <td  class="helpBody" colspan="3" align="center"><hr color="#666699" noshade size="1">
+        Copyright 1996 - 2004 Ariba, Inc. <a href="javascript: openLegal('http://www.ariba.com/copyrights.cfm');">Legal notices</a>. </td>
+    </tr>
+  </table>
+  <!-- #EndVariableLibraryItem -->
+</div>
+</body>
+<!-- #EndTemplate --></html>

@@ -1,0 +1,4321 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE extension SYSTEM "../../../../ariba/base/meta/core/extensions.dtd">
+<extension name="config.variants.SAP.extensions.IntegrationMappings">
+
+<!-- *****************************************************************************************
+Change History
+Change# Change By       Change Date     Description
+==============================================================================================
+1       Santanu Dey       07-07-08      Created
+2	Divya R Nair	10th May 10	Added one field in CompanyCode called InboundReceipt
+3       Ravi		18th May 10	DisplayPOPrintFieldsPull integration event
+4       B S Dharshan    01-06-10        Added new field AdditionalChargeEnabled.
+5	Ashwini		06-08-10	Added ApproveStatus Field for RuleLevel (Issue 1152)
+6   Aswini M	02-06-2011  Made changes for Vertex added CallToVertexEnabled in Companycode pull and CATModeofTransportPull,CATNatureofTransactionPull,CATTaxUsePull
+7   Aswini M 	24-06-2011	Made changes for Withholding Tax.
+8   Aswini M	29-06-2011  Added Business Resource Approver and CATFacilityCommodityBuyerCodeMap IEs for Plant logic
+9   Aswini M    29-06-2011  Added BuyerAssignment field for Companycode
+10. Soumya M	Added VertexLoginUID, VertexLoginPWD, and added Group for Vertex Tax Exempt Reason Code
+11. Work Item 294 Abhishek Kumar  05-08-2012	Added additional fields for CompanyCode mapping to avoid manual updation. 
+12. Purush Kancharla  05-17-2012	Added additional Groups for CGM supplier pull 
+13. IBM Niraj Kumar  02/14/2013 	Mach1 R5.5 (FRD11.3/TD11.3): Added additional fields for GL to Tax lookup
+14. IBM Niraj Kumar  02/21/2013 	Mach1 R5.5 (FRD3.2/TD3.2): Added PLAFOND & ESTABLISHED in Supplier Location pull
+15. 01/10/2014    IBM-Mounika K    SpringRelease_RSD 126 (FDD_126_1.0 / TDD_126_2.0)   Mapping SAPSource of SupplierLocation file to PaymentTerms SAPSource for SAP and CGM
+********************************************************************************************** -->
+
+<import extension="ariba.variants.Plain.extensions.IntegrationMappings"/>
+<import extension="ariba.variants.SAP.extensions.SAPVariants"/>
+<import extension="ariba.variants.SAP.extensions.SAPCoreExt"/>
+<import extension="ariba.variants.SAP.extensions.SAPExpenseReportExt"/>
+<import extension="ariba.variants.SAP.extensions.SAPPunchOutExt"/>
+<import extension="ariba.variants.SAP.extensions.SAPRequisitionExt"/>
+<import extension="config.variants.Plain.extensions.CatCoreExt"/>
+<import extension="config.variants.SAP.extensions.CatSAPCoreExt"/>
+<import extension="config.variants.SAP.extensions.CatSAPRequisitionExt"/>
+  <inModule name="ariba.common.meta.Core">
+	<group name="CompanyCodePull">
+        <groupClass name="ariba.core.CompanyCode">
+            <groupClassVariant name="SAP">
+               <groupField name="UniqueName">
+                  <properties rank="110">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="UniqueName"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <groupField name="Description">
+  	            <properties rank="120">
+  	                <property name="integration">
+  	                <table>
+  	                  <entry key="mapField" value="Description"/>
+  	                     </table>
+  	               </property>
+  	                </properties>
+               </groupField>
+               <groupField name="Variant">
+                  <properties rank="130">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="Variant"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <groupField name="SAPSource">
+                  <properties rank="140">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="SAPSource"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <!-- added garima -->
+               <groupField name="DefaultCurrency.UniqueName">
+  	                     <properties rank="145">
+  	                        <property name="integration">
+  	                            <table>
+  	                                    <entry key="mapField" value="DefaultCurrency"/>
+  	                            </table>
+  	                        </property>
+  	                     </properties>
+               </groupField>
+               <!-- end -->
+	       <!-- Added By Divya R Nair for International Shipments Mexico START-->
+	       <groupField name="InboundReceipt">
+  	                     <properties rank="300">
+  	                        <property name="integration">
+  	                            <table>
+  	                                    <entry key="mapField" value="InboundReceipt"/>
+  	                            </table>
+  	                        </property>
+  	                     </properties>
+               </groupField>
+	       <!-- Added By Divya R Nair for International Shipments Mexico End-->
+               <groupField name="CompanyCodeFiltering">
+                  <properties rank="150">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="CompanyCodeFiltering"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <groupField name="PurchaseOrgFiltering">
+                  <properties rank="160">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="PurchaseOrgFiltering"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <groupField name="TeritoryFiltering">
+                  <properties rank="170">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="TeritoryFiltering"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <groupField name="RegisteredAddress.UniqueName">
+                  <properties rank="180">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="RegisteredAddress"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <groupField name="DefaultBillToAddress.UniqueName">
+                  <properties rank="190">
+                     <property name="integration">
+                         <table>
+                                 <entry key="mapField" value="DefaultBillToAddress"/>
+                         </table>
+                     </property>
+                  </properties>
+               </groupField>
+               <!-- Added by Garima -->
+                <groupField name="isGLEditableForCapital">
+  	       <properties rank="200">
+  		  <property name="integration">
+  		      <table>
+  			      <entry key="mapField" value="isGLEditableForCapital"/>
+  		      </table>
+  		  </property>
+  	       </properties>
+  	    </groupField>
+  		<groupField name="isGLEditableForInterCompany">
+  		   <properties rank="210">
+  		      <property name="integration">
+  			  <table>
+  				  <entry key="mapField" value="isGLEditableForInterCompany"/>
+  			  </table>
+  		      </property>
+  		   </properties>
+  		</groupField>
+  		 <groupField name="DefaultGLforCapital">
+  		    <properties rank="220">
+  		       <property name="integration">
+  			   <table>
+  				   <entry key="mapField" value="DefaultGLforCapital"/>
+  			   </table>
+  		       </property>
+  		    </properties>
+  		 </groupField>
+  		 <groupField name="DefaultGLforInterCompany">
+  		    <properties rank="230">
+  		       <property name="integration">
+  			   <table>
+  				   <entry key="mapField" value="DefaultGLforInterCompany"/>
+  			   </table>
+  		       </property>
+  		    </properties>
+  		 </groupField>
+
+  		 <groupField name="ValidPartneringFunctionsOnReq">
+  		    <properties rank="240">
+  		       <property name="integration">
+  			   <table>
+  				   <entry key="mapField" value="ValidPartneringFunctionsOnReq"/>
+  			   </table>
+  		       </property>
+  		    </properties>
+  		 </groupField>
+  		 <groupField name="ValidPartneringFunctionsOnInv">
+  		    <properties rank="250">
+  		       <property name="integration">
+  			   <table>
+  				   <entry key="mapField" value="ValidPartneringFunctionsOnInv"/>
+  			   </table>
+  		       </property>
+  		    </properties>
+  		 </groupField>
+  		  <groupField name="DocTypeForInvoice">
+  		     <properties rank="260">
+  			<property name="integration">
+  			    <table>
+  				    <entry key="mapField" value="DocTypeForInvoice"/>
+  			    </table>
+  			</property>
+  		     </properties>
+  		  </groupField>
+  		  <groupField name="DocTypeForCreditMemo">
+  		     <properties rank="270">
+  			<property name="integration">
+  			    <table>
+  				    <entry key="mapField" value="DocTypeForCreditMemo"/>
+  			    </table>
+  			</property>
+  		     </properties>
+  		  </groupField>
+  		  <groupField name="OBOLEValidationRequired">
+  		     <properties rank="280">
+  			<property name="integration">
+  			    <table>
+  				    <entry key="mapField" value="OBOLEValidationRequired"/>
+  			    </table>
+  			</property>
+  		     </properties>
+  		  </groupField>
+  		    <groupField name="CEMValidationRequired">
+  		       <properties rank="290">
+  			  <property name="integration">
+  			      <table>
+  				      <entry key="mapField" value="CEMValidationRequired"/>
+  			      </table>
+  			  </property>
+  		       </properties>
+  		    </groupField>
+  		    <groupField name="AdvancePaymentEnabled">
+  		       <properties rank="300">
+  			  <property name="integration">
+  			      <table>
+  				      <entry key="mapField" value="AdvancePaymentEnabled"/>
+  			      </table>
+  			  </property>
+  		       </properties>
+  		    </groupField>
+  		     <groupField name="IncludeTaxInBudgetCheck">
+  			<properties rank="310">
+  			   <property name="integration">
+  			       <table>
+  				       <entry key="mapField" value="IncludeTaxInBudgetCheck"/>
+  			       </table>
+  			   </property>
+  			</properties>
+  		     </groupField>
+  		      <groupField name="WithholdingTaxEnabled">
+  			 <properties rank="320">
+  			    <property name="integration">
+  				<table>
+  					<entry key="mapField" value="WithholdingTaxEnabled"/>
+  				</table>
+  			    </property>
+  			 </properties>
+  		      </groupField>
+               	       <groupField name="IsAccValReqdOnContractWR">
+               	          <properties rank="330">
+               	             <property name="integration">
+               	                 <table>
+               	                         <entry key="mapField" value="IsAccValReqdOnContractWR"/>
+               	                 </table>
+               	             </property>
+               	          </properties>
+               	       </groupField>
+
+
+               <groupField name="AutoReceiveOrderAmount.Amount">
+  		     <properties rank="340">
+  			<property name="integration">
+  			    <table>
+  				    <entry key="mapField" value="AutoReceiveOrderAmount"/>
+  			    </table>
+  			</property>
+  		     </properties>
+               </groupField>
+               <groupField name="AutoReceiveLineItemAmount.Amount">
+  		     <properties rank="350">
+  			<property name="integration">
+  			    <table>
+  				    <entry key="mapField" value="AutoReceiveLineItemAmount"/>
+  			    </table>
+  			</property>
+  		     </properties>
+               </groupField>
+
+  	  <groupField name="CalculateTaxes">
+  		<properties rank="360">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="CalculateTaxes"/>
+  		    </table>
+  		</property>
+  		</properties>
+  	   </groupField>
+  	  <groupField name="IncludeTaxInApproval">
+  	       <properties rank="370">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="IncludeTaxInApproval"/>
+  		    </table>
+  		</property>
+  	       </properties>
+              </groupField>
+
+              <groupField name="BudgetCheckAmntInUSD">
+  	    	       <properties rank="380">
+  	    		<property name="integration">
+  	    		    <table>
+  	    			    <entry key="mapField" value="BudgetCheckAmntInUSD"/>
+  	    		    </table>
+  	    		</property>
+  	    	       </properties>
+               </groupField>
+
+  	 <groupField name="CAPAccCatgry">
+  	       <properties rank="390">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="CAPAccCatgry"/>
+  		    </table>
+  		</property>
+  	       </properties>
+  	</groupField>
+
+  	 <groupField name="AllowCascadeCapital">
+  	       <properties rank="400">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="AllowCascadeCapital"/>
+  		    </table>
+  		</property>
+  	       </properties>
+  	</groupField>
+
+  	 <groupField name="FieldsReqdForBuyer">
+  	       <properties rank="410">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="FieldsReqdForBuyer"/>
+  		    </table>
+  		</property>
+  	       </properties>
+  	</groupField>
+
+  	 <groupField name="FieldsReqdForRequester">
+  	       <properties rank="420">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="FieldsReqdForRequester"/>
+  		    </table>
+  		</property>
+  	       </properties>
+  	</groupField>
+
+  	 <groupField name="IsCurrencyValidityRequired">
+  	       <properties rank="430">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="IsCurrencyValidityRequired"/>
+  		    </table>
+  		</property>
+  	       </properties>
+  	</groupField>
+
+  	 <groupField name="DefaultIncoTerms1.UniqueName">
+  	       <properties rank="440">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="DefaultIncoTerms1"/>
+  		    </table>
+  		</property>
+  	       </properties>
+  	</groupField>
+
+          <groupField name="DefaultPaymentTerms.UniqueName">
+    	  <properties rank="450">
+    	     <property name="integration">
+    		 <table>
+    			 <entry key="mapField" value="DefaultPaymentTerms"/>
+    		 </table>
+    	     </property>
+    	  </properties>
+    	</groupField>
+    	<groupField name="DefaultPaymentTerms.SAPSource">
+    	  <properties rank="460">
+    	     <property name="integration">
+    		 <table>
+    			 <entry key="mapField" value="SAPSource"/>
+    		 </table>
+    	     </property>
+    	  </properties>
+    	</groupField>
+    	<groupField name="DefaultTaxCodeForMaterial.UniqueName">
+		  <properties rank="470">
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="DefaultTaxCodeForMaterial"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="DefaultTaxCodeForMaterial.Country.UniqueName">
+		  <properties rank="480">
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="Country"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+
+		<groupField name="DefaultTaxCodeForService.UniqueName">
+		  <properties rank="490">
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="DefaultTaxCodeForService"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="DefaultTaxCodeForService.Country.UniqueName">
+		  <properties rank="500">
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="Country"/>
+			 </table>
+		     </property>
+		  </properties>
+	</groupField>
+	<groupField name="CrossCompanyBuyEnabled">
+  	       <properties rank="510">
+  		<property name="integration">
+  		    <table>
+  			    <entry key="mapField" value="CrossCompanyBuyEnabled"/>
+  		    </table>
+  		</property>
+  	       </properties>
+  	</groupField>
+
+  	<!--added by Darshan for issue number 1118-->
+
+	<groupField name="AdditionalChargeEnabled">
+	  	       <properties rank="600">
+	  		<property name="integration">
+	  		    <table>
+	  			    <entry key="mapField" value="AdditionalChargeEnabled"/>
+	  		    </table>
+	  		</property>
+	  	       </properties>
+	  	</groupField>
+	<!-- End -->
+  	<groupField name="ServiceItemFunc">
+		       <properties rank="750">
+			<property name="integration">
+			    <table>
+				    <entry key="mapField" value="ServiceItemFunc"/>
+			    </table>
+			</property>
+		       </properties>
+	</groupField>
+  	<!-- End -->
+	<!-- Added by Aswini for Vertex-->
+	<groupField name="CallToVertexEnabled">
+		<properties rank="760">
+			<property name="integration">
+			    <table>
+				    <entry key="mapField" value="CallToVertexEnabled"/>
+			    </table>
+			</property>
+		</properties>
+	</groupField>
+	<!-- code ended for Vertex -->
+<!-- Added by Aswini for Plant code Logic -->
+	<groupField name="BuyerAssignment">
+		<properties rank="770">
+			<property name="integration">
+			    <table>
+				    <entry key="mapField" value="BuyerAssignment"/>
+			    </table>
+			</property>
+		</properties>
+	</groupField>
+  	<!-- End for PCL -->
+	<!-- Added by Soumya R Mohanty for Vertex START-->
+	<groupField name="VertexLoginUID">
+		<properties rank="780">
+			<property name="integration">
+			    <table>
+				    <entry key="mapField" value="VertexLoginUID"/>
+			    </table>
+			</property>
+		</properties>
+	</groupField>
+	<groupField name="VertexLoginPWD">
+		<properties rank="790">
+			<property name="integration">
+			    <table>
+				    <entry key="mapField" value="VertexLoginPWD"/>
+			    </table>
+			</property>
+		</properties>
+	</groupField>
+	<!-- Added by Soumya R Mohanty for Vertex END-->
+	<!-- WI 294  Added by Abhishek Kumar for mapping additional fields for CompanyCode START-->
+		<groupField name="AutoRejectIRForUPV">
+			<properties rank="800">
+				<property name="integration">
+				    <table>
+					    <entry key="mapField" value="AutoRejectIRForUPV"/>
+				    </table>
+				</property>
+			</properties>
+		</groupField>
+		<groupField name="HazmatEnabled">
+			<properties rank="810">
+				<property name="integration">
+				    <table>
+					    <entry key="mapField" value="HazmatEnabled"/>
+				    </table>
+				</property>
+			</properties>
+		</groupField>
+		<groupField name="LineTaxAllowedForIR">
+			<properties rank="820">
+				<property name="integration">
+				    <table>
+					    <entry key="mapField" value="LineTaxAllowedForIR"/>
+				    </table>
+				</property>
+			</properties>
+		</groupField>
+		<groupField name="MultipleLineTaxAllowedForIR">
+			<properties rank="830">
+				<property name="integration">
+				    <table>
+					    <entry key="mapField" value="MultipleLineTaxAllowedForIR"/>
+				    </table>
+				</property>
+			</properties>
+		</groupField>
+		<groupField name="MultipleHeaderTaxAllowedForIR">
+			<properties rank="840">
+				<property name="integration">
+				    <table>
+					    <entry key="mapField" value="MultipleHeaderTaxAllowedForIR"/>
+				    </table>
+				</property>
+			</properties>
+		</groupField>
+		<groupField name="ShortTaxEnabled">
+			<properties rank="850">
+				<property name="integration">
+				    <table>
+					    <entry key="mapField" value="ShortTaxEnabled"/>
+				    </table>
+				</property>
+			</properties>
+		</groupField>
+	<!-- WI 294 Added by Abhishek Kumar for mapping additional fields for CompanyCode END-->	
+	<!-- End -->
+	
+	 <groupField name="UnitPriceTolerancePct">
+	                                                <properties>
+	                                                        <property name="integration">
+	                                                                <table>
+	                                                                        <entry key="mapField" value="UnitPriceTolerancePct"/>
+	                                                                </table>
+	                                                        </property>
+	                                                </properties>
+	                                        </groupField>
+	                              <groupField name="LineAmountTolerance.Amount">
+	                                                <properties>
+	                                                        <property name="integration">
+	                                                                <table>
+	                                                                        <entry key="mapField" value="LineAmountTolerance"/>
+	                                                                </table>
+	                                                        </property>
+	                                                </properties>
+	                                        </groupField>
+
+         </groupClassVariant>
+       </groupClass>
+     </group>
+
+     <group name="IncoTermsPull">
+           <groupClass name="cat.core.IncoTerms">
+               <groupClassVariant name="SAP">
+                  <groupField name="UniqueName">
+                     <properties rank="110">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="UniqueName"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="Description">
+     	            <properties rank="120">
+     	                <property name="integration">
+     	                <table>
+     	                  <entry key="mapField" value="Description"/>
+     	                     </table>
+     	               </property>
+     	                </properties>
+                  </groupField>
+               </groupClassVariant>
+            </groupClass>
+     </group>
+     <group name="TaxCodePull">
+     	    <!--
+		   ARajendren. Ariba, Inc..
+		   Modified package name for TaxCode
+	    -->
+	   <!-- <groupClass name="ariba.core.TaxCode"/> -->
+           <groupClass name="ariba.tax.core.TaxCode">
+               <groupClassVariant name="SAP">
+                  <groupField name="UniqueName">
+                     <properties rank="110">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="UniqueName"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="Country.UniqueName">
+     	            <properties rank="120">
+     	                <property name="integration">
+     	                <table>
+     	                  <entry key="mapField" value="Country"/>
+     	                     </table>
+     	               </property>
+     	                </properties>
+                  </groupField>
+                  <groupField name="Description">
+                     <properties rank="130">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="Description"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="SAPSource">
+                     <properties rank="140">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="SAPSource"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="TaxRate">
+                     <properties rank="150">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="TaxRate"/>
+                                    <entry key="defaultValue" value="0.00"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="SAPTaxCode">
+                     <properties rank="160">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="SAPTaxCode"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="IsWithHoldingTax">
+                     <properties rank="170">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="IsWithHoldingTax"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+               </groupClassVariant>
+            </groupClass>
+     </group>
+     <group name="AssetPull">
+           <groupClass name="ariba.core.Asset">
+               <groupClassVariant name="SAP">
+                  <groupField name="UniqueName">
+                     <properties rank="110">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="UniqueName"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="Name">
+     	            <properties rank="120">
+     	                <property name="integration">
+     	                <table>
+     	                  <entry key="mapField" value="Name"/>
+     	                     </table>
+     	               </property>
+     	                </properties>
+                  </groupField>
+                  <groupField name="SubNumber">
+                     <properties rank="130">
+                        <property name="integration">
+                            <table>
+                                    <entry key="mapField" value="SubNumber"/>
+                            </table>
+                        </property>
+                     </properties>
+                  </groupField>
+                  <groupField name="CompanyCode.UniqueName">
+		             <properties rank="130">
+		            <property name="integration">
+		            <table>
+		          <entry key="mapField" value="CompanyCode"/>
+		           </table>
+		          </property>
+		        </properties>
+                  </groupField>
+               </groupClassVariant>
+            </groupClass>
+     </group>
+     <group name="POrgSupplierComboPull">
+     	<groupClass name="ariba.core.PorgSupplierCombo">
+     	    <groupClassVariant name="SAP">
+     	       <groupField name="UniqueName">
+     		  <properties rank="110">
+     		     <property name="integration">
+     			 <table>
+     				 <entry key="mapField" value="UniqueName"/>
+     			 </table>
+     		     </property>
+     		  </properties>
+     	       </groupField>
+     	       <groupField name="PurchaseOrg.UniqueName">
+     		    <properties rank="120">
+     			<property name="integration">
+     			<table>
+     			  <entry key="mapField" value="PurchaseOrg"/>
+     			     </table>
+     		       </property>
+     			</properties>
+     	       </groupField>
+     	       <groupField name="Supplier.UniqueName">
+     		<properties rank="120">
+     		<property name="integration">
+     			<table>
+     			<entry key="mapField" value="Supplier "/>
+     	             </table>
+     		</property>
+     		</properties>
+     	       </groupField>
+     	       <groupField name="ERSVendor">
+     	       <properties rank="120">
+     	       	<property name="integration">
+     	     <table>
+     	       	<entry key="mapField" value="ERSVendor"/>
+     	       </table>
+     	       	</property>
+     	       </properties>
+     	       </groupField>
+     	       <groupField name="PaymentTerms.UniqueName">
+     	       	       <properties rank="120">
+     	       	       	<property name="integration">
+     	       	     <table>
+     	       	       	<entry key="mapField" value="PaymentTerms"/>
+     	       	       </table>
+     	       	       	</property>
+     	       	       </properties>
+     	       </groupField>
+     	    </groupClassVariant>
+     	 </groupClass>
+	</group>
+     <group name="InternalOrderPull">
+                <groupClass name="ariba.core.InternalOrder">
+                    <groupClassVariant name="SAP">
+                       <groupField name="UniqueName">
+                          <properties rank="110">
+                             <property name="integration">
+                                 <table>
+                                         <entry key="mapField" value="UniqueName"/>
+                                 </table>
+                             </property>
+                          </properties>
+                       </groupField>
+                       <groupField name="Description">
+          	            <properties rank="120">
+          	                <property name="integration">
+          	                <table>
+          	                  <entry key="mapField" value="Description"/>
+          	                     </table>
+          	               </property>
+          	                </properties>
+                       </groupField>
+                    </groupClassVariant>
+                 </groupClass>
+     </group>
+     <group name="CompanyCodeIOComboPull">
+                <groupClass name="ariba.core.CompanyCodeIOCombo">
+                    <groupClassVariant name="SAP">
+                       <groupField name="UniqueName">
+                          <properties rank="110">
+                             <property name="integration">
+                                 <table>
+                                         <entry key="mapField" value="UniqueName"/>
+                                 </table>
+                             </property>
+                          </properties>
+                       </groupField>
+                       <groupField name="CompanyCode.UniqueName">
+          	            <properties rank="120">
+          	                <property name="integration">
+          	                <table>
+          	                  <entry key="mapField" value="CompanyCode"/>
+          	                     </table>
+          	               </property>
+          	                </properties>
+                       </groupField>
+                       <groupField name="InternalOrder.UniqueName">
+     		       	            <properties rank="120">
+     		       	                <property name="integration">
+     		       	                <table>
+     		       	                  <entry key="mapField" value="InternalOrder"/>
+     		       	                     </table>
+     		       	               </property>
+     		       	                </properties>
+                       </groupField>
+                    </groupClassVariant>
+                 </groupClass>
+     </group>
+     <group name="WBSElementPull">
+	<groupClass name="ariba.core.WBSElement">
+	    <groupClassVariant name="SAP">
+	       <groupField name="UniqueName">
+		  <properties rank="110">
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="UniqueName"/>
+			 </table>
+		     </property>
+		  </properties>
+	       </groupField>
+	       <groupField name="Description">
+		    <properties rank="120">
+			<property name="integration">
+			<table>
+			  <entry key="mapField" value="Description"/>
+			     </table>
+		        </property>
+			</properties>
+	       </groupField>
+	       <groupField name="ProjectNumber">
+			<properties rank="120">
+				<property name="integration">
+				<table>
+				  <entry key="mapField" value="ProjectNumber"/>
+				     </table>
+			       </property>
+			</properties>
+	       </groupField>
+	    </groupClassVariant>
+	 </groupClass>
+     </group>
+     <group name="CompanyCodeWBSComboPull">
+	<groupClass name="ariba.core.CompanyCodeWBSCombo">
+	    <groupClassVariant name="SAP">
+	       <groupField name="UniqueName">
+		  <properties rank="110">
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="UniqueName"/>
+			 </table>
+		     </property>
+		  </properties>
+	       </groupField>
+	       <groupField name="WBSElement.UniqueName">
+		    <properties rank="120">
+			<property name="integration">
+			<table>
+			  <entry key="mapField" value="WBSElement"/>
+			     </table>
+		       </property>
+			</properties>
+	       </groupField>
+	       <groupField name="CompanyCode.UniqueName">
+			    <properties rank="120">
+				<property name="integration">
+				<table>
+				  <entry key="mapField" value="CompanyCode"/>
+				     </table>
+			       </property>
+				</properties>
+	       </groupField>
+	    </groupClassVariant>
+	 </groupClass>
+     </group>
+     <group name="PlantPurchaseOrgComboPull">
+           <groupClass name="ariba.core.PlantPurchaseOrgCombo">
+             <groupClassVariant name="SAP">
+     	 	<groupField name="UniqueName">
+     	         <properties rank="10">
+     	           <property name="integration">
+     	           <table>
+     	        	<entry key="mapField" value="UniqueName"/>
+     	           </table>
+     	     	   </property>
+     	  	 </properties>
+                </groupField>
+     	   	<groupField name="Plant.UniqueName">
+     	   	     <properties rank="20">
+     	   	       <property name="integration">
+     	   		   <table>
+     	   		     <entry key="mapField" value="Plant"/>
+     	   		   </table>
+     	   	       </property>
+     	   	    </properties>
+     	   	</groupField>
+     	   	<groupField name="PurchaseOrg.UniqueName">
+     	     	 <properties rank="30">
+     	       	  <property name="integration">
+     		   <table>
+     		     <entry key="mapField" value="PurchaseOrg"/>
+     		   </table>
+     	          </property>
+     	         </properties>
+     	        </groupField>
+     	   	</groupClassVariant>
+           </groupClass>
+        </group>
+
+   <group name="AdjustmentTypePull">
+      <groupClass name="ariba.l2charge.core.AdjustmentType">
+        <groupClassVariant name="SAP">
+         <groupField name="Category"/>
+         <groupField name="Description"/>
+         <groupField name="UniqueName"/>
+         <groupField name="Name"/>
+         <!--
+		ARajendren. Ariba, Inc..
+		Changed GLAccount to GeneralLedger
+	  -->
+	 <!-- <groupField name="GLAccount.UniqueName"> -->
+         <groupField name="GeneralLedger.UniqueName">
+            <properties>
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="Account"/>
+                   </table>
+               </property>
+           </properties>
+         </groupField>
+         <!-- <groupField name="GLAccount.CompanyCode.UniqueName"> -->
+         <groupField name="GeneralLedger.CompanyCode.UniqueName">
+            <properties>
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="CompanyCode"/>
+                   </table>
+               </property>
+           </properties>
+          </groupField>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="AdjustmentTypeExport">
+      <groupClass name="ariba.l2charge.core.AdjustmentType">
+        <groupClassVariant name="SAP">
+          <groupField name="UniqueName">
+            <properties rank="10"/>
+          </groupField>
+          <groupField name="Name">
+            <properties rank="20"/>
+          </groupField>
+          <groupField name="Description">
+            <properties rank="30"/>
+          </groupField>
+          <groupField name="Category">
+            <properties rank="40"/>
+          </groupField>
+          <!--
+		ARajendren. Ariba, Inc..
+		Changed GLAccount to GeneralLedger
+	  -->
+	 <!-- <groupField name="GLAccount.UniqueName"> -->
+         <groupField name="GeneralLedger.UniqueName">
+            <properties rank="50">
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="Account"/>
+                   </table>
+               </property>
+           </properties>
+          </groupField>
+          <!-- <groupField name="GLAccount.CompanyCode.UniqueName"> -->
+          <groupField name="GeneralLedger.CompanyCode.UniqueName">
+            <properties rank="60">
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="CompanyCode"/>
+                   </table>
+               </property>
+           </properties>
+          </groupField>
+          <groupField name="AdapterSource">
+            <properties metaDataIntegration="Reference" rank="70">
+              <property name="integration">
+                  <table>
+                    <entry key="like" value=":EventSource"/>
+                    <entry key="exclude" value="true"/>
+                  </table>
+              </property>
+            </properties>
+          </groupField>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="AdjustmentTypeLanguageExport">
+      <groupClass name="ariba.l2charge.core.AdjustmentType">
+        <groupClassVariant name="SAP">
+         <groupField name="UniqueName">
+            <properties rank="10"/>
+         </groupField>
+         <groupField name="Name">
+            <properties rank="20"/>
+         </groupField>
+         <groupField name="AdapterSource">
+            <properties metaDataIntegration="Reference">
+              <property name="integration">
+                  <table>
+                    <entry key="like" value=":EventSource"/>
+                    <entry key="exclude" value="true"/>
+                  </table>
+              </property>
+            </properties>
+         </groupField>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="AdjustmentTypeLanguagePull">
+      <groupClass name="ariba.l2charge.core.AdjustmentType">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="CommodityExportMapPull">
+      <groupClass name="ariba.common.core.CommodityExportMapEntry">
+          <groupClassVariant name="SAP">
+             <groupField name="CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="CompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="AccountType.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="AccountType"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="CommodityCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="CommonId"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="CommodityCode.Domain">
+                <properties>
+                   <property name="integration">
+                       <table>
+                         <entry key="mapField" value="CommonIdDomain"/>
+                         <entry key="defaultValue" value="ccc"/>
+                          <entry key="formatterType" value="LowerCaseStringFormatter"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+
+
+             <groupField name="Asset.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="Asset"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="InternalOrder.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="InternalOrder"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="WBSElement.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="WBSElement"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="ItemCategory.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="ItemCategory"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="GeneralLedger.CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="CompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="Asset.CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="CompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="PartitionedCommodityCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="MaterialGroup"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="GeneralLedger.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="GeneralLedger"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="AccountCategory.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="AccountCategory"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="AccountCategory.CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="CompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="GeneralLedgerText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="GeneralLedgerText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="AssetText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="AssetText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="InternalOrderText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="InternalOrderText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="WBSElementText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="WBSElementText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="BuyerCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="BuyerCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="LineItemType">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="LineItemType"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="IsHazmat">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="IsHazmat"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+				<groupField name="IsCapitalIT">
+					  <properties>
+						 <property name="integration">
+							 <table>
+									 <entry key="mapField" value="IsCapitalIT"/>
+							 </table>
+						 </property>
+					  </properties>
+				</groupField>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="PartitionedCommodityCodeExport">
+      <groupClass name="ariba.common.core.PartitionedCommodityCode">
+        <groupClassVariant name="SAP">
+          <groupField name="UniqueName">
+            <properties rank="10"/>
+          </groupField>
+          <groupField name="Name">
+            <properties rank="20"/>
+          </groupField>
+          <groupField name="Description">
+            <properties rank="30"/>
+          </groupField>
+          <groupField name="CategoryId">
+            <properties rank="40"/>
+          </groupField>
+          <groupField name="AdapterSource">
+            <properties metaDataIntegration="Reference" rank="50">
+              <property name="integration">
+                  <table>
+                    <entry key="like" value=":EventSource"/>
+                    <entry key="exclude" value="true"/>
+                  </table>
+              </property>
+            </properties>
+          </groupField>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <inGroup name="CommodityExportMapExport">
+      <inGroupClass name="ariba.common.core.CommodityExportMapEntry">
+          <groupClassVariant name="SAP">
+             <groupField name="CompanyCode.UniqueName">
+                <properties rank="40">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="CompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="GeneralLedger.UniqueName">
+                <properties rank="50">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="GeneralLedger"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="Asset.UniqueName">
+                <properties rank="60">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="Asset"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="WBSElement.UniqueName">
+                <properties rank="70">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="WBSElement"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="InternalOrder.UniqueName">
+                <properties rank="80">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="InternalOrder"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="ItemCategory.UniqueName">
+                <properties rank="90">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="ItemCategory"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="AccountCategory.UniqueName">
+                <properties rank="100">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="AccountCategory"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+              <groupField name="GeneralLedgerText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="GeneralLedgerText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="AssetText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="AssetText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="InternalOrderText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="InternalOrderText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="WBSElementText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="WBSElementText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+          </groupClassVariant>
+      </inGroupClass>
+   </inGroup>
+   <group name="PaymentTermsPull">
+      <groupClass name="ariba.payment.core.PaymentTerms">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName">
+              </groupField>
+              <groupField name="Name">
+              </groupField>
+              <groupField name="Description">
+              </groupField>
+             <groupField name="PaymentTermsSteps">
+                <properties metaDataIntegration="PaymentTermsStep">
+                </properties>
+              </groupField>
+              	<!-- Added by Majid to laod SAPSource field into PaymentTerms Object Starts here -->
+			  	<groupField name="SAPSource">
+					  <properties>
+						 <property name="integration">
+						   <table>
+							   <entry key="mapField" value="SAPSource"/>
+						   </table>
+						 </property>
+					  </properties>
+				</groupField>
+				<!-- Added by Majid to laod SAPSource field into PaymentTerms Object Ends here -->
+
+	<!-- Added by garima -->
+		     <groupField name="IsAdvancePaymentTerm">
+			  <properties>
+				 <property name="integration">
+				   <table>
+					   <entry key="mapField" value="IsAdvancePaymentTerm"/>
+				   </table>
+				 </property>
+			  </properties>
+		</groupField>
+	   <!-- End -->
+
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="PaymentTermsStep">
+      <groupClass name="ariba.payment.core.PaymentTermsStep">
+          <groupClassVariant name="SAP">
+              <groupField name="InstallmentPercent">
+              </groupField>
+             <groupField name="PaymentTermTiersInfo">
+                <properties metaDataIntegration="PaymentTermsStepDetails">
+                </properties>
+              </groupField>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="PaymentTermsStepDetails">
+      <groupClass name="ariba.payment.core.PaymentTermTierInfo">
+          <groupClassVariant name="SAP">
+              <groupField name="DiscountType">
+              </groupField>
+              <groupField name="Discount">
+              </groupField>
+              <groupField name="PayInDays">
+              </groupField>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <inGroup name="SharedUserShipToAddressMapPull">
+      <inGroupClass name="ariba.user.core.User">
+          <groupClassVariant name="SAP">
+             <groupField name="ShipTos">
+                <properties metaDataIntegration="SAPSharedUserShipToAddressMapDetail">
+                   <property name="integration">
+                       <table>
+                         <entry key="metadataIntegrationTypeOverride" value="ariba.common.core.Address"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+          </groupClassVariant>
+      </inGroupClass>
+   </inGroup>
+   <group name="SAPSharedUserShipToAddressMapDetail">
+      <groupClass name="ariba.common.core.Address">
+          <groupClassVariant name="SAP">
+             <groupField name="UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                         <entry key="mapField" value="SAPPlant"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <inGroup name="UserPull">
+      <inGroupClass name="ariba.common.core.User">
+          <groupClassVariant name="SAP">
+             <groupField name="ManagementLevel"/>
+             <groupField name="Accounting.CostCenter.CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPCompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="Accounting.GeneralLedger.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPGeneralLedger"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="Accounting.GeneralLedger.CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPCompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="Accounting.CostCenter.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPCostCenter"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="DeliverTo">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="VanillaDeliverTo"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="PurchaseOrg.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPPurchaseOrg"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+             <groupField name="CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPCompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="PurchaseGroup.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPPurchaseGroup"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="PCards">
+                <properties metaDataIntegration="PCardDetail"/>
+              </groupField>
+              <groupField name="Accounting.CostCenterText">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="CostCenterText"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="SAPExpenseApprovalCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPExpenseApprovalCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+              <groupField name="SAPExpenseApprovalCode.CompanyCode.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPCompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+          </groupClassVariant>
+      </inGroupClass>
+  </inGroup>
+
+  <inGroup name="CATSAPSupportUser">
+  <inGroupClass name="ariba.common.core.User">
+      <groupClassVariant name="SAP">
+  	<groupField name="User.UniqueName">
+  	<properties>
+  	   <property name="integration">
+  	       <table>
+  		 <entry key="mapField" value="UniqueName"/>
+  	       </table>
+  	   </property>
+  	</properties>
+  	</groupField>
+  	<groupField name="User.PasswordAdapter">
+  	 <properties>
+  	    <property name="integration">
+  	       <table>
+  		 <entry key="mapField" value="PasswordAdapter"/>
+  	       </table>
+  	    </property>
+  	  </properties>
+  	</groupField>
+  	<groupField name="ManagementLevel">
+  		<properties>
+  		   <property name="integration">
+  		       <table>
+  			       <entry key="mapField" value="ManagementLevel"/>
+  		       </table>
+  		   </property>
+  		</properties>
+  	</groupField>
+  	<groupField name="DeliverTo">
+  	  <properties>
+  	     <property name="integration">
+  		 <table>
+  			 <entry key="mapField" value="VanillaDeliverTo"/>
+  		 </table>
+  	     </property>
+  	  </properties>
+  	</groupField>
+  	<groupField name="CompanyCode.UniqueName">
+  	  <properties>
+  	     <property name="integration">
+  		 <table>
+  			 <entry key="mapField" value="SAPCompanyCode"/>
+  		 </table>
+  	     </property>
+  	  </properties>
+  	</groupField>
+  	<groupField name="Accounting.CostCenterText">
+  	  <properties>
+  	     <property name="integration">
+  		 <table>
+  			 <entry key="mapField" value="CostCenterText"/>
+  		 </table>
+  	     </property>
+  	  </properties>
+  	</groupField>
+  	<groupField name="PurchaseOrg.UniqueName">
+  	  <properties>
+  	     <property name="integration">
+  		 <table>
+  			 <entry key="mapField" value="SAPPurchaseOrg"/>
+  		 </table>
+  	     </property>
+  	  </properties>
+  	</groupField>
+  	<groupField name="SAPExpenseApprovalCode.UniqueName">
+  	  <properties>
+  	     <property name="integration">
+  		 <table>
+  			 <entry key="mapField" value="SAPExpenseApprovalCode"/>
+  		 </table>
+  	     </property>
+  	  </properties>
+  	</groupField>
+  	<groupField name="SAPExpenseApprovalCode.CompanyCode.UniqueName">
+  	  <properties>
+  	     <property name="integration">
+  		 <table>
+  			 <entry key="mapField" value="SAPCompanyCode"/>
+  		 </table>
+  	     </property>
+  	  </properties>
+  	</groupField>
+  	<groupField name="PurchaseGroup.UniqueName">
+  	  <properties>
+  	     <property name="integration">
+  		 <table>
+  			 <entry key="mapField" value="SAPPurchaseGroup"/>
+  		 </table>
+  	     </property>
+  	  </properties>
+  	</groupField>
+      </groupClassVariant>
+  </inGroupClass>
+</inGroup>
+
+
+  <inGroup name="CATSAPMissingPull">
+          <inGroupClass name="ariba.common.core.User">
+              <groupClassVariant name="SAP">
+  		<groupField name="User.UniqueName">
+  		<properties>
+  		   <property name="integration">
+  		       <table>
+  			 <entry key="mapField" value="UniqueName"/>
+  		       </table>
+  		   </property>
+  		</properties>
+  		</groupField>
+  		<groupField name="User.PasswordAdapter">
+  		 <properties>
+  		    <property name="integration">
+  		       <table>
+  			 <entry key="mapField" value="PasswordAdapter"/>
+  		       </table>
+  		    </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="ManagementLevel">
+  			<properties>
+  			   <property name="integration">
+  			       <table>
+  				       <entry key="mapField" value="ManagementLevel"/>
+  			       </table>
+  			   </property>
+  			</properties>
+  		</groupField>
+  		<groupField name="DeliverTo">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="VanillaDeliverTo"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="CompanyCode.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPCompanyCode"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="Accounting.CostCenterText">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="CostCenterText"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="PurchaseOrg.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPPurchaseOrg"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="SAPExpenseApprovalCode.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPExpenseApprovalCode"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="SAPExpenseApprovalCode.CompanyCode.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPCompanyCode"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="PurchaseGroup.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPPurchaseGroup"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+              </groupClassVariant>
+          </inGroupClass>
+  </inGroup>
+
+  <inGroup name="CATSAPInclusionsPull">
+        <inGroupClass name="ariba.common.core.User">
+            <groupClassVariant name="SAP">
+		<groupField name="User.UniqueName">
+		<properties>
+		   <property name="integration">
+		       <table>
+			 <entry key="mapField" value="UniqueName"/>
+		       </table>
+		   </property>
+		</properties>
+		</groupField>
+		<groupField name="User.PasswordAdapter">
+		 <properties>
+		    <property name="integration">
+		       <table>
+			 <entry key="mapField" value="PasswordAdapter"/>
+		       </table>
+		    </property>
+		  </properties>
+		</groupField>
+		<groupField name="ManagementLevel">
+			<properties>
+			   <property name="integration">
+			       <table>
+				       <entry key="mapField" value="ManagementLevel"/>
+			       </table>
+			   </property>
+			</properties>
+		</groupField>
+		<groupField name="DeliverTo">
+		  <properties>
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="VanillaDeliverTo"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="CompanyCode.UniqueName">
+		  <properties>
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="SAPCompanyCode"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="Accounting.CostCenterText">
+		  <properties>
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="CostCenterText"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="PurchaseOrg.UniqueName">
+		  <properties>
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="SAPPurchaseOrg"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="SAPExpenseApprovalCode.UniqueName">
+		  <properties>
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="SAPExpenseApprovalCode"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="SAPExpenseApprovalCode.CompanyCode.UniqueName">
+		  <properties>
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="SAPCompanyCode"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+		<groupField name="PurchaseGroup.UniqueName">
+		  <properties>
+		     <property name="integration">
+			 <table>
+				 <entry key="mapField" value="SAPPurchaseGroup"/>
+			 </table>
+		     </property>
+		  </properties>
+		</groupField>
+            </groupClassVariant>
+        </inGroupClass>
+  </inGroup>
+
+
+  <inGroup name="CATSAPExclusionsPull">
+          <inGroupClass name="ariba.common.core.User">
+              <groupClassVariant name="SAP">
+  		<groupField name="User.UniqueName">
+  		<properties>
+  		   <property name="integration">
+  		       <table>
+  			 <entry key="mapField" value="UniqueName"/>
+  		       </table>
+  		   </property>
+  		</properties>
+  		</groupField>
+  		<groupField name="User.PasswordAdapter">
+  		 <properties>
+  		    <property name="integration">
+  		       <table>
+  			 <entry key="mapField" value="PasswordAdapter"/>
+  		       </table>
+  		    </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="ManagementLevel">
+  			<properties>
+  			   <property name="integration">
+  			       <table>
+  				       <entry key="mapField" value="ManagementLevel"/>
+  			       </table>
+  			   </property>
+  			</properties>
+  		</groupField>
+  		<groupField name="DeliverTo">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="VanillaDeliverTo"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="CompanyCode.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPCompanyCode"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="Accounting.CostCenterText">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="CostCenterText"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="PurchaseOrg.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPPurchaseOrg"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="SAPExpenseApprovalCode.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPExpenseApprovalCode"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="SAPExpenseApprovalCode.CompanyCode.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPCompanyCode"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+  		<groupField name="PurchaseGroup.UniqueName">
+  		  <properties>
+  		     <property name="integration">
+  			 <table>
+  				 <entry key="mapField" value="SAPPurchaseGroup"/>
+  			 </table>
+  		     </property>
+  		  </properties>
+  		</groupField>
+              </groupClassVariant>
+          </inGroupClass>
+  </inGroup>
+
+   <inGroup name="UserExport">
+      <inGroupClass name="ariba.common.core.User">
+          <groupClassVariant name="SAP">
+             <groupField name="Accounting.CostCenter.UniqueName">
+                <properties rank="110">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPCostCenter"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="PurchaseOrg.UniqueName">
+                <properties rank="120">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPPurchaseOrg"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="CompanyCode.UniqueName">
+                <properties rank="130">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPCompanyCode"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="PurchaseGroup.UniqueName">
+                <properties rank="140">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPPurchaseGroup"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+             <groupField name="Accounting.GeneralLedger.UniqueName">
+                <properties rank="160">
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="SAPGeneralLedger"/>
+                       </table>
+                   </property>
+                </properties>
+             </groupField>
+          </groupClassVariant>
+      </inGroupClass>
+  </inGroup>
+
+  <group name="ExpenseTypePull">
+      <groupClass name="ariba.l2charge.core.ExpenseType">
+        <groupClassVariant name="SAP">
+         <!--
+	 	ARajendren. Ariba, Inc..
+	 	Changed GeneralLedger to GeneralLedgers
+	 -->
+	 <!-- <groupField name="GeneralLedger.UniqueName"> -->
+         <groupField name="GeneralLedgers.UniqueName">
+            <properties>
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="Account"/>
+                   </table>
+               </property>
+            </properties>
+          </groupField>
+         <groupField name="DetailsName"/>
+         <groupField name="PlanningDetailsName"/>
+         <groupField name="Name"/>
+         <groupField name="UniqueName"/>
+         <!-- <groupField name="GeneralLedger.CompanyCode.UniqueName"> -->
+         <groupField name="GeneralLedgers.CompanyCode.UniqueName">
+            <properties>
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="CompanyCode"/>
+                   </table>
+               </property>
+            </properties>
+          </groupField>
+         <groupField name="DetailsName"/>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="MCLevel2ChargePull">
+      <groupClass name="ariba.l2charge.core.Level2Charge">
+          <groupClassVariant name="SAP">
+              <groupField name="PCardNumber"/>
+             <groupField name="LocalTax.Currency.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="LocalTaxCurrency"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+              <groupField name="City"/>
+              <groupField name="BankReferenceNumber"/>
+              <groupField name="OrderNumber"/>
+             <groupField name="Amount.Currency.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="AmountCurrency"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="TransactionDateString">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="TransactionDate"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="Amount.Amount">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="Amount"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+              <groupField name="LocalTaxIdentified"/>
+              <groupField name="MerchantId"/>
+              <groupField name="ExpenseCode"/>
+              <groupField name="TransactionDate"/>
+              <groupField name="Description"/>
+             <groupField name="LocalTax.Amount">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="LocalTax"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+              <groupField name="MerchantName"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="ExpenseTypeLanguagePull">
+      <groupClass name="ariba.l2charge.core.ExpenseType">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="ItemCategoryLanguagePull">
+      <groupClass name="ariba.core.ItemCategory">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+             <groupField name="Name">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="Description"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="ItemCategoryPull">
+      <groupClass name="ariba.core.ItemCategory">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="OverallLimit"/>
+              <groupField name="Name"/>
+              <groupField name="ExpectedValue"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="FieldStatusToAccountingFieldNameMapPull">
+      <groupClass name="ariba.core.FieldStatusToAccountingFieldNameMap">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+              <groupField name="Description"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="Level2ChargePull">
+      <groupClass name="ariba.l2charge.core.Level2Charge">
+          <groupClassVariant name="SAP">
+              <groupField name="PCardNumber"/>
+              <groupField name="City"/>
+              <groupField name="BankReferenceNumber"/>
+              <groupField name="OrderNumber"/>
+             <groupField name="TransactionDateString">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="TransactionDate"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="Amount.Amount">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="Amount"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+              <groupField name="LocalTaxIdentified"/>
+              <groupField name="MerchantId"/>
+              <groupField name="ExpenseCode"/>
+              <groupField name="TransactionDate"/>
+              <groupField name="Description"/>
+             <groupField name="LocalTax.Amount">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="LocalTax"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+              <groupField name="MerchantName"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="SupplierLocationSupplementPull">
+      <groupClass name="ariba.common.core.SupplierLocation">
+          <groupClassVariant name="SAP">
+              <!-- ChangeOrderRestrictions = int(SupplierLocationrecord.ChangeOrderRestrictions) -->
+              <!-- PCardAcceptanceLevel = int(SupplierLocationrecord.PCardAcceptanceLevel) -->
+              <groupField name="GhostPCardNumber"/>
+              <groupField name="UniqueName"/>
+              <groupField name="ChangeOrderRestrictions"/>
+              <groupField name="AribaNetworkId"/>
+              <groupField name="ContactID"/>
+              <groupField name="PreferredOrderingMethod"/>
+              <groupField name="PCardAcceptanceLevel"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="SupplierLocationSupplementExport">
+      <groupClass name="ariba.common.core.SupplierLocation">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName">
+                <properties rank="10"/>
+              </groupField>
+              <groupField name="ContactID">
+                <properties rank="20"/>
+              </groupField>
+              <groupField name="PreferredOrderingMethod">
+                <properties rank="30"/>
+              </groupField>
+              <groupField name="PCardAcceptanceLevel">
+                <properties rank="40"/>
+              </groupField>
+              <groupField name="GhostPCardNumber">
+                <properties rank="50"/>
+              </groupField>
+              <groupField name="ChangeOrderRestrictions">
+                <properties rank="60"/>
+              </groupField>
+              <groupField name="AribaNetworkId">
+                <properties rank="70"/>
+              </groupField>
+              <groupField name="SplitOrderOnShipTo">
+                <properties rank="80"/>
+              </groupField>
+              <groupField name="AdapterSource">
+                <properties metaDataIntegration="Reference">
+                    <property name="integration">
+                        <table>
+                            <entry key="like" value=":EventSource"/>
+                            <entry key="exclude" value="true"/>
+                        </table>
+                    </property>
+                </properties>
+              </groupField>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <inGroup name="TaxRateLookupPull">
+      <inGroupClass name="ariba.core.TaxRateLookup">
+        <groupClassVariant name="SAP">
+           <groupField name="CompanyCode.UniqueName">
+             <properties>
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="CompanyCode"/>
+                   </table>
+               </property>
+            </properties>
+           </groupField>
+        </groupClassVariant>
+      </inGroupClass>
+    </inGroup>
+
+   <inGroup name="AddressPull">
+      <inGroupClass name="ariba.common.core.Address">
+        <groupClassVariant name="SAP">
+	 <groupField name="UniqueName">
+	   <properties rank="10"/>
+	 </groupField>
+	 <groupField name="Name">
+	   <properties rank="20"/>
+	 </groupField>
+	 <groupField name="PostalAddress.Lines">
+	    <properties rank="30">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="Lines"/>
+		   </table>
+	       </property>
+	    </properties>
+	 </groupField>
+	 <groupField name="PostalAddress.City">
+	    <properties rank="40">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="City"/>
+		   </table>
+	       </property>
+	    </properties>
+	 </groupField>
+	 <groupField name="PostalAddress.State">
+	    <properties rank="50">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="State"/>
+		   </table>
+	       </property>
+	    </properties>
+	 </groupField>
+	 <groupField name="PostalAddress.PostalCode">
+	    <properties rank="60">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="PostalCode"/>
+		   </table>
+	       </property>
+	    </properties>
+	 </groupField>
+	 <groupField name="PostalAddress.Country.UniqueName">
+	    <properties rank="70">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="Country"/>
+		     <entry key="defaultValue" value="US"/>
+		   </table>
+	       </property>
+	    </properties>
+	  </groupField>
+	 <groupField name="Phone">
+	    <properties rank="80"/>
+	 </groupField>
+	 <groupField name="Fax">
+	    <properties rank="90"/>
+	 </groupField>
+	 <groupField name="EmailAddress">
+	    <properties rank="100">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="Email"/>
+		   </table>
+	       </property>
+	    </properties>
+	  </groupField>
+	 <groupField name="URL">
+	    <properties rank="110"/>
+	 </groupField>
+	 <!-- Added by Garima on 25/08/08 -->
+	 <groupField name="ReceivingFacility">
+	    <properties rank="120">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="ReceivingFacility"/>
+		   </table>
+	       </property>
+	    </properties>
+	    </groupField>
+	    <groupField name="DockCode">
+	    	    <properties rank="130">
+	    	       <property name="integration">
+	    		   <table>
+	    		     <entry key="mapField" value="DockCode"/>
+	    		   </table>
+	    	       </property>
+	    	    </properties>
+	    </groupField>
+	    <!-- Ended by Garima on 25/08/08 -->
+	   <groupField name="CompanyCode.UniqueName">
+	     <properties rank="140">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="CompanyCode"/>
+		   </table>
+	       </property>
+	    </properties>
+	   </groupField>
+	   <!-- Code Begins :  Added by Nandini : Work Item 44 : Catalog Filtering: Adding new field to Address object -->
+	<groupField name="TerritoryCode">
+	    	    <properties rank="150">
+	    	       <property name="integration">
+	    		   <table>
+	    		     <entry key="mapField" value="TerritoryCode"/>
+	    		   </table>
+	    	       </property>
+	    	    </properties>
+	    </groupField>
+	<!-- Code Ends -->
+        </groupClassVariant>
+      </inGroupClass>
+   </inGroup>
+
+   <group name="PurchaseOrgPull">
+      <groupClass name="ariba.core.PurchaseOrg">
+        <groupClassVariant name="SAP">
+	 <groupField name="UniqueName">
+	   <properties rank="10">
+            <property name="integration">
+              <table>
+                 <entry key="mapField" value="UniqueName"/>
+              </table>
+              </property>
+	   </properties>
+	 </groupField>
+	 <groupField name="Name">
+	   <properties rank="20">
+             <property name="integration">
+		<table>
+		  <entry key="mapField" value="Name"/>
+	       </table>
+	     </property>
+	   </properties>
+	 </groupField>
+	   <groupField name="CompanyCode.UniqueName">
+	     <properties rank="30">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="CompanyCode.UniqueName"/>
+		   </table>
+	       </property>
+	    </properties>
+	   </groupField>
+	  <!-- Added by Garima -->
+           <groupField name="IsSAPPurchaseOrg">
+             <properties rank="40">
+             <property name="integration">
+             <table>
+             <entry key="mapField" value="IsSAPPurchaseOrg"/>
+             </table>
+             </property>
+             </properties>
+             </groupField>
+       <!--  Ended by Garima -->
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="PorgCompanyCodeComboPull">
+            <groupClass name="cat.core.PorgCompanyCodeCombo">
+              <groupClassVariant name="SAP">
+      	 <groupField name="PurchaseOrg.UniqueName">
+      	   <properties rank="10">
+          <property name="integration">
+   	   <table>
+   	     <entry key="mapField" value="PurchaseOrg"/>
+   	   </table>
+          </property>
+   </properties>
+      	 </groupField>
+      	   <groupField name="CompanyCode.UniqueName">
+      	     <properties rank="30">
+      	       <property name="integration">
+      		   <table>
+      		     <entry key="mapField" value="CompanyCode"/>
+      		   </table>
+      	       </property>
+      	    </properties>
+      	   </groupField>
+              </groupClassVariant>
+            </groupClass>
+   </group>
+
+   <group name="PurchaseGroupPull">
+      <groupClass name="ariba.core.PurchaseGroup">
+        <groupClassVariant name="SAP">
+	 <groupField name="UniqueName">
+	   <properties rank="10"/>
+	 </groupField>
+	 <groupField name="Name">
+	   <properties rank="20"/>
+	 </groupField>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <inGroup name="CostCenterPull">
+      <inGroupClass name="ariba.core.CostCenter">
+        <groupClassVariant name="SAP">
+	 <groupField name="UniqueName">
+	   <properties rank="10"/>
+	 </groupField>
+	   <groupField name="CostCenterDescription">
+	     <properties rank="20">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="Description"/>
+		   </table>
+	       </property>
+	    </properties>
+	   </groupField>
+	   <groupField name="CompanyCode.UniqueName">
+	     <properties rank="30">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="CompanyCode"/>
+		   </table>
+	       </property>
+	    </properties>
+	   </groupField>
+	 </groupClassVariant>
+      </inGroupClass>
+   </inGroup>
+
+   <group name="GeneralLedgerPull">
+      <groupClass name="ariba.core.GeneralLedger">
+        <groupClassVariant name="SAP">
+	 <groupField name="UniqueName">
+	   <properties rank="10"/>
+	 </groupField>
+	   <groupField name="CompanyCode.UniqueName">
+	     <properties rank="20">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="CompanyCode"/>
+		   </table>
+	       </property>
+	    </properties>
+	   </groupField>
+	 <groupField name="FieldStatusGroup">
+	   <properties rank="30"/>
+	 </groupField>
+	   <groupField name="GeneralLedgerDescription">
+	     <properties rank="40">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="GeneralLedgerDescription"/>
+		   </table>
+	       </property>
+	    </properties>
+	   </groupField>
+	   <groupField name="GeneralLedgerDescription2">
+	     <properties rank="50">
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="GeneralLedgerDescription2"/>
+		   </table>
+	       </property>
+	    </properties>
+	   </groupField>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="PartitionedCommodityCodePull">
+      <groupClass name="ariba.common.core.PartitionedCommodityCode">
+        <groupClassVariant name="SAP">
+         <groupField name="CategoryId">
+	  <properties rank="30">
+	   <property name="integration">
+	      <table>
+	         <entry key="mapField" value="CategoryId"/>
+	      </table>
+	   </property>
+	 </properties>
+           </groupField>
+         <groupField name="UniqueName">
+            <properties rank="10">
+	       <property name="integration">
+	          <table>
+	             <entry key="mapField" value="UniqueName"/>
+	          </table>
+	       </property>
+	     </properties>
+           </groupField>
+         <groupField name="Name">
+	  <properties rank="20">
+	   <property name="integration">
+	      <table>
+	         <entry key="mapField" value="Name"/>
+	      </table>
+	   </property>
+	 </properties>
+         </groupField>
+         <groupField name="Description">
+	  <properties rank="40">
+	   <property name="integration">
+	      <table>
+	         <entry key="mapField" value="Description"/>
+	      </table>
+	   </property>
+	 </properties>
+           </groupField>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="PartitionedCommodityCodeLanguagePull">
+      <groupClass name="ariba.common.core.PartitionedCommodityCode">
+        <groupClassVariant name="SAP">
+         <groupField name="UniqueName"/>
+         <groupField name="Name"/>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="AccountCategoryPull">
+       <groupClass name="ariba.core.AccountCategory">
+           <groupClassVariant name="SAP">
+               <groupField name="UniqueName">
+                   <properties rank="10">
+                       <property name="integration">
+                           <table>
+                               <entry key="mapField" value="UniqueName"/>
+                           </table>
+                       </property>
+                   </properties>
+               </groupField>
+               <groupField name="CompanyCode.UniqueName">
+                   <properties rank="20">
+                       <property name="integration">
+                           <table>
+                               <entry key="mapField" value="CompanyCode.UniqueName"/>
+                           </table>
+                       </property>
+                   </properties>
+               </groupField>
+               <groupField name="Description">
+                   <properties rank="30">
+                       <property name="integration">
+                           <table>
+                               <entry key="mapField" value="Description"/>
+                           </table>
+                       </property>
+                   </properties>
+               </groupField>
+               <groupField name="FieldSelectionString1">
+                   <properties rank="40">
+                       <property name="integration">
+                           <table>
+                               <entry key="mapField" value="FieldSelectionString1"/>
+                           </table>
+                       </property>
+                   </properties>
+               </groupField>
+           </groupClassVariant>
+       </groupClass>
+   </group>
+
+   <group name="AccountCategoryLanguagePull">
+      <groupClass name="ariba.core.AccountCategory">
+        <groupClassVariant name="SAP">
+         <groupField name="UniqueName"/>
+         <groupField name="Description"/>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+   <group name="AccCategoryFieldStatusComboPull">
+      <groupClass name="ariba.core.AccCategoryFieldStatusCombo">
+        <groupClassVariant name="SAP">
+         <groupField name="UniqueName"/>
+	   <groupField name="Category.UniqueName">
+	      <properties>
+	       <property name="integration">
+		   <table>
+		     <entry key="mapField" value="Category"/>
+		   </table>
+	       </property>
+	      </properties>
+	   </groupField>
+         <groupField name="Variant"/>
+         <groupField name="Fstag"/>
+        </groupClassVariant>
+      </groupClass>
+   </group>
+
+
+
+   	 <group name="CATBuyerCodeAnalystContactMapPull">
+	       <groupClass name="cat.core.BuyerCode">
+		   <groupClassVariant name="SAP">
+		       <groupField name="UniqueName">
+			   <properties>
+			       <property name="integration">
+				   <table>
+				       <entry key="mapField" value="BuyerCode"/>
+				   </table>
+			       </property>
+			   </properties>
+		       </groupField>
+		       <groupField name="AnalystContact"/>
+		   </groupClassVariant>
+	       </groupClass>
+        </group>
+       <!-- End -->
+	<!-- Code added by Aswini for Vertex -->
+	<group name="CATTaxUsePull"> 
+	   <groupClass name="cat.core.TaxUse"> 
+		<groupClassVariant name="SAP"> 
+		   <groupField name="UniqueName"/>
+		   <groupField name="Name"/>
+		   <groupField name="Description"/>
+	    </groupClassVariant>
+       </groupClass>
+    </group>
+	<!-- Code ended for Vertex -->
+	<group name="CATGLToTaxLookupPull"> 
+	   <groupClass name="cat.core.GLToTaxLookup"> 
+		<groupClassVariant name="SAP"> 
+		   <groupField name="GLUniqueName"/>
+		   <groupField name="GLDescription"/>
+		   <groupField name="WithHoldingTaxCode"/>
+		   <!-- Start: Mach1 R5.5 (FRD11.3/TD11.3) -->
+		   <groupField name="CompanyCode.UniqueName">
+		      <properties>
+			<property name="integration">
+		           <table>
+		             <entry key="mapField" value="CompanyCode"/>
+		           </table>
+			</property>
+		      </properties>
+		   </groupField>
+		   <groupField name="Country.UniqueName">
+		      <properties>
+		   	<property name="integration">
+		   	   <table>
+		   	     <entry key="mapField" value="Country"/>
+		   	   </table>
+		   	</property>
+		      </properties>
+		   </groupField>
+		   <!-- End: Mach1 R5.5 (FRD11.3/TD11.3) -->
+	    </groupClassVariant>
+       </groupClass>
+    </group>
+<!-- Code ended -->
+	    <!-- Added by Aswini for Plant code Logic -->
+	   <group name="CATFacilityCommodityBuyerCodeMap"> 
+	   <groupClass name="cat.core.FacilityCommodityBuyerCodeMap"> 
+		<groupClassVariant name="SAP"> 
+		    <groupField name="FacilityCode">
+		    <properties> 
+		      <property name="integration"> 
+		    	  <table> 
+		    	    <entry key="mapField" value="FacilityCode"/> 
+		    	  </table> 
+		       </property> 
+		    </properties> 
+			 </groupField> 
+            <groupField name="PartitionedCommodityCode.UniqueName"> 
+			   <properties> 
+			      <property name="integration"> 
+				  <table> 
+				    <entry key="mapField" value="PartitionedCommodityCode"/> 
+				  </table> 
+			      </property> 
+			   </properties> 
+			 </groupField> 
+		     <groupField name="BuyerCode.UniqueName"> 
+			   <properties> 
+			      <property name="integration"> 
+				  <table> 
+				    <entry key="mapField" value="BuyerCode"/> 
+				  </table> 
+			      </property> 
+			   </properties> 
+			 </groupField> 
+			 <groupField name="Plant"> 
+			   <properties> 
+			      <property name="integration"> 
+				  <table> 
+				    <entry key="mapField" value="PlantUniqueName"/> 
+				  </table> 
+			      </property> 
+			   </properties> 
+			 </groupField> 
+		</groupClassVariant> 
+	   </groupClass> 
+        </group>   
+    <group name="CATBusinessResourceApproverPull"> 
+	   <groupClass name="cat.core.CatBusinessResourceApprover"> 
+		<groupClassVariant name="SAP"> 
+		 <groupField name="PayrollFacility"/>             
+		 <groupField name="Department"/> 
+         <groupField name="ThresholdAmount"/> 
+		 <groupField name="BusinessApproverCupid"/> 
+		</groupClassVariant> 
+	   </groupClass> 
+      </group>  
+<!-- code ended for PCL -->	  
+</inModule>
+  <inModule name="ariba.common.meta.ExpenseReport">
+   <group name="ExpensePaymentLanguagePull">
+      <groupClass name="ariba.expense.core.PaymentType">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="ExpensePaymentPull">
+      <groupClass name="ariba.expense.core.PaymentType">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+              <groupField name="DefaultPercentage"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="AutoTypePull">
+      <groupClass name="ariba.expense.core.AutoType">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+             <groupField name="Amount.Currency.UniqueName">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="DefaultCurrency"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+             <groupField name="Amount.Amount">
+                <properties>
+                   <property name="integration">
+                       <table>
+                               <entry key="mapField" value="Amount"/>
+                       </table>
+                   </property>
+                </properties>
+              </groupField>
+
+              <groupField name="UnitOfMeasure"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="AutoTypeLanguagePull">
+      <groupClass name="ariba.expense.core.AutoType">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="LocationTypeLanguagePull">
+      <groupClass name="ariba.expense.core.LocationType">
+          <groupClassVariant name="SAP">
+              <groupField name="UniqueName"/>
+              <groupField name="Name"/>
+          </groupClassVariant>
+      </groupClass>
+   </group>
+   <group name="VATCodePull">
+      <groupClass name="ariba.expense.core.VATCode">
+          <groupField name="Name"/>
+          <groupField name="VATRate"/>
+          <groupField name="EffectiveDate"/>
+      </groupClass>
+    </group>
+   <group name="VATRateLookupPull">
+      <groupClass name="ariba.expense.core.VATRateLookup">
+          <groupField name="UniqueName"/>
+          <groupField name="ExpenseType.UniqueName">
+       	     <properties>
+                   <property name="integration">
+                      <table>
+                         <entry key="mapField" value="ExpenseType"/>
+                      </table>
+                   </property>
+             </properties>
+           </groupField>
+           <groupField name="Country.UniqueName">
+             <properties>
+               <property name="integration">
+                   <table>
+                     <entry key="mapField" value="Country"/>
+                   </table>
+               </property>
+             </properties>
+           </groupField>
+           <groupField name="VATCode"/>
+      </groupClass>
+    </group>
+	<group name="ApprovalLimitsPull">
+	     <groupClass name="cat.core.ApprovalLimits">
+          	<groupClassVariant name="SAP">
+		<groupField name="UniqueName">
+			<properties>
+		    <property name="integration">
+			<table>
+			    <entry key="mapField" value="UniqueName"/>
+			</table>
+		    </property>
+		</properties>
+	 	</groupField>
+	 	<groupField name="CompanyCode.UniqueName">
+		<properties>
+		    <property name="integration">
+			<table>
+			    <entry key="mapField" value="CompanyCode"/>
+			</table>
+		    </property>
+		</properties>
+	     	</groupField>
+	     	<groupField name="Amount.Amount">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="ApprovalLimit"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	     	</groupField>
+	     	<groupField name="Amount.Currency.UniqueName">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="ApprovalLimitCurrency"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	     </groupField>
+	   </groupClassVariant>
+	   </groupClass>
+	</group>
+
+	<group name="CompanyApprovalRulePull">
+		<groupClass name="ariba.core.CompanyCode">
+          	 <groupClassVariant name="SAP">
+          		<groupField name="UniqueName"/>
+			<groupField name="ApprovalRules">
+				<properties metaDataIntegration="CompanyApprovalRulePullDetails"/>
+			</groupField>
+          	 </groupClassVariant>
+		</groupClass>
+	</group>
+
+
+	<group name="CompanyApprovalRulePullDetails">
+	     <groupClass name="cat.core.ApprovalRule">
+          	<groupClassVariant name="SAP">
+		<groupField name="RuleId">
+			<properties>
+		    <property name="integration">
+			<table>
+			    <entry key="mapField" value="RuleId"/>
+			</table>
+		    </property>
+		</properties>
+	 	</groupField>
+	 	<groupField name="RuleType">
+		<properties>
+		    <property name="integration">
+			<table>
+			    <entry key="mapField" value="RuleType"/>
+			</table>
+		    </property>
+		</properties>
+	     	</groupField>
+	     	<groupField name="Approver.Name">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="Approver"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	     	</groupField>
+	     	<groupField name="IsWatcher">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="IsWatcher"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	     </groupField>
+	     	<groupField name="Priority">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="Priority"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	        </groupField>
+		<groupField name="Levels">
+			<properties metaDataIntegration="CompanyApprovalRuleLevelDetails"/>
+		</groupField>
+	     </groupClassVariant>
+	   </groupClass>
+	</group>
+
+	<group name="CompanyApprovalRuleLevelDetails">
+	     <groupClass name="cat.core.ApprovalRuleLevel">
+          	<groupClassVariant name="SAP">
+		<groupField name="RuleLevelID">
+			<properties>
+			    <property name="integration">
+				<table>
+				    <entry key="mapField" value="RuleLevelID"/>
+				</table>
+			    </property>
+			</properties>
+	 	</groupField>
+	 	<groupField name="RuleTypeID">
+			<properties>
+			    <property name="integration">
+				<table>
+				    <entry key="mapField" value="RuleTypeID"/>
+				</table>
+			    </property>
+			</properties>
+	     	</groupField>
+	     	<groupField name="Limit.Amount">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="Limit"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	     	</groupField>
+	     	<groupField name="Limit.Currency.UniqueName">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="Currency"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	     	</groupField>
+	     	<!-- Issue 1152 -->
+	     	<groupField name="ApprovalStatus">
+			<properties>
+			    <property name="integration">
+				<table>
+				    <entry key="mapField" value="ApprovalStatus"/>
+				</table>
+			    </property>
+			</properties>
+	     	</groupField>
+	     	<!-- Issue 1152 -->
+	     	<groupField name="ApprovalRole.UniqueName">
+	     		<properties>
+	     		    <property name="integration">
+	     			<table>
+	     			    <entry key="mapField" value="ApprovalRole"/>
+	     			</table>
+	     		    </property>
+	     		</properties>
+	     	</groupField>
+	     </groupClassVariant>
+	   </groupClass>
+	</group>
+
+	<group name="DisplayPOPrintFieldsPull">
+	     <groupClass name="ariba.core.CompanyCode">
+	           <groupClassVariant name="SAP">
+	          	<groupField name="UniqueName"/>
+			<groupField name="DisplayPOPrintFields">
+		              <properties metaDataIntegration="DisplayPOPrintFieldsPullDetails"/>
+			</groupField>
+	          </groupClassVariant>
+	     </groupClass>
+	</group>
+
+	<group name="DisplayPOPrintFieldsPullDetails">
+	    <groupClass name="cat.core.DisplayPOPrintFields">
+	        <groupClassVariant name="SAP">
+				<groupField name="FieldName">
+					<properties>
+						<property name="integration">
+							<table>
+								<entry key="mapField" value="FieldName"/>
+							</table>
+						</property>
+					</properties>
+	 	        </groupField>
+				<groupField name="Display">
+					<properties>
+						<property name="integration">
+							<table>
+								<entry key="mapField" value="Display"/>
+							</table>
+						</property>
+					</properties>
+	 	        </groupField>
+			<!-- Added By Ravi for DisplayPOPrintFieldsPull integration event START-->
+                        <groupField name="LocalID">
+							<properties>
+								<property name="integration">
+									<table>
+										<entry key="mapField" value="LocalID"/>
+                                    </table>
+                                </property>
+                            </properties>
+                        </groupField>
+                        <groupField name="ImportID">
+							<properties>
+								<property name="integration">
+									<table>
+										<entry key="mapField" value="ImportID"/>
+                                    </table>
+								</property>
+							</properties>
+                        </groupField>
+			<!-- Added By Ravi for DisplayPOPrintFieldsPull integration event End-->
+			</groupClassVariant>
+	    </groupClass>
+	</group>
+
+	<group name="SupplierPull_CSV">
+	<groupClass name="ariba.common.core.Supplier">
+	<groupClassVariant name="SAP">
+	 <groupField name="UniqueName">
+	<properties>
+		<property name="integration">
+		<table>
+			<entry key="mapField" value="UniqueName"/>
+		</table>
+		</property>
+	</properties>
+	 </groupField>
+	<groupField name="Name">
+	  <properties>
+		<property name="integration">
+		<table>
+			<entry key="mapField" value="Name"/>
+		</table>
+		</property>
+	   </properties>
+	</groupField>
+	<groupField name="CorporateURL">
+		  <properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="CorporateURL"/>
+			</table>
+			</property>
+		   </properties>
+	</groupField>
+	<groupField name="CommonSupplier.SystemID">
+		<properties>
+		    <property name="integration">
+		    <table>
+			<entry key="mapField" value="UniqueName"/>
+		    </table>
+		    </property>
+		</properties>
+	</groupField>
+	<groupField name="SupplierIDDomain">
+		<properties>
+		    <property name="integration">
+		    <table>
+			<entry key="mapField" value="SupplierIDDomain"/>
+		    </table>
+		    </property>
+		</properties>
+	</groupField>
+	<groupField name="SupplierIDValue">
+		<properties>
+		    <property name="integration">
+		    <table>
+			<entry key="mapField" value="UniqueName"/>
+		    </table>
+		    </property>
+		</properties>
+	</groupField>
+	<groupField name="Locations">
+		<properties metaDataIntegration="SupplierLocationDetail_CSV">
+			<property name="integration">
+				<table>
+					<entry key="exclude" value="true"/>
+				</table>
+			</property>
+		</properties>
+	</groupField>
+	<groupField name="MinorityIndString">
+			<properties>
+				<property name="integration">
+				<table>
+					<entry key="mapField" value="MinorityIndString"/>
+				</table>
+				</property>
+			</properties>
+	 </groupField>
+	<groupField name="SuppTaxRegID">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="SuppTaxRegID"/>
+			</table>
+			</property>
+		</properties>
+	 </groupField>
+	<groupField name="IncoTerms.UniqueName">
+	<properties>
+	    <property name="integration">
+	    <table>
+		<entry key="mapField" value="IncoTerms"/>
+	    </table>
+	    </property>
+	</properties>
+	</groupField>
+	  </groupClassVariant>
+	</groupClass>
+	</group>
+	<group name="SupplierLocationDetail_CSV">
+	<groupClass name="ariba.common.core.SupplierLocation">
+	<groupClassVariant name="SAP">
+		<groupField name="UniqueName">
+			  <properties>
+				<property name="integration">
+				<table>
+					<entry key="mapField" value="UniqueName"/>
+				</table>
+				</property>
+			   </properties>
+		</groupField>
+		   <groupField name="Name">
+			<properties>
+				<property name="integration">
+				<table>
+					<entry key="mapField" value="Name"/>
+				</table>
+				</property>
+			</properties>
+		 </groupField>
+		<groupField name="Supplier.UniqueName">
+			<properties>
+				<property name="integration">
+					<table>
+						<entry key="mapField" value="SupplierId"/>
+					</table>
+				</property>
+			</properties>
+		</groupField>
+		<groupField name="ContactID">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="ContactID"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="Contact">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="Contact"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="PostalAddress.Lines">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PostalAddress.Lines"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="PostalAddress.City">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PostalAddress.City"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="PostalAddress.State">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PostalAddress.State"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="PostalAddress.PostalCode">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PostalAddress.PostalCode"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="PostalAddress.Country.UniqueName">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PostalAddress.Country.UniqueName"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="Phone">
+			<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="Phone"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+		 <groupField name="Fax">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="Fax"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+		 <groupField name="EmailAddress">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="EmailAddress"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+		 <groupField name="PostOfficeBox">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PostOfficeBox"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+		 <groupField name="PaymentTerms">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PaymentTerm"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+		 <groupField name="AribaNetworkId">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="AribaNetworkId"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+	  </groupClassVariant>
+	</groupClass>
+	</group>
+
+	<group name="SupplierLocationSupplementPull_CSV">
+	<groupClass name="ariba.common.core.SupplierLocation">
+	<groupClassVariant name="SAP">
+		 <groupField name="UniqueName">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="UniqueName"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="ContactID">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="ContactID"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		 <groupField name="PreferredOrderingMethod">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PreferredOrderingMethod"/>
+			</table>
+			</property>
+		</properties>
+		 </groupField>
+		<groupField name="PCardAcceptanceLevel">
+		  <properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PCardAcceptanceLevel"/>
+			</table>
+			</property>
+		   </properties>
+		</groupField>
+		<groupField name="GhostPCardNumber">
+			  <properties>
+				<property name="integration">
+				<table>
+					<entry key="mapField" value="GhostPCardNumber"/>
+				</table>
+				</property>
+			   </properties>
+		</groupField>
+		   <groupField name="ChangeOrderRestrictions">
+			<properties>
+				<property name="integration">
+				<table>
+					<entry key="mapField" value="ChangeOrderRestrictions"/>
+				</table>
+				</property>
+			</properties>
+		 </groupField>
+		   <groupField name="AribaNetworkId">
+			<properties>
+				<property name="integration">
+				<table>
+					<entry key="mapField" value="AribaNetworkId"/>
+				</table>
+				</property>
+			</properties>
+		 </groupField>
+	  </groupClassVariant>
+	</groupClass>
+	</group>
+
+           <!-- ========================================================= -->
+		  		        <!-- group: CATBuyerCodePull		                       -->
+	   <!-- ========================================================= -->
+
+			<group name="CATBuyerCodePull">
+	                 <groupClass name="cat.core.BuyerCode">
+	                 <groupClassVariant name="SAP">
+	                    <groupField name="UniqueName"/>
+	                    <groupField name="BuyerCode"/>
+	                    <groupField name="AccountingFacility"/>
+	                    <groupField name="BuyerName"/>
+	                    <groupField name="PositionName"/>
+	                    <groupField name="AnalystContact"/>
+				<groupField name="UserID.UniqueName">
+			                <properties description="The unique internal identifier of a user.
+			                                         This value must match a user defined in
+			                                         BuyerCodeUser.csv."
+			                            required="true"
+			                            sampleValue="aagassi"
+			                            referenceToColumn="UniqueName"
+			                            referenceToFile="BuyerCodeUser.csv">
+			                   <property name="integration">
+			                       <table>
+			                         <entry key="mapField" value="UserID"/>
+			                       </table>
+			                   </property>
+			                </properties>
+			              </groupField>
+			              <groupField name="UserID.PasswordAdapter">
+			                 <properties description="The password adapter for the user
+			                                          specified in the UniqueName field."
+			                             required="true"
+			                             sampleValue="PasswordAdapter1">
+			                    <property name="integration">
+			                       <table>
+			                         <entry key="mapField" value="PasswordAdapter"/>
+			                       </table>
+			                    </property>
+			                  </properties>
+	              </groupField>
+	              </groupClassVariant>
+		      </groupClass>
+          </group>
+
+
+
+
+          <!-- ========================================================= -->
+	  		        <!-- group: SAP_CSV_SupplierPull           -->
+	          <!-- ========================================================= -->
+
+	          <group name="SAP_CSV_SupplierPull">
+	  	                 <groupClass name="ariba.common.core.Supplier">
+	  	                 <groupClassVariant name="SAP">
+	  	                 <groupField name="UniqueName">
+	  			     <properties>
+	  			          <property name="integration">
+	  			              <table>
+	  			           <entry key="mapField" value="UNIQUENAME"/>
+	  			                 </table>
+	  			                    </property>
+	  			    	  	        </properties>
+	   	    	  	            </groupField>
+	   	    	  	        <groupField name="Name">
+	  			    	    <properties>
+	  			    	         <property name="integration">
+	  			   	            <table>
+	  			               <entry key="mapField" value="NAME"/>
+	  			                    </table>
+	  			                      </property>
+	  			   	  	        </properties>
+	   	    	  	            </groupField>
+
+	  				        <groupField name="SupplierIDDomain">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="SUPPLIERIDDOMAIN"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				       <groupField name="SupplierIDValue">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="SUPPLIERIDVALUE"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				           <groupField name="Buyer.UniqueName">
+					               <properties>
+					          <property name="integration">
+					             <table>
+					        <entry key="mapField" value="BUYER_UNIQUENAME"/>
+					             </table>
+					               </property>
+					   	        </properties>
+	  				       </groupField>
+	  				       <groupField name="TransactionCurrency.UniqueName">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="TRANSACTIONCURRENCY_UNIQUENAME"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				       <groupField name="IncoTerms.UniqueName">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="INCOTERM_ID"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				          <groupField name="Locations">
+	  	                                       <properties description="Locations associated with Supplier"
+	  	                                          required="true"
+	  	                                            metaDataIntegration="SAP_CSV_SupplierLocationPull">
+	  	                                            
+                                                           <property name="integration">
+                                                               <table>
+                                                                   <entry key="exclude" value="true"/>
+                                                               </table>
+                                                           </property>
+                                                       </properties>
+	  	                                   </groupField>
+	  				          </groupClassVariant>
+	  				              </groupClass>
+				                          </group>
+
+
+		                           <!-- ========================================================= -->
+				   		        <!-- group: SAP_CSV_SupplierLocationPull           -->
+	                                <!-- ========================================================= -->
+
+				   <group name="SAP_CSV_SupplierLocationPull">
+				   		                  <groupClass name="ariba.common.core.SupplierLocation">
+				   		                  <groupClassVariant name="SAP">
+				   		                  <groupField name="Supplier.UniqueName">
+				   				     <properties metaDataIntegration="Reference"
+				   				        editable="false">
+                                                                       <property name="integration">
+				   				     <table>
+								                <entry key="mapField" value="SUPPLIER_UNIQUENAME"/>
+                                                                               </table>
+				   				          </property>
+                                                                            </properties>
+
+				   		     	  	            </groupField>
+				   		     	  	 <groupField name="UniqueName">
+				   				    <properties>
+				   				         <property name="integration">
+				   				             <table>
+				   				          <entry key="mapField" value="UNIQUENAME"/>
+				   				                </table>
+				   				                   </property>
+				   				   	  	        </properties>
+				   				           </groupField>
+
+				   				<groupField name="Name">
+				   				   <properties>
+				   				        <property name="integration">
+				   				            <table>
+				   				         <entry key="mapField" value="NAME"/>
+				   				               </table>
+				   				                  </property>
+				   				  	  	        </properties>
+				   				          </groupField>
+
+
+				   				         <groupField name="PostalAddress.Lines">
+				   				   <properties>
+				   				       <property name="integration">
+				   				           <table>
+				   				        <entry key="mapField" value="POSTALADDRESS_LINES"/>
+				   				              </table>
+				   				                 </property>
+				   					  	        </properties>
+				   				         </groupField>
+
+				   				       <groupField name="PostalAddress.City">
+				   					    <properties>
+				   					        <property name="integration">
+				   					            <table>
+				   					         <entry key="mapField" value="POSTALADDRESS_CITY"/>
+				   					               </table>
+				   					                  </property>
+				   						  	        </properties>
+				   					          </groupField>
+
+				   					 <groupField name="PostalAddress.State">
+				   					    <properties>
+				   					        <property name="integration">
+				   					            <table>
+				   					         <entry key="mapField" value="POSTALADDRESS_STATE"/>
+				   					               </table>
+				   					                  </property>
+				   						  	        </properties>
+				   					          </groupField>
+
+				                                    <groupField name="PostalAddress.PostalCode">
+				     				  <properties>
+				     				   <property name="integration">
+				     				       <table>
+				     				    <entry key="mapField" value="POSTALADDRESS_POSTALCODE"/>
+				     				          </table>
+				     				             </property>
+				     					        </properties>
+				     				     </groupField>
+
+
+				       				   <groupField name="PostalAddress.Country.UniqueName">
+				     				      <properties>
+				     				          <property name="integration">
+				     				              <table>
+				     				           <entry key="mapField" value="POSTALADDRESS_COUNTRY_UNIQUENAME"/>
+				     				                 </table>
+				     				                    </property>
+				   					  	        </properties>
+				     				            </groupField>
+
+				     				       <groupField name="Phone">
+				   					     <properties>
+				   					         <property name="integration">
+				   					             <table>
+				   					          <entry key="mapField" value="PHONE"/>
+				   					                </table>
+				   					                   </property>
+				   					    	        </properties>
+				   					           </groupField>
+
+				   					      <groupField name="Fax">
+				   					         <properties>
+				   					             <property name="integration">
+				   					                 <table>
+				   					              <entry key="mapField" value="FAX"/>
+				   					                    </table>
+				   					                       </property>
+				   					        	        </properties>
+				   					               </groupField>
+
+				   					      <groupField name="EmailAddress">
+				   					        <properties>
+				   					            <property name="integration">
+				   					                <table>
+				   					             <entry key="mapField" value="EMAILADDRESS"/>
+				   					                   </table>
+				   					                      </property>
+				   					       	        </properties>
+				   					              </groupField>
+
+
+				   						      <groupField name="ElectronicOrderAddress">
+				   						        <properties>
+				   						            <property name="integration">
+				   					      	                <table>
+				   					      	             <entry key="mapField" value="ELECTRONICORDERADDRESS"/>
+				   					      	                   </table>
+				   					      	                      </property>
+				   					      	       	        </properties>
+				   						              </groupField>
+
+				   					    	 <groupField name="URL">
+				   					    	   <properties>
+				   					    	       <property name="integration">
+				   					    	           <table>
+				   					    	        <entry key="mapField" value="URL"/>
+				   					    	              </table>
+				   					    	                 </property>
+				   					    	  	        </properties>
+				   						         </groupField>
+
+
+				        				            <groupField name="ShopURL">
+				        					      <properties>
+				        					          <property name="integration">
+				        					              <table>
+				        					           <entry key="mapField" value="SHOPURL"/>
+				        					                 </table>
+				        					                    </property>
+				        					     	        </properties>
+				        					            </groupField>
+
+
+						                            <groupField name="Contact">
+						                        <properties>
+						                           <property name="integration">
+						                             <table>
+						                           <entry key="mapField" value="CONTACT"/>
+						                            </table>
+						                                  </property>
+						                     	  	        </properties>
+				   		                                      </groupField>
+
+
+				   							     <groupField name="PreferredOrderingMethod">
+				   							        <properties>
+				   							            <property name="integration">
+				   							                <table>
+				   							             <entry key="mapField" value="PREFERREDORDERINGMETHOD"/>
+				   							                   </table>
+				   							                      </property>
+				   							              </properties>
+				   							              </groupField>
+
+				   				                        <groupField name="LocType">
+				   				                    <properties>
+				   				                       <property name="integration">
+				   				                         <table>
+				   				                       <entry key="mapField" value="LOCTYPE"/>
+				   				                        </table>
+				   				                              </property>
+				   				                  	  	        </properties>
+				   				                                  </groupField>
+
+
+				   				                             <groupField name="ReftoOtherSuppLoc">
+				   				                         <properties>
+				   				                            <property name="integration">
+				   				                              <table>
+				   				                            <entry key="mapField" value="REFTOOTHERSUPPLOC"/>
+				   				                             </table>
+				   				                                   </property>
+				   				                       	  	        </properties>
+				   				                                       </groupField>
+
+
+
+				   				                             <groupField name="DefaultCurrency.UniqueName">
+				   				                         <properties>
+				   				                            <property name="integration">
+				   				                              <table>
+				   				                            <entry key="mapField" value="DEFAULTCURRENCY"/>
+				   				                             </table>
+				   				                                   </property>
+				   				                       	  	        </properties>
+				   				                                       </groupField>
+
+
+				   				                                  <groupField name="RegistrationNumber">
+				   				                              <properties>
+				   				                                 <property name="integration">
+				   				                                   <table>
+				   				                                 <entry key="mapField" value="REGISTRATIONNUMBER"/>
+				   				                                  </table>
+				   				                                        </property>
+				   				                               	        </properties>
+				   				                                            </groupField>
+
+				   				                                      <groupField name="BlockIndicator">
+				   				                                  <properties>
+				   				                                     <property name="integration">
+				   				                                       <table>
+				   				                                     <entry key="mapField" value="BLOCKINDICATOR"/>
+				   				                                      </table>
+				   				                  	                    </property>
+				   				                  	           	        </properties>
+				   				                  	                        </groupField>
+
+
+				   				                  	                     <groupField name="PaymentTerms.UniqueName">
+				   				                  	                 <properties>
+				   				                  	                    <property name="integration">
+				   				                  	                      <table>
+				   				                  	                    <entry key="mapField" value="PAYMENTTERMS_UNIQUENAME"/>
+				   				                  	                     </table>
+				   				                  	                           </property>
+				   				                  	                  	        </properties>
+				   				                  	                               </groupField>
+				   				                  	                               
+				   				                  	                <!-- Start :  SpringRelease_RSD 126 (FDD_126_1.0 / TDD_126_2.0) -->
+                                                                                                   <groupField name="PaymentTerms.SAPSource">
+													          <properties>
+													         	<property name="integration">
+													         	   <table>
+													         		<entry key="mapField" value="SAPSOURCE"/>
+													         	   </table>
+													         	 </property>
+    	                                                                                                     </properties>
+    	                                                                                                     </groupField>
+                                                                                              <!-- End :  SpringRelease_RSD 126 (FDD_126_1.0 / TDD_126_2.0) -->
+
+
+				   							      <groupField name="AribaNetworkId">
+				   							         <properties>
+				   							             <property name="integration">
+				   							                 <table>
+				   							              <entry key="mapField" value="ARIBANETWORKID"/>
+				   							                    </table>
+				   							                       </property>
+				   							               </properties>
+				   							               </groupField>
+	<!-- Start: Mach1 R5.5 (FRD3.2/TD3.2) -->
+		 <groupField name="Established">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="ESTABLISHED"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+		 <groupField name="PlafondInd">
+		<properties>
+			<property name="integration">
+			<table>
+				<entry key="mapField" value="PLAFONDIND"/>
+			</table>
+			</property>
+		</properties>
+		</groupField>
+        <!-- End: Mach1 R5.5 (FRD3.2/TD3.2) -->
+				   							               <groupField name="ContactID">
+				   							                  <properties>
+				   							                      <property name="integration">
+				   							                          <table>
+				   							                       <entry key="mapField" value="COMPANYCODE_UNIQUENAME"/>
+				   							                             </table>
+				   							                                </property>
+				   							                        </properties>
+				   							                        </groupField>
+				   							                           </groupClassVariant>
+				   								                  </groupClass>
+								                                                     </group>
+			<!-- ========================================================= -->
+	  		        <!-- group: CGMSAP_CSV_SupplierPull           -->
+	          <!-- ========================================================= -->
+
+	          <group name="CGMSAP_CSV_SupplierPull">
+	  	                 <groupClass name="ariba.common.core.Supplier">
+	  	                 <groupClassVariant name="SAP">
+	  	                 <groupField name="UniqueName">
+	  			     <properties>
+	  			          <property name="integration">
+	  			              <table>
+	  			           <entry key="mapField" value="UNIQUENAME"/>
+	  			                 </table>
+	  			                    </property>
+	  			    	  	        </properties>
+	   	    	  	            </groupField>
+	   	    	  	        <groupField name="Name">
+	  			    	    <properties>
+	  			    	         <property name="integration">
+	  			   	            <table>
+	  			               <entry key="mapField" value="NAME"/>
+	  			                    </table>
+	  			                      </property>
+	  			   	  	        </properties>
+	   	    	  	            </groupField>
+
+	  				        <groupField name="SupplierIDDomain">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="SUPPLIERIDDOMAIN"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				       <groupField name="SupplierIDValue">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="SUPPLIERIDVALUE"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				           <groupField name="Buyer.UniqueName">
+					               <properties>
+					          <property name="integration">
+					             <table>
+					        <entry key="mapField" value="BUYER_UNIQUENAME"/>
+					             </table>
+					               </property>
+					   	        </properties>
+	  				       </groupField>
+	  				       <groupField name="TransactionCurrency.UniqueName">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="TRANSACTIONCURRENCY_UNIQUENAME"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				       <groupField name="IncoTerms.UniqueName">
+	  				           <properties>
+	  				                <property name="integration">
+	  				                   <table>
+	  				              <entry key="mapField" value="INCOTERM_ID"/>
+	  				                   </table>
+	  				                     </property>
+	  				         	        </properties>
+	  				           </groupField>
+	  				          <groupField name="Locations">
+	  	                                       <properties description="Locations associated with Supplier"
+	  	                                          required="true"
+	  	                                            metaDataIntegration="CGMSAP_CSV_SupplierLocationPull">
+	  	                                            
+                                                           <property name="integration">
+                                                               <table>
+                                                                   <entry key="exclude" value="true"/>
+                                                               </table>
+                                                           </property>
+                                                       </properties>
+	  	                                   </groupField>
+	  				          </groupClassVariant>
+	  				              </groupClass>
+				                          </group>
+
+
+		                           <!-- ========================================================= -->
+				   		        <!-- group: CGMSAP_CSV_SupplierLocationPull           -->
+	                                <!-- ========================================================= -->
+
+				   <group name="CGMSAP_CSV_SupplierLocationPull">
+				   		                  <groupClass name="ariba.common.core.SupplierLocation">
+				   		                  <groupClassVariant name="SAP">
+				   		                  <groupField name="Supplier.UniqueName">
+				   				     <properties metaDataIntegration="Reference"
+				   				        editable="false">
+                                                                       <property name="integration">
+				   				     <table>
+								                <entry key="mapField" value="SUPPLIER_UNIQUENAME"/>
+                                                                               </table>
+				   				          </property>
+                                                                            </properties>
+
+				   		     	  	            </groupField>
+				   		     	  	 <groupField name="UniqueName">
+				   				    <properties>
+				   				         <property name="integration">
+				   				             <table>
+				   				          <entry key="mapField" value="UNIQUENAME"/>
+				   				                </table>
+				   				                   </property>
+				   				   	  	        </properties>
+				   				           </groupField>
+
+				   				<groupField name="Name">
+				   				   <properties>
+				   				        <property name="integration">
+				   				            <table>
+				   				         <entry key="mapField" value="NAME"/>
+				   				               </table>
+				   				                  </property>
+				   				  	  	        </properties>
+				   				          </groupField>
+
+
+				   				         <groupField name="PostalAddress.Lines">
+				   				   <properties>
+				   				       <property name="integration">
+				   				           <table>
+				   				        <entry key="mapField" value="POSTALADDRESS_LINES"/>
+				   				              </table>
+				   				                 </property>
+				   					  	        </properties>
+				   				         </groupField>
+
+				   				       <groupField name="PostalAddress.City">
+				   					    <properties>
+				   					        <property name="integration">
+				   					            <table>
+				   					         <entry key="mapField" value="POSTALADDRESS_CITY"/>
+				   					               </table>
+				   					                  </property>
+				   						  	        </properties>
+				   					          </groupField>
+
+				   					 <groupField name="PostalAddress.State">
+				   					    <properties>
+				   					        <property name="integration">
+				   					            <table>
+				   					         <entry key="mapField" value="POSTALADDRESS_STATE"/>
+				   					               </table>
+				   					                  </property>
+				   						  	        </properties>
+				   					          </groupField>
+
+				                                    <groupField name="PostalAddress.PostalCode">
+				     				  <properties>
+				     				   <property name="integration">
+				     				       <table>
+				     				    <entry key="mapField" value="POSTALADDRESS_POSTALCODE"/>
+				     				          </table>
+				     				             </property>
+				     					        </properties>
+				     				     </groupField>
+
+
+				       				   <groupField name="PostalAddress.Country.UniqueName">
+				     				      <properties>
+				     				          <property name="integration">
+				     				              <table>
+				     				           <entry key="mapField" value="POSTALADDRESS_COUNTRY_UNIQUENAME"/>
+				     				                 </table>
+				     				                    </property>
+				   					  	        </properties>
+				     				            </groupField>
+
+				     				       <groupField name="Phone">
+				   					     <properties>
+				   					         <property name="integration">
+				   					             <table>
+				   					          <entry key="mapField" value="PHONE"/>
+				   					                </table>
+				   					                   </property>
+				   					    	        </properties>
+				   					           </groupField>
+
+				   					      <groupField name="Fax">
+				   					         <properties>
+				   					             <property name="integration">
+				   					                 <table>
+				   					              <entry key="mapField" value="FAX"/>
+				   					                    </table>
+				   					                       </property>
+				   					        	        </properties>
+				   					               </groupField>
+
+				   					      <groupField name="EmailAddress">
+				   					        <properties>
+				   					            <property name="integration">
+				   					                <table>
+				   					             <entry key="mapField" value="EMAILADDRESS"/>
+				   					                   </table>
+				   					                      </property>
+				   					       	        </properties>
+				   					              </groupField>
+
+
+				   						      <groupField name="ElectronicOrderAddress">
+				   						        <properties>
+				   						            <property name="integration">
+				   					      	                <table>
+				   					      	             <entry key="mapField" value="ELECTRONICORDERADDRESS"/>
+				   					      	                   </table>
+				   					      	                      </property>
+				   					      	       	        </properties>
+				   						              </groupField>
+
+				   					    	 <groupField name="URL">
+				   					    	   <properties>
+				   					    	       <property name="integration">
+				   					    	           <table>
+				   					    	        <entry key="mapField" value="URL"/>
+				   					    	              </table>
+				   					    	                 </property>
+				   					    	  	        </properties>
+				   						         </groupField>
+
+
+				        				            <groupField name="ShopURL">
+				        					      <properties>
+				        					          <property name="integration">
+				        					              <table>
+				        					           <entry key="mapField" value="SHOPURL"/>
+				        					                 </table>
+				        					                    </property>
+				        					     	        </properties>
+				        					            </groupField>
+
+
+						                            <groupField name="Contact">
+						                        <properties>
+						                           <property name="integration">
+						                             <table>
+						                           <entry key="mapField" value="CONTACT"/>
+						                            </table>
+						                                  </property>
+						                     	  	        </properties>
+				   		                                      </groupField>
+
+
+				   							     <groupField name="PreferredOrderingMethod">
+				   							        <properties>
+				   							            <property name="integration">
+				   							                <table>
+				   							             <entry key="mapField" value="PREFERREDORDERINGMETHOD"/>
+				   							                   </table>
+				   							                      </property>
+				   							              </properties>
+				   							              </groupField>
+
+				   				                        <groupField name="LocType">
+				   				                    <properties>
+				   				                       <property name="integration">
+				   				                         <table>
+				   				                       <entry key="mapField" value="LOCTYPE"/>
+				   				                        </table>
+				   				                              </property>
+				   				                  	  	        </properties>
+				   				                                  </groupField>
+
+
+				   				                             <groupField name="ReftoOtherSuppLoc">
+				   				                         <properties>
+				   				                            <property name="integration">
+				   				                              <table>
+				   				                            <entry key="mapField" value="REFTOOTHERSUPPLOC"/>
+				   				                             </table>
+				   				                                   </property>
+				   				                       	  	        </properties>
+				   				                                       </groupField>
+
+
+
+				   				                             <groupField name="DefaultCurrency.UniqueName">
+				   				                         <properties>
+				   				                            <property name="integration">
+				   				                              <table>
+				   				                            <entry key="mapField" value="DEFAULTCURRENCY"/>
+				   				                             </table>
+				   				                                   </property>
+				   				                       	  	        </properties>
+				   				                                       </groupField>
+
+
+				   				                                  <groupField name="RegistrationNumber">
+				   				                              <properties>
+				   				                                 <property name="integration">
+				   				                                   <table>
+				   				                                 <entry key="mapField" value="REGISTRATIONNUMBER"/>
+				   				                                  </table>
+				   				                                        </property>
+				   				                               	        </properties>
+				   				                                            </groupField>
+
+				   				                                      <groupField name="BlockIndicator">
+				   				                                  <properties>
+				   				                                     <property name="integration">
+				   				                                       <table>
+				   				                                     <entry key="mapField" value="BLOCKINDICATOR"/>
+				   				                                      </table>
+				   				                  	                    </property>
+				   				                  	           	        </properties>
+				   				                  	                        </groupField>
+
+
+				   				                  	                     <groupField name="PaymentTerms.UniqueName">
+				   				                  	                 <properties>
+				   				                  	                    <property name="integration">
+				   				                  	                      <table>
+				   				                  	                    <entry key="mapField" value="PAYMENTTERMS_UNIQUENAME"/>
+				   				                  	                     </table>
+				   				                  	                           </property>
+				   				                  	                  	        </properties>
+				   				                  	                               </groupField>
+
+                                                                                                   <!-- Start :  SpringRelease_RSD 126 (FDD_126_1.0 / TDD_126_2.0) -->
+                                                                                                      <groupField name="PaymentTerms.SAPSource">
+													          <properties>
+													         	<property name="integration">
+													         	   <table>
+													         		<entry key="mapField" value="SAPSOURCE"/>
+													         	   </table>
+													         	 </property>
+    	                                                                                                     </properties>
+    	                                                                                                     </groupField>
+                                                                                                    <!-- End : SpringRelease_RSD 126 (FDD_126_1.0 / TDD_126_2.0) -->
+				   				                  	                               
+				   				                  	                <!--  <groupField name="PaymentTerms.SAPSource">
+													          <properties>
+													         	<property name="integration">
+													         	   <table>
+													         		<entry key="mapField" value="SAPSOURCE"/>
+																<entry key="defaultValue" value="CGM"/>
+													         	   </table>
+													         	 </property>
+    	                                                                                                     </properties>
+    	                                                                                                     </groupField> --> 
+
+
+				   							      <groupField name="AribaNetworkId">
+				   							         <properties>
+				   							             <property name="integration">
+				   							                 <table>
+				   							              <entry key="mapField" value="ARIBANETWORKID"/>
+				   							                    </table>
+				   							                       </property>
+				   							               </properties>
+				   							               </groupField>
+
+				   							               <groupField name="ContactID">
+				   							                  <properties>
+				   							                      <property name="integration">
+				   							                          <table>
+				   							                       <entry key="mapField" value="COMPANYCODE_UNIQUENAME"/>
+				   							                             </table>
+				   							                                </property>
+				   							                        </properties>
+				   							                        </groupField>
+				   							                           </groupClassVariant>
+				   								                  </groupClass>
+								                                                     </group>
+
+
+	<!-- Code added by Soumya for Vertex Tax Exempt Reason Code START-->
+		<group name="CATTaxExemptReasonCodeLookupPull"> 
+	   <groupClass name="cat.core.TaxExemptReasonCode"> 
+		<groupClassVariant name="SAP"> 
+		   <groupField name="TaxExemptUniqueName">
+		   <properties rank="800">
+			<property name="integration">
+			    <table>
+				    <entry key="mapField" value="TaxExemptUniqueName"/>
+			    </table>
+			</property>
+		</properties>
+		</groupField>
+		   <groupField name="TaxExemptDescription">
+		   <properties rank="810">
+			<property name="integration">
+			    <table>
+				    <entry key="mapField" value="TaxExemptDescription"/>
+			    </table>
+			</property>
+		</properties>
+		</groupField>
+		</groupClassVariant>
+       </groupClass>
+    </group>
+	<!-- Code added by Soumya for Vertex Tax Exempt Reason Code END-->
+<!-- Code ended -->
+</inModule>
+<!-- Code added by Aswini for Vertex to pull data -->
+<inModule name="ariba.common.meta.Requisition">                                                                                                                   
+	<group name="CATModeofTransportPull"> 
+	    <groupClass name="cat.core.ModeOfTransport"> 
+		    <groupClassVariant name="SAP"> 
+		       <groupField name="UniqueName"/>
+		       <groupField name="Name"/>
+	        </groupClassVariant>
+        </groupClass>
+    </group>	
+    <group name="CATNatureofTransactionPull"> 
+	    <groupClass name="cat.NatureofTransaction"> 
+		    <groupClassVariant name="SAP"> 
+		       <groupField name="UniqueName"/>
+		       <groupField name="Name"/>
+	        </groupClassVariant>
+        </groupClass>
+    </group>		
+</inModule>	
+<!-- code completed for Vertex -->																											   
+</extension>

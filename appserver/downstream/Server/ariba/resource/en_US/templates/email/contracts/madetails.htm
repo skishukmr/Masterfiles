@@ -1,0 +1,91 @@
+<span style="margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/Definitions@@</b></span><br />
+<TABLE cellSpacing=5 cellPadding=0 border=0 style="font:8pt Verdana, Arial, Helvetica;">
+  <TBODY>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/Description@@:</TD>
+        <TD align="left" width="400">@@Name@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/Contact@@:</TD>
+        <TD align="left" width="400">@@Requester.getMyName()@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/EffectiveDate@@:</TD>
+        <TD align="left" width="400">@@DFS.EffectiveDate@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/ExpirationDate@@:</TD>
+        <TD align="left" width="400">@@DFS.ExpirationDate@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/Supplier@@:</TD>
+        <TD align="left" width="400">@@Supplier.Name@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/SupplierLocation@@:</TD>
+        <TD align="left" width="400">@@SupplierLocation.Name@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/Currency@@:</TD>
+        <TD align="left" width="400">@@Currency.UniqueName@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/Organization@@:</TD>
+        <TD align="left" width="400">@@InventoryOrganization.Name@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/AvailableAmount@@:</TD>
+        <TD align="left" width="400">@@TotalCost.FCN.getAmount()@@ @@TotalCost.Currency.UniqueName@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/UsedAmount@@:</TD>
+        <TD align="left" width="400">@@AmountPaid.FCN.getAmount()@@ @@AmountPaid.Currency.UniqueName@@</TD>
+      </TR>
+    </TBODY>
+</TABLE>
+<br />
+
+<span style="margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/OverallLimits@@</b></span><br />
+<TABLE cellSpacing=5 cellPadding=0 border=0 style="font:8pt Verdana, Arial, Helvetica;">
+  <TBODY>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/MinimumCommitment@@:</TD>
+        <TD align="left" width="400">@@MinAmount.FCN.getAmount()@@ @@MinAmount.Currency.UniqueName@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/MaximumCommitment@@:</TD>
+        <TD align="left" width="400">@@MaxAmount.FCN.getAmount()@@ @@MaxAmount.Currency.UniqueName@@</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/Tolerance@@:</TD>
+        <TD align="left" width="400">@@MaxAmountTolerancePercent@@%</TD>
+      </TR>
+    </TBODY>
+</TABLE>
+<br />
+
+<span style="margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;><b>@@@ariba.htmlemail/ReleaseLimits@@</b></span><br />
+<TABLE cellSpacing=5 cellPadding=0 border=0 style="font:8pt Verdana, Arial, Helvetica;">
+  <TBODY>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/MinimumAllowedPerRelease@@:</TD>
+        <TD align="left" width="400">@@ReleaseMinAmount.FCN.getAmount()@@ @@ReleaseMinAmount.Currency.UniqueName@@</TD>
+      </TR>
+    </TBODY>
+</TABLE>
+<br />
+
+<span style="margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/NotificationLimits@@</b></span><br />
+<TABLE cellSpacing=5 cellPadding=0 border=0 style="font:8pt Verdana, Arial, Helvetica;">
+  <TBODY>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/AvailableBalanceAtOrBelow@@:</TD>
+        <TD align="left" width="400">@@AvailableAmountNotificationPercent@@%</TD>
+      </TR>
+      <TR>
+        <TD align="left" nowrap width="1%">@@@ariba.htmlemail/DaysBeforeAgreeementExpires@@:</TD>
+        <TD align="left" width="400">@@NotificationDays@@</TD>
+      </TR>
+    </TBODY>
+</TABLE>
+<br />

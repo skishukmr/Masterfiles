@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE extension SYSTEM "../../../../ariba/base/meta/core/extensions.dtd">
+<extension name="config.variants.SAP.extensions.CatSAPInvoicingExt">
+
+<!-- ************************************************************************
+Change History
+#	Change By	Change Date		Description
+============================================================================
+1   Santanu		08/11/2008		Extends OOB invoicing related classes
+2   S. Sato     03/21/2011      Deleted ootb trigger 'SetAccountCategoryOnAdHocInvoiceLI
+                                which defaults account type on tax line to 'K'
+                                (UAT Fix #159)
+3  Aswini M             17/06/2011	Coded changes related to Vertex
+4  Aswini M	        24/06/2011	Added CurrencyExchangeRate at Invoice Headeder level
+5. Divya  		28/09/2011      AssessTaxButton field added for Vertex
+6. IBM Niraj Kumar	2/2/2012	Mach1 R5.5 (FRD4.3/TD4.3) Add VATRegistration fields in Invoice object
+7. IBM Parita Shah	20/01/2014	SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)  MSC Tax Gaps Correct Legal Entitys
+****************************************************************************************************************** -->
+
+<import extension="ariba.variants.SAP.extensions.SAPInvoicingExt"/>
+<import extension="config.variants.Plain.extensions.CatCoreExt"/>
+<import extension="config.variants.Plain.extensions.CatInvoicingExt"/>
+
+	<inModule name="ariba.invoicing.core.Invoicing">
+		<inClass name="ariba.invoicing.core.InvoiceLineItem">
+			<inClassVariant name="SAP">
+				<!-- Starts here ***Added by Nagendra to add customSupploc field *** -->
+				<field name="CustomSuppLoc">
+				<type class="ariba.basic.core.PostalAddress"/>
+				  <properties label="@aml.cat.sap.invoice/CustomSuppLoc" rank="118"/>
+				</field>
+				<!-- Ends herer *** Added by Nagendra *** -->
+				<!-- Code added by Aswini for Vertex -->
+				<field name = "TransportMode">
+                  <type class="cat.core.ModeOfTransport"/>
+                  <properties label="@aml.cat.sap.invoice/TransportMode" rank="122"
+				  controller="ariba.htmlui.approvableui.fields.ARFNamedObject"
+			      controllerType="RecentUserChoice"
+			      chooserGroup="CatChooserTable" detailsGroup="CatChooserTable" forceRefresh="true"
+			      titleGroup="CatChooserTable" titleFormat="%s (%s)"/>  
+                </field>
+                <field name="TransactionNature">
+                  <type class="cat.NatureofTransaction"/>
+                  <properties label="@aml.cat.sap.invoice/TransactionNature" rank="124" 
+				  controller="ariba.htmlui.approvableui.fields.ARFNamedObject"
+			      controllerType="RecentUserChoice"
+			      chooserGroup="CatChooserTable" detailsGroup="CatChooserTable" forceRefresh="true"
+			      titleGroup="CatChooserTable" titleFormat="%s (%s)"/>  
+                </field>
+		        <field name="NetWeight">
+		           <type class="java.lang.String" length="20"/>
+			       <properties rank="126" label="@aml.cat.sap.invoice/NetWeight"/>
+		        </field>
+				<!-- Code ended for Vertex -->
+
+                <!--
+                     S. Sato - 21st Mar 2011 -
+                     Deleting the ootb trigger which sets AccountCategory to "K" for
+                     adhoc lines. Tax lines show up as adhoc lines which get defaulted
+                     to "K". UAT Defect #159
+                -->
+                <deleteTrigger name="SetAccountCategoryOnAdHocInvoiceLI"/>
+
+				<trigger event="FieldChange" field="Order" name="SetCompanyCodeOnOrderChange">
+					<condition implementation="ariba.base.fields.condition.NonNullObject" testField="Order.CompanyCode"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="LineItemCollection.CompanyCode"/>
+						<parameter inputField="Order.CompanyCode" name="Value"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChange" field="MasterAgreement" name="SetCompanyCodeOnMAChange">
+					<andCondition>
+						<condition implementation="ariba.base.fields.condition.NonNullObject" testField="MasterAgreement.CompanyCode"/>
+						<notCondition>
+							<condition implementation="ariba.base.fields.condition.NonNullObject" testField="Order.CompanyCode"/>
+						</notCondition>
+					</andCondition>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="LineItemCollection.CompanyCode"/>
+						<parameter inputField="MasterAgreement.CompanyCode" name="Value"/>
+					</action>
+				</trigger>
+			</inClassVariant>
+		</inClass>
+		<inClass name="ariba.invoicing.core.Invoice">
+			<inClassVariant name="SAP">
+				<trigger event="FieldChange" field="Requester" name="SetCompanyCodeOnRequesterChange">
+					<condition implementation="ariba.base.fields.condition.NonNullObject" testField="Requester.PartitionedUser.CompanyCode"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="CompanyCode"/>
+						<parameter inputField="Requester.PartitionedUser.CompanyCode" name="Value"/>
+					</action>
+				</trigger>
+				<!-- Start: Mach1 R5.5 (FRD4.3/TD4.3) -->
+				<trigger event="FieldChange" field="SelectedMasterAgreement" name="SetVATRegOnSuppChange">
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="VATRegistration"/>
+						<parameter inputField="SupplierLocation.RegistrationNumber" name="Value"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChange" field="SelectedMasterAgreement" name="SetVATRegCopyOnSuppChange">
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="VATRegistrationCopy"/>
+						<parameter inputField="SupplierLocation.RegistrationNumber" name="Value"/>
+					</action>
+				</trigger>
+				<!-- End: Mach1 R5.5 (FRD4.3/TD4.3) -->
+			</inClassVariant>
+		</inClass>
+
+		<inClass name="ariba.invoicing.core.Invoice">
+		     <inClassVariant name="SAP">
+			  <inField name="ClassProperties">
+				<properties printHook="config.java.print.sap.CatSAPApprovablePrintHook"/>
+   			  </inField>
+			<!-- field added for Vertex -->
+			  <field name="CurrencyExchangeRate">
+		       <type class="java.lang.String" length="20"/>
+			   <properties rank="50" label="@aml.cat.sap.invoice/CurrencyExchangeRate"/>
+		      </field>
+		      <!-- Start: Mach1 R5.5 (FRD4.3/TD4.3) -->
+	              <field name="VATRegistration">
+		      	  <type class="java.lang.String" length="45"/>
+		      		<properties label= "VAT Registration" editable="true"/>
+		      </field>
+		      <field name="VATRegistrationCopy">
+		      	 <type class="java.lang.String" length="45"/>
+		      	  <properties hidden="true"/>
+		      </field>
+		      <field name="IsASNInvoice">
+		         <type class="boolean"/>
+		          <properties hidden="true"/>
+		      </field>
+		      <!-- End: Mach1 R5.5 (FRD4.3/TD4.3) -->
+            <!-- code ended for Vertex -->
+		     </inClassVariant>
+		</inClass>
+
+		<inClass name="ariba.invoicing.core.InvoiceReconciliation">
+			<inClassVariant name="SAP">
+                                <field name="taxCallNotFailed" nullAllowed="true" privacy="documented">
+                                        <type class="boolean"/>
+                                        <properties hidden="true" validate="false"/>
+                                </field>
+		<!-- Code Added to include AssessTaxButton for SAP partition to address exception-->
+			<!-- Start By Divya for Vertex-->
+				 <field name="AssessTaxButton" noPersist="true">
+				  <type class="java.lang.Boolean"/>
+				  <visibility>
+				  <andCondition>
+				   <!-- added or Condition for Vertex -->
+						<orCondition>
+						<condition implementation="ariba.common.core.condition.UserHasPermission">
+						<parameter name="PermissionName" value="TaxManager"/>
+						</condition>
+
+						<condition implementation="ariba.common.core.condition.RoleEqualTo">
+						<parameter name="TargetValue" value="MSC Administrator"/>
+						</condition>
+					</orCondition>
+                      <!-- coded ended for orCondition for Vertex -->
+						<condition implementation="config.java.condition.sap.HideAssessTaxButtonFlag" testField="this"/>
+				 </andCondition>
+				</visibility>
+				<properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APETriggerButton"  title="@aml.cat.ui1/LabelAssessTaxButton"/>
+				 </field>
+
+				 <field name="TaxOverrideFlag">
+				   <type class="boolean"/>
+				</field>
+			<!-- End of Code by Divya for Vertex-->
+
+                                <field name="AuthPOTaxAmt" nullAllowed="true" privacy="documented">
+					<type class="ariba.basic.core.Money"/>
+                                        <properties hidden="true" validate="false"/>
+                                </field>
+								<!-- code added for Vertex -->
+								<field name="CurrencyExchangeRate">
+									<type class="java.lang.String" length="20"/>
+									<properties rank="50" label="@aml.cat.sap.invoice/CurrencyExchangeRate"/>
+								</field>
+                                <!-- code ended for Vertex -->   
+                                <trigger event="FieldChange" field="Invoice" name="SetCompanyCodeFromInvoice">
+					<condition implementation="ariba.base.fields.condition.NonNullObject" testField="Invoice.CompanyCode"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="CompanyCode"/>
+						<parameter inputField="Invoice.CompanyCode" name="Value"/>
+					</action>
+				</trigger>
+			</inClassVariant>
+		</inClass>
+                <!-- ================================================================== -->
+                <!--  class: ariba.invoicing.core.InvoiceCoreApprovableLineItem         -->
+                <!-- ================================================================== -->
+                <inClass name="ariba.statement.core.StatementCoreApprovableLineItem">
+                        <inClassVariant name="SAP">
+                                <field name="PONumber">
+                                        <type class="java.lang.String" length="25"/>
+                                        <properties metaDataIntegration="Reference"/>
+                                </field>
+                        </inClassVariant>
+                </inClass>
+                <!-- ================================================================== -->
+                <!--  class: ariba.invoicing.core.InvoiceCoreApprovableLineItem         -->
+                <!-- ================================================================== -->
+
+		<!-- Starts here ***Added by Nagendra to add customSupploc field *** -->
+		<inClass name="ariba.invoicing.core.InvoiceReconciliationLineItem">
+			<inClassVariant name="SAP">
+		<field name="CustomSuppLoc">
+			<type class="ariba.basic.core.PostalAddress"/>
+			  <properties label="@aml.cat.sap.invoice/CustomSuppLoc" rank="118"/>
+		    </field>
+					<!-- Code added by Aswini for Vertex -->
+				<field name = "TransportMode">
+                  <type class="cat.core.ModeOfTransport"/>
+                  <properties label="@aml.cat.sap.invoice/TransportMode" rank="122"
+				  controller="ariba.htmlui.approvableui.fields.ARFNamedObject"
+			      controllerType="RecentUserChoice"
+			      chooserGroup="CatChooserTable" detailsGroup="CatChooserTable" forceRefresh="true"
+			      titleGroup="CatChooserTable" titleFormat="%s (%s)"/>  
+                </field>
+                <field name="TransactionNature">
+                  <type class="cat.NatureofTransaction"/>
+                  <properties label="@aml.cat.sap.invoice/TransactionNature" rank="124"  
+				  controller="ariba.htmlui.approvableui.fields.ARFNamedObject"
+			      controllerType="RecentUserChoice"
+			      chooserGroup="CatChooserTable" detailsGroup="CatChooserTable" forceRefresh="true"
+			      titleGroup="CatChooserTable" titleFormat="%s (%s)"/>  
+                </field>
+		        <field name="NetWeight">
+		           <type class="java.lang.String" length="20"/>
+			       <properties rank="126" label="@aml.cat.sap.invoice/NetWeight"/>
+		        </field>
+				<!-- Code ended for Vertex -->
+			</inClassVariant>
+		</inClass>
+		<!-- Ends herer *** Added by Nagendra *** -->
+		<!-- Starts here ***Added by Majid to accomodate BlockStampDate field *** -->
+		<inClass name="ariba.statement.core.StatementCoreApprovable">
+			<inClassVariant name="SAP">
+				<field name="BlockStampDate">
+				<type class="ariba.util.core.Date"/>
+				<properties metaDataIntegration="Reference"/>
+				</field>
+	        <!-- Added by garima on 220908 -->
+	        <field name="TotalInvoiceDiscountDollarAmount">
+				<type class="ariba.basic.core.Money"/>
+				<properties metaDataIntegration="Reference"/>
+				</field>
+		<!-- End -->
+		<!-- Starts here ***Added by Majid to accomodate related cat invoice field *** -->
+		<field name="RelatedCatInvoice" nullAllowed="true">
+		<type class="java.lang.String" length="35"/>
+		<properties label="@aml.cat.invoice3/LabelRelatedCatInvoice" metaDataIntegration="Reference"/>
+		</field>
+			<field name="WithHoldTaxCode">
+				<!--
+					   ARajendren. Ariba, Inc..
+					   Modified package name for TaxCode
+				-->
+				<!-- <type class="ariba.core.TaxCode"/> -->
+                                <type class="ariba.tax.core.TaxCode"/>
+				<visibility>
+					  <!-- <condition implementation="ariba.base.fields.condition.EqualTo"
+							testField="LineItems[0].Order.CompanyCode.WithholdingTaxEnabled">
+						<parameter name="TargetValue" value="Y"/>
+						</condition> -->
+						<condition implementation="config.java.condition.sap.CATWithHoldTaxCodeVisibility">
+						<parameter inputField="this" name="CR" typeCast="ariba.base.core.ClusterRoot"/>
+						</condition>
+				</visibility>
+				<properties chooserGroup="TaxCodeChooser" controllerType="RecentUserChoice" forceRefresh="true" label="@aml.cat.sap.invoice/WithHoldTaxCodeLabel" nameTableClass="ariba.common.core.nametable.ConditionBasedNameTable" skipInitialChooserLoad="true" titleFormat="%s (%s)" titleGroup="TaxCodeChooser"/>
+			</field>
+			</inClassVariant>
+		</inClass>
+		<inGroup name="ReportFilters">
+		<inGroupClass name="ariba.invoicing.core.InvoiceReconciliation">
+		<inGroupClassVariant name="SAP">
+		<groupField name="BlockStampDate">
+		<properties label="Block Date"/>
+		</groupField>
+		</inGroupClassVariant>
+		</inGroupClass>
+		</inGroup>
+		<!-- Ends herer *** Added by Majid to accomodate BlockStampDate field *** -->
+
+	<!-- Starts here ***Added by Nagendra to add customSupploc field *** -->
+	<group name="InvoiceGroup">
+	<groupClass name="ariba.invoicing.core.InvoiceLineItem">
+		<groupClassVariant name="SAP">
+		<groupField name="CustomSuppLoc.City">
+			<properties label="@aml.cat.sap.invoice/City" rank="125"/>
+		</groupField>
+		<groupField name="CustomSuppLoc.State">
+			<properties label="@aml.cat.sap.invoice/State" rank="130"/>
+		</groupField>
+		<groupField name="CustomSuppLoc.PostalCode">
+			<properties label="@aml.cat.sap.invoice/PostalCode" rank="130"/>
+		</groupField>
+		<groupField name="CustomSuppLoc.Country.UniqueName">
+			<properties label="@aml.cat.sap.invoice/Country" rank="130"/>
+		</groupField>
+		<!-- Code Added by Aswini for Vertex -->
+		<groupField name="TransportMode">
+			<properties label="@aml.cat.sap.invoice/TransportMode" rank="131"/>
+		</groupField>
+		<groupField name="TransactionNature">
+			<properties label="@aml.cat.sap.invoice/TransactionNature" rank="132"/>
+		</groupField>
+		<groupField name="NetWeight">
+			<properties label="@aml.cat.sap.invoice/NetWeight" rank="133"/>
+		</groupField>	
+ 		<!-- Code ended for Vertex -->
+	</groupClassVariant>
+	</groupClass>
+</group>
+  <!-- Start: Mach1 R5.5 (FRD4.3/TD4.3) -->
+  <group name="HeaderDetailsEditable">
+	<groupClass name="ariba.invoicing.core.Invoice">
+		<groupClassVariant name="SAP">
+			<groupField name="VATRegistration">
+			 <properties rank = "59"/>
+			 </groupField> 
+		</groupClassVariant>
+	</groupClass>
+  </group>
+  <!-- End: Mach1 R5.5 (FRD4.3/TD4.3) -->
+ <inGroup name="LineItemGeneralFields">
+    <inGroupClass name="ariba.invoicing.core.InvoiceLineItem">
+		<inGroupClassVariant name="SAP">
+		    <groupField name="TransportMode">
+			  <properties label="@aml.cat.sap.invoice/TransportMode" rank="131"/>
+		    </groupField>
+		    <groupField name="TransactionNature">
+			  <properties label="@aml.cat.sap.invoice/TransactionNature" rank="132"/>
+		    </groupField>
+		    <groupField name="NetWeight">
+			  <properties label="@aml.cat.sap.invoice/NetWeight" rank="133"/>
+		    </groupField>	
+		</inGroupClassVariant>
+    </inGroupClass>		 
+</inGroup>
+
+
+<!-- Code Ended -->	
+<!-- Ends herer *** Added by Nagendra *** -->
+<!-- Starts here ***Added by Nagendra to add customSupploc field *** -->
+<group name="IRLineItemGeneralFields">
+		<groupClass name="ariba.invoicing.core.InvoiceReconciliationLineItem">
+			<groupClassVariant name="SAP">
+			<!-- Soumya Commented Custom Supplier Fields in order to avoid the confusion between the ShipTo/ShipFrom and CustomSupplier details -->
+			<!-- <groupField name="CustomSuppLoc.City">
+				<properties label="@aml.cat.sap.invoice/City" rank="125"/>
+			</groupField>
+			<groupField name="CustomSuppLoc.State">
+				<properties label="@aml.cat.sap.invoice/State" rank="130"/>
+			</groupField>
+			<groupField name="CustomSuppLoc.PostalCode">
+				<properties label="@aml.cat.sap.invoice/PostalCode" rank="130"/>
+			</groupField>
+			<groupField name="CustomSuppLoc.Country.UniqueName">
+				<properties label="@aml.cat.sap.invoice/Country" rank="130"/>
+			</groupField> -->
+			<!-- code commenting completed -->
+		<!-- Code Added by Aswini for Vertex -->
+		    <groupField name="TransportMode">
+			    <properties label="@aml.cat.sap.invoice/TransportMode" rank="131"/>
+		    </groupField>
+		    <groupField name="TransactionNature">
+			    <properties label="@aml.cat.sap.invoice/TransactionNature" rank="132"/>
+		    </groupField>
+		    <groupField name="NetWeight">
+			    <properties label="@aml.cat.sap.invoice/NetWeight" rank="133"/>
+		    </groupField>	
+			<groupField name="TaxAmount">
+				<properties label="@aml.cat.Invoice/TaxAmount" editable="false" rank="134"/>
+			</groupField>
+		
+ 		<!-- Code ended for Vertex -->
+			<groupField name="Amount">
+			<properties editable="true"/>
+				<editability>
+				    <orCondition>
+				    <condition implementation="ariba.statement.condition.SRFieldIsDisputed" testField="this">
+					<parameter name="Field" value="Amount"/>
+					<parameter name="DefaultEditabilityValue" value="false"/>
+				    </condition>
+				    <andCondition>
+					<condition implementation="ariba.base.fields.condition.EqualTo" testField="LineType.Category">
+						<parameter name="TargetValue" value="2"/>
+					</condition>
+					<condition implementation="ariba.common.core.condition.UserHasPermission">
+						<parameter name="PermissionName" value="ReconcileInvoiceTaxCalculationFailed"/>
+					</condition>
+				    </andCondition>
+				    </orCondition>
+				</editability>
+			</groupField>
+		</groupClassVariant>
+		</groupClass>
+	</group>
+	<!-- Ends herer *** Added by Nagendra *** -->
+	    <group name="InvoiceNonCatalogDetails">
+		<groupClass name="ariba.procure.core.ProcureLineItem">
+		    <groupField name="Description.CommonCommodityCode">
+			<validity>
+			    <andCondition>
+				<condition implementation="ariba.contract.core.condition.ValidCommonCommodityCodeForContract" testField="this"/>
+				<orCondition>
+				    <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+				    <condition implementation="ariba.contract.core.condition.IsContractSourcingRequest">
+					<parameter inputField="this" name="PLI"/>
+				    </condition>
+				</orCondition>
+				<condition implementation="config.java.condition.CatLowLevelCommodityCode" testField="this"/>
+			    </andCondition>
+			</validity>
+		    </groupField>
+		</groupClass>
+	    </group>
+	    
+	     <!-- Starts SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)-->
+	    <inGroup name="InvoiceHeaderDetailsPrint">
+	    <inGroupClass name="ariba.invoicing.core.Invoice">
+		<groupClassVariant name="SAP">
+		    <groupField name="CompanyCode.Description">
+			 <properties label = "@aml.CatSAPRequisitionExt/CompanyCodePrintLabel" rank="15"/>
+		 </groupField>
+		    <groupField name="SupplierLocation.UniqueName">
+			 <properties label = "@aml.CatSAPRequisitionExt/SupplierLocationPrintLabel" rank="100"/>
+		 </groupField>
+		</groupClassVariant>
+	    </inGroupClass>
+	      <inGroupClass name="ariba.invoicing.core.InvoiceReconciliation">
+			<groupClassVariant name="SAP">
+			    <groupField name="CompanyCode.Description">
+				 <properties label = "@aml.CatSAPRequisitionExt/CompanyCodePrintLabel" rank="15"/>
+			 </groupField>
+			    <groupField name="SupplierLocation.UniqueName">
+				 <properties label = "@aml.CatSAPRequisitionExt/SupplierLocationPrintLabel" rank="100"/>
+			 </groupField>
+			</groupClassVariant>
+	    </inGroupClass>
+	    </inGroup>
+        <!-- Ends SpringRelease_RSD 111(FDD4.5,4.6/TDD1.5,1.6)-->
+	    
+	</inModule>
+</extension>

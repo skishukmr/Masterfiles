@@ -1,0 +1,235 @@
+<html>
+  <head>
+    <title>Playback Viewer</title>
+  </head>
+  <style>
+    .text {
+      font:normal 11px Verdana, Arial, Helvetica, sans-serif;
+    }
+    A:link, A:visited  {
+      font:normal 11px Verdana, Arial, Helvetica, sans-serif;
+      color:#333366;
+    }
+  </style>
+  <body style="background-color:#CCCCDD">
+    <script language="Javascript">
+
+    var exElementId;
+    var exResponse;
+    var componentPaths;
+    var firstLoading = true;
+    var servlet = "_SERVLET_";
+    var rootDir = "_ROOTDIR_";
+    var IsServerContext = (location.protocol.indexOf('http') >= 0);
+    var toOpenTOCSimple = false;
+    var link;
+
+    function display (doc, location)
+    {
+      var xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+      xmlHttp.open('GET', getURL(location), false);
+      xmlHttp.send(null);
+      var text = xmlHttp.responseText;
+      var parent, hightlightDiv, index, i, allElements, length, currentElement, exElements;
+      doc.open();
+      index = location.lastIndexOf(".");
+      ext = location.substring(index+1);
+      playbackName.innerText = location;
+      if (ext.match('xml')) {
+         doc.writeln(text);
+      }
+      else if (ext.match("txt")) {
+         text = text.replace(/&/g, '&amp;');
+         text = text.replace(/>/g, '&gt;');
+         text = text.replace(/</g, '&lt;');
+         text = text.replace(/\"/g, '&quot;');
+         doc.writeln('<html><body>');
+         doc.writeln('<pre>');
+         doc.writeln(text);
+         doc.writeln('</pre>');
+         doc.writeln('</body></html>');
+      }
+      else if (ext.match("html")) {
+         text = text.replace(/<script/g, '<!--\n<script');
+         text = text.replace(/\/script>/g, '/script>\n-->');
+         text = text.replace(/<iframe/g, '<!--\n<iframe');
+         text = text.replace(/\/iframe>/g, '/iframe>\n-->');
+         text = text.replace(/onload=/ig, 'xonload=');
+         text = text.replace(/onclick=/ig, 'xonclick=');
+         text = text.replace(/onkeypress=/ig, 'xonkeypress=');
+         text = text.replace(/onkeydown=/ig, 'xonkeydown=');
+         text = text.replace(/onmouseover=/ig, 'xonmouseover=');
+         text = text.replace(/onmouseout=/ig, 'xonmouseout=');
+         text = text.replace(/onmousedown=/ig, 'xonmousedown=');
+         text = text.replace(/onblur=/ig, 'xonblur=');
+         text = text.replace(/onfocus=/ig, 'xonfocus=');
+         text = text.replace(/target=/ig, 'xtarget=');
+         text = text.replace(/<select/ig, '<select disabled');
+         text = text.replace(/<input/ig, '<input disabled');
+         text = text.replace(/<textarea/ig, '<textarea disabled');
+         text = text.replace(/<a.*href/ig, '<a href=\"#\" xhref');
+         text = text.replace(/<body/g, '<body');
+         index = text.indexOf('<!DOCTYPE');
+         if (index == -1) {
+           index = text.indexOf('<html');
+         }
+         text = text.substring(index, text.length);
+         doc.writeln(text);
+         if (location == exResponse) {
+           allElements = doc.all;
+           length = allElements.length;
+           exElements = new Array();
+           componentPaths = new Array();
+           for (i = 0; i < length; i++) {
+             currentElement = allElements[i];
+             if (currentElement.id == exElementId ||
+               currentElement.name == exElementId) {
+               exElements[exElements.length] = currentElement;
+               componentPaths[componentPaths.length] = componentPath(currentElement);
+             }
+           }
+           for (i = 0; i < exElements.length; i++) {
+             currentElement = exElements[i];
+             if (currentElement.tagName == 'TD') {
+               currentElement.style.backgroundColor = 'red';
+               try {
+                currentElement.focus();
+               }
+               catch (ex) {
+               };
+             }
+             else {
+               parent = currentElement.parentNode;
+               hightlightDiv = doc.createElement('div');
+               hightlightDiv.style.borderColor = 'red';
+               hightlightDiv.style.borderStyle = 'solid';
+               hightlightDiv.style.borderWidth = 2;
+               parent.insertBefore(hightlightDiv, currentElement);
+               parent.removeChild(currentElement);
+               hightlightDiv.appendChild(currentElement);
+               currentElement.disabled = false;
+               try {
+                currentElement.focus();
+               }
+               catch (ex) {
+               };
+			         currentElement.disabled = true;
+             }
+           }
+         }
+      }
+      doc.close();
+    }
+
+    function componentPath (el)
+    {
+      var path = '';
+      while (el != null) {
+        var tagString = el.id;
+        if (tagString.length > 0 && tagString.indexOf(":")>0) {
+            path += '\t' + tagString + '\n';
+        }
+        el = el.parentElement;
+      }
+      return path;
+    }
+
+    function getURL (file)
+    {
+      var fileURL = rootDir+'/'+file;
+      if (rootDir != '.' && IsServerContext) {
+        fileURL = servlet+fileURL;
+      }
+      return fileURL;
+    }
+
+    function goto (file)
+    {
+      display(contentFrame.document, file);
+    }
+
+    function openWindow (url, title)
+    {
+      url = getURL(url);
+      open(url, title, "top=20,left=20,height=600,width=800,resizable=yes,status=no,toolbar=no,menubar=no,location=no");
+    }
+
+    function openSession (session, title)
+    {
+      file = rootDir == '.' ? '/offline.htm' : '/viewer.htm';
+      openWindow(session+file, title);
+    }
+
+    function getTOC ()
+    {
+      file = toOpenTOCSimple ? 'toc_simple.txt' : 'toc.txt';
+      return file;
+    }
+
+    function toggleTOC ()
+    {
+      toOpenTOCSimple = !toOpenTOCSimple;
+      link = toOpenTOCSimple ? 'Toggle to Detail View' : 'Toggle to Simple View'; 
+      setTOC();
+    }
+
+    function setTOC ()
+    {
+      var doc = tocFrame.document;
+      var xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+      var toc = getTOC();
+      xmlHttp.open('GET', getURL(toc), false);
+      xmlHttp.send(null);
+      var text = xmlHttp.responseText;
+      var testFinished = (text.indexOf('*End*') >= 0);
+      var isTestPlayback = (text.indexOf('Test Playback') == 0);
+      var isGroupPlayback = (text.indexOf('Test Group Playback') == 0);
+      var isPlayback = (isTestPlayback || isGroupPlayback);
+      playbackName.innerText = 'Content';
+      doc.open();
+      doc.writeln('<html><body>');
+      doc.writeln('<pre>');
+      if (isPlayback) {
+        doc.writeln("<a href=\"javascript:top.goto('log.txt')\" title=\"Log L\">Log</a>");
+        if (testFinished) {
+            doc.writeln("<a href=\"javascript:top.goto('report.html')\" title=\"Report R\">Report</a>");
+            if (firstLoading) {
+                top.goto('report.html');
+            }
+            if (isTestPlayback) {
+              doc.writeln('');
+              doc.writeln('');
+              doc.writeln("<a href=\"#\" onClick=\"javascript:top.toggleTOC()\" title=\"Toggle TOC View\" id=\"toggleTOCView\">" + link + "</a>");
+            }
+        }
+      }
+      doc.writeln('');
+      doc.writeln('');
+      doc.writeln(text);
+      doc.writeln('</pre>');
+      doc.writeln('</body></html>');
+      doc.close();
+      if (!testFinished && isPlayback) {
+        setTimeout("setTOC()",  5000);
+      }
+      else if (firstLoading && isTestPlayback) {
+        firstLoading = false;
+        toggleTOC(doc);
+      }
+    }
+
+    setTimeout('setTOC()',  500);
+    </script>
+
+    <table class="text" width="100%">
+      <tr valign="bottom">
+        <td align="left" id="recordName">TOC</td>
+        <td id="playbackName" align="right">Content</td>
+      </tr>
+    </table>
+    <iframe style="width:240;height:expression(document.body.clientHeight - 60)"
+            id="tocFrame" src="javascript:document.write('Loading...');"/>
+    <iframe style="width:expression(document.body.clientWidth - 270);height:expression(document.body.clientHeight - 60)"
+            id="contentFrame" src="javascript:document.write('Loading...');"/>
+  </body>
+</html>

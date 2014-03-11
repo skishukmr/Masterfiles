@@ -1,0 +1,43 @@
+<ModalPageWrapper title=" " okAction="$gotoReturn">
+<div style="margin-top: 2px; margin-left:2px; margin-bottom: 2px;">
+<table border=0 cellspacing=0 cellpadding=0 width=100%>
+  <tr>
+    <td class="pageHead"><img border="0" width="25" title="Non-numbered step" height="25" src="resources/t00.gif" alt="Non-numbered step" align="absmiddle" hspace="0">&nbsp;PunchIn Error</td>
+  </tr>
+</table>
+</div>
+<table cellspacing=0 cellpadding=0 width="100%" border=0>
+    <tbody>
+        <tr>
+            <td class="wizNavBar" colspan="2">
+                <img height="1" width="1" src="resources/cleardot.gif" border="0" class="block">
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<img height="40" width="1" src="resources/cleardot.gif" border="0">
+<table border="0" cellspacing="0" cellpadding="0" width="100%">
+     <tr>
+         <td width="99%" class="bodyText" valign="top"><span class="errorText">
+<AWConditional ifTrue="$isPending">         
+                        Error:
+                    
+                    &nbsp;Your user account on the customer's PunchIn site is pending approval.  Try again later.<br/><br/></span><span class="bodyText">If you need assistance, contact the support with the Error Reference Number: ANERR-20000000000000000005947017
+<AWElse/>
+                                Error:
+                            
+                            &nbsp;A valid user account has not yet been created for you on the customer's PunchIn site.  Try again later.<br/><br/></span><span class="bodyText">If you need assistance, contact the support with the Error Reference Number: ANERR-20000000000000000005947078
+</AWConditional>                    
+                    </span></td>
+     </tr>
+ </table>
+<br/>
+<br/>
+</ModalPageWrapper>
+<server>
+  function gotoReturn ()
+  {
+    return page(get(component, "returnPage"));
+  }
+</server>

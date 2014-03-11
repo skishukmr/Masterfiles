@@ -1,0 +1,86 @@
+ 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Contact Technical Support</title>
+<!-- if you use this file, you must add index entries, as in other files
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../../../../ariba/branding/ariba.css" type="text/css">
+<link rel="stylesheet" href="../../../../../../../../config/branding/ariba.css" type="text/css">
+<link rel="stylesheet" href="../../../../../../../../config/branding/ariba.css" type="text/css">
+<script type="text/javaScript" src="../../../../../../help/help.js"></script>
+<!-- $File: //ariba/help/buyer/ariba/resource/en_US/help/content/end_user/common/basics/contact_support.htm $
+	Creator: aschulz
+	Notes: contains shared text
+-->
+</head>
+<body style="margin-left: 5px">
+<div id="help"> 
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr> 
+      <td height="25" colspan="3" class="helpPageTitle">My Supply Cabinet  Online Help</td>
+    </tr>
+  </table>
+  <!-- #BeginVariableLibraryItem "/library/secondary_template_section.lbi" -->
+  <table width="636" cellpadding="6" cellspacing="0">
+    <tr align="left"> 
+      <th  class="helpTopicTitle" height="25" valign="middle">Contact Technical 
+        Support</th>
+    </tr>
+    <tr> 
+      <td valign="top" class="helpBody"> 
+        <p>Use this page to provide your users with information they need to contact 
+          your internal technical support group. Your users can access this page 
+          by clicking the Contact Support link located at the bottom of the online 
+          help Contents page. The link is disabled by default; you must enable 
+          the link to make it visible to your users. </p>
+        <p>To enable the link to your internal technical support contact information: 
+        </p>
+        <ol>
+          <li>Open ariba.css in /branding/config for edit.</li>
+          <li class="helpListPad">Search for the style .supportLink. It appears as: 
+            <blockquote> 
+              <p class="helpBodySingleSpaced">/* &nbsp;remove the first (display) 
+                attribute to make a link to an internal support page visible in 
+                your online help */<br>
+                .supportLink {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;display:none;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;color:#000000;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;font:11px/15px Arial, Verdana, Helvetica, 
+                sans-serif;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;margin:0px; </p>
+            </blockquote>
+          </li>
+          <li class="helpListPad">Delete the &nbsp;<b>display:none;</b> attribute. The style should 
+            now appear as: 
+            <blockquote> 
+              <p class="helpBodySingleSpaced">/* &nbsp;remove the first (display) 
+                attribute to make a link to an internal support page visible in 
+                your online help */<br>
+                .supportLink {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;color:#000000;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;font:11px/15px Arial, Verdana, Helvetica, 
+                sans-serif;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;margin:0px; </p>
+            </blockquote>
+          </li>
+          <li class="helpListPad">Save your changes.</li>
+          <li class="helpListPad">Replace all of the default text in this page with your instructions for 
+            your users about how to contact your internal technical support group.</li>
+        </ol>
+        
+      </td>
+    </tr>
+    <tr> 
+      <td class="helpBody" align="center"> 
+        <hr color="#666699" noshade size="1">
+        Copyright 1996 - 2004 Ariba, Inc. <a href="javascript: openLegal('http://www.ariba.com/copyrights.cfm');">Legal 
+        notices</a>. </td>
+    </tr>
+  </table>
+  <!-- #EndVariableLibraryItem -->
+</div>
+</body>
+</html>

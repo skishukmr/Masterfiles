@@ -1,0 +1,67 @@
+<a:IncludeComponent awcomponentName="SAPWrapper">
+    <a:Hyperlink action="$linkOut"><img src="1-Cat.gif"/></a:Hyperlink>
+
+    <br/>
+    <br/>
+    <a:Hyperlink action="$toggleOptions">Options</a:Hyperlink>
+    <a:Hyperlink action="$goto.2-ShoppingCart.htm">Next</a:Hyperlink>
+
+    <br/>
+    <a:If ifTrue="$showOptions">
+        <w:FormTable>
+            <w:FormRow label="Realm">
+                <a:TextField value="$realm"/>
+            </w:FormRow>
+            <w:FormRow label="User Name">
+                <a:TextField value="$username"/>
+            </w:FormRow>
+            <w:FormRow label="Password">
+                <a:TextField value="$password"/>
+            </w:FormRow>
+            <w:FormRow label="Catalog URL">
+                <a:TextField value="$catalogURL"/>
+            </w:FormRow>
+        </w:FormTable>
+    </a:If>
+
+</a:IncludeComponent>
+<server>
+    var ANID = "AN71000000361";
+    var realm = "realm_5";
+    var username = "test1";
+    var password = "welcome1a";
+    var email = "nobody@devnull.com";
+    var catalogURL = computeCatalogURL();
+
+    function linkOut() {
+        var redirect = page("AWFormRedirect");
+        redirect.setFormActionUrl(catalogURL);
+        redirect.addFormValue("PunchinId", ANID);
+        redirect.addFormValue("UniqueName", username);
+        redirect.addFormValue("PunchinPassword", password);
+        redirect.addFormValue("realm", realm);
+        redirect.addFormValue("EmailAddress", email);
+        // redirect.addFormValue("passwordadapter", "PasswordAdapter1");
+        redirect.addFormValue("HOOK_URL", computeReturnURL());
+
+        return redirect;
+//      return page("2-ShoppingCart.htm");
+    }
+
+    function computeCatalogURL () {
+        // return "https://brobot1.ariba.com/Buyer/Main/ad/contentPunchin/ariba.htmlui.procure.content.ProviderRequestDirectAction";
+        return "https://qalinux1.ariba.com/Buyer/Main/ad/contentPunchin/OCIPunchinDirectAction";
+    }
+
+    function computeReturnURL () {
+        var url = ariba.ui.aribaweb.core.AWDirectActionUrl.fullUrlForDirectAction("showPage/DemoShellActions/SAP/2-ShoppingCart.htm", component.requestContext());
+            // "page", "SAP/2-ShoppingCart.htm"
+        return url;
+    }
+
+    var showOptions = false;
+    function toggleOptions () {
+        showOptions = !showOptions;
+        return null;
+    }
+</server>

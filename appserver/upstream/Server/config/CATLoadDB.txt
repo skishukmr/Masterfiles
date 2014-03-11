@@ -1,0 +1,41 @@
+
+//Buyer.DataLoad.BuyerPartInvoice_4
+Buyer.DataLoad.BuyerPartPO_4
+Buyer.DataLoad.Tmp_4_ContractLoad
+
+
+/*BuyerMACH1.DataLoad.Tmp_4_ContractFactLoad
+BuyerMACH1.DataLoad.Tmp_4_ContractFactDelete
+
+BuyerGEN.DataLoad.Tmp_4_ContractFactLoad
+BuyerGEN.DataLoad.Tmp_4_ContractFactDelete
+
+BuyerUS.DataLoad.Tmp_4_ContractFactLoad
+BuyerUS.DataLoad.Tmp_4_ContractFactDelete
+
+BuyerUK.DataLoad.Tmp_4_ContractFactLoad
+BuyerUK.DataLoad.Tmp_4_ContractFactDelete
+
+
+BuyerGEN.DataLoad.Tmp_4_BuyerPOLineItem_1
+BuyerMACH1.DataLoad.Tmp_4_POLineLoad
+BuyerUS.DataLoad.Tmp_4_CATUSBuyerPOLineItemLoad
+BuyerUK.DataLoad.Tmp_4_CATUKBuyerPOLineItemLoad
+
+
+BuyerUK.DataLoad.Tmp_4_CATUKBuyerRequestRequisitionLoad
+BuyerUS.DataLoad.Tmp_4_RequestRequisitionLoad
+BuyerGEN.DataLoad.Tmp_4_RequestRequisitionLoad
+BuyerMACH1.DataLoad.Tmp_4_RequestRequisitionLoad_1  */
+
+
+/* SECTION: POST FACT DATALOADS - DO NOT TOUCH */
+
+Task.ApplyExistingEnrichmentDataTask
+
+/* SECTION: POST FACT TASKS - DO NOT TOUCH */
+Task.SetUpEffectiveVariances
+
+/* SECTION: POST DATA LOADING TASKS - DO NOT TOUCH */
+Task.DBOLAPProcessing
+

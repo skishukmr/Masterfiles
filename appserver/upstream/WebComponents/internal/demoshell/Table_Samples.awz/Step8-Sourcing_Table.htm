@@ -1,0 +1,144 @@
+<!--#include virtual="/templates/WizardHeader.htm" -->
+    <w:HintMessage showTopLine="$true">
+        Sourcing Table Example!<br/>
+    </w:HintMessage>
+    <br/>
+
+<x:LoadXML filename="Users.xml" value="$users"/>
+
+    <a:SetValue forceUpdate="$true"/>
+    <!--- clear out selection for next take... -->
+    <a:PhaseInvocation append="$resetSelection"/>
+
+    <t:DataTable multiSelect="$true"
+            batchSize="8" submitForm="$true"
+            displayGroup="$displayGroup" csvPath="SampleSpend.csv" forceColumnUpdate="$forceUpdate">
+
+        <t:HeadingArea>
+            <w:SectionHeading title="Critical Information">
+                <div style="float:left">
+                    <w:PulldownButton menuId="MyMenu">Create...</w:PulldownButton>\
+                </div>
+                <w:TextButton action="$null">Take Action</w:TextButton>
+                <t:OptionsMenuButton/>
+            </w:SectionHeading>
+        </t:HeadingArea>
+
+        <t:Column valign="middle">
+            <w:ToggleImage align="absmiddle" state="$displayGroup.currentItemExtras.expando"/>
+        </t:Column>
+
+        <t:Column label="Department!" key="Department" nowrap>
+            <b emitTags="$displayGroup.currentItemExtras.expando">\
+                <a:String value="$displayGroup.currentItem.Department"/>\
+            </b>
+        </t:Column>
+
+        <t:Column key="Category" wantsSpan="$true">
+            <a:TextField value="$displayGroup.currentItem.Category"/>
+        </t:Column>
+
+        <t:Column label="Phone" key="bogus" isBlank="$true" initiallyVisible="$false"/>
+
+        <t:Column key="Amount" label="Amount" formatter="$formatters.money" align="right" nowrap/>
+
+        <t:Column align="right" label="buttons">
+            <div style="float:right">
+                <w:TextButton action="$inspectClicked">Inspect</w:TextButton>
+            </div>
+        </t:Column>
+
+        <t:RowDetail isVisible="$displayGroup.currentItemExtras.expando" nestedTableLayout="$true">
+            <!--- we need to set it to null so that the datatable gives us a unique one per
+                  parent row -->
+            <a:SetValue nestedDisplayGroup="$null"/>
+            
+            <t:DataTable multiSelect="$true" item="$item" useParentLayout="$true"
+                    batchSize="1000" list="$users.children" children="$item.manages.children"
+                    displayGroup="$nestedDisplayGroup">
+
+                <!-- use bogus label to match with parent -->
+                <t:Column key="name.text" label="Department!" valign="bottom" wantsSpan="$true">\
+                    <w:OutlineFolderControl title="$item.name.text"/>\
+                </t:Column>
+
+                <t:Column key="phone.text" label="Phone"/> <!-- won't match! -->
+
+                <t:Column key="email.text" label="Amount" align="right"/> <!-- use bogus label to match with parent -->
+
+                <t:Column align="right" label="buttons">
+                    <div style="float:right">
+                        <w:TextButton action="$null">Somethin'</w:TextButton>
+                    </div>
+                </t:Column>
+            </t:DataTable>
+            <!--- remember the selection for this inner table -->
+            <a:PhaseInvocation take="$noteSelection"/>
+        </t:RowDetail>
+
+        <t:ButtonArea isVisible="$true">
+            <w:TextButton action="$simulateMove">Move</w:TextButton>\
+            <w:TextButton action="$simulateDelete">Delete</w:TextButton>
+            <w:PopupMenuLink class="awmenuLink hoverLink hoverArrow" menuId="MyMenu" position="this">Do something</w:PopupMenuLink>
+            &nbsp;
+            <w:PopupMenuLink class="awmenuLink hoverArrow" menuId="MyMenu" position="this">Do something else</w:PopupMenuLink>
+        </t:ButtonArea>
+
+    </t:DataTable>
+
+    <br/>
+    <b>Log:</b> <a:String value="$message"/><br/>
+
+<w:PopupMenu menuId="MyMenu">
+    <w:PopupMenuHeading showSeparator="$false">\
+        Create New Object\
+    </w:PopupMenuHeading>
+
+    <w:PopupMenuItem action="$null" showBullet="$false" disabled="$false">\
+            New Workspace\
+    </w:PopupMenuItem>
+    <w:PopupMenuItem action="$null" showBullet="$false" disabled="$false">\
+            New Document\
+    </w:PopupMenuItem>
+    <w:PopupMenuItem action="$null" showBullet="$false" disabled="$false">\
+            New RFx\
+    </w:PopupMenuItem>
+</w:PopupMenu>\
+
+
+<!--#include virtual="/templates/WizardFooter.htm" -->
+<server>
+    var forceUpdate = true;
+    var displayGroup = null;
+    var nestedDisplayGroup = null;
+    var nestedSelection = null;
+    var message = null;
+
+    function resetSelection () {
+        nestedSelection = null;
+    }
+
+    function noteSelection () {
+        var sel = nestedDisplayGroup.selectedObjects();
+        if (sel.size() > 0) {
+            if (!nestedSelection) {
+                nestedSelection = ariba.util.core.MapUtil.map();
+            }
+            nestedSelection.put(displayGroup.currentItem(), sel);
+        }
+    }
+
+    function logSelectedCols (prefix) {
+        message = prefix + ": " + nestedSelection;
+    }
+
+    function simulateMove () {
+        logSelectedCols("Move");
+        return null;
+    }
+
+    function simulateDelete () {
+        logSelectedCols("Move");
+        return null;
+    }
+</server>

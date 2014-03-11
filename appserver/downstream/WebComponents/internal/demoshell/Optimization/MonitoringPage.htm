@@ -1,0 +1,46 @@
+<w:ModalPageWrapper title="My Transportation Event" hasForm="$true">
+<w:HintMessage>
+    Imaging the event page here...
+</w:HintMessage>
+
+<w:TabSet index="${currentTab=3}">
+  <w:Tab label="Overview">
+      <w:FormTable>
+          <w:FormRow label="Scenario Description">
+              <a:TextField value="$^item.Title"/>
+          </w:FormRow>
+      </w:FormTable>
+  </w:Tab>
+  <w:Tab label="Content">
+  </w:Tab>
+  <w:Tab label="Suppliers">
+  </w:Tab>
+  <w:Tab label="Scenarios">
+      <t:DataTable title="Award Scenarios">
+          <t:CSVData>
+              Scenario Name,        Number Suppliers,  Total Award
+              Single Supplier,      1,                 "$10,000,000"
+              Regional Award,       3,                 "$12,200,050"
+          </t:CSVData>
+          <t:Column>
+              <w:TextButton action=$goto.Scenario.htm>Edit</w:TextButton>
+          </t:Column>
+          <t:ButtonArea>
+              <w:TextButton action="$null">Delete</w:TextButton>\
+              <w:TextButton action='${pageWithName("Scenario.htm").loadScenario("Untitled Scenario", "NewScenario.csv")}'>
+                  Create Optimization Scenario
+              </w:TextButton>\
+              <w:TextButton action="$null">Create Manual Scenario</w:TextButton>\
+          </t:ButtonArea>
+      </t:DataTable>
+  </w:Tab>
+    <w:Tab label="Awards">
+    </w:Tab>
+  <w:Tab label="Audit Logs">
+  </w:Tab>
+</w:TabSet>
+
+</w:ModalPageWrapper>\
+\
+<groovy>
+</groovy>\

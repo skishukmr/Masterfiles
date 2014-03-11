@@ -1,0 +1,26 @@
+<a:SetValue menuId="$requestContext.nextElementId"/>
+<w:PopupMenuLink menuId="$menuId" class="noLine hoverArrow">\
+    <span style="$divStyle">&nbsp;&nbsp;</span>
+</w:PopupMenuLink>
+
+<w:PopupMenu menuId="$menuId">
+    <a:For list="$colors" item="$curColor">
+        <w:PopupMenuItem action="$selectColor">$curColor</w:PopupMenuItem>
+    </a:For>
+</w:PopupMenu>\
+
+<server>
+    var menuId = null;
+    var itemColor = "white";
+    var curColor = null;
+    var colors = ['white', 'blue', 'red', 'green', 'yellow'];
+
+    function divStyle () {
+        return "border: 1px solid grey; background-color:" + itemColor;
+    }
+
+    function selectColor () {
+        itemColor = curColor;
+        return null;
+    }
+</server>

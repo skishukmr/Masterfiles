@@ -1,0 +1,22 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerPODelivery" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING PurchaseOrder.TotalCost
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.purchasing.core.OrderConfirmation USING PurchaseOrder.OrderConfirmations
+                              LEFT OUTER JOIN ariba.purchasing.core.AdvancedShipNotice USING PurchaseOrder.AdvancedShipNotices"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="ProcurementUnit.UniqueName"/>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

@@ -1,0 +1,157 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+	<inDataLoad name="BuyerRequestRequisition">
+	    <inLoadStages>
+		<inAqlStage replaceFromClause="ariba.purchasing.core.Requisition AS Request
+						JOIN ariba.purchasing.core.ReqLineItem INCLUDE INACTIVE USING Request.LineItems
+						JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING ReqLineItem.Accountings
+						JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings
+						LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING SplitAccounting.Amount
+						LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+						LEFT OUTER JOIN ariba.approvable.core.ApprovalRecord AS SimpleRecord USING Request.Records
+						LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Request.Requester
+						LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+						LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE USING ReqLineItem.Order
+						LEFT OUTER JOIN ariba.basic.core.Money AS AdvisePrice INCLUDE INACTIVE USING ReqLineItem.NTEAmount
+						LEFT OUTER JOIN ariba.basic.core.Currency AS AdvisePriceCurrency INCLUDE INACTIVE USING AdvisePrice.Currency"
+			    replaceWhereClause="Request.SubmitDate IS NOT NULL AND 
+						Request.NextVersion IS NULL AND 
+						Request.StatusString != 'Composing' "/>
+	    </inLoadStages>
+	    <fieldMappings>
+		<deleteField name="Amount.Amount"/>
+		<deleteField name="Amount.Currency"/>
+		<deleteField name="Amount.Date"/>
+		<field name="Amount.Amount">
+		    <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+		</field>
+		<field name="Amount.Currency">
+		    <aqlMapping selectField="Currency.UniqueName"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+			    <parameter name="MapType" value="SourceSystemCurrency"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="Amount.Date">
+		    <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+		</field>
+		<field name="RequisitionLineNumber">
+		    <aqlMapping selectField="ReqLineItem.NumberInCollection"/>
+		</field>
+		<field name="SplitAccountingNumber">
+		    <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+		</field>
+		<field name="POId">
+		    <aqlMapping selectField="PurchaseOrder.UniqueName"/>
+		</field>
+		<field name="EmergencyBuy">
+		    <aqlMapping selectField="CASE Request.EmergencyBuy WHEN NULL THEN 'false' ELSE 'true' END"/>
+		</field>
+		<field name="Facility">
+		    <aqlMapping selectField="SplitAccounting.AccountingFacility"/>
+		</field>
+		<field name="Department">
+		    <aqlMapping selectField="SplitAccounting.Department"/>
+		</field>
+		<field name="Division">
+		    <aqlMapping selectField="SplitAccounting.Division"/>
+		</field>
+		<field name="Section">
+		    <aqlMapping selectField="SplitAccounting.Section"/>
+		</field>
+		<field name="ExpenseAccount">
+		    <aqlMapping selectField="SplitAccounting.ExpenseAccount"/>
+		</field>
+		<field name="CatOrder">
+		    <aqlMapping selectField="SplitAccounting.Order"/>
+		</field>
+		<field name="Misc">
+		    <aqlMapping selectField="SplitAccounting.Misc"/>
+		</field>
+		<field name="AdvisePrice.Amount">
+		    <aqlMapping selectField="AdvisePrice.Amount"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+			    <parameter name="DefaultValue" value="0"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AdvisePrice.Currency">
+		    <aqlMapping selectField="AdvisePriceCurrency.UniqueName"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+			    <parameter name="MapType" value="SourceSystemCurrency"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AdvisePrice.Date">
+		    <aqlMapping selectField="AdvisePrice.ConversionDate"/>
+		</field>
+	    </fieldMappings>
+	</inDataLoad>
+	<derivedDataLoad name="CATUKBuyerRequestRequisition" extendsLoad="BuyerRequestRequisition">
+		<inLoadStages>
+			<inAqlStage replaceFromClause="ariba.purchasing.core.Requisition AS Request
+                                      		       JOIN ariba.purchasing.core.ReqLineItem INCLUDE INACTIVE USING Request.LineItems
+		                                       JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING ReqLineItem.Accountings
+                 		                       JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings
+                                		       LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING SplitAccounting.Amount
+		                              	       LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                		                       LEFT OUTER JOIN ariba.approvable.core.ApprovalRecord AS SimpleRecord USING Request.Records
+						       LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Request.Requester
+						       LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+						       LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE USING ReqLineItem.Order"
+					replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= Request.TimeUpdated AND
+			                                          Request.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+						       
+						       />
+		</inLoadStages>
+		<fieldMappings>
+			<deleteField name="AdvisePrice.Amount"/>
+        		<deleteField name="AdvisePrice.Currency"/>
+        		<deleteField name="AdvisePrice.Date"/>
+		</fieldMappings>
+	</derivedDataLoad>
+	<inDataLoad name="BuyerRequestExpenseReport">
+	    <fieldMappings>
+		<field name="RequisitionLineNumber">
+		    <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+		</field>
+	    </fieldMappings>
+	</inDataLoad>
+	<inDataLoad name="BuyerRequestMasterAgreement">
+	    <fieldMappings>
+		<field name="RequisitionLineNumber">
+		    <aqlMapping selectField="MARLineItem.NumberInCollection"/>
+		</field>
+	    </fieldMappings>
+	</inDataLoad>
+	<inDataLoad name="BuyerRequestTravelAuthorization">
+	    <fieldMappings>
+		<field name="RequisitionLineNumber">
+		    <aqlMapping selectField="TravelAuthorizationItem.NumberInCollection"/>
+		</field>
+	    </fieldMappings>
+	</inDataLoad>
+	<inDataLoad name="BuyerRequestTravelProfile">
+	    <fieldMappings>
+		  <field name="RequisitionLineNumber">
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.Constant">
+			    <parameter name="Constant" value="1"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+	    </fieldMappings>
+	</inDataLoad>
+	
+	<derivedDataLoad name="Tmp_BuyerRequestRequisition_1" extendsLoad="BuyerRequestRequisition">
+			<inLoadStages>
+			    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= Request.TimeUpdated AND
+			                                          Request.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+	                                      />
+			</inLoadStages>
+	</derivedDataLoad>
+</allDataLoads>
+

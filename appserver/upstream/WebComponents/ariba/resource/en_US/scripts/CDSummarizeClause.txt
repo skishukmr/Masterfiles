@@ -1,0 +1,116 @@
+Dim app
+Dim MaxSummaryLength
+
+MaxSummaryLength = 200
+
+Sub cleanup ()
+    On Error Resume Next
+
+    If (not (app is Nothing)) Then
+        app.Visible = false
+        document.body.style.cursor = "wait"
+        app.NormalTemplate.Saved = True
+        app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+End Sub
+
+Function logError (message)
+    logError = false
+    If Err.number <> 0 Then
+        globalError = true
+        ScriptError.innerHTML = message
+        ActiveXError.style.display = ""
+        cleanup
+        logError = true
+    End If
+End Function
+
+Sub contactApp ()
+    On Error Resume Next
+
+        'launch app
+    set app = CreateObject("Word.Application")
+    If logError(GeneratingErr.contactApplicationErrorMessage) Then
+        Exit Sub
+    End If
+    app.Visible = false
+    document.body.style.cursor = "wait"
+End Sub
+
+Sub clauseSummarizing (clauseLocation, strUrl, skipCopyClause)
+    On Error Resume Next
+
+    If (skipCopyClause) Then
+        Dim isClauseExisting
+        isClauseExisting = SmartClientScriptUtil.clientFileExistsUtil(clauseLocation)
+
+        If (isClauseExisting < 0) Then
+            Exit Sub
+        ElseIf (isClauseExisting <> 0) Then
+            If (not SmartClientScriptUtil.saveFileToClient(clauseLocation)) Then
+                Exit Sub
+            End If
+        End If
+    Else
+        If (not SmartClientScriptUtil.saveFileToClient(clauseLocation)) Then
+            Exit Sub
+        End If
+    End If
+    
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord app, clauseLocation, False
+
+    Dim clause
+    Set clause = app.ActiveDocument
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    Dim currentSelection
+    Set currentSelection = clause.ActiveWindow.Selection
+    currentSelection.WholeStory
+    Dim sData
+
+    sData = Trim(Mid(getSelectionContent(currentSelection), 1, MaxSummaryLength))
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        Exit Sub
+    End If
+
+    xmlhttp.Open "POST", strUrl, false
+    xmlhttp.Send sData
+    Set xmlhttp = Nothing
+
+    ' app.Documents.Close wdDoNotSaveChanges
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+End Sub
+
+Sub startSummarizeClauseHandler (keyValues)
+    On Error Resume Next
+
+    If logError("") Then
+        Exit Sub
+    End If
+    globalError = false
+
+    contactApp
+    clauseSummarizing awxsGetValue(keyValues, "documentLocation"), _
+                      ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl")), _
+                      booleanValue(awxsGetValue(keyValues, "skipCopyClause"))
+    cleanup
+End Sub
+
+Dim CDSummarizeClauseTrigger
+
+Dim eventStartSummarizeClause
+Set eventStartSummarizeClause = awxsCreateEvent("startSummarizeClause", GetRef("startSummarizeClauseHandler"))
+awxsRegisterEvent "startSummarizeClause", eventStartSummarizeClause
+
+

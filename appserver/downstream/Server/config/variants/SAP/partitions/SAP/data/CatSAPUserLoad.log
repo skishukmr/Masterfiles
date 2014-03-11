@@ -1,0 +1,186 @@
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '"CompanyCode"' AND PayrollFacility = '"PayrollFacility"'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'QR'
+Inclusion 0 ResultSize =852
+IInclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'DH00' AND PayrollFacility = 'DH'
+Inclusion 0 ResultSize =896
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'UU00' AND PayrollFacility = 'UU'
+Inclusion 0 ResultSize =46
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '5Y00' AND PayrollFacility = '5Y'
+Inclusion 0 ResultSize =2
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'JY00' AND PayrollFacility = 'JY'
+Inclusion 0 ResultSize =59
+IExclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '"CompanyCode"' AND PayInclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'WK00' AND PayrollFacility = 'WK'
+Inclusion 0 ResultSize =4169
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = '03'
+Inclusion 0 ResultSize =275
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = '08'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = '16'
+Inclusion 0 ResultSize =1581
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'DV'
+Inclusion 0 ResultSize =217
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'IK'
+Inclusion 0 ResultSize =169
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'JM'
+Inclusion 0 ResultSize =256
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'JQ'
+Inclusion 0 ResultSize =265
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'JS'
+Inclusion 0 ResultSize =118
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'KO'
+Inclusion 0 ResultSize =145
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'SE'
+Inclusion 0 ResultSize =267
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'UJ'
+Inclusion 0 ResultSize =478
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'VF'
+Inclusion 0 ResultSize =227
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'XU'
+Inclusion 0 ResultSize =85
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'JI'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1000' AND PayrollFacility = 'JL'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '8900' AND PayrollFacility = '89'
+Inclusion 0 ResultSize =3397
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'ME00' AND PayrollFacility = 'ME'
+Inclusion 0 ResultSize =1654
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'MC00' AND PayrollFacility = 'MC'
+Inclusion 0 ResultSize =0
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'XY00' AND PayrollFacility = 'XY'
+Inclusion 0 ResultSize =803
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'FT00' AND PayrollFacility = 'FT'
+Inclusion 0 ResultSize =1601
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'JG00' AND PayrollFacility = 'JG'
+Inclusion 0 ResultSize =945
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'HB00' AND PayrollFacility = 'HB'
+Inclusion 0 ResultSize =1899
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'NN00' AND PayrollFacility = 'NN'
+Inclusion 0 ResultSize =239
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'JJ00' AND PayrollFacility = 'JJ'
+Inclusion 0 ResultSize =741
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'XJ00' AND PayrollFacility = 'XJ'
+Inclusion 0 ResultSize =421
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'WJ00' AND PayrollFacility = 'WJ'
+Inclusion 0 ResultSize =1889
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'S200' AND PayrollFacility = 'S2'
+Inclusion 0 ResultSize =440
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'S400' AND PayrollFacility = 'S4'
+Inclusion 0 ResultSize =864
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = 'S700' AND PayrollFacility = 'S7'
+Inclusion 0 ResultSize =195
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1765' AND PayrollFacility = 'CC'
+Inclusion 0 ResultSize =19
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1445' AND PayrollFacility = '63'
+Inclusion 0 ResultSize =14
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1935' AND PayrollFacility = 'GZ'
+Inclusion 0 ResultSize =237
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '3815' AND PayrollFacility = 'XO'
+Inclusion 0 ResultSize =95
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '3815' AND PayrollFacility = 'FJ'
+Inclusion 0 ResultSize =291
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '3815' AND PayrollFacility = 'FK'
+Inclusion 0 ResultSize =81
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '3815' AND PayrollFacility = 'VQ'
+Inclusion 0 ResultSize =89
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1065' AND PayrollFacility = 'CO'
+Inclusion 0 ResultSize =331
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1065' AND PayrollFacility = 'GQ'
+Inclusion 0 ResultSize =218
+Inclusion query 0 = SELECT u FROM ariba."user".core."User" AS u WHERE SAPCompanyCode = '1895' AND PayrollFacility = 'AZ'
+Inclusion 0 ResultSize =52
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '"CompanyCode"' AND PayrollFacility = '"PayrollFacility"'
+Exclusion 0 ResultSize =0
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1885' AND PayrollFacility = 'R8'
+Exclusion 0 ResultSize =910
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'DH00' AND PayrollFacility = 'DH'
+Exclusion 0 ResultSize =615
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'UU00' AND PayrollFacility = 'UU'
+Exclusion 0 ResultSize =10
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '5Y00' AND PayrollFacility = '5Y'
+Exclusion 0 ResultSize =0
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'JY00' AND PayrollFacility = 'JY'
+Exclusion 0 ResultSize =26
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'CQ00' AND PayrollFacility = 'CQ'
+Exclusion 0 ResultSize =637
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'WK00' AND PayrollFacility = 'WK'
+Exclusion 0 ResultSize =3266
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = '03'
+Exclusion 0 ResultSize =35
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = '08'
+Exclusion 0 ResultSize =0
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = '16'
+Exclusion 0 ResultSize =227
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'DV'
+Exclusion 0 ResultSize =126
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'IK'
+Exclusion 0 ResultSize =76
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'JM'
+Exclusion 0 ResultSize =210
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'JQ'
+Exclusion 0 ResultSize =39
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'JS'
+Exclusion 0 ResultSize =48
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'KO'
+Exclusion 0 ResultSize =60
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'SE'
+Exclusion 0 ResultSize =180
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'UJ'
+Exclusion 0 ResultSize =317
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'VF'
+Exclusion 0 ResultSize =78
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'XU'
+Exclusion 0 ResultSize =45
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'JI'
+Exclusion 0 ResultSize =0
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1000' AND PayrollFacility = 'JL'
+Exclusion 0 ResultSize =0
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '8900' AND PayrollFacility = '89'
+Exclusion 0 ResultSize =3181
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'ME00' AND PayrollFacility = 'ME'
+Exclusion 0 ResultSize =1202
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'MC00' AND PayrollFacility = 'MC'
+Exclusion 0 ResultSize =0
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'XY00' AND PayrollFacility = 'XY'
+Exclusion 0 ResultSize =842
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'FT00' AND PayrollFacility = 'FT'
+Exclusion 0 ResultSize =609
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'JG00' AND PayrollFacility = 'JG'
+Exclusion 0 ResultSize =289
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'HB00' AND PayrollFacility = 'HB'
+Exclusion 0 ResultSize =160
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'NN00' AND PayrollFacility = 'NN'
+Exclusion 0 ResultSize =17
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'JJ00' AND PayrollFacility = 'JJ'
+Exclusion 0 ResultSize =321
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'XJ00' AND PayrollFacility = 'XJ'
+Exclusion 0 ResultSize =111
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'WJ00' AND PayrollFacility = 'WJ'
+Exclusion 0 ResultSize =373
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'S200' AND PayrollFacility = 'S2'
+Exclusion 0 ResultSize =111
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'S400' AND PayrollFacility = 'S4'
+Exclusion 0 ResultSize =177
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = 'S700' AND PayrollFacility = 'S7'
+Exclusion 0 ResultSize =81
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1765' AND PayrollFacility = 'CC'
+Exclusion 0 ResultSize =5
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1445' AND PayrollFacility = '63'
+Exclusion 0 ResultSize =3
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1935' AND PayrollFacility = 'GZ'
+Exclusion 0 ResultSize =59
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '3815' AND PayrollFacility = 'XO'
+Exclusion 0 ResultSize =14
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '3815' AND PayrollFacility = 'FJ'
+Exclusion 0 ResultSize =28
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '3815' AND PayrollFacility = 'FK'
+Exclusion 0 ResultSize =5
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '3815' AND PayrollFacility = 'VQ'
+Exclusion 0 ResultSize =30
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1065' AND PayrollFacility = 'CO'
+Exclusion 0 ResultSize =7
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1065' AND PayrollFacility = 'GQ'
+Exclusion 0 ResultSize =14
+Exclusion query 0 = SELECT u FROM ariba."user".core."User" AS u INCLUDE INACTIVE WHERE "Active" = FALSE AND SAPCompanyCode = '1895' AND PayrollFacility = 'AZ'
+Exclusion 0 ResultSize =1

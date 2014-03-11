@@ -1,0 +1,106 @@
+<w:BasicPageWrapper commands="Commands.htm" toc="Toc.htm" hasForm="$true">
+<w:TabSet>
+
+  <w:Tab label="Dynamic Chart">
+      Here's another...<br/>
+
+    <a:RefreshRegion>
+          <w:ToggleImage state="$toggle">Hey!</w:ToggleImage><br/>
+          <a:If ifTrue="$toggle">
+            This is some neat stuff, eh?
+          </a:If>
+    </a:RefreshRegion>
+    <br/><br/>
+
+      <w:FlashChart chartFilename="FC_2_3_MSScatter.swf" width="500" height="400">
+        <graph canvasBgColor="FFFFFF" numDivLines="9" divLineAlpha="10" yAxisName="Bid" yAxisMinvalue="0" numberPrefix=" $" xAxisName="Time" rotateNames="0" showLegend="1" showNames="1" showAnchors="1" formatNumber="1" formatNumberScale="0" decimalPrecision="2" limitsDecimalPrecision="0" divLineDecimalPrecision="0" outCnvBaseFontSize="10" showhovercap="1" hoverCapSepChar="-">
+            <categories verticalLineColor="666666" verticalLineThickness="1" verticalLineAlpha="10">
+        <category name="4:12 PM" x="1000000" showVerticalLine="1"/>
+        <category name="4:28 PM" x="1764000" showVerticalLine="1" showName="0"/>
+        <category name="4:40 PM" x="2528000" showVerticalLine="1"/>
+        <category name="4:53 PM" x="3292000" showVerticalLine="1" showName="0"/>
+        <category name="5:06 PM" x="4056000" showVerticalLine="1"/>
+        <category name="5:19 PM" x="4820000" showVerticalLine="1" showName="0"/>
+        <category name="5:32 PM" x="5584000" showVerticalLine="1"/>
+        <category name="5:45 PM" x="6348000" showVerticalLine="1" showName="0"/>
+        <category name="5:58 PM" x="7112000" showVerticalLine="1"/>
+        <category name="6:10 PM" x="7876000" showVerticalLine="1" showName="0"/>
+        <category name="6:24 PM" x="8640000" showVerticalLine="1"/>
+        </categories>
+        <a:For list="$data" item="$series">
+            <dataSet seriesName="$series_name" anchorBgColor="$series_params.anchorBgColor" anchorBorderColor="$series_params.anchorBorderColor" lineColor="$series_params.lineColor" lineAlpha="100">
+                <a:For list="$series_vals" item="$vals">
+                    <set x="$vals_x" y="$vals_y" name="$series_name"></set>
+                </a:For>
+           </dataSet>
+        </a:For>
+        </graph>
+      </w:FlashChart>
+      <br/>
+      <br/>
+      <br/>
+      <w:TextButton action="$randomize">Randomize</w:TextButton>
+      Nothing to see here...
+  </w:Tab>
+
+  <w:Tab label="Static Chart">
+    <Include name="static.htm"/>
+  </w:Tab>
+
+
+  <w:Tab label="Another One">
+      And Another
+  </w:Tab>
+</w:TabSet>
+
+</w:BasicPageWrapper>
+<server>
+  var toggle=false;
+
+  var data= [
+    ["Ceiling", {anchorBgColor:"CDC032", anchorBorderColor:"CDC032", lineColor:"CDC032", lineAlpha:"100"},
+        [["999000", "3200.00"], ["8650000", "3200.00"]] ],
+    ["Reserve", {anchorBgColor:"CDC032", anchorBorderColor:"CDC032", lineColor:"CDC032", lineAlpha:"100"},
+        [["999000", "3700.00"], ["8650000", "3700.00"]] ],
+    ["TYCO 4:50 PM", {anchorBgColor:"CDC032", anchorBorderColor:"CDC032", lineColor:"CDC032", lineAlpha:"100"},
+       [["1500000", "2500.00"],
+        ["2100000", "2450.00"],
+        ["3200000", "1400.00"],
+        ["4600000", "1350.00"],
+        ["5600000", "1150.00"],
+        ["6600000", "1120.00"],
+        ["7000000", "950.00"],
+        ["8600000", "850.00"]]],
+
+    ["REI 10:32", {anchorBgColor:"00AAAA", anchorBorderColor:"00AAAA", lineColor:"00AAAA", lineAlpha:"100"},
+       [["1000000", "3000.00"],
+        ["1100000", "2000.00"],
+        ["2200000", "1000.00"],
+        ["3600000", "500.00"],
+        ["4600000", "250.00"],
+        ["5600000", "100.00"],
+        ["6000000", "50.00"],
+        ["7600000", "25.00"]]],
+
+    ["Long Supplier Tech. 10:32", {anchorBgColor:"00AAAA", anchorBorderColor:"00AAAA", lineColor:"00AAAA", lineAlpha:"100"},
+       [["3600000", "3590.00"],
+        ["4600000", "3000.00"],
+        ["5600000", "2000.00"],
+        ["6600000", "1000.00"],
+        ["7600000", "500.00"],
+        ["8600000", "400.00"],
+        ["8610000", "300.00"],
+        ["8620000", "200.00"]]]
+   ];
+   var series=null, vals=null;
+   function series_name () { return series[0]; }
+   function series_params () { return series[1]; }
+   function series_vals () { return series[2]; }
+   function vals_x () { return z(vals[0]); }
+   function vals_y () { return z(vals[1]); }
+
+   function z(v) { return (1.0 + (Math.random()*0.5)) * parseInt(v); }
+   function randomize () {
+       return null;
+   }
+</server>

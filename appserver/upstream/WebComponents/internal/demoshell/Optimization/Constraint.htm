@@ -1,0 +1,130 @@
+<h1>Constraint: $^item.Title</h1>
+<w:HintMessage showTopLine="$true">
+    Use the left pane to add new constraints or item groups.
+</w:HintMessage>
+
+<w:FormTable>
+    <w:FormRow label="Title">
+        <a:TextField value="$^item.Title" size="50"/>
+    </w:FormRow>
+</w:FormTable>
+<br/>
+<w:RadioButtonList selection="$^item.Action" item="$choice" list='$("Award", "Do Not Award")'>\
+    $choice &nbsp;
+</w:RadioButtonList>
+        
+<div class="scrollTableWrapper">
+    <table width="100%">
+        <tr>
+            <th class="tableHead" colspan="2">
+                With this Constraint
+            </th>
+            <th class="tableHead">
+                Across these Suppliers
+            </th>
+        </tr>
+        <tr>
+            <td>
+                <w:RadioButtonList isRefresh="$true" selection="$^item.QuantityType" item="$choice"
+                                    list='$("% Total Amount", "% Per-Item Quantity", "Max. Supplier Count")'>\
+                    $choice<br/>
+                </w:RadioButtonList>
+            </td>
+
+            <td>
+                <a:If isEqual="$^item.QuantityType" value="Max. Supplier Count">
+                    Max: <a:TextField value="$^item.max" size="2"/>
+                <a:Else/>
+                    <w:RadioButtonList isRefresh="$true" selection="$^item.IsRange" item="$choice"
+                                        list='$("100% - All", "From")'>\
+                        $choice
+                        <br/>
+                    </w:RadioButtonList>
+                    <a:TextField value="$^item.min" size="2"/>%
+                    to:  <a:TextField value="$^item.max" size="2"/>%                        
+                    <a:If isEqual="$^item.IsRange" value="Range">
+                    </a:If>
+                </a:If>
+            </td>
+
+            <td>
+                <w:RadioButtonList isRefresh="$true" selection="$^item.SupplierSelection" item="$choice"
+                                    list='$("Any Supplier", "A Single Supplier", "Incumbents", "Selected Supplier...", "Supplier Matching Criteria...")'>\
+                    $choice <br/>
+                </w:RadioButtonList>
+            </td>
+        </tr>
+    </table>
+</div>
+<br/>
+
+<a:If value="Selected Supplier..." isEqual="$^item.SupplierSelection">
+    <t:DataTable title="Select Suppliers" enableScrolling="$true" multiSelect="$true">
+        <t:CSVData>
+            Supplier Name
+            Supplier 1
+            Supplier 2
+            Supplier 3
+            Supplier 4
+            Supplier 5
+            Supplier 6
+            Supplier 7
+            Supplier 8
+            Supplier 9
+        </t:CSVData>
+    </t:DataTable>
+</a:If>
+<a:If value="Supplier Matching Criteria..." isEqual="$^item.SupplierSelection">
+    <w:TabSet class="noPadding tabContentWrapper tabWrapper">
+      <w:Tab label="Criteria">
+          <t:DataTable class="noBox scrollTableWrapper" showOptionsMenu="$false" list="$criteria" item="$item" enableScrolling="$true" multiSelect="$true">
+              <t:Column key="Question"/>
+              <t:Column lable="Filter">
+                  <a:If value="Boolean" isEqual="$item.Type">
+                      <w:RadioButtonList selection="$item.Value" item="$choice"
+                                          list='$("Yes", "No")'>\
+                          $choice &nbsp;
+                      </w:RadioButtonList>
+
+                  </a:If>
+                  <a:If value="Numeric" isEqual="$item.Type">
+                      <a:TextField value="$^item.min" size="2"/>
+                      to <a:TextField value="$^item.max" size="2"/>
+                  </a:If>
+
+              </t:Column>
+
+              <t:ButtonArea>
+                  <w:TextButton action="$addQuestion">Delete</w:TextButton>
+                  <w:TextButton action="$addQuestion">Add RFX Answer Criteria</w:TextButton>
+                  <w:TextButton action="$addProfile">Add Profile Criteria</w:TextButton>
+              </t:ButtonArea>
+          </t:DataTable>
+      </w:Tab>
+      <w:Tab label="Matching Suppliers">
+          <t:DataTable class="noBox scrollTableWrapper" showOptionsMenu="$false"  enableScrolling="$true">
+              <t:CSVData>
+                  Supplier Name
+                  Supplier 1
+                  Supplier 3
+                  Supplier 7
+                  Supplier 9
+              </t:CSVData>
+          </t:DataTable>
+      </w:Tab>
+    </w:TabSet>
+
+</a:If>
+
+<groovy>
+    def criteria = [ [Question: "Is Women and Minority Owned", Type:"Boolean"],
+                     [Question: "Company Revenue", Type:"Numeric"]];
+    
+    def addQuestion () {
+        def page = pageWithName("ContentView.htm");
+        page.setClientPanel(true);
+        return page;
+    }
+
+</groovy>
+        

@@ -1,0 +1,45 @@
+<w:HintMessage showTopLine="$false">
+    Big nested table: 15 detail rows per parent row means that batching will still allow 40*16 = 640 rows
+    though when batch scrolling, causing a massive update on the client
+</w:HintMessage>
+<t:DataTable multiSelect="$true"csvPath="SampleSpend.csv"
+        initialSortDirection="descending" initialSortKey="Category"
+        enableScrolling="$true" useRefresh="$true" showOptionsMenu="$true" title="Big Detail Table!">
+
+    <t:Column style="font-face:bold" key="Department" action="$goto.Home" nowrap/>
+
+    <t:Column key="Category"/>
+
+    <t:Column key="Amount" formatter="$formatters.money" align="right"/>
+
+    <t:Column>
+        <w:TextButton action="$null">Inspect</w:TextButton>
+    </t:Column>
+
+    <t:Column label="Blank Column">
+
+    </t:Column>
+
+    <t:RowDetail nestedTableLayout="$true">
+        <t:DataTable list="$detailItems" useParentLayout="$true" batchSize="1000">
+            <t:Column key="Type" label="Department"/>
+            <t:Column key="Year" label="Category"/>
+        </t:DataTable>
+    </t:RowDetail>
+
+    <t:ButtonArea>
+        <w:TextButton action="$null">Delete</w:TextButton>\
+    </t:ButtonArea>
+
+</t:DataTable>
+
+
+<server>
+    function detailItems () {
+        return ariba.ui.table.AWTCSVDataSource.dataSourceForPath("ER.csv", component).fetchObjects();
+    }
+    
+    function init () {
+        // var detailItems = ariba.ui.table.AWTCSVDataSource.dataSourceForPath("ER.csv", component).fetchObjects();
+    }
+</server>

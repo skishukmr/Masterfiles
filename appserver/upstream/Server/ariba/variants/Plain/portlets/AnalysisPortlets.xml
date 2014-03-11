@@ -1,0 +1,207 @@
+<PortletProviders>
+    <PortletProvider stringFile="&lt;ProviderURL&gt;/ad/stringFile/PortletProviderActions?stringFile=ariba.analytics.portlets">
+        <UniqueName>AribaAnalysis</UniqueName>
+        <DisplayName>$[a001]Reports</DisplayName>
+        <Description>$[a002]Reports </Description>
+        <HttpURL>&HttpURL;</HttpURL>
+        <ServerURL>&ServerURL;</ServerURL>
+        <Permissions>
+            <String>AnalysisAuthorized</String>
+        </Permissions>
+        <Portlets>
+            <Portlet>
+                <UniqueName>ReportView</UniqueName>
+                <DisplayName>$[a003]Chart/Table</DisplayName>
+                <Description>$[a004]Chart or table based on an analytical report</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ReportPortletController</Controller>
+                <ContentType>Chart</ContentType>
+                <IsSingleton>false</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>true</SetupRequired>
+                <Permissions>
+                    <String>AnalysisCreateReports</String>
+                    <String>AnalysisRunReports</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>FolderView</UniqueName>
+                <DisplayName>$[a005]Folder</DisplayName>
+                <Description>$[a006]Folder</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/FolderPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>false</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>true</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <!--
+            <Portlet>
+                <UniqueName>ScheduledReports</UniqueName>
+                <DisplayName>$[a019]Scheduled Reports</DisplayName>
+                <Description>$[a020]Reports that have been scheduled by user</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ScheduledReportsPortletController</Controller>
+                <ContentType>HTML</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                    <String>AnalysisAdmin</String>
+                    <String>AnalysisScheduleReport</String>
+                </Permissions>
+            </Portlet>
+            -->
+            <!-- Next Gen version for recently run reports -->
+            <Portlet>
+               <UniqueName>RecentlyRunReportsActions</UniqueName>
+               <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/RecentlyRunReportsViewedActionsController</Controller>
+               <ContentType>AggregationSource</ContentType>
+               <AggregationDataType>RecentlyViewed</AggregationDataType>
+               <IsSingleton>true</IsSingleton>
+               <IsEditable>false</IsEditable>
+               <SetupRequired>false</SetupRequired>
+               <Permissions></Permissions>
+            </Portlet>
+            <!--
+            <Portlet>
+                <UniqueName>QuickTour</UniqueName>
+                <DisplayName>$[a007]Quick Tour</DisplayName>
+                <Description>$[a008]Quick Tour</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/QuickTourPortletController</Controller>
+                <ContentType>HTML</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            -->
+            <!--
+            <Portlet>
+                <UniqueName>Favorites</UniqueName>
+                <DisplayName>$[a009]Favorites</DisplayName>
+                <Description>$[a010]Favorite reports</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/FolderPortletController?showFavorites=true</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            -->
+            <Portlet>
+                <UniqueName>ReportActions</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AnalysisMainActionsController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <!--
+            <Portlet>
+                <UniqueName>FavoritesTOC</UniqueName>
+                <DisplayName>$[a013]Favorite Reports</DisplayName>
+                <Description>$[a014]Favorite reports</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/FavoritesTOCController</Controller>
+                <ContentType>TOC</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>true</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            -->
+            <Portlet>
+                <UniqueName>OverviewFormView</UniqueName>
+                <DisplayName>$[a017]Summarized View</DisplayName>
+                <Description>$[a018]Summarized view form</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/OverviewFormPortletController</Controller>
+                <ContentType>HTML</ContentType>
+                <IsSingleton>false</IsSingleton>
+                <IsEditable>true</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>true</SetupRequired>
+                <Permissions>
+                    <String>AnalysisRunCompoundReports</String>
+                    <String>AnalysisCreateCompoundReports</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>AnalysisPreferences</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AnalysisUserPreferencesPortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+        </Portlets>
+        <DocTypes>
+            <DocType>
+                <UniqueName>ariba.analytics.core.CubeConfig</UniqueName>
+                <DisplayName>$[a029]Analytical Report</DisplayName>
+                <Description>$[a030]An Analytical Report definition document</Description>
+                <ActionRank>35</ActionRank>
+                <Permissions></Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.analytics.reportdashboard.ReportDashboard</UniqueName>
+                <DisplayName>$[a031]Compound Report</DisplayName>
+                <Description>$[a032]A compound report document</Description>
+                <ActionRank>60</ActionRank>
+                <Permissions></Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.analytics.core.UploadedFile</UniqueName>
+                <DisplayName>$[a033]Report Excel Template</DisplayName>
+                <Description>$[a034]An Excel template for exporting reports</Description>
+                <ActionRank>70</ActionRank>
+                <Permissions></Permissions>
+            </DocType>
+            <!--- Note: this is a fake DocType to control permission for the Visibility tab -->
+            <DocType>
+                <UniqueName>SpendVisibility</UniqueName>
+                <DisplayName>$[a027]Spend Visibility</DisplayName>
+                <Description>$[a028]Spend Visibility reports</Description>
+                <ActionRank>80</ActionRank>
+                <Permissions>
+                    <String>SVAuthorized</String>
+                </Permissions>
+            </DocType>
+            <!--- Fake doctypes for Report Folders -->
+            <DocType>
+                <UniqueName>ariba.analytics.pseudo.MyReports</UniqueName>
+                <DisplayName>$[a035]My Reports Folder</DisplayName>
+                <Description>$[a036]Personal Workspace containing user-created reports</Description>
+                <ActionRank>42</ActionRank>
+                <Permissions>
+                    <String>AnalysisAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.analytics.pseudo.PrePackagedReports</UniqueName>
+                <DisplayName>$[a037]Pre-Packaged Reports Folder</DisplayName>
+                <Description>$[a038]Folder containing the standard reports</Description>
+                <ActionRank>82</ActionRank>
+                <Permissions>
+                    <String>AnalysisAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.analytics.pseudo.PublicReports</UniqueName>
+                <DisplayName>$[a039]Public Reports List</DisplayName>
+                <Description>$[a040]List of reports published as Public by users in the system</Description>
+                <ActionRank>92</ActionRank>
+                <Permissions>
+                    <String>AnalysisAuthorized</String>
+                </Permissions>
+            </DocType>
+        </DocTypes>
+    </PortletProvider>
+</PortletProviders>

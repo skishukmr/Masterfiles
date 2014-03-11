@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Supplier SYSTEM "http://xml.cxml.org/schemas/cXML/1.1.009/cXML.dtd">
+
+<Supplier corporateURL="http://zachary.ariba.com:5555"
+          storeFrontURL="http://zachary.ariba.com:5555/store">
+  <Name xml:lang="en-US">Zachary's Pizza</Name>
+  <Comments xml:lang="en-US">Zack rocks!</Comments>
+  <SupplierID domain="partition-home">1000575342</SupplierID>
+  <SupplierID domain="duns">186716668233421</SupplierID>
+  <SupplierLocation>
+    <Address isoCountryCode="US">
+      <Name xml:lang="en-US">Main Office</Name>
+      <PostalAddress>
+        <DeliverTo>Jordan A. Berger</DeliverTo>
+        <Street>123 Pizza Street</Street>
+        <City>Berkeley</City>
+        <State>CA</State>
+        <PostalCode>95000</PostalCode>
+        <Country isoCountryCode="US">United States</Country>
+      </PostalAddress>
+      <Email>hannah@pizzajoint.com</Email>
+      <Phone name="Office">
+        <TelephoneNumber>
+          <CountryCode isoCountryCode="US">011</CountryCode>
+          <AreaOrCityCode>800</AreaOrCityCode>
+          <Number>555-1212</Number>
+        </TelephoneNumber>
+      </Phone>
+      <Fax name="Order">
+        <TelephoneNumber>
+          <CountryCode isoCountryCode="US">011</CountryCode>
+          <AreaOrCityCode>408</AreaOrCityCode>
+          <Number>555-1234</Number>
+        </TelephoneNumber>
+      </Fax>
+      <URL>http://www.pizza.com/Support.htm</URL>
+    </Address>
+    <OrderMethods>
+      <OrderMethod>
+        <OrderTarget>
+          <URL>http://www.pizza.com/cxmlorders</URL>
+        </OrderTarget>
+      </OrderMethod>
+      <OrderMethod>
+        <OrderTarget>
+          <Email>plain.orders@pizza.com</Email>
+        </OrderTarget>
+      </OrderMethod>
+      <Contact>
+        <Name xml:lang="en-US">Mr. Zachary E. Berger</Name>
+        <PostalAddress>
+          <Street>123 DragonTales Street</Street>
+          <City>Amadeus</City>
+          <State>CA</State>
+          <PostalCode>95000</PostalCode>
+          <Country isoCountryCode="US">United States</Country>
+        </PostalAddress>
+        <Email>sepants@dummy.com</Email>
+        <Phone name="Office">
+          <TelephoneNumber>
+            <CountryCode isoCountryCode="US">011</CountryCode>
+            <AreaOrCityCode>800</AreaOrCityCode>
+            <Number>555-1212</Number>
+          </TelephoneNumber>
+        </Phone>
+      </Contact>
+    </OrderMethods>
+  </SupplierLocation>
+</Supplier>
+

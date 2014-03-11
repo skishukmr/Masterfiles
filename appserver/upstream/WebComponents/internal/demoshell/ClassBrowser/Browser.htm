@@ -1,0 +1,116 @@
+<w:ModalPageWrapper title="Class Browser!" hasForm="$true"
+        hasSidebarNotch="$false" isSidebarVisible="$false" showBottomButtons="$false">
+<w:HintMessage showTopLine="$true">
+    You may search and select classes on the left, and see their fields on the right.
+</w:HintMessage>
+<table width="100%">
+    <tr>
+        <td valign="top" width="20%">
+            <div class="flexContainer">
+                <t:DataTable list="$packages" displayGroup="$tocDisplayGroup" item="$item"
+                              hasChildren="${ariba.util.core.ListUtil.containsIdentical(packages, item)}"
+                              children="$item.children"
+                              enableScrolling="$true" singleSelect="$true" showSelectionColumn="$false" submitOnSelectionChange="$true"
+                              title="Browse Classes">
+                    <t:HeadingArea>
+                        <table cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td colspan="2">\
+                                    <b>\
+                                       Browse Classes
+                                    </b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a:TextField value="$searchString"/></td>
+                                <td><w:TextButton action="$null">Search</w:TextButton></td>
+                            </tr>
+                        </table>
+                    </t:HeadingArea>
+                    <t:Column key="Title">\
+                        <w:OutlineControl>\
+                            $item.Title\
+                        </w:OutlineControl>\
+                    </t:Column>
+                </t:DataTable>
+            </div>
+        </td>
+
+        <td  style="padding:0px 8px 0px 8px">
+            <div class="brandMd">
+                <a:Image filename="cleardot.gif" height="600" width="3"/>
+            </div>
+        </td>
+
+        <td valign="top" width="100%">
+            <div class="flexContainer">
+                <t:DataTable list="$selectedObject.children" item="$item" children="$item.children"
+                        enableScrolling="$true" multiSelect="$true" title="$selectedObject.Title">
+                    <t:Column key="Title">
+                        <w:OutlineControl title="$item.Title">
+                            <a:Content name="icon">\
+                                <div style="padding:2px; width:8px; border:1px solid gray; background:#666699;margin-right:5px;font:9px/14px Verdana, Arial, Helvetica, sans-serif;color:white">
+                                    <a:String value="${item.Type.substring(0,1).toLowerCase()}"/>\
+                                </div>
+                            </a:Content>
+                        </w:OutlineControl>
+                    </t:Column>
+                    <t:Column key="Type"/>
+
+                    <t:ButtonArea isVisible="$true">
+                        <w:TextButton action="$null">Move</w:TextButton>\
+                        <w:TextButton action="$null">Delete</w:TextButton>
+                    </t:ButtonArea>
+                </t:DataTable>
+
+                Render Count:  $count (<a:String value='${count % 2 == 0 ? "Even" : "Odd"}'/>)
+                
+<!--
+                <a:For list="${arr = (1..10).collect { it * 5 }}" index="$idx">
+                    <a:TextField value="${arr[idx]}" formatter="$formatters.integer"/><br/>
+                </a:For>
+                <br/>
+                = <a:String value="${arr.inject (0) { tot, e -> tot + e; }}"/><br/>
+-->
+            </div>
+        </td>
+    </tr>
+</table>
+</w:ModalPageWrapper>\
+<groovy>
+    def displayGroup, packages, tocDisplayGroup, searchString, arr, idx;
+    def item;
+    
+    def count = 0;
+
+    public void appendToResponse (AWRequestContext requestContext, AWComponent component) {
+        count++;
+        super.appendToResponse(requestContext, component);
+    }
+    void init () {
+        def fields = ariba.ui.table.AWTCSVDataSource.dataSourceForPath("FieldData.csv", this).fetchObjects();
+        fields.each { e ->
+            e.Title = e.FieldName
+            def m = e.FullClass =~ /([\w\.]*)\.(\w+)$/
+            if (m) {
+                e.Package = m[0][1];
+                e.ClassName = m[0][2];
+            }
+        }
+        def classes = group(fields, "FullClass") {e -> def g = e.clone(); g.Title = e.ClassName; g}
+        packages = group(classes, "Package") {e -> def g = e.clone(); g.Title = e.Package; g}
+    }
+
+    def group (list, groupByKey, closure) {
+        def groupMap = [:];
+        list.each { e ->
+            def groupVal = e[groupByKey];
+            def g = groupMap[groupVal];
+            if (!g) { g = closure.call(e); g.children=[]; groupMap[groupVal] = g; }
+            g.children += e;
+        };
+        return new ArrayList(groupMap.values());
+    }
+
+    def selectedObject() { return tocDisplayGroup.selectedObject(); }
+</groovy>

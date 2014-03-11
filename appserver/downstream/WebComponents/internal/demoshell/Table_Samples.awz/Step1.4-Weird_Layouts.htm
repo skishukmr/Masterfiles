@@ -1,0 +1,54 @@
+<w:HintMessage showTopLine="$true">
+    Example of the AWTDataTable!
+</w:HintMessage>
+<br/>
+
+<t:DataTable  multiSelect="$true" batchSize="15" showOptionsMenu="$true" enableScrolling="$true" minHeight="200"
+    title="Wide / Short Table">
+
+    <t:HeadingArea>
+        This<br/>
+        is<br/>
+        a<br/>
+        tall heading
+    </t:HeadingArea>
+
+    <t:CSVData>
+        Category,           Amount,         Quantity,   Date,   Description
+        Computers,          1000.10,        10,         1/2/02, A long wrappable text block
+        Print Materials,    675.02,            12,         4/12/02,More text
+    </t:CSVData>
+
+    <t:Column key="Category" label="Category"/>
+
+    <t:Column key="Description"/>
+
+    <t:Column key="Category" label="More"/>
+    <t:Column key="Category" label="And More Still"/>
+
+    <t:Column key="Quantity" formatter="$formatters.integer" align="right"/>
+
+    <t:Column key="Date" formatter="$formatters.shortDate" align="right"/>
+
+    <t:Column key="Amount" formatter="$formatters.money" align="right"/>
+
+    <t:Column align="right">
+        <w:TextButton action="$null">Inspect</w:TextButton>
+    </t:Column>
+
+    <t:ButtonArea>
+            <w:TextButton action="$null">Inspect</w:TextButton>
+            <w:TextButton action="$null">Really Inspect</w:TextButton>
+            <w:TextButton action="$null">Delete without Mercy</w:TextButton>
+            <w:TextButton action="$null">Open Please</w:TextButton>
+            <w:TextButton action="$null">Hello there</w:TextButton>
+            <w:TextButton action="$null">Here's a long title</w:TextButton>
+            <w:TextButton action="$null">Inspect</w:TextButton>
+            <w:TextButton action="$null">Really Inspect</w:TextButton>
+            <w:TextButton action="$null">Delete without Mercy</w:TextButton>
+            <w:TextButton action="$null">Open Please</w:TextButton>
+            <w:TextButton action="$null">Hello there</w:TextButton>
+            <w:TextButton action="$null">Here's a long title</w:TextButton>
+    </t:ButtonArea>
+
+</t:DataTable>

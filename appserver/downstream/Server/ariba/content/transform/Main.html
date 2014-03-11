@@ -1,0 +1,225 @@
+<HTML>
+<HEAD>
+
+
+<script type="text/javascript" name="JavaScript">
+
+
+
+function replaceValues (str)
+{
+    str = str.replace(/--userName/, document.getElementById("userName").value);
+    str = str.replace(/--companyDUNS/, document.getElementById("companyDUNS").value);
+    str = str.replace(/--appUserName/, document.getElementById("appUserName").value);
+    str = str.replace(/--userEmail/, document.getElementById("userEmail").value);
+    str = str.replace(/--returnURL/, document.getElementById("returnURL").value);
+    str = str.replace(/--password/, document.getElementById("password").value);
+    str = str.replace(/--shipTo/, document.getElementById("shipTo").value);
+   return str;
+}
+
+function ajaxObject(url, callbackFunction) {
+  var that=this;
+  this.updating = false;
+  this.abort = function() {
+    if (that.updating) {
+      that.updating=false;
+      that.AJAX.abort();
+      that.AJAX=null;
+    }
+  }
+  this.update = function(passData,postMethod) {
+    if (that.updating) { return false; }
+    that.AJAX = null;
+    if (window.XMLHttpRequest) {
+      that.AJAX=new XMLHttpRequest();
+    } else {
+      that.AJAX=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    if (that.AJAX==null) {
+      return false;
+    } else {
+      that.AJAX.onreadystatechange = function() {
+        if (that.AJAX.readyState==4) {
+          that.updating=false;
+          that.callback(that.AJAX.responseText,that.AJAX.status,that.AJAX.responseXML);
+          that.AJAX=null;
+        }
+      }
+      that.updating = new Date();
+      if (/post/i.test(postMethod)) {
+        var uri=urlCall+'?'+that.updating.getTime();
+        that.AJAX.open("POST", uri, true);
+        that.AJAX.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        that.AJAX.send(passData);
+      } else {
+        var uri=urlCall+'?'+passData+'&timestamp='+(that.updating.getTime());
+        that.AJAX.open("GET", uri, true);
+        that.AJAX.send(null);
+      }
+      return true;
+    }
+  }
+  var urlCall = url;
+  this.callback = callbackFunction || function () { };
+}
+
+
+
+function loadXML()
+{
+
+  ajaxObject = new ajaxObject('http://jwang.ariba.com:8050/phpservlet/LoginRequest.xml');
+  ajaxObject.callback = function (responseTxt) {
+      document.getElementById('loginRequest').value = replaceValues(responseTxt);
+  }
+  ajaxObject.update();
+}
+
+function doPost()
+{
+document.iprocure.action=document.iprocure.postURL.value;
+}
+
+
+</script>
+
+
+
+
+</HEAD>
+<BODY>
+
+
+<H1>iProcure Punchout Configuration</H1>
+
+
+
+
+
+<hr>
+
+
+<FORM method="post" name="iprocure"  action="">
+<TABLE border="1" >
+
+<TR>
+
+<TD>
+iProcure Company ID (Network ID):
+</TD>
+<TD>
+<input type="text" size="40" name="companyDUNS" id="companyDUNS" value="AN13000000282">
+</TD>
+</TR>
+
+<TR>
+<TD>
+iProcure Password (Password Provided by AN):
+</TD>
+<TD>
+    <input type="text" size="40" name="password" id="password" value="AN71000000026/welcome1a">
+</TD>
+</TR>
+
+
+<TR>
+<TD>
+iProcure User ID (Unique User ID):
+</TD>
+<TD>
+<input type="text" size="40" name="appUserName" id="appUserName" value="adavis">
+</TD>
+</TR>
+
+
+<TR>
+<TD>
+iProcure User Name (User Name):
+</TD>
+<TD>
+<input type="text" size="40" name="userName" id="userName" value="Arnold Davis">
+</TD>
+</TR>
+
+
+
+<TR>
+<TD>
+iProcure User Email (User Email):
+</TD>
+<TD>
+<input type="text" size="40" name="userEmail" id="userEmail" value="adavis@ariba.com">
+</TD>
+</TR>
+
+
+<TR>
+<TD>
+iProcure User ShipTo (User ShipTo):
+</TD>
+<TD>
+<input type="text" size="40" name="shipTo" id="shipTo" value="Sunnyvale_Location">
+</TD>
+</TR>
+
+
+<TR>
+<TD>
+Chekcout Return URL (iProcure URL):
+</TD>
+<TD>
+<input type="text" size="40" name="returnURL" id="returnURL"  value="http://jwang.ariba.com:8050/phpservlet/main.html">
+</TD>
+</TR>
+
+
+<TR>
+<TD>
+Transformation URL (Ariba URL):
+</TD>
+<TD>
+<input type="text" size="40" name="postURL" id="postURL" value="https://jwang.ariba.com:7002/Buyer/Main/ad/transformPOSR/ariba.content.transform.TransformListener?ANURL=https://svcitg.ariba.com/service/transaction/cxml.asp&Groups=a&ShipTo=oracle&PreferredSupplierDomain=duns&SelfRedirect=TRUE">
+</TD>
+</TR>
+
+
+<TR>
+<TH colspan="2" >
+<input type="submit" onClick="return doPost();" value="Go to the Ariba Procurement Content" id=submit name=submit>
+</TH>
+</TR>
+
+
+
+<TR>
+<TH colspan="2">
+<input type="button" onClick="loadXML()" name=writesomething id=writesomething value="Load Sample Oracle XML"/>
+</TH>
+</TR>
+
+
+
+
+
+</TABLE>
+
+
+<div id="intro">
+
+ <textarea rows="30" cols="80" name="loginRequest" id="loginRequest">
+</textarea>
+
+
+
+</div>
+
+
+
+</BODY>
+</HTML>
+
+
+
+
+

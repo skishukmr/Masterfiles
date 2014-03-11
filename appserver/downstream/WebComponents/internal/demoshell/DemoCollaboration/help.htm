@@ -1,0 +1,50 @@
+<html>
+<body>
+<h1>Network Simulator</h1>
+<h2>What does it do?</h2>
+The network simulator allows you to basically perform punch-ins to buyer without having to be connected
+to the Ariba Network. The simulator looks (apart from a few details) exactly like AN40, so this
+simulator should be suitable for both testing as well as demo purposes. The simulator does NOT provide
+any functionality that is supported natively on the network (such as PO flip), but it is possible to
+set up your system so that orders and documents get routed to the real AN while using the simulator
+for the punchin.
+<h2>Logging in</h2>
+To log in, use the name of the person you want to be rather than an e-mail address. No password is necessary.
+For example, you can log on as "Joe Schmoe". If there is no user named "Joe Schmoe" in buyer, you will
+be prompted to provide either the name of a supplier (This is the common supplier name, no the partitioned
+supplier name, e.g. "Supplier 13") or, if collaboration requests already exist, you can select a supplier
+from a dropdown. This information will be used to display the proper documents and will also be used upon
+punch-in to associate the user with that supplier. If the user already exists, this step is not neccessary.
+Note that if you were in a buyer session in the same window, you will be automatically logged out of that session
+(since the demo system runs in its own buyer session).
+<h2>Punching in</h2>
+If you selected a new user above, the first punchin (either from a CLR or from the contracts punchin) will
+create a new user in Buyer. You will get an error screen (exactly the same one you get on the AN) saying
+that a new user was created. This user must then be approved (and usually be edited to provide accounting & ship-to
+info). For the sample data, <i>adavis</i> has the permission to do so. Once the user has been approved, the punchin will succeed.
+<b>Note: if the punch-in fails with a weird NPE, try to set up your InternalURL in the AppInfo.xml to be a non-ssl URL
+(like http://hostname.ariba.com:8050 instead of https://hostname.ariba.com).</b>  
+<h2>Supported screens</h2>
+Any link that doesn't work does nothing (rather than giving you an error screen). The following things work:
+<ul>
+<li>Help<br>this screen</li>
+<li>Logout</li>
+<li>Home</li>
+<li>Technical Settings<br>Configure dummy routing</li>
+<li>Inbox<br/>Leads to collaboration requests</li>
+<li>Collaboration Requests (under Starting Points)</br>Leads to collaboration requests</li>
+<li>Invoicing->Create Contract Invoice<br/>Leads to contract invoicing punchin page</li>
+<li>Inbox/Collaboration Requests -> Time Sheets<br>Leads to time sheet list (can't do anything there, i.e.
+clicking on time sheet doesn't do anything).
+</ul>
+Note that all data (Collaboration Requests, Time Sheets) are pulled from the buyer database (note that only a limited set of items is loaded (20 or so) to avoid slow page loads), 
+so you see an
+actual list of documents. It also means that there will only be a list of docs from one buyer, this may be a
+point that needs to be talked to.
+<h2>Dummy routing</h2>
+The simulator will receive requests instead of the Network. If you are hooked up to the Network, you may
+want to show the requests there as well. The simulator will still work, since it runs off the Database.
+By default (every time you restart the instance), the CollaborationRequest and Time Sheets are simulated,
+orders are not. You can enable simulation for orders - that way orders are not routed to the network. 
+</body>
+</html>

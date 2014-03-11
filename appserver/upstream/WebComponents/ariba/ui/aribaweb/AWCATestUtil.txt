@@ -1,0 +1,6 @@
+alert("Initing AWCATestUtil!");
+
+function libraryFunctionTest ()
+{
+    alert("AWCATestUtil::libraryFunctionTest");
+}

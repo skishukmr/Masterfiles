@@ -1,0 +1,157 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+    <derivedDataLoad name="LegacyBuyerPartCSV" extendsLoad="PartCSV">
+        <fieldMappings>
+            <deleteField name="PartKey3"/>
+            <deleteField name="Description2"/>
+            <deleteField name="StandardCost.Amount"/>
+            <deleteField name="StandardCost.Currency"/>
+            <deleteField name="StandardCost.Date"/>
+            <deleteField name="StockIndicator"/>
+            <field name="PartKey3">
+                <csvMapping selectField="CommonSupplierSystemId"/>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <dataLoad name="LegacyBuyerCommodityCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.Commodity"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="CommodityId">
+                <csvMapping selectField="CommodityId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+                </analysisMapping>
+            </field>
+            <field name="CommodityName">
+                <csvMapping selectField="CommodityName"/>
+            </field>
+            <field name="ParentCommodityId">
+                <csvMapping selectField="ParentCommodityId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+                </analysisMapping>
+            </field>
+            <field name="SourceCommodityDomain">
+                <csvMapping selectField="SourceCommodityDomain"/>
+                <analysisMapping enabled="false"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerInvoiceExceptionTypeCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.InvoiceExceptionType"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ExceptionType">
+                <csvMapping selectField="ExceptionType"/>
+            </field>
+            <field name="ExceptionTypeId">
+                <csvMapping selectField="ExceptionTypeId"/>
+            </field>
+            <field name="ExceptionLevel">
+                <csvMapping selectField="ExceptionLevel"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Header Level"/>
+                                <entry value="Header Level"/>
+                                <entry value="Line Item Level"/>
+                                <entry value="Line Item Level"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Exception">
+                <csvMapping selectField="ExceptionLevel"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Has Exception"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerLocationCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.Location"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Location">
+                <csvMapping selectField="Location"/>
+            </field>
+            <field name="LocationId">
+                <csvMapping selectField="LocationId"/>
+            </field>
+            <field name="City">
+                <csvMapping selectField="City"/>
+            </field>
+            <field name="State">
+                <csvMapping selectField="State"/>
+            </field>
+            <field name="Country">
+                <csvMapping selectField="Country"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerCompanyCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.Company"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="CompanyId">
+                <csvMapping selectField="GLBusinessUnitId"/>
+            </field>
+            <field name="CompanyName">
+                <csvMapping selectField="GLBusinessUnitDesc"/>
+            </field>
+            <field name="BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerBusinessUnitCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.Company"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="CompanyId">
+                <csvMapping selectField="GLBusinessUnitId"/>
+            </field>
+            <field name="CompanyName">
+                <csvMapping selectField="GLBusinessUnitDesc"/>
+            </field>
+            <field name="BusinessUnitId">
+                <csvMapping selectField="BusinessUnitId"/>
+            </field>
+            <field name="Description">
+                <csvMapping selectField="BusinessUnitDesc"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+</allDataLoads>

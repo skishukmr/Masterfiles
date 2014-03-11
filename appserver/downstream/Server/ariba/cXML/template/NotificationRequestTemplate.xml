@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemID@@">
+<cXML version="1.1" payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@">
+   <Header>
+        <From>
+            <Credential domain="AribaNetworkUserId">
+                <Identity>@@getSystemParameter(System.Procure.AribaNetwork.Id)@@</Identity>
+            </Credential>
+        </From>
+        <To>
+            <Credential domain="NetworkId">
+                <Identity>@@getToIdentity@@</Identity>
+            </Credential>
+        </To>
+        <Sender>
+            <Credential domain="AribaNetworkUserId">
+                <Identity>@@getSystemParameter(System.Procure.AribaNetwork.Id)@@</Identity>
+                <SharedSecret>@@getSystemParameter(System.Procure.AribaNetwork.Password)@@</SharedSecret>
+            </Credential>
+            <UserAgent>ORMS</UserAgent>
+        </Sender>
+    </Header>
+    <Request>
+        <NotificationRequest category="?@@getNotificationCategory@@" type="?@@getNotificationType@@">
+            <Subject xml:lang="@@getLanguage@@">
+                <!-- try -->
+                @@getNotificationSubject@@
+                <!-- end try -->
+            </Subject>
+            <Body xml:lang="@@getLanguage@@">
+                <!-- try -->
+                @@getNotificationBody@@
+                <!-- end try -->
+            </Body>
+        </NotificationRequest>
+    </Request>
+</cXML>

@@ -1,0 +1,226 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="AribaTaxonomy">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.dimension.UNSPSC"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="AribaCodeName">
+            <csvMapping selectField="DisplayName"/>
+        </field>
+        <field name="AribaCodeId">
+            <csvMapping selectField="PersistentId"/>
+        </field>
+        <field name="AribaCodeDisplayId">
+            <csvMapping selectField="DisplayCode"/>
+        </field>
+        <field name="AribaParentCodeId">
+            <csvMapping selectField="ParentId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="FieldName" value="AribaCodeId"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AribaCodeVersion">
+            <csvMapping selectField="Version"/>
+        </field>
+        <field name="AribaCodeEnabled">
+            <csvMapping selectField="Enabled"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="UNSPSC">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.dimension.UNSPSC"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="AribaCodeId">
+            <csvMapping selectField="AribaUniqueName"/>
+        </field>
+        <field name="CodeId">
+            <csvMapping selectField="UNSPSCUniqueName"/>
+        </field>
+        <field name="CodeName">
+            <csvMapping selectField="UNSPSCName"/>
+        </field>
+        <field name="ParentCodeId">
+            <csvMapping selectField="UNSPSCParentUniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="FieldName" value="CodeId"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="UNSPSCMLS">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.dimension.UNSPSC"/>
+    </loadStages>
+    <fieldMappings>
+    	<field name="AribaCodeId">
+            <csvMapping selectField="AribaUniqueName"/>
+        </field>
+        <field name="CodeId">
+            <csvMapping selectField="UNSPSCUniqueName"/>
+        </field>
+        <field name="CodeName">
+            <csvMapping selectField="UNSPSCName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="UOM">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.dimension.UOM"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UnitOfMeasureId">
+            <csvMapping selectField="UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="FiscalTime">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.dimension.Time"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Day">
+            <csvMapping selectField="Day"/>
+        </field>
+        <field name="FiscalMonthNumber">
+            <csvMapping selectField="FiscalMonthNumber"/>
+        </field>
+        <field name="FiscalYearNumber">
+            <csvMapping selectField="FiscalYearNumber"/>
+        </field>
+        <field name="FiscalQuarter">
+            <csvMapping selectField="FiscalQuarter"/>
+        </field>
+
+        <field name="FiscalMonth1970">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.FiscalMonth1970"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ActCustomCategory">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.dimension.UNSPSC"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="AribaCodeId">
+            <csvMapping selectField="AribaCodeId"/>
+        </field>
+        <field name="CustomCategoryL6">
+            <csvMapping selectField="CustomCategoryL6"/>
+        </field>
+        <field name="CustomCategoryL5">
+            <csvMapping selectField="CustomCategoryL5"/>
+        </field>
+        <field name="CustomCategoryL4">
+            <csvMapping selectField="CustomCategoryL4"/>
+        </field>
+        <field name="CustomCategoryL3">
+            <csvMapping selectField="CustomCategoryL3"/>
+        </field>
+        <field name="CustomCategoryL2">
+            <csvMapping selectField="CustomCategoryL2"/>
+        </field>
+        <field name="CustomCategoryL1">
+            <csvMapping selectField="CustomCategoryL1"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+ <dataLoad name="SupplierFlexFieldsCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.Supplier"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="SupplierId">
+                <csvMapping selectField="SupplierId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="SourceSystem">
+                <csvMapping selectField="SourceSystem"/>
+            </field>
+            <field name="SupplierLocationId">
+                <csvMapping selectField="SupplierLocationId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexField1">
+                <csvMapping selectField="FlexField1"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexField2">
+                <csvMapping selectField="FlexField2"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexField3">
+                <csvMapping selectField="FlexField3"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="CompanySiteFlexFieldsCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.CompanySite"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="SiteId">
+                <csvMapping selectField="SiteId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="SourceSystem">
+                <csvMapping selectField="SourceSystem"/>
+            </field>
+            <field name="FlexField1">
+                <csvMapping selectField="FlexField1"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexField2">
+                <csvMapping selectField="FlexField2"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexField3">
+                <csvMapping selectField="FlexField3"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+</allDataLoads>

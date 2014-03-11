@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- #BeginTemplate "/templates/main_basic_template.dwt" --><!-- DW6 -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>About the change and cancel order processes</title>
+<meta name="keywords" content="process flows|change order,orders|change and cancel processes">
+<!-- #EndEditable -->
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="file:///D|/Data/CAT%20US/library/ariba.css" type="text/css">
+<script type="text/javaScript" src="file:///D|/Data/CAT%20US/library/help.js"></script>
+<!-- #BeginEditable "comments" --> 
+<!-- $File: //ariba/help/buyer/ariba/resource/en_US/help/content/end_user/procure/process/change_order.htm $
+     old path: //ariba/release/7.0-P6/current/code/ariba/resource/en_US/help/Content/common/process/change-order-process.htm#3 $
+
+	Creator: ddaly
+	
+-->
+<!-- #EndEditable -->
+</head>
+<body style="margin-left: 5px">
+<div id="help">
+  <table width="636" border="0" cellspacing="0" cellpadding="2">
+    <tr align="left">
+      <th height="25" colspan="3" class="helpPageTitle" >My Supply Cabinet Online Help</th>
+    </tr>
+    <tr>
+      <td class="helpBody" height="25" colspan="3" align="right"><a href="file:///D|/Data/CAT%20US/content/end_user/common/help/contents/content_frames.htm">Contents</a> | <a href="file:///D|/Data/CAT%20US/content/end_user/common/help/index/index_frames.htm">Index</a> | <a href="file:///D|/Data/CAT%20US/content/end_user/common/help/search/search.htm">Search</a> &nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </table>
+  <!-- #BeginVariableLibraryItem "/library/main_basic_template_section.lbi" -->
+  <table width="636" border="0" cellspacing="0" cellpadding="2">
+    <tr align="left">
+      <th class="helpSectionTitle" width="218">Tips</th>
+      <th width="10">&nbsp;</th>
+      <th class="helpTopicTitle" width="408"><!-- #BeginEditable "topictitle" -->About 
+        the change and cancel order processes<!-- #EndEditable --></th>
+    </tr>
+    <tr>
+      <td valign="top" class="helpBody" width="218" bgcolor="#EEEEEE"><!-- #BeginEditable "tips" --> 
+        <p>Use the History tab to view the history of all versions of a requisition.</p>
+        <p>You can add new items to an order by adding the items to the requisition 
+          from which the order originated. </p>
+        <p>If My Supply Cabinet is configured to push change and cancel orders to an 
+          <a href="javascript: openGlossary('../../../common/glossary/erp.htm');">Enterprise 
+          Resource Planning (ERP) system</a>, you must always change and cancel 
+          orders in My Supply Cabinet and not change or cancel them manually in the 
+          ERP. In addition, for best results, do not receive orders using the 
+          ERP; receive them using My Supply Cabinet.</p>
+        <p>When a user receives items on an order that has a pending change or 
+          cancel order associated with it, the associated change or cancel order 
+          might become invalid, depending on the type of change. The original 
+          order has a status of Receiving or Received.</p>
+        <p> Typically, the Confirming/Shipping statuses in My Supply Cabinet are equivalent 
+          to the Partially Confirmed/Partially Shipped statuses in Ariba SN; however, 
+          rejected and back ordered items are treated differently in My Supply Cabinet 
+          and Ariba SN. See the <i>My Supply Cabinet Procurement Guide</i> for more 
+          information. </p>
+        <p>If a requisition specified a <a href="javascript: openGlossary('../../../common/glossary/hold_until.htm');">Delay 
+          Purchase Until</a> date, the requisition's status remains Approved until 
+          the date the related orders are actually sent to suppliers, at which 
+          time the requisition's status changes to Ordered. If you need to change 
+          an approved requisition during the time it is on hold, click <b>Edit</b> 
+          when viewing the requisition's details. Once the requisition's status 
+          changes to Ordered, use the Change button to change the requisition</p>
+        <p>Orders that have assigned PCard charges can be changed in some circumstances. 
+          Depending on your system configuration, you can change these orders 
+          in one of the following ways:</p>
+        <ul>
+          <li class="helpListPad">You can change line item quantities or delete 
+            line items if an order's assigned PCard charges equal 0 (zero) or 
+            less. If the charges are greater than 0, you can only increase the 
+            line item quantities. </li>
+          <li class="helpListPad">You can change the line item quantities or delete 
+            line items so that the total value of an order&#146;s line items is 
+            greater then the total assigned PCard Charges for the order. </li>
+        </ul>
+        <!-- #EndEditable -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="3">
+          <tr align="left">
+            <th class="helpSectionTitle">Related topics</th>
+          </tr>
+          <tr>
+            <td><!-- #BeginEditable "reltopics" --> 
+              <p class="helpBodySingleSpaced"><a href="../po/change_po.htm">Change 
+                a purchase order</a></p>
+              <p class="helpBodySingleSpaced"><a href="../po/cancel_po.htm">Cancel 
+                purchase orders</a></p>
+              <p class="helpBodySingleSpaced"><a href="../req/change_cancel_requests.htm">Change 
+                or cancel a requisition</a></p>
+              <p class="helpBodySingleSpaced"><a href="../../common/permission/about_permissions.htm">About 
+                permissions</a></p>
+              <p class="helpBodySingleSpaced"><a href="../permission/ref_procurement_permissions.htm">Procurement 
+                permissions</a></p>
+              <p class="helpBodySingleSpaced"><a href="../../common/permission/ref_gen_permissions.htm">General 
+                permissions</a></p>
+              <p class="helpBodySingleSpaced"><a href="../status/ref_req_statuses.htm">Requisition 
+                statuses</a> </p>
+              <!-- #EndEditable --> </td>
+          </tr>
+        </table></td>
+      <td valign="top"   class="helpBody" width="10">&nbsp;</td>
+      <td valign="top"   class="helpBody" width="408"><!-- #BeginEditable "body" --> 
+        <p>After a requisition has been fully approved, My Supply Cabinet generates 
+          orders and sends the orders to suppliers. At this point, users can change 
+          or cancel orders either by:</p>
+        <ul>
+          <li>Changing or canceling the <i>requisition</i> from which the orders 
+            originated, using the <b>Change</b> or <b>Cancel</b> button when viewing 
+            requisition details. Changing the requisition changes all related 
+            orders impacted by the change. Canceling the requisition cancels all 
+            related orders.</li>
+          <li class="helpListPad">Changing or canceling the <i>orders</i>, using 
+            the <b>Change Order</b> or <b>Cancel Order</b> button when viewing 
+            order details. These options are available only if your company supports 
+            them and, in that case, if you have the necessary permissions. </li>
+        </ul>
+        <p>In both cases, a new version of the requisition is created and submitted 
+          for approval, based on the current approval rules. If the new version 
+          is fully approved, a new version of each order impacted by the change 
+          is generated and sent to suppliers. Note that your system administrator 
+          defines which fields generate new orders; it's possible to change some 
+          fields, such as accounting fields, without generating new orders to 
+          send to suppliers. </p>
+        <p> You can change or cancel requisitions with a status of Ordered. You 
+          can change or cancel orders whose status is one of the following; some 
+          statuses are only for orders processed using Ariba Supplier Network 
+          (Ariba SN). </p>
+        <table width="90%" border="0"  >
+          <tr valign="top"> 
+            <td width="30%" class="helpBody"><b>Action</b></td>
+            <td width="70%" class="helpBody"><b>Required status</b></td>
+          </tr>
+          <tr valign="top"> 
+            <td class="helpBody" width="30%" >Change order</td>
+            <td width="70%" class="helpBody" > 
+              <p>Ordered<br>
+                Confirming (Ariba SN)<br>
+                Confirmed (Ariba SN)<br>
+                Shipping (Ariba SN)<br>
+                Shipped (Ariba SN)<br>
+                Receiving<br>
+                Invoicing (if not Received and not all line items have been invoiced) 
+              </p>
+            </td>
+          </tr>
+          <tr valign="top"> 
+            <td width="30%" class="helpBody">Cancel order</td>
+            <td width="70%" class="helpBody"> Ordered <br>
+              Confirming (Ariba SN)<br>
+              Confirmed (Ariba SN)<br>
+              Shipping (Ariba SN) </td>
+          </tr>
+        </table>
+        
+     
+        <p>To change or cancel orders generated from requisitions that you submitted, 
+          you must have the CancelPO or ChangePO permissions. To change or cancel 
+          orders generated from requisitions submitted by other users, you must 
+          have the CancelPO or ChangePO permission and the RequisitionChange permission. 
+          To search for specific orders to change or cancel, regardless of who 
+          submitted the orders, you must have the QueryAll permission.</p>
+        <p>Changing or canceling orders involves these basic steps (see the <a href="change_order_flow.htm">process 
+          flow diagram</a> for a detailed description of the process): </p>
+        <ol>
+          <li>An authorized user changes or cancels a requisition or order, thereby 
+            generating a new version of the requisition, and submits the new version 
+            for approval.</li>
+          <li class="helpListPad">My Supply Cabinet notifies designated approvers that 
+            the new version is waiting for their approval. </li>
+          <li class="helpListPad"> Approvers approve or deny the new version: 
+          </li>
+          <ul>
+            <li class="helpListPad">If approved and the supplier accepts <a href="javascript: openGlossary('../../../common/glossary/change_order.htm');">change 
+              or cancel orders</a>, a replacement order (with the same order ID 
+              as the original order) is generated. The replacement order is sent 
+              to the supplier by direct order, Ariba SN, or ERP, if your company 
+              has enabled ERP push of change or cancel orders. </li>
+            <li class="helpListPad">If approved and the supplier does <i>not</i> 
+              accept change or cancel orders, you must cancel the original order 
+              (if the order's status is such that it can be canceled), and then 
+              create a new order either by adding items to the existing requisition 
+              or by creating a new requisition. </li>
+            <li class="helpListPad">If denied, the user can either edit and resubmit 
+              the new version for approval, or withdraw, edit, and then resubmit 
+              it. </li>
+          </ul>
+          <li class="helpListPad">When the user receives the items from the supplier, 
+            the user enters receipt details. </li>
+        </ol>
+        <!-- #EndEditable --> </td>
+    </tr>
+    <tr>
+      <td  class="helpBody" colspan="3" align="center"><hr color="#666699" noshade size="1">
+        Copyright 1996 - 2004 Ariba, Inc. <a href="javascript: openLegal('http://www.ariba.com/copyrights.cfm');">Legal notices</a>. </td>
+    </tr>
+  </table>
+  <!-- #EndVariableLibraryItem -->
+</div>
+</body>
+<!-- #EndTemplate --></html>

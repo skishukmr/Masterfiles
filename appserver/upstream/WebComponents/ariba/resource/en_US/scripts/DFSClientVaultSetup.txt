@@ -1,0 +1,27 @@
+function fnGetPathHandler () {
+    try {
+        var oShell;
+        var oFolder;
+        var oFolderItem;
+
+        oShell = new ActiveXObject("Shell.Application");
+        oFolder = oShell.BrowseForFolder(0,msg3,0);
+        if (oFolder != null) {
+            oFolderItem = oFolder.Items().Item();
+            if (oFolderItem == null) {
+                logClientVaultError("CC" + msg1);
+            }
+            else {
+                logClientVaultError(oFolderItem.Path);
+            }
+        }
+    } catch (ex) {
+        logClientVaultError("AA" + msg2);
+    }
+}
+
+var DFSClientVaultSetupTrigger = document.all("fnGetPathTrigger");
+
+DFSClientVaultSetupTrigger.onclick = fnGetPathHandler;
+
+

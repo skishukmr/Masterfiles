@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE extension SYSTEM "../../../../ariba/base/meta/core/extensions.dtd">
+	<!--
+	*****************************************************************************************
+	Change History
+	Change# Change By       Change Date     Description
+	==============================================================================================
+	1.    01/13/2014      IBM Jayashree B S     SpringRelease_RSD 140 (FDD_140_4.1,4.2 / TDD_140_2.0)   Supplier Filter on Search Screen
+
+	**********************************************************************************************
+	-->
+
+<extension name="config.variants.vcsv2.extensions.CatMFGZSearchExt">
+    <import extension="config.variants.vcsv2.extensions.CatMFGProcureExt"/>
+
+    <inModule name="ariba.invoicing.core.Invoicing">
+        <inGroup name="InvoiceSearchFields">
+        <!-- Adding the ContractID search field to the Invoice document -->
+                <inGroupClass name="ariba.invoicing.core.Invoice">
+                    <inGroupClassVariant name="vcsv2">
+                    <groupField name="MasterAgreement.UniqueName">
+                        <properties allowNullValue="true" convertCase="upper" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="Contract ID" showByDefaultForSearch="false" stringSearchType="beginsWith"/>
+                    </groupField>
+                    <groupField name="InvoiceNumber">
+                        <properties showByDefaultForSearch="true" stringSearchType="equality"/>
+                    </groupField>
+                    <groupField name="LineItems.Order.OrderID">
+                        <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="equality"/>
+                    </groupField>
+                        </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+
+        <inGroup name="InvoiceReconciliationSearchFields">
+        <!-- Adding the ContractID search field to the Invoice Reconciliation document -->
+            <inGroupClass name="ariba.invoicing.core.InvoiceReconciliation">
+                <inGroupClassVariant name="vcsv2">
+                    <groupField name="Requester">
+                        <properties label="On Behalf Of" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="MasterAgreement.UniqueName">
+                        <properties allowNullValue="true" convertCase="upper" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="Contract ID" showByDefaultForSearch="true" stringSearchType="beginsWith"/>
+                    </groupField>
+                    <groupField name="Invoice.InvoiceNumber">
+                        <properties label="Supplier Invoice #" showByDefaultForSearch="true" stringSearchType="equality"/>
+                    </groupField>
+                    <groupField name="LineItems.Order.OrderID">
+                        <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="equality"/>
+                    </groupField>
+                            <groupField name="Invoice.UniqueName">
+                        <properties showByDefaultForSearch="true" stringSearchType="equality"/>
+                    </groupField>
+                        </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+
+        <inGroup name="InvoiceEformSearchFields">
+            <inGroupClass name="config.java.invoiceeform.InvoiceEform">
+                <inGroupClassVariant name="vcsv2">
+                    <groupField name="InvoiceNumber">
+                        <properties showByDefaultForSearch="true" stringSearchType="equality"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+    </inModule>
+
+    <inModule name="ariba.receiving.core.Receiving">
+        <inGroup name="ReceiptSearchFields">
+            <inGroupClass name="ariba.receiving.core.ReceiptCoreApprovable">
+                <inGroupClassVariant name="vcsv2">
+                    <groupField name="UniqueName">
+                        <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="equality"/>
+                    </groupField>
+                        <groupField name="Order.UniqueName">
+                        <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="equality"/>
+                        </groupField>
+                    
+                    <groupField name="Order.Supplier">
+                        <properties chooserField="Name" convertCase="upper" label="@aml.Requisition/ReceiptCoreApprovableOrderSupplierSearchLabel" nameTableClass="ariba.common.core.nametable.SupplierClassNameTable" showByDefaultForSearch="true"/>
+                    </groupField> 
+                    
+                    </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+    </inModule>
+    <inModule name="ariba.common.meta.Requisition">
+            <!-- ================================================================== -->
+            <!-- inGroup: AvailableSearchFields                                     -->
+            <!-- ================================================================== -->
+            <inGroup name="AvailableSearchFields">
+                <inGroupClass name="ariba.purchasing.core.Requisition">
+                <inGroupClassVariant name="vcsv2">
+                    <groupField name="UniqueName">
+                        <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="beginsWith"/>
+                    </groupField>
+                    <groupField name="Requester">
+                        <properties chooserGroup="CatChooserTable" chooserSearchGroup="CatGloablUserSearch" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="SiteFacility">
+                        <properties editable="true" rank="200" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="EmergencyBuy">
+                        <properties editable="true" rank="210" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="EmergencyReason">
+                        <properties editable="true" rank="220" showByDefaultForSearch="false">
+                            <property name="validChoices">
+                                <vector>
+                                    <entry value="@cat.aml.picklistvalues2/NoValue"/>
+                                    <entry value="@cat.aml.picklistvalues2/EmergencyReason1"/>
+                                    <entry value="@cat.aml.picklistvalues2/EmergencyReason2"/>
+                                    <entry value="@cat.aml.picklistvalues2/EmergencyReason3"/>
+                                </vector>
+                            </property>
+                        </properties>
+                    </groupField>
+                    <groupField name="CapitalOrderNumber">
+                    <properties editable="true" rank="230" showByDefaultForSearch="false" stringSearchType="equality"/>
+                    </groupField>
+                    <groupField name="ProjectReleaseNumber">
+                        <properties editable="true" rank="240" showByDefaultForSearch="false" stringSearchType="equality"/>
+                    </groupField>
+                    <groupField name="LineItems.AccountType">
+                        <properties editable="true" label="@cat.aml.ui2/SearchFields_AccountType" rank="260" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.BuyerCode">
+                        <properties editable="true" label="@cat.aml.ui2/SearchFields_BuyerCodeLine" rank="265" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.MSDSNumber">
+                        <properties editable="true" label="@cat.aml.ui2/SearchFields_MSDSNumber" rank="270" showByDefaultForSearch="false" stringSearchType="equality"/>
+                    </groupField>
+                    <groupField name="LineItems.MSDSIncluded">
+                        <properties editable="true" label="@cat.aml.ui2/SearchFields_MSDSIncluded" rank="275" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.Accountings.SplitAccountings[0].CostCenter">
+                        <properties editable="true" label="@cat.aml.ui2/SearchFields_CostCenter" rank="280" showByDefaultForSearch="false" stringSearchType="equality"/>
+                    </groupField>
+                    <groupField name="LineItems.OrderID">
+                        <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="equality"/>
+                     </groupField>
+                    <!-- Start: SpringRelease_RSD 140 (FDD_140_4.1,4.2 / TDD_140_2.0) --> 
+					<groupField name="LineItems.Supplier">
+						<properties chooserField="Name"
+						chooserGroup="CatChooserTable"
+						label = "Supplier"
+						showByDefaultForSearch="false"/>
+					</groupField>
+
+					<remove>
+						<groupField name="LineItems.Description.CommonSupplier"/>
+					</remove>
+		   <!-- End: SpringRelease_RSD 140 (FDD_140_4.1,4.2 / TDD_140_2.0) -->
+
+                </inGroupClassVariant>
+                </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- group: SearchResultColumns                                         -->
+        <!-- ================================================================== -->
+        <inGroup name="SearchResultColumns">
+            <inGroupClass name="ariba.purchasing.core.Requisition">
+            <inGroupClassVariant name="vcsv2">
+                <groupField name="Requester">
+                <properties noWrap="true" rank="33"/>
+                </groupField>
+            </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: PurchaseOrderSearchFields                                 -->
+        <!-- ================================================================== -->
+        <inGroup name="PurchaseOrderSearchFields">
+            <inGroupClass name="ariba.purchasing.core.PurchaseOrder">
+            <inGroupClassVariant name="vcsv2">
+                <groupField name="LineItems.Requisition.Requester">
+                <properties chooserGroup="CatChooserTable" chooserSearchGroup="CatGloablUserSearch" showByDefaultForSearch="true"/>
+                </groupField>
+                <groupField name="OrderID">
+                <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="equality"/>
+                </groupField>
+                <groupField name="SiteFacility">
+                <properties editable="true" rank="200" showByDefaultForSearch="false"/>
+                </groupField>
+                <groupField name="BuyerCode">
+                <properties editable="true" rank="210" showByDefaultForSearch="false"/>
+                </groupField>
+                <groupField name="LineItems.AccountType">
+                <properties editable="true" label="@cat.aml.ui2/SearchFields_AccountType" rank="220" showByDefaultForSearch="false"/>
+                </groupField>
+                <groupField name="LineItems.MSDSNumber">
+                <properties editable="true" label="@cat.aml.ui2/SearchFields_MSDSNumber" rank="230" showByDefaultForSearch="false" stringSearchType="equality"/>
+                </groupField>
+            </inGroupClassVariant>
+            </inGroupClass>
+            <inGroupClass name="ariba.purchasing.core.DirectOrder">
+            <inGroupClassVariant name="vcsv2">
+                <groupField name="SiteFacility">
+                <properties editable="true" rank="200" showByDefaultForSearch="false"/>
+                </groupField>
+                <groupField name="BuyerCode">
+                <properties editable="true" rank="210" showByDefaultForSearch="false"/>
+                </groupField>
+                <groupField name="LineItems.AccountType">
+                <properties editable="true" label="@cat.aml.ui2/SearchFields_AccountType" rank="220" showByDefaultForSearch="false"/>
+                </groupField>
+                <groupField name="LineItems.MSDSNumber">
+                <properties editable="true" label="@cat.aml.ui2/SearchFields_MSDSNumber" rank="230" showByDefaultForSearch="false" stringSearchType="equality"/>
+                </groupField>
+                <groupField name="MasterAgreement.UniqueName">
+                    <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="beginsWith"/>
+                </groupField>
+                <groupField name="LineItems.Requisition.UniqueName">
+                    <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="beginsWith"/>
+                </groupField>
+                <groupField name="Receipts.UniqueName">
+                    <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="equality"/>
+                </groupField>
+            </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+    </inModule>
+    <inModule name="ariba.contract.core.Contract">
+        <inGroup name="MasterAgreementSearchFields">
+            <inGroupClass name="ariba.contract.core.ContractCoreApprovable">
+                <inGroupClassVariant name="vcsv2">
+                    <groupField name="UniqueName">
+                        <properties convertCase="upper" showByDefaultForSearch="true" stringSearchType="beginsWith"/>
+                    </groupField>
+                    <groupField name="ExternalID">
+                        <properties showByDefaultForSearch="false" stringSearchType="equality"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+    </inModule>
+</extension>

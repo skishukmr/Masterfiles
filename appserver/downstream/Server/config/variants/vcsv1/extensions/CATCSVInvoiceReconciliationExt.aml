@@ -1,0 +1,864 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE extension SYSTEM "../../../../ariba/base/meta/core/extensions.dtd">
+<extension name="config.variants.vcsv1.extensions.CATCSVInvoiceReconciliationExt">
+<!-- ******************************************************************************************
+Change History
+#	Change By	Change Date		Description
+===============================================================================================
+1   Vijayan Chacko 	09-03-2005 		IR class modified for reducing the message size
+2   Kingshuk Mazumdar 	09-06-2006 		IR class modified for adding the MassEdit field (CR66)
+3   Kavitha Udayasankar	09-10-2007		Added field DerivedAccountingDistribution on IR Line Item
+4   Shailaja		28-05-2009		making LineType field and mandatory (Issue 957)
+5   17/01/2014     	IBM Parita Shah		SpringRelease_RSD 111(FDD4.11,4.12/TDD1.11,1.12) MSC Tax Gaps Correct Legal Entity
+******************************************************************************************* -->
+	<import extension="ariba.variants.vcsv1.extensions.CSVCoreExt"/>
+	<import extension="config.variants.vcsv1.extensions.CSVVariantsExt"/>
+	<import extension="config.variants.Plain.extensions.CatInvoicingExt"/>
+	<import extension="config.variants.vcsv1.extensions.CatCSVProcureExt"/>
+	<import extension="config.variants.vcsv1.extensions.CatCSVInvoiceEformExt"/>
+	<import extension="config.variants.vcsv1.extensions.CatCSVInvoicingExt"/>
+
+	<inModule name="ariba.invoicing.core.Invoicing">
+		<!-- ================================================================== -->
+		<!--  class: ariba.invoicing.core.InvoiceCoreApprovable                 -->
+		<!-- ================================================================== -->
+		<inClass name="ariba.statement.core.StatementCoreApprovable">
+			<inClassVariant name="vcsv1">
+				<inField name="Order">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<inField name="MasterAgreement">
+					<properties metaDataIntegration="None"/>
+				</inField>
+<!--
+            	<inField name="EmergencyBuy">
+					<visibility>
+						<notCondition>
+							<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+						</notCondition>
+					</visibility>
+	           	</inField>
+-->
+			</inClassVariant>
+		</inClass>
+		<!-- ================================================================== -->
+		<!--  class: ariba.invoicing.core.InvoiceReconciliation			        -->
+		<!-- ================================================================== -->
+		<inClass name="ariba.invoicing.core.InvoiceReconciliation">
+			<inClassVariant name="vcsv1">
+				<inField name="Invoice">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<field name="InvoiceNumber">
+					<type class="java.lang.String"/>
+					<properties metaDataIntegration="Reference"/>
+				</field>
+				<field name="PONumber">
+					<type class="java.lang.String"/>
+					<properties metaDataIntegration="Reference"/>
+				</field>
+				<field name="FinalPaymentIndicator">
+					<type class="boolean"/>
+					<properties controller="ariba.htmlui.fieldsui.fields.ARFYesNo" editable="true" label="@aml.cat.Invoice/LabelFinalPayment"/>
+				</field>
+				<!-- Start Of CR66-->
+				<field name="MassEditIndicator">
+					<type class="boolean"/>
+					<properties forceRefresh="true" label="Tax Mass Edit"/>
+				</field>
+				<trigger event="FieldChange" field="MassEditIndicator" name="SetTaxFieldsFromFirstLine">
+					<action implementation="config.java.action.vcsv1.CatInitializeTaxCodeRateBaseState"/>
+				</trigger>
+				<!-- End Of CR66-->
+				<inField name="HoldIREscalation">
+					<visibility>
+						<notCondition>
+							<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+						</notCondition>
+					</visibility>
+				</inField>
+				<inField name="PaymentTerms">
+					<visibility>
+						<notCondition>
+							<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+						</notCondition>
+					</visibility>
+				</inField>
+				<inField name="ClassProperties">
+					<properties approveHook="config.java.invoicing.vcsv1.CatCSVInvoiceReconciliationApproveHook" checkinHook="config.java.invoicing.vcsv1.CatCSVInvoiceReconciliationCheckinHook" printHook="config.java.print.vcsv1.CatCSVApprovablePrintHook" submitHook="config.java.invoicing.vcsv1.CatCSVInvoiceReconciliationSubmitHook"/>
+				</inField>
+				<inField name="LineItems">
+					<editability>
+						<condition implementation="config.java.invoicing.vcsv1.CatCSVIRLineItemsEditable">
+							<parameter inputField="this" name="LineItemCollection"/>
+						</condition>
+					</editability>
+				</inField>
+				<trigger event="FieldChange" field="AssessTaxButton" name="AssessTaxAndSetTaxFields">
+					<action implementation="config.java.action.vcsv1.CatAssessTaxInv"/>
+				</trigger>
+			</inClassVariant>
+		</inClass>
+		<!-- ================================================================== -->
+		<!--  class: ariba.invoicing.core.InvoiceCoreApprovableLineItem		    -->
+		<!-- ================================================================== -->
+		<inClass name="ariba.statement.core.StatementCoreApprovableLineItem">
+			<inClassVariant name="vcsv1">
+				<inField name="Order">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<inField name="OrderLineItem">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<inField name="MasterAgreement">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<inField name="MALineItem">
+					<properties metaDataIntegration="None"/>
+				</inField>
+            	<trigger event="FieldChange" field="AccountType" name="SetAccountingOnAccountTypeChange" respectUserData="false">
+                	<action implementation="config.java.action.vcsv1.CatSetAccountingForAccountType"/>
+            	</trigger>
+            	<trigger event="FieldChange" field="ValidateAccounting" name="ValidateAccountingAndSetValidationMessageOnInv">
+                	<action implementation="config.java.action.vcsv1.CatValidateInvAccountingString"/>
+            	</trigger>
+<!--
+            	<trigger name ="UpdateTheAccountingMessage"
+                     	event="FieldChange"
+                     	field="ValidateAccounting">
+					<condition implementation="ariba.base.fields.condition.TrueBoolean"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="TaxAllFieldsOverride"/>
+						<parameter name="Value" nullValue="true"/>
+					</action>
+            	</trigger>
+-->
+
+            	<trigger event="FieldChange" field="CommodityExportMapEntry" name="SetAccountTypeOnCEMEChange" respectUserData="true">
+                	<action implementation="ariba.base.fields.action.SetField">
+                    	<parameter name="Target" outputField="AccountType"/>
+                    	<parameter inputField="CommodityExportMapEntry.AccountType" name="Value"/>
+                	</action>
+            	</trigger>
+			</inClassVariant>
+		</inClass>
+
+		<inClass name="ariba.invoicing.core.InvoiceReconciliationLineItem">
+			<inClassVariant name="vcsv1">
+			<!-- Issue 957 -->
+			<inField name="LineType">
+			     <validity>
+					<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+			         </validity>
+			</inField>
+<!-- Derived Tax Summary for Heidi -->
+            	<field name="DerivedTaxSummary">
+                	<type class="java.lang.String" length="55"/>
+                	<properties editable="false" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="@aml.cat.ui1/LabelDerivedTaxSummary"/>
+            	</field>
+            	
+                <field name="DerivedAccountDistribution">
+                	<type class="java.lang.String" length="55"/>
+                	<properties editable="false" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="@aml.cat.ui1/LabelDerivedAccountDistribution" metaDataIntegration="None"/>
+            	</field>            	
+
+			    <inField name="Order">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<inField name="StatementLineItem">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<inField name="Statement">
+					<properties metaDataIntegration="None"/>
+				</inField>
+				<!-- Moved these triggers to the InvoiceCoreApprovableLineItem so as the
+					 validity is also used on the invoice line items
+                <trigger name ="SetAccountTypeOnCEMEChange"
+                        event="FieldChange"
+                        field="CommodityExportMapEntry"
+                        respectUserData="true">
+                        <action implementation="ariba.base.fields.action.SetField">
+                        <parameter name="Target" outputField="AccountType"/>
+                        <parameter name="Value"  inputField="CommodityExportMapEntry.AccountType"/>
+                        </action>
+                </trigger>
+            	<trigger name ="ValidateAccountingAndSetValidationMessageOnInv"
+                     	event="FieldChange"
+                     	field="ValidateAccounting">
+                	<action implementation="config.java.action.vcsv1.CatValidateInvAccountingString"/>
+            	</trigger>
+            	<trigger name ="SetAccountTypeOnCEMEChange"
+                     	event="FieldChange"
+                     	field="CommodityExportMapEntry"
+                     	respectUserData="true">
+                	<action implementation="ariba.base.fields.action.SetField">
+                    	<parameter name="Target" outputField="AccountType"/>
+                    	<parameter name="Value"  inputField="CommodityExportMapEntry.AccountType"/>
+                	</action>
+            	</trigger>
+				-->
+<!--
+				<trigger name="SetAccntFieldsOnAccntTypeChange" event="FieldChange" field="AccountType">
+					<andCondition>
+						<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+						<condition implementation="config.java.condition.CatStringFieldEqualTo"
+								testField="this">
+							<parameter name="TestField" value="AccountType.UniqueName"/>
+							<parameter name="TestValue" value="Capital"/>
+						</condition>
+					</andCondition>
+                	<action implementation="ariba.base.fields.action.SetField">
+                    	<parameter name="Target" outputField="Accountings.SplitAccountings.Department"/>
+                    	<parameter name="Value" value="E0290"/>
+                	</action>
+				</trigger>
+-->
+<!--            Commented these triggers out as need these fields to be copied over from the invoice
+				<trigger name="DefaultTaxCodeOverride" event="Create">
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="TaxCodeOverride"/>
+						<parameter name="Value" value="false"/>
+					</action>
+				</trigger>
+				<trigger name="DefaultTaxAllFieldsOverride" event="Create">
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="TaxAllFieldsOverride"/>
+						<parameter name="Value" value="false"/>
+					</action>
+				</trigger>
+-->
+				<trigger event="Create" name="DefaultTaxOverrideFlag">
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="LineItemCollection.TaxOverrideFlag"/>
+						<parameter name="Value" value="false"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChangeByUser" field="TaxCode" name="SetTaxCodeOverrideOnTaxCodeChange">
+					<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="TaxCodeOverride"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChangeByUser" field="TaxBase" name="SetTaxAllFieldsOverrideOnTaxBaseChange">
+					<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="TaxAllFieldsOverride"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChangeByUser" field="TaxRate" name="SetTaxAllFieldsOverrideOnTaxRateChange">
+					<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="TaxAllFieldsOverride"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChangeByUser" field="TaxState" name="SetTaxAllFieldsOverrideOnTaxStateChange">
+					<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="TaxAllFieldsOverride"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChange" field="TaxCode" name="SetTaxOverrideFlagOnTaxCodeChange">
+					<andCondition>
+						<condition implementation="ariba.common.core.condition.UserHasPermission">
+							<parameter name="PermissionName" value="CatTax"/>
+						</condition>
+						<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					</andCondition>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="LineItemCollection.TaxOverrideFlag"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChange" field="TaxBase" name="SetTaxOverrideFlagOnTaxBaseChange">
+					<andCondition>
+						<condition implementation="ariba.common.core.condition.UserHasPermission">
+							<parameter name="PermissionName" value="CatTax"/>
+						</condition>
+						<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					</andCondition>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="LineItemCollection.TaxOverrideFlag"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChange" field="TaxRate" name="SetTaxOverrideFlagOnTaxRateChange">
+					<andCondition>
+						<condition implementation="ariba.common.core.condition.UserHasPermission">
+							<parameter name="PermissionName" value="CatTax"/>
+						</condition>
+						<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					</andCondition>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="LineItemCollection.TaxOverrideFlag"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+				<trigger event="FieldChange" field="TaxState" name="SetTaxOverrideFlagOnTaxStateChange">
+					<andCondition>
+						<condition implementation="ariba.common.core.condition.UserHasPermission">
+							<parameter name="PermissionName" value="CatTax"/>
+						</condition>
+						<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+					</andCondition>
+					<action implementation="ariba.base.fields.action.SetField">
+						<parameter name="Target" outputField="LineItemCollection.TaxOverrideFlag"/>
+						<parameter name="Value" value="true"/>
+					</action>
+				</trigger>
+            	<trigger event="Create" name="InitializeTaxRateAndTaxBaseToZeroOnIR">
+					<action implementation="config.java.action.vcsv1.CatInitializeTaxRateAndBase"/>
+            	</trigger>
+<!-- Derived Tax Summary for Heidi -->
+<!-- DerivedTaxSummary -->
+
+            	<trigger event="FieldChange" field="TaxCode" name="SetDerivedTaxSummaryOnTaxCodeChange">
+                	<action implementation="config.java.action.vcsv1.CatSetInvDerivedTaxSummary"/>
+            	</trigger>
+            	<trigger event="FieldChange" field="TaxState" name="SetDerivedTaxSummaryOnTaxStateChange">
+                	<action implementation="config.java.action.vcsv1.CatSetInvDerivedTaxSummary"/>
+            	</trigger>
+            	<trigger event="FieldChange" field="TaxRate" name="SetDerivedTaxSummaryOnTaxRateChange">
+                	<action implementation="config.java.action.vcsv1.CatSetInvDerivedTaxSummary"/>
+            	</trigger>
+            	<trigger event="FieldChange" field="ERPTaxCode" name="SetDerivedTaxSummaryOnERPTaxCodeChange">
+                	<action implementation="config.java.action.vcsv1.CatSetInvDerivedTaxSummary"/>
+            	</trigger>
+            	<trigger event="FieldChange" field="TaxAmountAuth" name="SetDerivedTaxSummaryOnTaxAmountAuthChange">
+                	<action implementation="config.java.action.vcsv1.CatSetInvDerivedTaxSummary"/>
+            	</trigger>
+
+
+			</inClassVariant>
+		</inClass>
+
+		<inClass name="ariba.invoicing.core.InvoiceException">
+			<inField name="ClassProperties">
+				<editability>
+					<condition implementation="config.java.invoicing.CATInvoiceExceptionEditable">
+						<parameter inputField="this" name="Exception"/>
+					</condition>
+				</editability>
+			</inField>
+		</inClass>
+	</inModule>
+	<!--<condition implementation="ariba.invoicing.core.condition.InvoiceExceptionEditable">-->
+	<inModule name="ariba.common.meta.Requisition">
+		<!--TODO: Remove this field definition when push to Demo -->
+		<!--
+		<inClass name="ariba.common.core.Supplier">
+			<inClassVariant name="vcsv1">
+				<field name="ExemptSupplier">
+					<type class="boolean"/>
+				</field>
+			</inClassVariant>
+		</inClass>
+		-->
+		<inGroup name="IRHeaderDetails">
+			<inGroupClass name="ariba.invoicing.core.InvoiceReconciliation">
+				<inGroupClassVariant name="vcsv1">
+					<groupField name="SettlementCode">
+						<properties noWrap="true" zone="Right"/>
+						<editability>
+							<notCondition>
+								<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+							</notCondition>
+						</editability>
+					</groupField>
+					<groupField name="TermsDiscount">
+						<properties noWrap="true" zone="Right"/>
+						<editability>
+							<notCondition>
+								<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+							</notCondition>
+						</editability>
+					</groupField>
+					<groupField name="BlockStampDate">
+						<properties noWrap="true" zone="Right"/>
+						<editability>
+							<notCondition>
+								<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+							</notCondition>
+						</editability>
+					</groupField>
+					<groupField name="FinalPaymentIndicator">
+						<properties editable="true" noWrap="true" zone="Right"/>
+						<editability>
+							<condition implementation="config.java.condition.vcsv1.CatCSVIsEditableByUser" testField="this"/>
+							<!--<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>-->
+						</editability>
+						<visibility>
+							<!--<condition implementation="config.java.condition.vcsv1.CatCSVIsEditableByUser" testField="this"/>-->
+							<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+						</visibility>
+					</groupField>
+					<!-- Start Of CR66-->
+					<groupField name="MassEditIndicator">
+						<properties noWrap="true" rank="50" zone="Right"/>
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">							                                                                        
+								<parameter name="PermissionName" value="TaxManager"/>
+							</condition>
+						</visibility>
+						<editability>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">							                                                                        
+								<parameter name="PermissionName" value="TaxManager"/>
+							</condition>
+						</editability>						
+					</groupField>
+					<!-- End Of CR66-->
+					<groupField name="AssessTaxButton">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<properties label="@aml.cat.Invoice/LabelAssessTaxButton" rank="310" title="@aml.cat.Invoice/LabelAssessTaxButton" zone="Left"/>
+					</groupField>
+					<groupField name="AssessTaxMessage">
+						<visibility>
+							<andCondition>
+								<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+							</andCondition>
+						</visibility>
+						<properties label="@aml.cat.Invoice/LabelAssessTaxMessage" rank="315" zone="Left"/>
+					</groupField>
+				</inGroupClassVariant>
+			</inGroupClass>
+		</inGroup>
+		<inGroup name="LineItemSimpleGeneralFields">
+		<inGroupClass name="ariba.invoicing.core.InvoiceReconciliationLineItem">
+			<inGroupClassVariant name="vcsv1">
+				<groupField name="LineType">
+				   <validity>
+					<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+			         </validity>
+				 <properties label="LineType Category" required="true" validate="true"/>
+			</groupField>
+			</inGroupClassVariant>
+			</inGroupClass>
+		</inGroup>
+		<inGroup name="IRLineItemGeneralFields">
+			<inGroupClass name="ariba.invoicing.core.InvoiceReconciliationLineItem">
+				<inGroupClassVariant name="vcsv1">
+					<groupField name="Quantity">
+						<editability>
+							<notCondition>
+								<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>								
+							</notCondition>
+						</editability>
+					</groupField>
+				</inGroupClassVariant>
+			</inGroupClass>
+			<groupClass name="ariba.statement.core.StatementCoreApprovableLineItem">
+				<inGroupClassVariant name="vcsv1">
+					<groupField name="DiscountedLIDollarAmount">
+						<editability>
+							<notCondition>
+								<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+							</notCondition>
+						</editability>
+						<properties rank="56"/>
+					</groupField>
+				</inGroupClassVariant>
+			</groupClass>
+			<groupClass name="ariba.invoicing.core.InvoiceReconciliationLineItem">
+				<inGroupClassVariant name="vcsv1">
+					<groupField name="LineType">
+						<properties label="LineType Category" required="true" validate="true"/>
+					</groupField>
+					<groupField name="ReferenceLineNumber">
+						<validity>
+							<orCondition>
+								<condition implementation="config.java.condition.vcsv1.CatCSVSkipApprovableDataValidation" testField="this"/>
+								<andCondition>
+									<condition implementation="ariba.base.core.condition.NonEmptyField">
+										<parameter name="Message" value="@aml.InvoiceEform/InvalidRefNum"/>
+									</condition>
+									<condition implementation="config.java.condition.vcsv1.CatCSVValidateRefLineNumber" testField="this"/>
+								</andCondition>
+							</orCondition>
+						</validity>
+						<editability>
+							<orCondition>
+								<notCondition>
+									<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+								</notCondition>
+								<andCondition>
+									<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+									<notCondition>
+										<condition implementation="config.java.condition.vcsv1.CatCSVValidateRefLineNumber" testField="this"/>
+									</notCondition>
+								</andCondition>
+							</orCondition>
+						</editability>
+						<properties forceRefresh="true" label="@aml.cat.Invoice/LabelReferenceLineNumber" rank="7"/>
+					</groupField>
+					<groupField name="CapsChargeCode">
+						<validity>
+							<orCondition>
+								<condition implementation="config.java.condition.vcsv1.CatCSVSkipApprovableDataValidation" testField="this"/>
+								<andCondition>
+									<condition implementation="ariba.base.core.condition.NonEmptyField">
+										<parameter name="Message" value="@aml.InvoiceEform/InvalidChargeCode"/>
+									</condition>
+									<condition implementation="config.java.condition.vcsv1.CatCSVValidateCapsChargeCode" testField="this"/>
+								</andCondition>
+							</orCondition>
+						</validity>
+						<editability>
+							<orCondition>
+								<notCondition>
+									<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+								</notCondition>
+								<andCondition>
+									<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+									<notCondition>
+										<condition implementation="config.java.condition.vcsv1.CatCSVValidateCapsChargeCode" testField="this"/>
+									</notCondition>
+								</andCondition>
+							</orCondition>
+						</editability>
+						<properties chooserField="UniqueName" chooserGroup="CatCAPSChooserTable" controller="ariba.htmlui.approvableui.fields.ARFNamedObject" controllerType="RecentUserChoice" forceRefresh="true" label="@aml.InvoiceEform/LabelCAPSCC" rank="9" titleFormat="%s (%s %s)" titleGroup="CatCAPSChooserTable"/>
+					</groupField>
+					<groupField name="TaxCode">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<editability>
+							<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="TaxManager"/>
+								</condition>
+							</andCondition>
+						</editability>
+						<properties forceRefresh="true" label="@aml.cat.Invoice/LabelTaxCode" rank="60"/>
+					</groupField>
+					<groupField name="TaxRate">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<editability>
+							<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="TaxManager"/>
+								</condition>
+							</andCondition>
+						</editability>
+						<properties forceRefresh="true" label="@aml.cat.Invoice/LabelTaxRate" prototypeValue="100.1234%" rank="61"/>
+					</groupField>
+					<groupField name="TaxBase">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<editability>
+							<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="TaxManager"/>
+								</condition>
+							</andCondition>
+						</editability>
+						<properties label="@aml.cat.Invoice/LabelTaxBase" rank="62"/>
+					</groupField>
+					<groupField name="TaxState">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<editability>
+							<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="TaxManager"/>
+								</condition>
+							</andCondition>
+						</editability>
+						<properties chooserField="UniqueName" forceRefresh="true" label="@aml.cat.Invoice/LabelTaxState" rank="63" titleField="UniqueName"/>
+					</groupField>
+					<groupField name="TaxUse">
+						<properties label="@aml.cat.Invoice/LabelTaxUse" rank="58" required="true"/>
+					</groupField>
+					<groupField name="TaxQualifier">
+						<!--
+						<visibility>
+							<condition
+								implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName"
+									value="CatTax"/>
+							</condition>
+						</visibility>
+						-->
+						<properties forceRefresh="true" label="@aml.cat.Invoice/LabelTaxQualifier" rank="59"/>
+					</groupField>
+					<groupField name="TaxCodeMessage">
+						<visibility>
+							<andCondition>
+								<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax,CatPurchasing"/>
+								</condition>
+							</andCondition>
+						</visibility>
+						<editability clusterType="ariba.invoicing.core.InvoiceReconciliationLineItem">
+							<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="TaxManager"/>
+								</condition>
+							</andCondition>
+						</editability>
+						<properties label="@aml.cat.Invoice/LabelTaxCodeMessage" rank="64"/>
+					</groupField>
+					<groupField name="TaxApprovalMessage">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<properties label="@aml.cat.Invoice/LabelTaxApprovalMessage" rank="65"/>
+					</groupField>
+					<groupField name="TaxAmountAuth">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<editability>
+							<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="TaxManager"/>
+								</condition>
+							</andCondition>
+						</editability>
+						<properties label="@aml.cat.Invoice/LabelTaxAmountAuth" rank="66"/>
+					</groupField>
+					<groupField name="ERPTaxCode">
+						<visibility>
+							<condition implementation="ariba.common.core.condition.UserHasPermission">
+								<parameter name="PermissionName" value="CatTax"/>
+							</condition>
+						</visibility>
+						<editability>
+							<andCondition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="CatTax"/>
+								</condition>
+								<condition implementation="ariba.common.core.condition.UserHasPermission">
+									<parameter name="PermissionName" value="TaxManager"/>
+								</condition>
+							</andCondition>
+						</editability>
+						<properties label="@aml.cat.Invoice/LabelERPTaxCode" rank="67"/>
+					</groupField>
+					<groupField name="Form">
+						<properties hidden="true"/>
+					</groupField>
+				</inGroupClassVariant>
+			</groupClass>
+		</inGroup>
+<!-- Derived Tax Summary for Heidi -->
+		<inGroup name="InvoiceReconcileItemDetails">
+			<inGroupClass name="ariba.invoicing.core.InvoiceReconciliationLineItem">
+				<inGroupClassVariant name="vcsv1">
+				<groupField name="DerivedTaxSummary">
+                  			<visibility>
+						<condition implementation="ariba.common.core.condition.UserHasPermission">
+							<parameter name="PermissionName" value="CatTax"/>
+						</condition>
+                    			</visibility>
+					<properties editable="false" rank="40"/>
+				</groupField>
+				
+		    		<groupField name="DerivedAccountDistribution">
+		    			<visibility>
+		    				<condition implementation="ariba.base.core.condition.NonEmptyField"/>
+		    			</visibility>
+		    			<properties editable="false" rank="37"/>
+		    		</groupField>				
+				<groupField name="LineType">
+					<properties label="LineType Category" required="true" validate="true"/>
+					</groupField>
+				</inGroupClassVariant>
+			</inGroupClass>
+		</inGroup>
+
+        <inGroup name="AccountingUnsplittableFields">
+            <inGroupClass name="ariba.statement.core.StatementCoreApprovableLineItem">
+                <inGroupClassVariant name="vcsv1">
+					<groupField name="CommodityExportMapEntry">
+						<properties hidden="true"/>
+					</groupField>
+					<groupField name="BillingAddress">
+						<properties editable="false" rank="20"/>
+					</groupField>
+					<groupField name="AccountType">
+						<properties rank="40" required="true"/>
+					</groupField>
+					<groupField name="ProjectNumber">
+						<properties rank="50"/>
+					</groupField>
+					<groupField name="ValidateAccounting">
+                  		<visibility clusterType="ariba.invoicing.core.Invoice">
+                          	<!--<notCondition>-->
+                          		<condition implementation="ariba.base.fields.condition.AlwaysTrue" testField="this">
+                          		</condition>
+                          	<!--</notCondition>-->
+                    	</visibility>
+						<visibility clusterType="ariba.invoicing.core.InvoiceReconciliation">
+                          		<condition implementation="ariba.base.fields.condition.AlwaysTrue" testField="this">
+                          		</condition>
+                    	</visibility>
+						<properties rank="60"/>
+					</groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+		</inGroup>
+        <inGroup name="ProcureAccountingFields">
+            <groupClass name="ariba.common.core.SplitAccounting">
+                <groupClassVariant name="vcsv1">
+					<groupField name="AccountingFacility">
+                  		<editability clusterType="ariba.contract.core.ContractRequest">
+                          	<notCondition>
+                          		<condition implementation="config.java.condition.CatMasterAgreementWithRelease" testField="this">
+                          		</condition>
+                          	</notCondition>
+                    	</editability>
+						<properties forceRefresh="true"/>
+					</groupField>
+					<groupField name="ValidateAccountingMessage">
+                  		<visibility>
+		                	<condition implementation="ariba.base.core.condition.NonEmptyField" testField="this">
+		                    </condition>
+                    	</visibility>
+						<properties forceRefresh="true" rank="80"/>
+					</groupField>
+                	<groupField name="Department">
+                  		<editability clusterType="ariba.statement.core.StatementCoreApprovable">
+                          	<notCondition>
+                          		<condition implementation="config.java.condition.CatStringFieldEqualTo" testField="this">
+                          			<parameter name="TestField" value="AccountType.UniqueName"/>
+                          			<parameter name="TestValue" value="Capital"/>
+                          		</condition>
+                          	</notCondition>
+                    	</editability>
+					</groupField>
+                	<groupField name="ExpenseAccount">
+                  		<editability clusterType="ariba.statement.core.StatementCoreApprovable">
+                          	<notCondition>
+                          		<condition implementation="config.java.condition.CatStringFieldEqualTo" testField="this">
+                          			<parameter name="TestField" value="AccountType.UniqueName"/>
+                          			<parameter name="TestValue" value="Capital"/>
+                          		</condition>
+                          	</notCondition>
+                    	</editability>
+                   </groupField>
+					<groupField name="DepartmentApprover">
+                  		<visibility clusterType="ariba.statement.core.StatementCoreApprovable">
+                  			<notCondition>
+		                		<condition implementation="ariba.base.fields.condition.AlwaysTrue" testField="this">
+		                    	</condition>
+                    		</notCondition>
+                    	</visibility>
+						<properties rank="75"/>
+					</groupField>
+				</groupClassVariant>
+            </groupClass>
+        </inGroup>
+        
+        <!-- Starts SpringRelease_RSD 111(FDD4.11,4.12/TDD1.11,1.12) -->
+        <inGroup name="InvoiceHeaderDetailsPrint">
+	    <inGroupClass name="ariba.invoicing.core.Invoice">
+		<groupClassVariant name="vcsv1">
+		    <groupField name="AccountingFacilityName">
+			 <properties rank="15"/>
+		 </groupField>
+		    <groupField name="SupplierLocation.Name">
+			 <properties label="@aml.cat.ui/LabelSupplierCode" rank="100"/>
+		 </groupField>
+		</groupClassVariant>
+	    </inGroupClass>
+	      <inGroupClass name="ariba.invoicing.core.InvoiceReconciliation">
+	    		<groupClassVariant name="vcsv1">
+	    		    <groupField name="AccountingFacilityName">
+	    			 <properties rank="15"/>
+	    		 </groupField>
+	    		    <groupField name="SupplierLocation.Name">
+	    			 <properties label="@aml.cat.ui/LabelSupplierCode" rank="100"/>
+	    		 </groupField>
+	    		</groupClassVariant>
+	    </inGroupClass>
+        </inGroup>
+        <!-- Starts SpringRelease_RSD 111(FDD4.11,4.12/TDD1.11,1.12) -->
+        
+        
+	</inModule>
+
+	<inModule name="ariba.common.meta.Requisition">
+		<inClass name="ariba.common.core.SplitAccountingCollection">
+			<field name="ValidateAccounting">
+				<type class="java.lang.Boolean"/>
+				<properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APETriggerButton" hideLabel="true" title="@aml.cat.ui/LabelValidateAccountingButton"/>
+			</field>
+			<trigger event="FieldChange" field="ValidateAccounting" name="ValidateAccountingAndSetValidationMessageOnInv">
+				<action implementation="config.java.action.vcsv1.CatValidateInvAccountingString"/>
+			</trigger>
+		</inClass>
+		<inGroup name="SplitAccountingHeader">
+			<groupClass name="ariba.common.core.SplitAccountingCollection">
+				<groupClassVariant name="vcsv1">
+					<groupField name="ValidateAccounting">
+						<visibility clusterType="ariba.contract.core.ContractRequest">
+                  			<notCondition>
+		                		<condition implementation="ariba.base.fields.condition.AlwaysTrue">
+		                    	</condition>
+                    		</notCondition>
+						</visibility>
+						<visibility clusterType="ariba.purchasing.core.Requisition">
+                  			<notCondition>
+		                		<condition implementation="ariba.base.fields.condition.AlwaysTrue">
+		                    	</condition>
+                    		</notCondition>
+						</visibility>
+						<visibility clusterType="ariba.purchasing.core.PurchaseOrder">
+                  			<notCondition>
+		                		<condition implementation="ariba.base.fields.condition.AlwaysTrue">
+		                    	</condition>
+                    		</notCondition>
+						</visibility>
+						<visibility clusterType="ariba.statement.core.StatementCoreApprovable">
+	                		<condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+						</visibility>
+					</groupField>
+				</groupClassVariant>
+			</groupClass>
+		</inGroup>
+	</inModule>
+</extension>

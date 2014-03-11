@@ -1,0 +1,162 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerJobType" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              JOIN ariba.workforce.core.LaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryDefinition INCLUDE INACTIVE USING LaborLineItemDetails.CategoryDefinition"
+                  replaceIncrementalClause="(:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="CategoryDefinitionId"/>
+        <deleteField name="CategoryDefinition"/>
+        <deleteField name="CategoryDriver"/>
+        <field name="CategoryDefinitionId">
+            <aqlMapping selectField="CategoryDefinition.UniqueName"/>
+        </field>
+        <field name="CategoryDefinition">
+            <aqlMapping selectField="CategoryDefinition.Name"/>
+        </field>
+        <field name="CategoryDriver">
+            <aqlMapping selectField="CategoryDefinition.CatalogType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="BuyerCategoryDriver"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerTemporaryLaborPO" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.workforce.core.LaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryDefinition INCLUDE INACTIVE USING LaborLineItemDetails.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryItemProperties AS CategoryItemProps USING LaborLineItemDetails.CategoryItemProperties
+                              JOIN ariba.workforce.core.LaborContractibleProperties AS CategoryItemContractProps USING CategoryItemProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryItemProperties AS PolicyProps USING LaborLineItemDetails.PolicyPropertyValues
+                              LEFT OUTER JOIN ariba.workforce.core.LaborContractibleProperties AS PolicyContractProps USING PolicyProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.user.core.User AS Supervisor INCLUDE INACTIVE USING LaborLineItemDetails.WorkSupervisor
+                              LEFT OUTER JOIN ariba.workforce.core.Contractor USING LaborLineItemDetails.Contractor
+                              LEFT OUTER JOIN ariba.user.core.User AS ContractorUser INCLUDE INACTIVE USING Contractor.User
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING POLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money AS SplitAccMoney INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS SplitAccCurr INCLUDE INACTIVE USING SplitAccMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.base.core.NamedPair AS OrderAttributes USING LineItemProductDescription.OrderAttributes
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS PayRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.PayRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PayRateMoney INCLUDE INACTIVE USING PayRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PayRateCurr INCLUDE INACTIVE USING PayRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS BillRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS BillRateMoney INCLUDE INACTIVE USING BillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS BillRateCurr INCLUDE INACTIVE USING BillRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS ContractBillRateQualMoney INCLUDE INACTIVE USING PolicyContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS ContractBillRateMoney INCLUDE INACTIVE USING ContractBillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS ContractBillRateCurr INCLUDE INACTIVE USING ContractBillRateMoney.Currency"/>
+    </inLoadStages>
+</inDataLoad>
+
+<inDataLoad name="BuyerBaseTemporaryLaborPO" version="8.2" disableLoad="true"/>
+
+<inDataLoad name="BuyerBaseTemporaryLaborPO">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.workforce.core.LaborLineItemDetails subclass none USING POLineItem.POCategoryLineItemDetailsVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryDefinition INCLUDE INACTIVE USING LaborLineItemDetails.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryItemProperties AS CategoryItemProps USING LaborLineItemDetails.CategoryItemProperties
+                              JOIN ariba.workforce.core.LaborContractibleProperties AS CategoryItemContractProps subclass none USING CategoryItemProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryItemProperties AS PolicyProps USING LaborLineItemDetails.PolicyPropertyValues
+                              LEFT OUTER JOIN ariba.workforce.core.LaborContractibleProperties AS PolicyContractProps subclass none USING PolicyProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.user.core.User AS Supervisor INCLUDE INACTIVE USING LaborLineItemDetails.WorkSupervisor
+                              LEFT OUTER JOIN ariba.workforce.core.Contractor USING LaborLineItemDetails.Contractor
+                              LEFT OUTER JOIN ariba.user.core.User AS ContractorUser INCLUDE INACTIVE USING Contractor.User
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING POLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money AS SplitAccMoney INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS SplitAccCurr INCLUDE INACTIVE USING SplitAccMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.base.core.NamedPair AS OrderAttributes USING LineItemProductDescription.OrderAttributes
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS PayRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.PayRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PayRateMoney INCLUDE INACTIVE USING PayRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PayRateCurr INCLUDE INACTIVE USING PayRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS BillRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS BillRateMoney INCLUDE INACTIVE USING BillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS BillRateCurr INCLUDE INACTIVE USING BillRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS ContractBillRateQualMoney INCLUDE INACTIVE USING PolicyContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS ContractBillRateMoney INCLUDE INACTIVE USING ContractBillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS ContractBillRateCurr INCLUDE INACTIVE USING ContractBillRateMoney.Currency"
+                  replaceIncrementalClause="(:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="JobType.CategoryDefinitionId"/>
+        <field name="JobType.CategoryDefinitionId">
+            <aqlMapping selectField="CategoryDefinition.UniqueName"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+<inDataLoad name="BuyerTemporaryLaborPO">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.workforce.core.DynamicLaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryDefinition INCLUDE INACTIVE USING DynamicLaborLineItemDetails.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryItemProperties AS CategoryItemProps USING DynamicLaborLineItemDetails.CategoryItemProperties
+                              JOIN ariba.workforce.core.DynamicLaborContractibleProperties AS CategoryItemContractProps USING CategoryItemProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryItemProperties AS PolicyProps USING DynamicLaborLineItemDetails.PolicyPropertyValues
+                              LEFT OUTER JOIN ariba.workforce.core.DynamicLaborContractibleProperties AS PolicyContractProps USING PolicyProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.user.core.User AS Supervisor INCLUDE INACTIVE USING DynamicLaborLineItemDetails.WorkSupervisor
+                              LEFT OUTER JOIN ariba.workforce.core.Contractor USING DynamicLaborLineItemDetails.Contractor
+                              LEFT OUTER JOIN ariba.user.core.User AS ContractorUser INCLUDE INACTIVE USING Contractor.User
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING POLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money AS SplitAccMoney INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS SplitAccCurr INCLUDE INACTIVE USING SplitAccMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.base.core.NamedPair AS OrderAttributes USING LineItemProductDescription.OrderAttributes
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS PayRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.PayRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PayRateMoney INCLUDE INACTIVE USING PayRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PayRateCurr INCLUDE INACTIVE USING PayRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS BillRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS BillRateMoney INCLUDE INACTIVE USING BillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS BillRateCurr INCLUDE INACTIVE USING BillRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS ContractBillRateQualMoney INCLUDE INACTIVE USING PolicyContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS ContractBillRateMoney INCLUDE INACTIVE USING ContractBillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS ContractBillRateCurr INCLUDE INACTIVE USING ContractBillRateMoney.Currency"
+                  replaceIncrementalClause="(:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="JobType.CategoryDefinitionId"/>
+        <field name="JobType.CategoryDefinitionId">
+            <aqlMapping selectField="CategoryDefinition.UniqueName"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+</allDataLoads>

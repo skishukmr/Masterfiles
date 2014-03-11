@@ -1,0 +1,171 @@
+<!-- <!DOCTYPE Configure SYSTEM "Configure.dtd"> -->
+
+<!-- manager class should be optional, default to ariba.configserver.core.ConfigManager -->
+
+<config>
+    <manager name="appserver" class="ariba.config.appserver.AppserverConfigManager" id="10" hint="@ariba.configui/AppserverManagerHint">
+        <agent name="asmappserver" class="ariba.config.appserver.AsmAppserverCollectionAgent" id="1">
+            <field name="j2eeserver">
+                <validity>
+                    <condition implementation="ariba.config.appserver.condition.ValidJ2EEServerSelection"
+                               testField="j2eeserver"/>
+                </validity>
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            validChoicesClass="ariba.htmlui.config.core.J2EEServerValidChoices"
+                            pickListStyle="Popup"
+                            forceRefresh="true"
+                            rank="5"
+                            charWidth="60"
+                            label="@ariba.configui/J2EEServerType">
+                    <property name="validChoices">
+                        <table>
+                            <entry key="@ariba.configui/WebLogic81DisplayName"
+                                   value="weblogic8"/>
+                            <entry key="@ariba.configui/WebSphere5DisplayName"
+                                   value="websphere5"/>
+                        </table>
+                    </property>
+                </properties>
+                <inGroup name="Selection"/>
+                <inGroup name="WebLogicGroup"/>
+                <inGroup name="WebSphereGroup"/>
+            </field>
+            <templates>
+                <agent name="weblogic8" class="ariba.config.appserver.WebLogicAgent">
+                    <field name="appserver.home">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="10"
+                                    charWidth="60"
+                                    label="@ariba.configui/HomeDirectoryLabel"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="WebLogicGroup"/>
+                    </field>
+                    <field name="bea.home"/>
+                    <field name="domain">
+                        <value>asmdomain</value>
+                        <properties rank="20"
+                                    charWidth="40"
+                                    label="@ariba.configui/WebLogicDomainNameLabel"/>
+                        <inGroup name="WebLogicGroup"/>
+                    </field>
+                    <field name="domain.directory">
+                        <validity>
+                            <condition implementation="ariba.config.condition.WritableDirectory"/>
+                        </validity>
+                        <properties rank="30"
+                                    charWidth="60"
+                                    label="@ariba.configui/WebLogicDomainDirectoryLabel"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="WebLogicGroup"/>
+                    </field>
+                    <field name="admin.user">
+                        <value>system</value>
+                    </field>
+                    <field name="admin.password">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedString">
+                                <parameter name="Min" value="8"/>
+                            </condition>
+                        </validity>
+                        <properties rank="40"
+                                    charWidth="40"
+                                    label="@ariba.configui/WebLogiAdminPasswordLabel"
+                                    fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"
+                                    encrypt="true" />
+                        <inGroup name="WebLogicGroup"/>
+                    </field>
+                    <field name="admin.host">
+                        <properties rank="50"
+                                    charWidth="40"
+                                    label="@ariba.configui/WebLogicAdminHostLabel"/>
+                        <inGroup name="WebLogicGroup"/>
+                    </field>
+                    <field name="admin.port">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <value>8099</value>
+                        <properties rank="60"
+                                    charWidth="10"
+                                    label="@ariba.configui/AdminPortLabel"/>
+                        <inGroup name="WebLogicGroup"/>
+                    </field>
+                    <field name="weblogic.nodemanagerport">
+                        <value>8097</value>
+                    </field>
+                </agent>
+                <agent name="websphere5" class="ariba.config.appserver.WebSphereAgent">
+                    <field name="admin.host">
+                        <properties rank="15"
+                                    charWidth="30"
+                                    label="@ariba.configui/WebSphereDeploymentManagerHostLabel"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                    <field name="admin.port">
+                        <validity>
+                            <condition implementation="ariba.config.condition.BoundedInteger">
+                                <parameter name="Min" value="1"/>
+                                <parameter name="Max" value="65536"/>
+                            </condition>
+                        </validity>
+                        <value>8879</value>
+                        <properties rank="25"
+                                    charWidth="20"
+                                    label="@ariba.configui/WebSphereDeploymentManagerPortLabel"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                    <field name="appserver.home">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidDirectory"/>
+                        </validity>
+                        <properties rank="35"
+                                    charWidth="60"
+                                    label="@ariba.configui/HomeDirectoryLabel"
+                                    fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                                    directoriesOnly="true"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                    <field name="server1.node">
+                        <properties rank="45"
+                                    charWidth="20"
+                                    label="@ariba.configui/WebSphereNodeLabel"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                    <field name="cluster">
+                        <value>Cluster</value>
+                        <properties rank="55"
+                                    charWidth="30"
+                                    label="@ariba.configui/WebSphereServerClusterLabel"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                    <field name="websphere.virtualhost">
+                        <value>default_host</value>
+                        <properties rank="65"
+                                    charWidth="30"
+                                    label="@ariba.configui/WebSphereVirtualHostLabel"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                    <field name="websrvname">
+                        <properties rank="75"
+                                    charWidth="30"
+                                    label="@ariba.configui/WebSphereWebserverNameLabel"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                    <field name="websrvnode">
+                        <properties rank="85"
+                                    charWidth="30"
+                                    label="@ariba.configui/WebSphereWebserverNodeLabel"/>
+                        <inGroup name="WebSphereGroup"/>
+                    </field>
+                </agent>
+            </templates>
+        </agent>
+    </manager>
+</config>

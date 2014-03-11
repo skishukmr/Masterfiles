@@ -1,0 +1,76 @@
+<w:ModalPageWrapper title="File Upload Progress Bar Test" doneTitle="Get Outta Here!" hasForm="$false">
+        <a:Form enctype="multipart/form-data" style="margin:0">
+            <h2>Form 1</h2>
+            <a:RefreshRegion>
+            <w:FormTable>
+                <w:FormRow label="Upload File" required="$true">
+                    <a:FileUpload inputStream="$uploadedFileStream"
+                                  filename="$uploadedFileName"
+                                  mimeType="$mimeType"/>
+                </w:FormRow>
+                <w:FormRow label="Uploaded File">
+                    $uploadedFileName ($mimeType)
+                </w:FormRow>
+                <w:FormRow label="">
+                    <w:TextButton action="$upload">Upload</w:TextButton>
+                </w:FormRow>
+            </w:FormTable>
+            </a:RefreshRegion>
+        </a:Form>
+
+        <a:Form enctype="multipart/form-data" style="margin:0">
+            <h2>Form 2</h2>
+            <a:RefreshRegion>
+            <w:FormTable>
+                <w:FormRow label="Upload File" required="$true">
+                    <a:FileUpload inputStream="$uploadedFileStream"
+                                  filename="$uploadedFileName"
+                                  mimeType="$mimeType"/>
+                </w:FormRow>
+                <w:FormRow label="Uploaded File">
+                    $uploadedFileName ($mimeType)
+                </w:FormRow>
+                <w:FormRow label="">
+                    <w:TextButton action="$uploadAndProcess">Upload and Process</w:TextButton>
+                </w:FormRow>
+            </w:FormTable>
+            <a:Hyperlink action="$toggle" submitForm="$true">Click to Toggle: <b>$bool</b></a:Hyperlink>
+            </a:RefreshRegion>
+        </a:Form>
+
+<br/>
+    <a:RefreshRegion>
+        <a:Hyperlink action="$toggle2">Click to Toggle: <b>$bool2</b></a:Hyperlink>
+    </a:RefreshRegion>
+
+
+</w:ModalPageWrapper>
+
+<server>
+    var uploadedFileStream;
+    var uploadedFileName = null;
+    var mimeType = null;
+
+    var bool = false;
+    function toggle () {
+        bool = !bool;
+        java.lang.Thread.sleep(10000); // ten seconds
+        return null;
+    }
+
+    var bool2 = false;
+    function toggle2 () {
+        bool2 = !bool2;
+        // java.lang.Thread.sleep(10000); // ten seconds
+        return null;
+    }
+
+    function upload() { return null; }
+
+    function uploadAndProcess() {
+        ariba.util.core.ProgressMonitor.instance().prepare("Working hard... or hardly workin'!", 0);
+        java.lang.Thread.sleep(10000); // ten seconds
+        return null;
+    }
+
+</server>

@@ -1,0 +1,53 @@
+<h1>Item Group: $^item.Title</h1>
+<w:HintMessage showTopLine="$true">
+    Configure a group of items to be considered under a common set of optimization constraints.
+    Use the left panel to add new constraints to this group.
+</w:HintMessage>
+
+<w:FormTable>
+    <w:FormRow label="Title">
+        <a:TextField value="$^item.Title"/>
+    </w:FormRow>
+</w:FormTable>
+<br/>
+<w:RadioButtonList isRefresh="$true" selection="$^item.ItemGroupType" item="$choice" list='$("All Items", "Selected Items")'>\
+    $choice<br/>
+</w:RadioButtonList>
+<br/>
+<a:If value="Selected Items" isEqual="^item.ItemGroupType">
+    ItemSet: $^item.ItemSet
+    <t:DataTable list="$itemList" item="$item" children="$item.children"
+                  enableScrolling="$true" multiSelect="$true" expandAll="$true"
+                  title="Items in Group">
+        <t:Column key="Title">\
+            <w:OutlineControl title="$item.Title"/>
+        </t:Column>
+
+        <t:Column key="Amount"/>
+        <t:ButtonArea>
+            <w:TextButton action="$addQuestion">Delete</w:TextButton>
+            <w:TextButton action="$selectItems">Add Items</w:TextButton>
+            <w:TextButton action="$addProfile">Import from Excel</w:TextButton>
+        </t:ButtonArea>
+
+    </t:DataTable>
+</a:If>
+
+<groovy>
+    def _items, _path;
+
+    def itemList () {
+        def path = valueForBinding("item").ItemSet;
+        if (path != _path) {
+            _path = path;
+            _items = (path) ? AWTCSVDataSource.dataSourceForPath(path, this).fetchObjects() : [];
+        }
+        return _items;
+    }
+
+    def selectItems () {
+        def page = pageWithName("ContentView.htm");
+        page.setClientPanel(true);
+        return page;
+    }
+</groovy>

@@ -1,0 +1,110 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+
+<dataLoad name="CDSUser">
+    <loadStages>
+        <aqlStage fromClause="ariba.user.core.User as Requester INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.user.core.User as Supervisor INCLUDE INACTIVE USING Requester.Supervisor"
+                  incrementalClause="(:IncrementalStartDate &lt;= Requester.TimeUpdated AND
+                                      Requester.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.UserData"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UserId">
+            <aqlMapping selectField="Requester.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="UserName">
+            <aqlMapping selectField="Requester.Name"/>
+        </field>
+        <field name="PasswordAdapter">
+            <aqlMapping selectField="Requester.PasswordAdapter"
+                        sourceLookupField="PasswordAdapter"/>
+        </field>
+        <field name="SupervisorId">
+            <aqlMapping selectField="Supervisor.UniqueName"/>
+        </field>
+        <field name="SupervisorPasswordAdapter">
+            <aqlMapping selectField="Supervisor.PasswordAdapter"/>
+        </field>
+        <field name="AnalysisActive">
+            <aqlMapping selectField="Requester.&quot;Active&quot;"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="CDSUser" version="8.1">
+    <inLoadStages>
+        <inAqlStage replaceIncrementalClause=""/>
+    </inLoadStages>
+</inDataLoad>
+
+<!-- Disabled for Buyer versions 7.1 and 8.0 -->
+<inDataLoad name="CDSUser" version="7.1,8.0" disableLoad="true"/>
+
+
+<dataLoad name="CDSCommodity">
+    <loadStages>
+        <aqlStage fromClause="ariba.basic.core.CommodityCode AS Code INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode AS ParentCode INCLUDE INACTIVE USING Code.Parent"
+                  whereClause="Code.Domain = ':CommonCommodityCodeDomainName' AND Code.UniqueName IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Code.TimeUpdated AND
+                                      Code.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="Code.UniqueName,Code.Active"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Commodity"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CommodityId">
+            <aqlMapping selectField="Code.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="CommodityName">
+            <aqlMapping selectField="Code.Name"/>
+        </field>
+        <field name="ParentCommodityId">
+            <aqlMapping selectField="CASE ParentCode.UniqueName WHEN NULL THEN Code.UniqueName ELSE CASE ParentCode.UniqueName WHEN 'All' THEN Code.UniqueName ELSE ParentCode.UniqueName END END"/>
+        </field>
+        <field name="SourceCommodityDomain">
+            <aqlMapping selectField="Code.Domain"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="UNSPSCCodeId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap">
+                    <parameter name="ToDomain" value="unspsc"/>
+                    <parameter name="FromValueField" value="CommodityId"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AnalysisActive">
+            <aqlMapping selectField="Code.&quot;Active&quot;"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- Backward compatibility for older versions of Buyer -->
+<inDataLoad name="CDSCommodity" version="8.0,8.1">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.common.core.CommonCommodityCode AS Code INCLUDE INACTIVE"
+                    replaceWhereClause="Code.UniqueName IS NOT NULL"
+                    replaceIncrementalClause=""/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="ParentCommodityId"/>
+        <deleteField name="SourceCommodityDomain"/>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="CDSCommodity" version="7.1">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.procure.core.CommonCommodityCode AS Code INCLUDE INACTIVE"
+                    replaceWhereClause="Code.UniqueName IS NOT NULL"
+                    replaceIncrementalClause=""/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="ParentCommodityId"/>
+        <deleteField name="SourceCommodityDomain"/>
+    </fieldMappings>
+</inDataLoad>
+</allDataLoads>

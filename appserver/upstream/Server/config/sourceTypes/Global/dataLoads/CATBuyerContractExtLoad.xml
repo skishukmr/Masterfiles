@@ -1,0 +1,208 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+<inDataLoad name="BuyerDeleteContractFact">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="JOIN ariba.contract.core.ContractLineItem USING Contract.LineItems"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="ContractLineNumber">
+            <aqlMapping selectField="ContractLineItem.NumberInCollection"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+<inDataLoad name="BuyerContractFact">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.contract.core.Contract INCLUDE INACTIVE
+        			       JOIN ariba.contract.core.ContractLineItem USING Contract.LineItems
+				       LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING Contract.SupplierLocation
+				       LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+				       LEFT OUTER JOIN ariba.user.core.User AS Contact INCLUDE INACTIVE USING Contract.Requester
+				       LEFT OUTER JOIN ariba.user.core.User AS Preparer INCLUDE INACTIVE USING Contract.Preparer
+				       LEFT OUTER JOIN ariba.contract.core.Contract AS ParentContract INCLUDE INACTIVE USING Contract.ParentAgreement
+				       LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Contract.ProcurementUnit
+				       LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING ContractLineItem.Description
+				       LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+				       LEFT OUTER JOIN ariba.basic.core.Money AS UsedAmount INCLUDE INACTIVE USING ContractLineItem.AmountOrdered
+				       LEFT OUTER JOIN ariba.basic.core.Currency AS UsedAmountCurrency INCLUDE INACTIVE USING UsedAmount.Currency
+				       LEFT OUTER JOIN ariba.basic.core.Money AS MinCommitAmount INCLUDE INACTIVE USING ContractLineItem.MinAmount
+				       LEFT OUTER JOIN ariba.basic.core.Currency AS MinCommitCurrency INCLUDE INACTIVE USING MinCommitAmount.Currency
+				       LEFT OUTER JOIN ariba.basic.core.Money AS MaxCommitAmount INCLUDE INACTIVE USING ContractLineItem.MaxAmount
+				       LEFT OUTER JOIN ariba.basic.core.Currency AS MaxCommitCurrency INCLUDE INACTIVE USING MaxCommitAmount.Currency
+				       LEFT OUTER JOIN ariba.basic.core.Money AS AmountReconciled INCLUDE INACTIVE USING ContractLineItem.AmountReconciled
+				       LEFT OUTER JOIN ariba.basic.core.Currency AS AmountReconciledCurrency INCLUDE INACTIVE USING AmountReconciled.Currency
+				       LEFT OUTER JOIN ariba.basic.core.Money AS AmountReceived INCLUDE INACTIVE USING ContractLineItem.AmountAccepted
+				       LEFT OUTER JOIN ariba.basic.core.Currency AS AmountReceivedCurrency INCLUDE INACTIVE USING AmountReceived.Currency"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="UsedAmount.Amount"/>
+        <deleteField name="UsedAmount.Currency"/>
+        <deleteField name="UsedAmount.Date"/>
+        <deleteField name="MinCommitment.Amount"/>
+        <deleteField name="MinCommitment.Currency"/>
+        <deleteField name="MinCommitment.Date"/>
+        <deleteField name="MaxCommitment.Amount"/>
+        <deleteField name="MaxCommitment.Currency"/>
+        <deleteField name="MaxCommitment.Date"/>
+	<deleteField name="Duration"/>	
+        <!-- 
+	    Changed by : Arasan Rajendren
+	    Changed on : 04/28/2011
+	    Changes    : Added deleteField for Amount, Currency & Date Field
+	-->
+	<deleteField name="AmountReconciled.Amount"/>
+	<deleteField name="AmountReconciled.Currency"/>
+        <deleteField name="AmountReconciled.Date"/>
+
+	<field name="Duration">
+	    <aqlMapping selectField="(((((Year(Contract.ExpirationDate)*100 + Month(Contract.ExpirationDate))*100) + Day(Contract.ExpirationDate))/30) -
+(((Year(Contract.EffectiveDate)*100 + Month(Contract.EffectiveDate))*100) + Day(Contract.EffectiveDate))/30)"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ContractLineNumber">
+            <aqlMapping selectField="ContractLineItem.NumberInCollection"/>
+        </field>
+        <field name="Preparer.UserId">
+            <aqlMapping selectField="Preparer.UniqueName"/>
+        </field>
+        <field name="Preparer.PasswordAdapter">
+            <aqlMapping selectField="Preparer.PasswordAdapter"/>
+        </field>
+        <field name="ContractCreateDate">
+            <aqlMapping selectField="Contract.CreateDate"/>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="CommodityCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+            </analysisMapping>
+        </field>
+        <!--<field name="ERPCommodity.CommodityId">
+            <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+        </field>-->
+        <field name="AmountReconciled.Amount">
+            <aqlMapping selectField="AmountReconciled.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountReconciled.Currency">
+            <aqlMapping selectField="AmountReconciledCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountReconciled.Date">
+            <aqlMapping selectField="AmountReconciled.ConversionDate"/>
+        </field>
+        <!--Sandeep - Added Amount Amount Received(accepted) as a part of Paul's requirement-->
+ 	<field name="AmountReceived.Amount">
+	    <aqlMapping selectField="AmountReceived.Amount"/>
+	    <analysisMapping>
+	        <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+	            <parameter name="DefaultValue" value="0"/>
+	        </mapValue>
+	    </analysisMapping>
+	</field>
+	<field name="AmountReceived.Currency">
+	    <aqlMapping selectField="AmountReceivedCurrency.UniqueName"/>
+	    <analysisMapping>
+	        <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+	            <parameter name="MapType" value="SourceSystemCurrency"/>
+	        </mapValue>
+	    </analysisMapping>
+	</field>
+	<field name="AmountReceived.Date">
+	    <aqlMapping selectField="AmountReceived.ConversionDate"/>
+	</field>
+        <field name="UsedAmount.Amount">
+            <aqlMapping selectField="UsedAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="UsedAmount.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="UsedAmount.Date">
+            <aqlMapping selectField="UsedAmount.ConversionDate"/>
+        </field>
+        <field name="MinCommitment.Amount">
+            <aqlMapping selectField="MinCommitAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MinCommitment.Currency">
+            <aqlMapping selectField="MinCommitCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MinCommitment.Date">
+            <aqlMapping selectField="MinCommitAmount.ConversionDate"/>
+        </field>
+        <field name="MaxCommitment.Amount">
+            <aqlMapping selectField="MaxCommitAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MaxCommitment.Currency">
+            <aqlMapping selectField="MaxCommitCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MaxCommitment.Date">
+            <aqlMapping selectField="MaxCommitAmount.ConversionDate"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+
+
+
+<!--Added by RUPESH for test-->
+
+
+<derivedDataLoad name="Tmp_BuyerContractFact" extendsLoad="BuyerContractFact">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= Contract.TimeUpdated AND
+		                                          Contract.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_BuyerDeleteContractFact" extendsLoad="BuyerDeleteContractFact">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= Contract.TimeUpdated AND
+		                                          Contract.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+</allDataLoads>
+

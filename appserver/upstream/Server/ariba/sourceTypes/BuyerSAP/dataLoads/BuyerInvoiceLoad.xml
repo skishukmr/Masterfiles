@@ -1,0 +1,63 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerInvoiceLineItem">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.Asset as Asset INCLUDE INACTIVE USING SplitAccounting.Asset
+                                        LEFT OUTER JOIN ariba.core.InternalOrder as InternalOrder INCLUDE INACTIVE USING SplitAccounting.InternalOrder
+                                        LEFT OUTER JOIN ariba.core.WBSElement as Project INCLUDE INACTIVE USING SplitAccounting.WBSElement
+                                        LEFT OUTER JOIN ariba.core.PurchaseOrg AS PurchaseOrg INCLUDE INACTIVE USING InvoiceReconciliation.PurchaseOrg
+                                        LEFT OUTER JOIN ariba.core.CompanyCode AS POCompanyCode INCLUDE INACTIVE USING PurchaseOrg.CompanyCode"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <aqlMapping selectField="SplitGeneralLedger.UniqueName"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="AccountingCompany.CompanyId">
+            <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+        </field>
+        <field name="AccountingCompany.BusinessUnitId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PurchasingCompany.BusinessUnitId">
+            <aqlMapping selectField="PurchaseOrg.UniqueName"/>
+        </field>
+        <field name="PurchasingCompany.CompanyId">
+            <aqlMapping selectField="POCompanyCode.UniqueName"/>
+        </field>
+        <field name="AccountingProject.ProjectId">
+            <aqlMapping selectField="Project.UniqueName"/>
+        </field>
+        <field name="InternalOrder.InternalOrderId">
+            <aqlMapping selectField="InternalOrder.UniqueName"/>
+        </field>
+        <field name="Asset.AssetId">
+            <aqlMapping selectField="Asset.UniqueName"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

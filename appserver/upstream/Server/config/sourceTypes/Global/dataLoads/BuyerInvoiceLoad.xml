@@ -1,0 +1,156 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <inDataLoad name="BuyerInvoiceLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING InvoiceReconciliationLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING InvoiceReconciliationLineItem.LineType
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Order
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING InvoiceReconciliation.Requester
+                              LEFT OUTER JOIN ariba.contract.core.MasterAgreement INCLUDE INACTIVE USING InvoiceReconciliationLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING MasterAgreement.ForecastedSpend
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING InvoiceReconciliationLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.UnitOfMeasure INCLUDE INACTIVE USING LineItemProductDescription.UnitOfMeasure
+                              LEFT OUTER JOIN ariba.purchasing.core.POLineItem USING InvoiceReconciliationLineItem.OrderLineItem
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS POLineDescription USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.Money AS POLineMoney USING POLineDescription.Price
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS POLineCurrency INCLUDE INACTIVE USING POLineMoney.Currency
+                              LEFT OUTER JOIN ariba.contract.core.MALineItem USING InvoiceReconciliationLineItem.MALineItem
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS MALineDescription USING MALineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MALineMoney USING MALineDescription.Price
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MALineCurrency INCLUDE INACTIVE USING MALineMoney.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="Description"/>
+            <deleteField name="ApprovedDate"/>
+            <deleteField name="InvoiceType"/>
+            <deleteField name="Amount.Amount"/>
+            <deleteField name="Amount.Date"/>
+            <deleteField name="OrigAmount"/>
+            <deleteField name="OrigCurrencyCode"/>
+            <deleteField name="InvoiceStatus"/>
+            <deleteField name="ReconciliationStatus"/>
+            <deleteField name="AmountInvoiced.Currency"/>
+            <deleteField name="AmountInvoiced.Date"/>
+	    <!-- 
+		Changed by : Arasan Rajendren
+		Changed on : 04/28/2011
+		Changes	   : Commented Amount, Currency & Date Field
+	    -->
+	    <!--
+	    <deleteField name="AmountInvoiced.Amount"/>
+	    <deleteField name="AmountAccepted.Amount"/>
+	    <deleteField name="AmountAccepted.Currency"/>
+            <deleteField name="AmountAccepted.Date"/>
+            <deleteField name="AmountDisputed.Amount"/>
+            -->
+	    <deleteField name="AmountDisputed.Currency"/>
+            <deleteField name="AmountDisputed.Date"/>
+            <deleteField name="POAmount.Amount"/>
+            <deleteField name="POAmount.Date"/>
+            <deleteField name="PODescription"/>
+            <deleteField name="CatalogType"/>
+            <deleteField name="Part.PartKey1"/>
+            <deleteField name="Part.PartKey2"/>
+            <deleteField name="Contract.ContractId"/>
+            <deleteField name="ProcurementSystem"/>
+            <deleteField name="EstimatedSavings.Amount"/>
+            <deleteField name="EstimatedSavings.Date"/>
+            <deleteField name="ShipToLocation.LocationId"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+            <deleteField name="TaxRate"/>
+            <deleteField name="AccrualTaxAmount.Amount"/>
+            <deleteField name="AccrualTaxAmount.Currency"/>
+            <deleteField name="AccrualTaxAmount.Date"/>
+            <deleteField name="ExpectedTaxAmount.Amount"/>
+            <deleteField name="ExpectedTaxAmount.Currency"/>
+            <deleteField name="ExpectedTaxAmount.Date"/>
+            <deleteField name="PaidAmount.Amount"/>
+            <deleteField name="PaidAmount.Currency"/>
+            <deleteField name="PaidAmount.Date"/>
+            <field name="Description">
+                <aqlMapping selectField="InvoiceReconciliationLineItem.Description.Description"/>
+            </field>
+            <field name="InvoiceType">
+                <aqlMapping selectField="CASE POLineItem WHEN NULL THEN CASE MALineItem WHEN NULL THEN 'Others' ELSE 'MasterAgreement' END ELSE 'PurchaseOrder' END"/>
+            </field>
+
+            <field name="Amount.Amount">
+                <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+            </field>
+	    <!-- 
+		Changed by : Arasan Rajendren
+		Changed on : 04/22/2011
+		Changes	   : Added MULTIPLY_ALT function to multiply huge numbers.
+	     -->
+            <field name="POAmount.Amount">
+                <aqlMapping selectField="round(MULTIPLY_ALT(CASE POLineItem WHEN NULL THEN MALineItem.Description.Price.Amount ELSE POLineItem.Description.Price.Amount END, SplitAccounting.Quantity), 5)"/>
+            </field>
+            <field name="POAmount.Date">
+                <aqlMapping selectField="CASE POLineItem WHEN NULL THEN MALineItem.Description.Price.ConversionDate ELSE POLineItem.Description.Price.ConversionDate END"/>
+            </field>
+            <field name="PODescription">
+                <aqlMapping selectField="POLineItem.Description.Description"/>
+            </field>
+
+            <field name="CatalogType">
+                <aqlMapping selectField="CASE InvoiceReconciliationLineItem.Description.IsInternalPartId WHEN TRUE THEN 'NonCatalog' ELSE (CASE InvoiceReconciliationLineItem.PunchOut WHEN NULL THEN (CASE InvoiceReconciliationLineItem.Description.CatalogItemRef WHEN NULL THEN 'NonCatalog' ELSE 'Catalog' END) ELSE 'Catalog' END) END"/>
+                <analysisMapping enabled="false"/>
+            </field>
+
+            <!-- Null out all Part related fields if this is NonCatalog line item -->
+            <field name="Part.PartKey1">
+                <aqlMapping selectField="InvoiceReconciliationLineItem.Description.SupplierPartNumber"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="CatalogType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey2">
+                <aqlMapping selectField="InvoiceReconciliationLineItem.Description.SupplierPartAuxiliaryID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="CatalogType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="MasterAgreement.InitialUniqueName"/>
+            </field>
+            <field name="ProcurementSystem">
+                <aqlMapping selectField="CASE POLineItem WHEN NULL THEN CASE MALineItem WHEN NULL THEN 'Non Ariba Buyer' ELSE 'Ariba Buyer' END ELSE 'Ariba Buyer' END"/>
+            </field>
+            <field name="EstimatedSavings.Amount">
+                <aqlMapping selectField="CASE MasterAgreement.ForecastedSpend.SavingPercentage WHEN NULL THEN 0 ELSE MasterAgreement.ForecastedSpend.SavingPercentage * SplitAccounting.Amount.Amount / (100 - MasterAgreement.ForecastedSpend.SavingPercentage) END"/>
+            </field>
+            <field name="EstimatedSavings.Date">
+                <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerInvoiceLineItemAddress" version="8.2" disableLoad="true"/>
+    <inDataLoad name="BuyerInvoiceLineItemSupplierLocation" version="8.2" disableLoad="true"/>
+    <inDataLoad name="BuyerInvoiceLineItemPunchOutAddress" version="8.2" disableLoad="true"/>
+
+</allDataLoads>

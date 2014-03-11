@@ -1,0 +1,54 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerAccount">
+    <loadStages>
+        <aqlStage fromClause="ariba.core.Account INCLUDE INACTIVE"
+                  whereClause="Account.UniqueName IS NOT NULL"
+                  orderByClause="Account.UniqueName,Account.Active"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Account"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="AccountId">
+            <aqlMapping selectField="Account.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="AccountName">
+            <aqlMapping selectField="Account.Name"/>
+        </field>
+        <field name="CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerCostCenter">
+    <loadStages>
+        <aqlStage fromClause="ariba.core.CostCenter INCLUDE INACTIVE"
+                  whereClause="CostCenter.UniqueName IS NOT NULL"
+                  orderByClause="CostCenter.UniqueName,CostCenter.Active"/>
+        <analysisStage destinationName="ariba.analytics.dimension.CostCenter"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="CostCenterName">
+            <aqlMapping selectField="CostCenter.Name"/>
+        </field>
+        <field name="CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

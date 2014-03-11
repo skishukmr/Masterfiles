@@ -1,0 +1,86 @@
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <!-- Command Bar Top -->
+    <tr>
+        <td colspan="3" class="cmdBAWLar" style="padding-right:10px;">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="1px" style="padding:15px 0px 5px 20px; margin:0px;">
+                        <AribaImage name="mastHeadProductImage" filename="cmdbar_prod.gif"/>
+                    </td>
+                    <td width="98%" style="padding:0px 0px 1px 15px;">
+                        <AribaImage name="mastHeadBannerImage" filename="cmdbar_banner.gif" class="block"/>
+                    </td>
+                    <td width="1%" nowrap>
+                        <div id="cmdlinks">
+                            <AribaCondition ifTrue="enableContactBox">\
+                                <AribaContactBoxLink/>\
+                            </AribaCondition>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <!-- Row 1: Command Bar -->
+    <tr class="mastCmd">
+        <td colspan="3" class="mastCmdContainer"><AribaCommandBar/></td>
+    </tr>
+    <!-- Row 2: TOC & Content -->
+    <tr>
+        <!-- Column 1: Login Form -->
+        <td valign="top" style="padding:15px 10px 0px 20px;">
+            <AribaLoginForm/>
+        </td>
+        <td valign="top" style="padding:15px 10px 0px 10px;">
+            <AribaPageContent/>
+            <a:SetValue browserDialogId="$requestContext.nextElementId"/>\
+            <div class="loginBrowserWarn">
+                <a href="#" onClick="ariba.Widgets.showConfirmation('$browserDialogId')">
+                    <a:Local key="a004">Browser/Plug-in Support</a:Local>
+                </a>
+            </div>
+            <w:Confirmation id="$browserDialogId" lazyLoadConfirmation="$false">
+                <a:Content name="header">
+                    <a:Local key="a004">Browser/Plug-in Support</a:Local>
+                </a:Content>
+                <a:Content name="content">
+                    <b><a:Local key="a005">Supported Browsers</a:Local></b>
+                    <a:IncludeBlock name="UnorderedList" list="$supportedBrowsers" item="$currBrowser"/>
+
+                    <b><a:Local key="a006">Supported Plug-ins</a:Local></b>
+                    <a:IncludeBlock name="UnorderedList" list="$supportedPlugins" item="$currPlugin"/>
+
+                    <a:If ifTrue="$hasDeprecationEntries">
+                        <b><a:Local key="a007">Deprecation Schedule</a:Local></b>
+                        <a:IncludeBlock name="UnorderedList" list="$deprecationList" item="$deprecationItem"/>
+                    </a:If>
+                </a:Content>
+                <a:Content name="buttons">
+                    <w:TextButton onClick="ariba.Widgets.cancelConfirmation();">
+                        <a:Local key="a008">OK</a:Local>
+                    </w:TextButton>
+                </a:Content>
+            </w:Confirmation>
+        </td>
+        <td width="96%"></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td valign="bottom" style="padding:10px 10px 0px 20px;text-align:right;" class="footer">
+            <a:String value="$copyright" escapeUnsafeHtml="$true"/><br/>
+            <AribaAction name="support"><a:Local key="a003">Support</a:Local></AribaAction>
+        </td>
+        <td></td>
+    </tr>
+</table>
+<AribaCondition ifTrue="enableContactBox">\
+    <AribaContactBox htmlInline="$true"/>\
+</AribaCondition>\
+<a:Block name="UnorderedList">
+    <ul style="padding-left:5%">
+        <a:For list="$^list" item="$^item">
+            <li><a:String value="$^item" escapeUnsafeHtml="$true"/></li>
+        </a:For>
+    </ul>
+</a:Block>
+

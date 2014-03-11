@@ -1,0 +1,309 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <dataLoad name="BuyerDeletePOLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings"
+                      whereClause="PurchaseOrder.NextVersion IS NOT NULL OR
+                               PurchaseOrder.StatusString NOT IN ('Confirming', 'Confirmed', 'Ordered', 'Shipping', 'Shipped', 'Receiving', 'Received')"
+                      incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.POLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="POId">
+                <aqlMapping selectField="PurchaseOrder.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="POLineNumber">
+                <aqlMapping selectField="POLineItem.NumberInCollection"/>
+            </field>
+            <field name="ExtraPOLineKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExtraPOKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerPOLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                                      JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                                      JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                                      JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                                      LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                                      LEFT OUTER JOIN ariba.common.core.Address AS ShipTo SUBCLASS NONE INCLUDE INACTIVE USING POLineItem.ShipTo
+                                      LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                                      LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                                      LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                                      LEFT OUTER JOIN ariba.basic.core.Money AS POAmountInvoiced INCLUDE INACTIVE USING POLineItem.AmountInvoiced
+                                      LEFT OUTER JOIN ariba.basic.core.Currency AS POAmountInvoicedCurr INCLUDE INACTIVE USING POAmountInvoiced.Currency
+                                      LEFT OUTER JOIN ariba.basic.core.Money AS POAmountReconciled INCLUDE INACTIVE USING POLineItem.AmountReconciled
+                                      LEFT OUTER JOIN ariba.basic.core.Currency AS POAmountReconciledCurr INCLUDE INACTIVE USING POAmountReconciled.Currency
+                                      LEFT OUTER JOIN ariba.contract.core.Contract PARTITION ANY INCLUDE INACTIVE USING POLineItem.MasterAgreement
+                                      LEFT OUTER JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING Contract.ForecastedSpend
+                                      LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING POLineItem.CommodityCode
+                                      LEFT OUTER JOIN ariba.basic.core.Money AS SplitAccountAmount INCLUDE INACTIVE USING SplitAccounting.Amount
+                                      LEFT OUTER JOIN ariba.basic.core.Currency AS SplitAccountCurr INCLUDE INACTIVE USING SplitAccountAmount.Currency
+                                      LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                                      LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier
+                                      LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                                      LEFT OUTER JOIN ariba.basic.core.UnitOfMeasure INCLUDE INACTIVE USING LineItemProductDescription.UnitOfMeasure
+                                      LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING PurchaseOrder.ProcurementUnit"
+                      whereClause="PurchaseOrder.NextVersion IS NULL AND
+                                 PurchaseOrder.StatusString IN ('Confirming', 'Confirmed', 'Ordered', 'Shipping', 'Shipped', 'Receiving', 'Received')"
+                      incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                        PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.POLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="POId">
+                <aqlMapping selectField="PurchaseOrder.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="POLineNumber">
+                <aqlMapping selectField="POLineItem.NumberInCollection"/>
+            </field>
+            <field name="ExtraPOLineKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExtraPOKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+
+            <field name="OrderedDate">
+                <aqlMapping selectField="PurchaseOrder.OrderedDate"/>
+            </field>
+            <field name="Supplier.SupplierLocationId">
+                <aqlMapping selectField="SupplierLocation.UniqueName"/>
+            </field>
+            <field name="Supplier.SupplierId">
+                <aqlMapping selectField="Supplier.UniqueName"/>
+            </field>
+
+            <field name="Description">
+                <aqlMapping selectField="LineItemProductDescription.Description"/>
+            </field>
+            <field name="LineType">
+                <aqlMapping selectField="CASE LineItemProductDescription.IsInternalPartId WHEN TRUE THEN 'NonCatalog' ELSE (CASE POLineItem.PunchOut WHEN NULL THEN (CASE LineItemProductDescription.CatalogItemRef WHEN NULL THEN 'NonCatalog' ELSE 'Catalog' END) ELSE 'Catalog' END) END"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="SourceCommodityDomain">
+                <aqlMapping selectField="CommodityCode.Domain"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="Commodity.CommodityId">
+                <aqlMapping selectField="CommodityCode.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+                </analysisMapping>
+            </field>
+            <field name="ERPCommodity.CommodityId">
+                <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+            </field>
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="Contract.InitialUniqueName"/>
+            </field>
+
+            <field name="AmountLeftToInvoice.Amount">
+                <aqlMapping selectField="COALESCE(POLineItem.Amount.Amount - COALESCE(POAmountInvoiced.Amount, 0.0), 0.0)"/>
+            </field>
+            <field name="AmountLeftToInvoice.Currency">
+                <aqlMapping selectField="COALESCE(POAmountInvoicedCurr.UniqueName, SplitAccountCurr.UniqueName)"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountLeftToInvoice.Date">
+                <aqlMapping selectField="COALESCE(POAmountInvoiced.ConversionDate, SplitAccountAmount.ConversionDate)"/>
+            </field>
+
+            <field name="AmountLeftToReconcile.Amount">
+                <aqlMapping selectField="COALESCE(POLineItem.Amount.Amount - COALESCE(POAmountReconciled.Amount, 0.0), 0.0)"/>
+            </field>
+            <field name="AmountLeftToReconcile.Currency">
+                <aqlMapping selectField="COALESCE(POAmountReconciledCurr.UniqueName, SplitAccountCurr.UniqueName)"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountLeftToReconcile.Date">
+                <aqlMapping selectField="COALESCE(POAmountReconciled.ConversionDate, SplitAccountAmount.ConversionDate)"/>
+            </field>
+
+            <!-- Null out all Part related fields if this is NonCatalog line item -->
+
+            <field name="Part.PartKey1">
+                <aqlMapping selectField="LineItemProductDescription.SupplierPartNumber"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey2">
+                <aqlMapping selectField="LineItemProductDescription.SupplierPartAuxiliaryID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey3">
+                <aqlMapping selectField="CommonSupplier.SystemID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="UnitOfMeasure.UnitOfMeasureId">
+                <aqlMapping selectField="UnitOfMeasure.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemUOM"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Quantity">
+                <aqlMapping selectField="SplitAccounting.Quantity"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="SplitAccountAmount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="SplitAccountCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="SplitAccountAmount.ConversionDate"/>
+            </field>
+            <field name="OrigAmount">
+                <aqlMapping selectField="SplitAccountAmount.Amount"/>
+            </field>
+            <field name="OrigCurrencyCode">
+                <aqlMapping selectField="SplitAccountCurr.UniqueName"/>
+            </field>
+            <field name="EstimatedSavings.Amount">
+                <aqlMapping selectField="CASE Contract.ForecastedSpend.SavingPercentage WHEN NULL THEN 0 ELSE Contract.ForecastedSpend.SavingPercentage * SplitAccountAmount.Amount / (100 - Contract.ForecastedSpend.SavingPercentage) END"/>
+            </field>
+            <field name="EstimatedSavings.Currency">
+                <aqlMapping selectField="SplitAccountCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="EstimatedSavings.Date">
+                <aqlMapping selectField="SplitAccountAmount.ConversionDate"/>
+            </field>
+            <field name="StatusString">
+                <aqlMapping selectField="PurchaseOrder.StatusString"/>
+            </field>
+            <field name="isPunchOutItem">
+                <aqlMapping selectField="CASE POLineItem.PunchOut WHEN NULL THEN 'False' ELSE 'True' END"/>
+            </field>
+            <field name="ShipToLocation.LocationId">
+                <aqlMapping selectField="ShipTo.UniqueName"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerPCOLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.pcard.core.PCardOrder
+                                LEFT OUTER JOIN ariba.common.core.PCard USING PCardOrder.PCard
+                                LEFT OUTER JOIN ariba.base.core.EncryptedString As PCardEncrString USING PCard.CardNumber
+                                JOIN ariba.purchasing.core.POLineItem USING PCardOrder.LineItems
+                                JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                                JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings"
+                      whereClause="PCardOrder.NextVersion IS NULL AND
+                                 PCardOrder.StatusString IN ('Confirming', 'Confirmed', 'Ordered', 'Shipping', 'Shipped', 'Receiving', 'Received')"
+                      incrementalClause="(PCardOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                        PCardOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.POLineItem"/>
+        </loadStages>
+
+        <fieldMappings>
+            <field name="PCard.EncryptedString">
+                <aqlMapping selectField="PCardEncrString.EncryptedString"/>
+            </field>
+            <field name="POId">
+                <aqlMapping selectField="PCardOrder.UniqueName"/>
+            </field>
+            <field name="POLineNumber">
+                <aqlMapping selectField="POLineItem.NumberInCollection"/>
+            </field>
+            <field name="ExtraPOLineKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExtraPOKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+</allDataLoads>

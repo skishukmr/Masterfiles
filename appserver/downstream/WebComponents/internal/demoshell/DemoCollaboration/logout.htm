@@ -1,0 +1,14 @@
+<html>
+<meta http-equiv="Refresh" Content="$loginUrl"/>
+</html>
+<server>
+  function loginUrl ()
+  {
+       var appinfo = ariba.util.parameters.AppInfo.getRunningAppInfo();
+     var url = appinfo.getIncomingHttpServerURL()+"/"+
+               appinfo.getContextRoot()+"/"+
+               appinfo.getCXMLServletName();
+     return "0; url="+appinfo.getIncomingHttpServerURL()+"/"+
+               appinfo.getContextRoot()+"/Main/ad/showPage/Demo";     
+  }
+</server>

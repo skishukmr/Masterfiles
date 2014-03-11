@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+
+<DataTable><Layout initialSortKey="Timestamp"><Column key="Content"></Column><Column key="Timestamp"></Column></Layout><DATA><Message><Content>This new RFX is open for bidding.</Content><Timestamp>Fri Oct 18 11:38:57 PDT 2002</Timestamp></Message><Message><Content>This RFX has closed.</Content><Timestamp>Thu Oct 17 22:26:27 PDT 2002</Timestamp></Message><Message><Content>This new RFX is open for bidding.</Content><Timestamp>Thu Oct 17 21:56:25 PDT 2002</Timestamp></Message></DATA></DataTable>

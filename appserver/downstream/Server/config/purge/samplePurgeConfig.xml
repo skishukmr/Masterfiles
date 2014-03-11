@@ -1,0 +1,158 @@
+<!DOCTYPE purgeConfig SYSTEM "purgeConfig.dtd">
+<!-- This is a sample purge configuration file for the primary class of Requisition.
+     To customize this sample, modify the purge candidate and/or keep
+     conditions, as appropriate.
+-->
+<purgeConfig>
+    <purgeCandidates scope="Procurement">
+        <primaryClass name="ariba.purchasing.core.Requisition" includeInactive="false"/>
+        <whereCondition>
+            <!-- This will purge Requisitions in either Ordered (4) 
+                 or Canceled state (16), with a LastModified date older than 3 years.
+            -->
+            (OrderedState=4 OR OrderedState=16)
+            AND (CurrentDate() - LastModified) > (365 * 3)
+        </whereCondition>
+        <options>
+            <!-- Objects to be purged are either in pcsv or poracle partitions.
+            -->
+            <partition name="pcsv"/>
+            <partition name="poracle"/>
+        </options>
+    </purgeCandidates>
+    <keepConditions>
+        <!--  Keep conditions are designed to prevent objects from being
+              accidentally deleted when they haven't reached the end
+              of their life cycle.
+
+              For the objects going to be purged, we apply the purge
+              conditions on these candidate objects to decide whether
+              to keep them or purge them.
+
+              Most of the keep conditions listed below check whether the
+              objects are at their final states. Also, the keep conditions
+              are usually only applied on the active objects since the 
+              inactive objects don't necessarily stay in the final states.
+
+              Depending on your company's auditing requirements, you might
+              consider adding some date constraints on some keep conditions.
+              For example, you might add a constraint to specify that
+              only PurchaseOrders older than 2 years can be purged.
+        -->
+        <keepCondition class="ariba.purchasing.core.PurchaseOrder">
+                <!--  When the PurchaseOrder moves to its final states, the
+                      related Req, Receipt, OrderRecipients are usually
+                      at their final states too.
+
+                      PurchaseOrder's final states are 
+                            Canceled (OrderedState=16),
+                            Received (ReceivedState=4).
+                      If you are not using Ariba Receiving feature,
+                      you might consider adding Ordered as a terminal state.
+                -->
+            <whereCondition>
+                (OrderedState != 16 AND ReceivedState != 4) 
+                AND "Active"=true
+            </whereCondition>
+        </keepCondition>
+        <keepCondition class="ariba.purchasing.core.PurchaseOrder">
+            <!--  In this release, purging of contracts is not supported.
+                  This keep condition guards against purging PurchaseOrders associated
+                  with contracts not in state: Closed (MAState = 16). You might want to
+                  add further constraint on the age of the MasterAgreement depending on
+                  your company's auditing needs.
+                -->
+            <whereCondition>
+                MasterAgreement.MAState != 16
+            </whereCondition>
+        </keepCondition>
+        <keepCondition class="ariba.invoicing.core.InvoiceReconciliation">
+                <!--  When the IR moves to its final states, the
+                      related Invoice and Payment objects are usually
+                      at their final states too.
+
+                      IR's final states are 
+                            Paid (ProcessedState=16),
+                            Rejected (ProcessedState=8).
+                -->
+            <whereCondition>
+                (ProcessedState != 16 AND ProcessedState != 8) 
+                AND "Active"=true
+            </whereCondition>
+        </keepCondition>
+        <keepCondition class="ariba.invoicing.core.InvoiceReconciliation">
+            <!--  In this release, purging of contracts is not supported.
+                  This keep condition guards against purging InvoiceReconciliations
+                  associated with contracts not in state: Closed (MAState = 16). You
+                  might want to add further constraint on the age of the MasterAgreement
+                  depending on your company's auditing needs.
+                -->
+            <whereCondition>
+                MasterAgreement.MAState != 16 AND
+                LineItems.MasterAgreement.MAState != 16
+            </whereCondition>
+        </keepCondition>
+        <keepCondition class="ariba.charge.core.Charge">
+            <!--  The Charge needs to be in its final state to purge charge related objects.
+
+                Charge's final states are
+                Approved (InvoiceState=4),
+            -->
+            <whereCondition>
+                (InvoiceState != 4) 
+                AND "Active"=true
+            </whereCondition>
+        </keepCondition>
+		<keepCondition class="ariba.charge.core.ChargeReconciliation">
+            <!-- When the CR moves to its final states, the
+                 related Order and Charge objects are usually
+                 at their final states too.
+                 
+				 Final states are:
+				 Paying (ProcessedState=4),
+				 Rejected (ProcessedState=8)  
+            -->
+            <whereCondition>
+                (ProcessedState != 4 AND ProcessedState != 8) 
+                AND "Active"=true
+            </whereCondition>
+        </keepCondition>
+		<keepCondition class="ariba.pcard.core.PCardChargeResolution">
+            <!--  Both the PCCR and Level2Charge objects need to be
+                  at their final states to purge charge related objects.
+
+                  PCCR's final states are 
+                  Approved (ApprovedState=4),
+            -->
+            <whereCondition>
+                (ApprovedState != 4) 
+                AND "Active"=true
+            </whereCondition>
+        </keepCondition>
+		<keepCondition class="ariba.l2charge.core.Level2Charge">
+            <!--  Both the PCCR and Level2Charge objects need to be
+                  at their final states to purge charge related objects.
+
+                  Level2Charge's final states are 
+                  Deleted (State=5),
+                  Processed (State=10),
+            -->
+            <whereCondition>
+                (State != 5 AND State != 10) 
+                AND "Active"=true
+            </whereCondition>
+        </keepCondition>
+        <keepCondition class="ariba.receiving.core.ReceiptTracker">
+                <!--  ReceiptTracker's workflow is independent of the 
+                      Receipt's workflow.
+
+                      ReceiptTracker's final states are 
+                            Approved (ApprovedState=4),
+                -->
+            <whereCondition>
+                (ApprovedState != 4) 
+                AND "Active"=true
+            </whereCondition>
+        </keepCondition>
+    </keepConditions>
+</purgeConfig>

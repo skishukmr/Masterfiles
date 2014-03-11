@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/Catalog.dtd">
+<TypeDefinition>
+<TypeProvider name="System">
+    <OrganizationID>
+      <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+    </OrganizationID>
+</TypeProvider>
+
+<!-- Primitive System Catalog Types -->
+
+<!-- This type is bootstrapped into the system during initdb
+<PrimitiveType name="Id"
+               type="literal"
+               min="1"
+               max="128">
+    <Description xml:lang="en">Basic ID string</Description>
+</PrimitiveType>
+-->
+<PrimitiveType name="URL"
+               type="string"
+               min="5"
+               max="255">
+    <Description xml:lang="en">Basic URL string</Description>
+</PrimitiveType>
+<!-- This type is bootstrapped into the system during initdb
+     and does not use the dynamic type loader
+<PrimitiveType name="Name"
+               type="string"
+               min="1"
+               max="255">
+    <Description xml:lang="en">Basic Name string</Description>
+</PrimitiveType>
+-->
+<PrimitiveType name="ShortName"
+               type="string"
+               min="1"
+               max="50">
+    <Description xml:lang="en">50 character string</Description>
+</PrimitiveType>
+<PrimitiveType name="ClusterRoot"
+               type="string"
+               min="1"
+               max="50">
+    <Description xml:lang="en">Reference to a ClusterRoot</Description>
+</PrimitiveType>
+<PrimitiveType name="Description"
+               type="string"
+               min="1"
+               max="2000">
+    <Description xml:lang="en">Basic Description string</Description>
+</PrimitiveType>
+<!-- This type is bootstrapped into the system during initdb
+     and does not use the dynamic type loader
+<PrimitiveType name="Flag"
+               type="boolean"
+               min="1"
+               max="5">
+    <Description xml:lang="en">Boolean flag</Description>
+</PrimitiveType>
+-->
+<PrimitiveType name="Price"
+               type="double">
+    <Description xml:lang="en">Basic Price</Description>
+</PrimitiveType>
+<PrimitiveType name="Date"
+               type="date"
+               min="-3652"
+               max="36524">
+    <Description xml:lang="en">Basic Date string</Description>
+</PrimitiveType>
+<PrimitiveType name="FutureDate"
+               type="date"
+               min="-3652"
+               max="36524">
+    <Description xml:lang="en">Basic Date string</Description>
+</PrimitiveType>
+<PrimitiveType name="PositiveInteger"
+               type="integer"
+               min="0"
+               max="">
+    <Description xml:lang="en">Basic positive integer</Description>
+</PrimitiveType>
+<PrimitiveType name="Integer"
+               type="integer"
+               min=""
+               max="">
+    <Description xml:lang="en">Basic integer</Description>
+</PrimitiveType>
+<PrimitiveType name="TerritoryCode"
+               type="literal"
+               min="1"
+               max="6">
+    <Description xml:lang="en">ISO territory or region code</Description>
+</PrimitiveType>
+<PrimitiveType name="CurrencyCode"
+               type="string"
+               min="1"
+               max="5">
+    <Description xml:lang="en">ISO currency code</Description>
+</PrimitiveType>
+<PrimitiveType name="Number"
+               type="double">
+    <Description xml:lang="en">Expose a number allowing fractions</Description>
+</PrimitiveType>
+
+<PrimitiveType name="PartId"
+               type="string"
+               min="1"
+               max="128">
+    <Description xml:lang="en">Part number with leading wildcarding</Description>
+</PrimitiveType>
+</TypeDefinition>

@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Index SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/cXML.dtd">
+<Index>
+  <SupplierID domain="DUNS">010010010</SupplierID>
+  <Comments>
+      A Mantell Office catalog with example partial items, services and required ordering fields
+  </Comments>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS1</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency=""></Money>
+        </UnitPrice>
+        <Description xml:lang="en">Office Cleaning</Description>
+        <UnitOfMeasure></UnitOfMeasure>
+        <Classification domain="UNSPSC">7611</Classification>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime></LeadTime>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS2</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency=""></Money>
+        </UnitPrice>
+        <Description xml:lang="en">Business Cards</Description>
+        <UnitOfMeasure></UnitOfMeasure>
+        <Classification domain="UNSPSC">14111604</Classification>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime></LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:BizCard</Name>
+            <SearchDataElement name="CompanyName" value="Ariba"></SearchDataElement>
+            <SearchDataElement name="Address1" value="807 11th Avenue"></SearchDataElement>
+            <SearchDataElement name="Address2" value="Sunnyvale, CA 94412"></SearchDataElement>
+            <SearchDataElement name="URL" value="http://www.ariba.com"></SearchDataElement>
+        </SearchGroupData>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS3</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">35</Money>
+        </UnitPrice>
+        <Description xml:lang="en">Men's Button Down Shirt</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">53101602</Classification>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:Shirts</Name>
+            <SearchDataElement name="Collared" value="true"></SearchDataElement>
+            <SearchDataElement name="Color" value="red"></SearchDataElement>
+            <SearchDataElement name="Color" value="blue"></SearchDataElement>
+            <SearchDataElement name="Size" value="small"></SearchDataElement>
+            <SearchDataElement name="Size" value="large"></SearchDataElement>
+        </SearchGroupData>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS4</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">15</Money>
+        </UnitPrice>
+        <Description xml:lang="en">Men's TShirt</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">53101602</Classification>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:Shirts</Name>
+            <SearchDataElement name="Collared" value="false"></SearchDataElement>
+            <SearchDataElement name="Color" value="blue"></SearchDataElement>
+            <SearchDataElement name="Color" value="green"></SearchDataElement>
+            <SearchDataElement name="Size" value="medium"></SearchDataElement>
+            <SearchDataElement name="Size" value="large"></SearchDataElement>
+        </SearchGroupData>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS6</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">20</Money>
+        </UnitPrice>
+        <Description xml:lang="en">Men's Turtle Neck Shirt</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">53101602</Classification>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:Shirts</Name>
+            <SearchDataElement name="Collared" value="false"></SearchDataElement>
+            <SearchDataElement name="Color" value="orange"></SearchDataElement>
+            <SearchDataElement name="Color" value="blue"></SearchDataElement>
+            <SearchDataElement name="Size" value="small"></SearchDataElement>
+            <SearchDataElement name="Size" value="medium"></SearchDataElement>
+            <SearchDataElement name="Size" value="large"></SearchDataElement>
+        </SearchGroupData>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS7</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency=""></Money>
+        </UnitPrice>
+        <Description xml:lang="en">IT Help Desk Services</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">80111801</Classification>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:ITTempLabor</Name>
+        </SearchGroupData>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS8</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">50</Money>
+        </UnitPrice>
+        <Description xml:lang="en">Cell Phone Activation Service</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">83</Classification>
+        <ManufacturerName>Verizon</ManufacturerName>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+        <Extrinsic name="InKitOnly">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:CellPhoneActivationService</Name>
+        </SearchGroupData>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS9</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency=""></Money>
+        </UnitPrice>
+        <Description xml:lang="en">Office/Cube Moving Service</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">56</Classification>
+        <ManufacturerName>Verizon</ManufacturerName>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:OfficeMoveService</Name>
+        </SearchGroupData>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS10</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">40</Money>
+        </UnitPrice>
+        <Description xml:lang="en">Subscription to Forbes. 12 issues per year.</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">55101506</Classification>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:MagazineSubscription</Name>
+        </SearchGroupData>
+        <TerritoryAvailable>US</TerritoryAvailable>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS11</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">700</Money>
+        </UnitPrice>
+        <Description xml:lang="en">Hewlett Packard d500</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">43211507</Classification>
+        <Extrinsic name="Image">http://welcome.hp-ww.com/country/us/en/img/n4_prodserv/HP_Pavilion_Slimline_PC.jpg</Extrinsic>
+        <Extrinsic name="IsPartial">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:DesktopComputer</Name>
+        </SearchGroupData>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS13</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">149.99</Money>
+        </UnitPrice>
+        <Description xml:lang="en">T-Mobil 50X Cellular Phone</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">43191501</Classification>
+        <Extrinsic name="InKitOnly">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:CatalogItem</Name>
+        </SearchGroupData>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+  <IndexItem>
+    <IndexItemAdd>
+      <ItemID> 
+        <SupplierPartID>MS12</SupplierPartID>
+      </ItemID>
+      <ItemDetail> 
+        <UnitPrice>
+          <Money currency="USD">25</Money>
+        </UnitPrice>
+        <Description xml:lang="en">T-Mobil 50X Cellular Phone two year extended warranty</Description>
+        <UnitOfMeasure>ea</UnitOfMeasure>
+        <Classification domain="UNSPSC">81111818</Classification>
+        <Extrinsic name="InKitOnly">true</Extrinsic>
+      </ItemDetail>
+      <IndexItemDetail> 
+        <LeadTime>1</LeadTime>
+        <SearchGroupData>
+         <Name xml:lang="en">System:CatalogItem</Name>
+        </SearchGroupData>
+      </IndexItemDetail>
+    </IndexItemAdd>
+  </IndexItem>
+</Index>

@@ -1,0 +1,4 @@
+<AribaFieldValue value="Name"/>
+<AribaFieldValue value="Lines"/>
+<AribaFieldValue value="City"/>, <AribaFieldValue value="State"/>  <AribaFieldValue value="PostalCode"/>
+<AribaFieldValue value="Country"/>\

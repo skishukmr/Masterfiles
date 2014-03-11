@@ -1,0 +1,14 @@
+<soap:Envelope soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://ariba/objectEncoding">
+<soap:Header>
+</soap:Header>
+<soap:Body>
+<tns:PortletConfig>
+    <ObjectReference xsi:type="xsi:null">1</ObjectReference>
+    <Owner>
+        <PasswordAdapter>PasswordAdapter1</PasswordAdapter>
+        <UniqueName>aribasystem</UniqueName>
+    </Owner>
+    <ExternalId>Portlet65</ExternalId>
+</tns:PortletConfig>
+</soap:Body>
+</soap:Envelope>

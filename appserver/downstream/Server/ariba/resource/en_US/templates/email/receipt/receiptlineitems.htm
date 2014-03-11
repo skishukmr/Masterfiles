@@ -1,0 +1,26 @@
+<!--Line Items -->
+<span style="margin-top:25px; margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/LineItems@@</b></span>
+    <table width="98%" border=0 margin=0 cellPadding="3" cellSpacing="2">
+      <tr style="border:0px; color:#000; font:8pt Verdana, Arial, Helvetica; font-weight:bold;  background:#E5E5EE;">
+        <th align="left">#</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Description@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/TotalQuantity@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/NumAccepted@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/NumRejected@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/AmtAccepted@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/AmtRejected@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/ReceivingType@@</th>
+      </tr>
+      @@StartVector1=ReceiptItems@@
+      <tr style="vertical-align:top; border:0px; color:#000; font:8pt Verdana, Arial, Helvetica;">
+        <td>@@NumberInCollection@@</td>
+        <td>@@LineItem.Description.Description@@</td>
+        <td align="left" nowrap>@@LineItem.FCN.getQuantity()@@</td>
+        <td align="left" nowrap>@@BDF.NumberAccepted@@</td>
+        <td align="left" nowrap>@@BDF.NumberRejected@@</td>
+        <td align="left" nowrap>@@AmountAccepted.FCN.getAmount()@@ @@AmountAccepted.Currency.Suffix@@</td>
+        <td align="left" nowrap>@@AmountRejected.FCN.getAmount()@@ @@AmountRejected.Currency.Suffix@@</td>
+        <td align="left" nowrap>@@ReceivingTypeString@@</td>
+      </tr>
+      @@EndVector1@@
+    </table>

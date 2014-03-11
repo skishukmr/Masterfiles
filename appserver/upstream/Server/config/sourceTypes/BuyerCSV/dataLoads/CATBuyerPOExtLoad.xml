@@ -1,0 +1,219 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+	<inDataLoad name="BuyerPOLineItem">
+	    <inLoadStages>
+		<inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.common.core.AccountType INCLUDE INACTIVE USING POLineItem.AccountType
+						LEFT OUTER JOIN cat.core.BuyerCode INCLUDE INACTIVE USING POLineItem.BuyerCode
+						LEFT OUTER JOIN ariba.basic.core.Money AS AmountReconciled INCLUDE INACTIVE USING POLineItem.AmountReconciled
+						LEFT OUTER JOIN ariba.basic.core.Currency AS AmountReconciledCurrency INCLUDE INACTIVE USING AmountReconciled.Currency
+						LEFT OUTER JOIN ariba.basic.core.Money AS AmountReceived INCLUDE INACTIVE USING POLineItem.AmountAccepted
+						LEFT OUTER JOIN ariba.basic.core.Currency AS AmountReceivedCurrency INCLUDE INACTIVE USING AmountReceived.Currency
+						LEFT OUTER JOIN ariba.user.core.User AS Preparer INCLUDE INACTIVE USING Requisition.Preparer
+						LEFT OUTER JOIN ariba.purchasing.core.ReqLineItem as rLi INCLUDE INACTIVE USING Requisition.LineItems
+						LEFT OUTER JOIN ariba.purchasing.core.DirectOrder as D INCLUDE INACTIVE USING rLi.Order"/>
+	    </inLoadStages>
+	    <fieldMappings>
+		<field name="CapitalProjectNumber">
+		    <aqlMapping selectField="POLineItem.ProjectNumber"/>
+		</field>
+		<field name="RequisitionID">
+		    <aqlMapping selectField="Requisition.UniqueName"/>
+		</field>
+		<field name="RequisitionLineNumber">
+		    <aqlMapping selectField="POLineItem.NumberInCollection"/>
+		</field>
+		<!--<field name="ControlId">
+		    <aqlMapping selectField="PurchaseOrder.ControlIdentifier"/>
+		</field>-->
+		<field name="FOBPoint">
+		    <aqlMapping selectField="Requisition.FOBPoint"/>
+		</field>
+		<field name="CloseOrder">
+			<aqlMapping selectField="D.CloseOrder"/>
+		</field>
+		<!--<field name="FDFARAttachmentIndicator">
+		    <aqlMapping selectField="Requisition.FDFARAttachmentIndicator"/>
+		</field>
+		<field name="FDFARAttachment">
+		    <aqlMapping selectField="Requisition.FDFARAttachment"/>
+		</field>
+		<field name="OIOAgreement">
+		    <aqlMapping selectField="Requisition.OIOAgreement"/>
+		</field>-->
+		<field name="ExpenseType">
+		    <aqlMapping selectField="AccountType.UniqueName"/>
+		</field>
+		<field name="POstatus">
+		    <aqlMapping selectField="PurchaseOrder.StatusString"/>
+		</field>
+		<field name="OrderMethod">
+		    <aqlMapping selectField="POLineItem.OrderMethodCategory"/>
+		</field>
+		<field name="EmergencyBuy">
+		    <aqlMapping selectField="CASE Requisition.EmergencyBuy WHEN NULL THEN 'false' ELSE 'true' END"/>
+		</field>
+		<!-- <field name="Facility">
+		    <aqlMapping selectField="SplitAccounting.AccountingFacility"/>
+		</field>-->
+		<field name="Department">
+		    <aqlMapping selectField="SplitAccounting.Department"/>
+		</field>
+		<field name="Division">
+		    <aqlMapping selectField="SplitAccounting.Division"/>
+		</field>
+		<field name="Section">
+		    <aqlMapping selectField="SplitAccounting.Section"/>
+		</field>
+		<field name="ExpenseAccount">
+		    <aqlMapping selectField="SplitAccounting.ExpenseAccount"/>
+		</field>
+		<field name="CatOrder">
+		    <aqlMapping selectField="SplitAccounting.Order"/>
+		</field>
+		<field name="Misc">
+		    <aqlMapping selectField="SplitAccounting.Misc"/>
+		</field>
+		<field name="BuyerCode">
+		    <aqlMapping selectField="BuyerCode.UniqueName"/>
+		</field>
+		<!--<field name="SiteFacility">
+		    <aqlMapping selectField="Facility.UniqueName"/>
+		</field>-->
+		<field name="Preparer.UserId">
+		    <aqlMapping selectField="Preparer.UniqueName"/>
+		</field>
+		<field name="Preparer.PasswordAdapter">
+		    <aqlMapping selectField="Preparer.PasswordAdapter"/>
+		</field>
+		<field name="NeedByDate">
+		    <aqlMapping selectField="POLineItem.NeedBy"/>
+		</field>
+		<field name="LastUpdatedDate">
+		    <aqlMapping selectField="PurchaseOrder.TimeUpdated"/>
+		</field>
+		<!--Sandeep - Added Amount Amount Received(accepted) as a part of Paul's requirement-->
+		<field name="AmountReconciled.Amount">
+		    <aqlMapping selectField="AmountReconciled.Amount"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+			    <parameter name="DefaultValue" value="0"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AmountReconciled.Currency">
+		    <aqlMapping selectField="AmountReconciledCurrency.UniqueName"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+			    <parameter name="MapType" value="SourceSystemCurrency"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AmountReconciled.Date">
+		    <aqlMapping selectField="AmountReconciled.ConversionDate"/>
+		</field>
+		<field name="AmountReceived.Amount">
+		    <aqlMapping selectField="AmountReceived.Amount"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+			    <parameter name="DefaultValue" value="0"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AmountReceived.Currency">
+		    <aqlMapping selectField="AmountReceivedCurrency.UniqueName"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+			    <parameter name="MapType" value="SourceSystemCurrency"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AmountReceived.Date">
+		    <aqlMapping selectField="AmountReceived.ConversionDate"/>
+		</field>
+		<!--<field name="AdvisePrice.Amount">
+		    <aqlMapping selectField="AmountAccepted.Amount"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+			    <parameter name="DefaultValue" value="0"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AdvisePrice.Currency">
+		    <aqlMapping selectField="AmountAcceptedCurrency.UniqueName"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+			    <parameter name="MapType" value="SourceSystemCurrency"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AdvisePrice.Date">
+		    <aqlMapping selectField="AmountAccepted.ConversionDate"/>
+		</field>-->
+	    </fieldMappings>
+	</inDataLoad>
+	<derivedDataLoad name="CATUSBuyerPOLineItem" extendsLoad="BuyerPOLineItem">
+		<inLoadStages>
+			<inAqlStage appendToFromClause="LEFT OUTER JOIN cat.core.SettlementCode INCLUDE INACTIVE USING POLineItem.SettlementCode
+							LEFT OUTER JOIN cat.core.Facility INCLUDE INACTIVE USING SplitAccounting.Facility"
+					replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= PurchaseOrder.TimeUpdated AND
+		                                          PurchaseOrder.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+							/>
+		</inLoadStages>
+		<fieldMappings>
+			<field name="Facility">
+				<aqlMapping selectField="SplitAccounting.AccountingFacility"/>
+			</field>
+			<field name="SettlementCode">
+				<aqlMapping selectField="SettlementCode.UniqueName"/>
+			</field>
+			<field name="FDFARAttachmentIndicator">
+				<aqlMapping selectField="Requisition.FDFARAttachmentIndicator"/>
+			</field>
+			<field name="FDFARAttachment">
+				<aqlMapping selectField="Requisition.FDFARAttachment"/>
+			</field>
+			<field name="OIOAgreement">
+				<aqlMapping selectField="Requisition.OIOAgreement"/>
+			</field>
+			<field name="SiteFacility">
+				<aqlMapping selectField="Facility.UniqueName"/>
+			</field>
+			<field name="ControlId">
+				<aqlMapping selectField="PurchaseOrder.ControlIdentifier"/>
+			</field>
+		</fieldMappings>
+	</derivedDataLoad>
+	<derivedDataLoad name="CATUKBuyerPOLineItem" extendsLoad="BuyerPOLineItem">
+		<inLoadStages>
+			<inAqlStage appendToFromClause="LEFT OUTER JOIN cat.core.SettlementCode INCLUDE INACTIVE USING POLineItem.SettlementCode
+							LEFT OUTER JOIN cat.core.Facility INCLUDE INACTIVE USING SplitAccounting.Facility"
+							
+					replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= PurchaseOrder.TimeUpdated AND
+		                                          PurchaseOrder.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"/>
+		</inLoadStages>
+		<fieldMappings>
+			<field name="Facility">
+				<aqlMapping selectField="Facility.UniqueName"/>
+			</field>
+			<field name="SettlementCode">
+				<aqlMapping selectField="SettlementCode.UniqueName"/>
+			</field>
+			<field name="SiteFacility">
+				<aqlMapping selectField="Facility.UniqueName"/>
+			</field>
+			<field name="ControlId">
+				<aqlMapping selectField="PurchaseOrder.ControlIdentifier"/>
+			</field>
+		</fieldMappings>
+	</derivedDataLoad>	
+	
+	<derivedDataLoad name="Tmp_BuyerPOLineItem_1" extendsLoad="BuyerPOLineItem">
+			<inLoadStages>
+			    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= PurchaseOrder.TimeUpdated AND
+			                                          PurchaseOrder.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+	                                      />
+			</inLoadStages>
+	</derivedDataLoad>
+	
+</allDataLoads>
+

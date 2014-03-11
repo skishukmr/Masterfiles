@@ -1,0 +1,39 @@
+<!---
+    Copyright (c) 1996-2003 Ariba, Inc.
+    All rights reserved. Patents pending.
+
+    $Id: companynews.html#14 $
+
+    Responsible: ariba
+-->
+
+<!--- An example of the Company News. -->
+<div id="newsPanel" 
+    style="position:relative; width:350px; z-index:5; left:55px; top:25px; border:1px solid #9999CC; padding:5px 5px 0px 5px;"> 
+    <div class="doc02 bold" 
+        style="position:relative; top:-24px;  display:inline-block; text-indent:5px; border-top:1px solid #9999CC; border-right:1px solid #9999CC; border-left:1px solid #9999CC; padding:2px 6px 2px 0px; margin-left:-6px; margin-right:60px;">
+        <ARWNLSString value="@companynews/companyNews"
+                      escapeHtml="$false"/> 
+    </div>
+    <div style="position:relative; top:-15px;"> 
+        <span style="display:block; padding:6px 6px 6px 6px; background-color:#E5E5EE; line-height:15px;">
+            <ARWNLSString value="@companynews/item1"/>
+        </span>
+        <br/>
+        <span class="doc01 bold">
+            &nbsp;<ARWNLSString value="@companynews/item2"/>&nbsp;&nbsp;
+        </span>
+        <br/>
+        <br/>
+        <span style="display:block; padding:0px 6px 6px 6px;">
+            <ARWNLSString value="@companynews/item3"
+                      escapeHtml="$false"/>
+        </span> 
+        <span style="display:block; padding:0px 6px 6px 6px;">
+            <ARWNLSString value="@companynews/item4"
+                      escapeHtml="$false"/>
+        </span>
+        <br/>
+    </div>
+</div>
+

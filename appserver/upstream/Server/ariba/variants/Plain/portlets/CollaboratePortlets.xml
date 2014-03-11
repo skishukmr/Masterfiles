@@ -1,0 +1,323 @@
+<PortletProviders>
+    <PortletProvider stringFile="&lt;ProviderURL&gt;/ad/stringFile/PortletProviderActions?stringFile=ariba.acm.portlets">
+        <UniqueName>ACM</UniqueName>
+        <DisplayName>$[a019]Common</DisplayName>
+        <Description>$[a020]Common Actions</Description>
+        <BusinessKey>ACM</BusinessKey>
+        <HttpURL>&HttpURL;</HttpURL>
+        <ServerURL>&ServerURL;</ServerURL>
+        <InstalledModules>&InstalledModules;</InstalledModules>
+        <Permissions></Permissions>
+        <Portlets>
+            <Portlet>
+                <UniqueName>WatchedProjects</UniqueName>
+                <DisplayName>$[a003]Watched Projects</DisplayName>
+                <Description>$[a004]List of the watched projects</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/WatchedProjectsPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                    <String>ACMAuthorized</String>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>Announcements</UniqueName>
+                <DisplayName>$[a005]Announcements</DisplayName>
+                <Description>$[a006]List of announcements</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/AnnouncementPortletController</Controller>
+                <ContentType>HTML</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                    <String>ACMAuthorized</String>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>Calendar</UniqueName>
+                <DisplayName>$[a007]Calendar</DisplayName>
+                <Description>$[a008]Calendar</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/CalendarPortletController</Controller>
+                <ContentType>HTML</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>Todo</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ToDoPortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>ToDo</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>CollabMyDocs</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/CollaborateMyDocsPortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>MyDocs</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>MainActions</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/CollaborateMainActionsController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+               <UniqueName>RecentlyViewedActions</UniqueName>
+               <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/CollaborateRecentlyViewedActionsController</Controller>
+               <ContentType>AggregationSource</ContentType>
+               <AggregationDataType>RecentlyViewed</AggregationDataType>
+               <IsSingleton>true</IsSingleton>
+               <IsEditable>false</IsEditable>
+               <SetupRequired>false</SetupRequired>
+               <Permissions></Permissions>
+            </Portlet>
+            <!-- Next Gen version for ContractsToc - please make changes in both places -->
+            <Portlet>
+               <UniqueName>Search</UniqueName>
+               <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/CollaborateSearchPortletController</Controller>
+               <ContentType>AggregationSource</ContentType>
+               <AggregationDataType>Search</AggregationDataType>
+               <IsSingleton>true</IsSingleton>
+               <IsEditable>false</IsEditable>
+               <SetupRequired>false</SetupRequired>
+               <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>ContractsActions</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ContractsActionsController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>NewsSource</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/NewsSourcePortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>News</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>true</IsEditable>
+                <SetupRequired>true</SetupRequired>
+                <Permissions>
+                </Permissions>
+            </Portlet>            
+          <!--
+            fkhezzar - XXX : disabling for Peregrine.
+
+            <Portlet>
+                <UniqueName>ProjectDocumentSearch</UniqueName>
+                <DisplayName>$[a019]Project Saved Search</DisplayName>
+                <Description>$[a020]Results for project saved search</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ProjectDocumentSearchPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>false</IsSingleton>
+                <IsEditable>true</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>true</SetupRequired>
+                <Permissions>
+                    <String>DashboardAuthorized</String>
+                </Permissions>
+            </Portlet>
+			-->
+        </Portlets>
+        <DocTypes>
+            <DocType>
+                <UniqueName>ariba.collaborate.core.Workspace</UniqueName>
+                <DisplayName>$[a023]Project</DisplayName>
+                <Description>$[a024]All project types and workspaces</Description>
+                <ActionRank>100</ActionRank>
+                <IsGeneral>true</IsGeneral>
+                <Permissions>
+                    <String>ACMAuthorized</String>
+                    <String>ACWAuthorized</String>
+                    <String>SourcingAuthorized</String>
+                    <String>AnalysisAuthorized</String>
+                    <String>SPMAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.core.PersonalWorkspace</UniqueName>
+                <DisplayName>$[a025]Personal Workspace</DisplayName>
+                <Description>$[a026]A per-user workspace for managing documents</Description>
+                <ActionRank>100</ActionRank>
+                <Permissions>
+                    <String>ACMAuthorized</String>
+                    <String>ACWAuthorized</String>
+                    <String>SourcingAuthorized</String>
+                    <String>AnalysisAuthorized</String>
+                    <String>SPMAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.core.AbstractDocument</UniqueName>
+                <DisplayName>$[a027]Document</DisplayName>
+                <Description>$[a028]Document stored in a Workspace</Description>
+                <ActionRank>95</ActionRank>
+                <IsGeneral>true</IsGeneral>
+                <Permissions>
+                    <String>ACMAuthorized</String>
+                    <String>ACWAuthorized</String>
+                    <String>SourcingAuthorized</String>
+                    <String>AnalysisAuthorized</String>
+                    <String>SPMAuthorized</String>
+                </Permissions>
+            </DocType>
+        </DocTypes>
+        <DocType>
+            <UniqueName>ariba.collaborate.core.Document</UniqueName>
+            <DisplayName>$[a029]Document</DisplayName>
+            <Description>$[a030]All types of documents</Description>
+            <ActionRank>90</ActionRank>
+            <IsGeneral>true</IsGeneral>
+            <Permissions>
+                <String>ACMAuthorized</String>
+                <String>ACWAuthorized</String>
+                <String>SourcingAuthorized</String>
+                <String>AnalysisAuthorized</String>
+                <String>SPMAuthorized</String>
+            </Permissions>
+        </DocType>
+    </PortletProvider>
+    <PortletProvider stringFile="&lt;ProviderURL&gt;/ad/stringFile/PortletProviderActions?stringFile=ariba.acm.portlets">
+        <UniqueName>ACW</UniqueName>
+        <DisplayName>$[a015]Contracts</DisplayName>
+        <Description>$[a015]Contracts</Description>
+        <BusinessKey>ACW</BusinessKey>
+        <HttpURL>&HttpURL;</HttpURL>
+        <ServerURL>&ServerURL;</ServerURL>
+        <InstalledModules>&InstalledModules;</InstalledModules>
+        <Permissions></Permissions>
+        <Portlets>
+            <Portlet>
+                <UniqueName>ExpiringContracts</UniqueName>
+                <DisplayName>$[a013]Expiring Contracts</DisplayName>
+                <Description>$[a014]List of expiring contracts in Contract Management</Description>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ExpiringContractsPortletController</Controller>
+                <ContentType>DataTable</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>true</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>true</SetupRequired>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </Portlet>
+        </Portlets>
+        <DocTypes>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ContractWorkspace</UniqueName>
+                <DisplayName>$[a031]Contract Workspace (Procurement)</DisplayName>
+                <Description>$[a032]Contract Workspace for preparing procurement agreements</Description>
+                <ActionRank>25</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.SalesContractWorkspace</UniqueName>
+                <DisplayName>$[a033]Contract Workspace (Sales)</DisplayName>
+                <Description>$[a034]Contract Workspace for preparing sales agreements</Description>
+                <ActionRank>27</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ContractRequest</UniqueName>
+                <DisplayName>$[a035]Contract Request (Procurement)</DisplayName>
+                <ActionRank>30</ActionRank>
+                <Description>$[a036]Request for creation of a Procurement Contract</Description>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.SalesContractRequest</UniqueName>
+                <DisplayName>$[a037]Contract Request (Sales)</DisplayName>
+                <ActionRank>32</ActionRank>
+                <Description>$[a038]Request for creation of a Sales Contract</Description>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ClauseLibrary</UniqueName>
+                <DisplayName>$[a039]Contract Clause Library</DisplayName>
+                <Description>$[a040]Workspace for managing clauses used in Contract Workspaces</Description>
+                <ActionRank>80</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ContractKnowledgeLibrary</UniqueName>
+                <DisplayName>$[a041]Contract Knowledge Library</DisplayName>
+                <Description>$[a042]Library Workspace for managing content to be used in Contract Workspaces</Description>
+                <ActionRank>90</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ContractClause</UniqueName>
+                <DisplayName>$[a043]Contract Clause Document</DisplayName>
+                <Description>$[a044]Contract Clause Document in a Contract Workspace</Description>
+                <ActionRank>75</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ContractTerms</UniqueName>
+                <DisplayName>$[a045]Contract Terms Document</DisplayName>
+                <Description>$[a046]Contract Term Document in a Contract Workspace</Description>
+                <ActionRank>80</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ContractAgreement</UniqueName>
+                <DisplayName>$[a047]Contract Agreement Document</DisplayName>
+                <Description>$[a048]Agreement Document in a Contract Workspace</Description>
+                <ActionRank>85</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+            <DocType>
+                <UniqueName>ariba.collaborate.contracts.ContractAddendum</UniqueName>
+                <DisplayName>$[a049]Contract Addendum Document</DisplayName>
+                <Description>$[a050]Addendum Document in a Contract Workspace</Description>
+                <ActionRank>90</ActionRank>
+                <Permissions>
+                    <String>ACWAuthorized</String>
+                </Permissions>
+            </DocType>
+        </DocTypes>
+    </PortletProvider>
+</PortletProviders>

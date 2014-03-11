@@ -1,0 +1,690 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerCategoryDriverMap">
+    <loadStages>
+        <aqlStage fromClause="ariba.procure.core.CategoryDriverMapEntry"
+                  incrementalClause="(:IncrementalStartDate &lt;= CategoryDriverMapEntry.TimeUpdated AND
+                                      CategoryDriverMapEntry.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.basic.AnalysisMapEntry"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Key">
+            <aqlMapping selectField="CatalogType"/>
+        </field>
+        <field name="Value">
+            <aqlMapping selectField="ProcureCategoryDriver"/>
+        </field>
+        <field name="Preferred">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="false"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MapType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="BuyerCategoryDriver"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SourceSystem">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.SourceSystemName"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerJobType">
+    <loadStages>
+        <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              JOIN ariba.workforce.core.LaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector
+                              JOIN ariba.procure.core.CategoryDefinition AS c1 INCLUDE INACTIVE USING LaborLineItemDetails.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryDefinitionRequest AS cdr1 INCLUDE INACTIVE USING c1.Request
+                              JOIN ariba.procure.core.CategoryDefinition AS c2 INCLUDE INACTIVE USING cdr1.CategoryDefinition"
+                  whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received')"
+                  incrementalClause="((:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate) OR
+                                      (:IncrementalStartDate &lt;= c2.TimeUpdated AND
+                                      c2.TimeUpdated &lt; :IncrementalEndDate))"
+                  distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.dimension.JobType"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="JobType">
+            <aqlMapping selectField="POLineItem.Description.ShortName"/>
+        </field>
+        <field name="CategoryDefinitionId">
+            <aqlMapping selectField="c2.UniqueName"/>
+        </field>
+        <field name="CategoryDefinition">
+            <aqlMapping selectField="c2.Name"/>
+        </field>
+        <field name="CategoryDriver">
+            <aqlMapping selectField="c2.CatalogType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="BuyerCategoryDriver"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerDeleteTemporaryLaborPO">
+    <loadStages>
+        <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.workforce.core.LaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector"
+                  whereClause="PurchaseOrder.NextVersion IS NOT NULL OR
+                               PurchaseOrder.StatusString NOT IN ('Ordered', 'Receiving', 'Received')"
+                  incrementalClause="(:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.TemporaryLabor"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="POId">
+            <aqlMapping selectField="PurchaseOrder.UniqueName"
+                          sourceLookupField="UniqueName"/>
+        </field>
+        <field name="POLineNumber">
+            <aqlMapping selectField="POLineItem.NumberInCollection"/>
+        </field>
+        <field name="SplitAccountingNumber">
+            <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerBaseTemporaryLaborPO">
+    <loadStages>
+        <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.workforce.core.LaborLineItemDetails subclass none USING POLineItem.POCategoryLineItemDetailsVector
+                              JOIN ariba.procure.core.CategoryDefinition AS c1 INCLUDE INACTIVE USING LaborLineItemDetails.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryDefinitionRequest AS cdr1 INCLUDE INACTIVE USING c1.Request
+                              JOIN ariba.procure.core.CategoryDefinition AS c2 INCLUDE INACTIVE USING cdr1.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryItemProperties AS CategoryItemProps USING LaborLineItemDetails.CategoryItemProperties
+                              JOIN ariba.workforce.core.LaborContractibleProperties AS CategoryItemContractProps subclass none USING CategoryItemProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryItemProperties AS PolicyProps USING LaborLineItemDetails.PolicyPropertyValues
+                              LEFT OUTER JOIN ariba.workforce.core.LaborContractibleProperties AS PolicyContractProps subclass none USING PolicyProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.user.core.User AS Supervisor INCLUDE INACTIVE USING LaborLineItemDetails.WorkSupervisor
+                              LEFT OUTER JOIN ariba.workforce.core.Contractor USING LaborLineItemDetails.Contractor
+                              LEFT OUTER JOIN ariba.user.core.User AS ContractorUser INCLUDE INACTIVE USING Contractor.User
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING POLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money AS SplitAccMoney INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS SplitAccCurr INCLUDE INACTIVE USING SplitAccMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.base.core.NamedPair AS OrderAttributes USING LineItemProductDescription.OrderAttributes
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS PayRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.PayRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PayRateMoney INCLUDE INACTIVE USING PayRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PayRateCurr INCLUDE INACTIVE USING PayRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS BillRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS BillRateMoney INCLUDE INACTIVE USING BillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS BillRateCurr INCLUDE INACTIVE USING BillRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS ContractBillRateQualMoney INCLUDE INACTIVE USING PolicyContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS ContractBillRateMoney INCLUDE INACTIVE USING ContractBillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS ContractBillRateCurr INCLUDE INACTIVE USING ContractBillRateMoney.Currency"
+                  whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received')"
+                  incrementalClause="((:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate) OR
+                                      (:IncrementalStartDate &lt;= c2.TimeUpdated AND
+                                      c2.TimeUpdated &lt; :IncrementalEndDate))"
+                  orderByClause="PurchaseOrder.UniqueName, POLineItem.NumberInCollection, SplitAccounting.NumberInCollection"
+                  dynamicFieldName="OrderAttributes.Name"
+                  dynamicFieldValue="OrderAttributes.Value"/>
+        <analysisStage destinationName="ariba.analytics.fact.TemporaryLabor"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="POId">
+            <aqlMapping selectField="PurchaseOrder.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="POLineNumber">
+            <aqlMapping selectField="POLineItem.NumberInCollection"/>
+        </field>
+        <field name="SplitAccountingNumber">
+            <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+        </field>
+        <field name="OrderedDate">
+            <aqlMapping selectField="PurchaseOrder.OrderedDate"/>
+        </field>
+        <field name="StartDate">
+            <aqlMapping selectField="LaborLineItemDetails.StartDate"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="LaborLineItemDetails.EndDate"/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+         </field>
+
+        <field name="Description">
+            <aqlMapping selectField="POLineItem.Description.Description"/>
+        </field>
+        <field name="Requester.UserId">
+            <aqlMapping selectField="Requester.UniqueName"/>
+        </field>
+        <field name="Requester.PasswordAdapter">
+            <aqlMapping selectField="Requester.PasswordAdapter"/>
+        </field>
+        <field name="Supervisor.UserId">
+            <aqlMapping selectField="Supervisor.UniqueName"/>
+        </field>
+        <field name="Supervisor.PasswordAdapter">
+            <aqlMapping selectField="Supervisor.PasswordAdapter"/>
+        </field>
+        <field name="Contractor.UserId">
+            <aqlMapping selectField="ContractorUser.UniqueName"/>
+        </field>
+        <field name="Contractor.PasswordAdapter">
+            <aqlMapping selectField="ContractorUser.PasswordAdapter"/>
+        </field>
+        <field name="SourceCommodityDomain">
+            <aqlMapping selectField="CommodityCode.Domain"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="CommodityCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+            </analysisMapping>
+        </field>
+        <field name="ERPCommodity.CommodityId">
+            <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+        </field>
+        <field name="Amount.Amount">
+            <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+        </field>
+        <field name="Amount.Currency">
+            <aqlMapping selectField="SplitAccCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+        </field>
+        <field name="BillRate.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BillRate.Currency">
+            <aqlMapping selectField="BillRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BillRate.Date">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.ConversionDate"/>
+        </field>
+        <field name="PayRate.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.PayRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PayRate.Currency">
+            <aqlMapping selectField="PayRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PayRate.Date">
+            <aqlMapping selectField="CategoryItemContractProps.PayRate.Value.ConversionDate"/>
+        </field>
+        <field name="Markup.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.Amount - CategoryItemContractProps.PayRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Markup.Currency">
+            <aqlMapping selectField="BillRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Markup.Date">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.ConversionDate"/>
+        </field>
+        <field name="Savings.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.Amount - PolicyContractProps.BillRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Savings.Currency">
+            <aqlMapping selectField="ContractBillRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Savings.Date">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.ConversionDate"/>
+        </field>
+        <field name="NumberHours">
+            <aqlMapping selectField="POLineItem.Quantity"/>
+        </field>
+        <!-- these two fields are used to determine the region name -->
+        <field name="CatalogItemTypeSearchVersion">
+            <aqlMapping selectField="POLineItem.Description.UpdatedCatalogItemTypeSearchVersion"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="Region.RegionId">
+            <aqlMapping selectField="region" isDynamicField="true" dynamicValueSelect="OrderAttributes.Value"/>
+        </field>
+        <field name="Region.RegionName">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CatalogAttributeDisplayName">
+                    <parameter name="AttributeName"       value="region"/>
+                    <parameter name="CanonicalValueField" value="Region.RegionId"/>
+                    <parameter name="CatalogTypeField"    value="JobType.CategoryCategoryId"/>
+                    <parameter name="CatalogVersionField" value="CatalogItemTypeSearchVersion"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="HoursPerWeek">
+            <aqlMapping selectField="LaborLineItemDetails.HoursPerWeek"/>
+        </field>
+        <field name="JobType.JobType">
+            <aqlMapping selectField="POLineItem.Description.ShortName"/>
+        </field>
+        <field name="JobType.CategoryDefinitionId">
+            <aqlMapping selectField="c2.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerTemporaryLaborPO">
+    <loadStages>
+        <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.workforce.core.DynamicLaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector
+                              JOIN ariba.procure.core.CategoryDefinition AS c1 INCLUDE INACTIVE USING DynamicLaborLineItemDetails.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryDefinitionRequest AS cdr1 INCLUDE INACTIVE USING c1.Request
+                              JOIN ariba.procure.core.CategoryDefinition AS c2 INCLUDE INACTIVE USING cdr1.CategoryDefinition
+                              JOIN ariba.procure.core.CategoryItemProperties AS CategoryItemProps USING DynamicLaborLineItemDetails.CategoryItemProperties
+                              JOIN ariba.workforce.core.DynamicLaborContractibleProperties AS CategoryItemContractProps USING CategoryItemProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.procure.core.CategoryItemProperties AS PolicyProps USING DynamicLaborLineItemDetails.PolicyPropertyValues
+                              LEFT OUTER JOIN ariba.workforce.core.DynamicLaborContractibleProperties AS PolicyContractProps USING PolicyProps.ContractiblePropertiesVector
+                              LEFT OUTER JOIN ariba.user.core.User AS Supervisor INCLUDE INACTIVE USING DynamicLaborLineItemDetails.WorkSupervisor
+                              LEFT OUTER JOIN ariba.workforce.core.Contractor USING DynamicLaborLineItemDetails.Contractor
+                              LEFT OUTER JOIN ariba.user.core.User AS ContractorUser INCLUDE INACTIVE USING Contractor.User
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING POLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money AS SplitAccMoney INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS SplitAccCurr INCLUDE INACTIVE USING SplitAccMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.base.core.NamedPair AS OrderAttributes USING LineItemProductDescription.OrderAttributes
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS PayRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.PayRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PayRateMoney INCLUDE INACTIVE USING PayRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PayRateCurr INCLUDE INACTIVE USING PayRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS BillRateQualMoney INCLUDE INACTIVE USING CategoryItemContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS BillRateMoney INCLUDE INACTIVE USING BillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS BillRateCurr INCLUDE INACTIVE USING BillRateMoney.Currency
+                              LEFT OUTER JOIN ariba.procure.core.QualifiedMoney AS ContractBillRateQualMoney INCLUDE INACTIVE USING PolicyContractProps.BillRate
+                              LEFT OUTER JOIN ariba.basic.core.Money AS ContractBillRateMoney INCLUDE INACTIVE USING ContractBillRateQualMoney.Value
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS ContractBillRateCurr INCLUDE INACTIVE USING ContractBillRateMoney.Currency"
+                  whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received')"
+                  incrementalClause="((:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate) OR
+                                      (:IncrementalStartDate &lt;= c2.TimeUpdated AND
+                                      c2.TimeUpdated &lt; :IncrementalEndDate))"
+                  orderByClause="PurchaseOrder.UniqueName, POLineItem.NumberInCollection, SplitAccounting.NumberInCollection"
+                  dynamicFieldName="OrderAttributes.Name"
+                  dynamicFieldValue="OrderAttributes.Value"/>
+        <analysisStage destinationName="ariba.analytics.fact.TemporaryLabor"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="POId">
+            <aqlMapping selectField="PurchaseOrder.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="POLineNumber">
+            <aqlMapping selectField="POLineItem.NumberInCollection"/>
+        </field>
+        <field name="SplitAccountingNumber">
+            <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+        </field>
+        <field name="OrderedDate">
+            <aqlMapping selectField="PurchaseOrder.OrderedDate"/>
+        </field>
+        <field name="StartDate">
+            <aqlMapping selectField="DynamicLaborLineItemDetails.StartDate"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="DynamicLaborLineItemDetails.EndDate"/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="Description">
+            <aqlMapping selectField="POLineItem.Description.Description"/>
+        </field>
+        <field name="Requester.UserId">
+            <aqlMapping selectField="Requester.UniqueName"/>
+        </field>
+        <field name="Requester.PasswordAdapter">
+            <aqlMapping selectField="Requester.PasswordAdapter"/>
+        </field>
+        <field name="Supervisor.UserId">
+            <aqlMapping selectField="Supervisor.UniqueName"/>
+        </field>
+        <field name="Supervisor.PasswordAdapter">
+            <aqlMapping selectField="Supervisor.PasswordAdapter"/>
+        </field>
+        <field name="Contractor.UserId">
+            <aqlMapping selectField="ContractorUser.UniqueName"/>
+        </field>
+        <field name="Contractor.PasswordAdapter">
+            <aqlMapping selectField="ContractorUser.PasswordAdapter"/>
+        </field>
+        <field name="SourceCommodityDomain">
+            <aqlMapping selectField="CommodityCode.Domain"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="CommodityCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+            </analysisMapping>
+        </field>
+        <field name="ERPCommodity.CommodityId">
+            <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+        </field>
+        <field name="Amount.Amount">
+            <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+        </field>
+        <field name="Amount.Currency">
+            <aqlMapping selectField="SplitAccCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+        </field>
+        <field name="BillRate.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BillRate.Currency">
+            <aqlMapping selectField="BillRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="BillRate.Date">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.ConversionDate"/>
+        </field>
+        <field name="PayRate.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.PayRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PayRate.Currency">
+            <aqlMapping selectField="PayRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PayRate.Date">
+            <aqlMapping selectField="CategoryItemContractProps.PayRate.Value.ConversionDate"/>
+        </field>
+        <field name="Markup.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.Amount - CategoryItemContractProps.PayRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Markup.Currency">
+            <aqlMapping selectField="BillRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Markup.Date">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.ConversionDate"/>
+        </field>
+        <field name="Savings.Amount">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.Amount - PolicyContractProps.BillRate.Value.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Savings.Currency">
+            <aqlMapping selectField="ContractBillRateCurr.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Savings.Date">
+            <aqlMapping selectField="CategoryItemContractProps.BillRate.Value.ConversionDate"/>
+        </field>
+        <field name="NumberHours">
+            <aqlMapping selectField="POLineItem.Quantity"/>
+        </field>
+        <!-- these two fields are used to determine the region name -->
+        <field name="CatalogItemTypeSearchVersion">
+            <aqlMapping selectField="POLineItem.Description.UpdatedCatalogItemTypeSearchVersion"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="Region.RegionId">
+            <aqlMapping selectField="region" isDynamicField="true" dynamicValueSelect="OrderAttributes.Value"/>
+        </field>
+        <field name="Region.RegionName">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CatalogAttributeDisplayName">
+                    <parameter name="AttributeName"       value="region"/>
+                    <parameter name="CanonicalValueField" value="Region.RegionId"/>
+                    <parameter name="CatalogTypeField"    value="JobType.CategoryCategoryId"/>
+                    <parameter name="CatalogVersionField" value="CatalogItemTypeSearchVersion"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="HoursPerWeek">
+            <aqlMapping selectField="DynamicLaborLineItemDetails.HoursPerWeek"/>
+        </field>
+        <field name="JobType.JobType">
+            <aqlMapping selectField="POLineItem.Description.ShortName"/>
+        </field>
+        <field name="JobType.CategoryDefinitionId">
+            <aqlMapping selectField="c2.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+
+<dataLoad name="BuyerDeleteTimeSheet">
+    <loadStages>
+        <aqlStage fromClause="ariba.workforce.core.TimeSheet INCLUDE INACTIVE
+                              JOIN ariba.workforce.core.TimeSheetItem USING TimeSheet.ReceiptItems"
+                  whereClause="TimeSheet.NextVersion IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= TimeSheet.TimeUpdated AND
+                                      TimeSheet.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.TimeSheet"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="TimeSheetId">
+            <aqlMapping selectField="TimeSheet.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="TSLineNumber">
+            <aqlMapping selectField="TimeSheetItem.NumberInCollection"/>
+        </field>
+     </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerTimeSheet">
+    <loadStages>
+        <aqlStage fromClause="ariba.workforce.core.TimeSheet
+                              JOIN ariba.workforce.core.TimeSheetItem USING TimeSheet.ReceiptItems
+                              LEFT OUTER JOIN ariba.workforce.core.LaborPayCode INCLUDE INACTIVE USING TimeSheetItem.PayCode
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING TimeSheetItem.AmountAccepted
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING TimeSheet.Requester
+                              LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder USING TimeSheet.Order
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.POLineItem USING TimeSheetItem.LineItem
+                              LEFT OUTER JOIN ariba.workforce.core.LaborLineItemDetails USING POLineItem.POCategoryLineItemDetailsVector
+                              LEFT OUTER JOIN ariba.common.core.Address INCLUDE INACTIVE USING LaborLineItemDetails.WorkLocation"
+                  whereClause="TimeSheet.NextVersion IS NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= TimeSheet.TimeUpdated AND
+                                      TimeSheet.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.TimeSheet"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="TimeSheetId">
+            <aqlMapping selectField="TimeSheet.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="TSLineNumber">
+            <aqlMapping selectField="TimeSheetItem.NumberInCollection"/>
+        </field>
+        <field name="POName">
+            <aqlMapping selectField="PurchaseOrder.UniqueName || ' - ' || PurchaseOrder.Name"/>
+        </field>
+        <field name="NumberHours">
+            <aqlMapping selectField="TimeSheetItem.NumberAccepted"/>
+        </field>
+        <field name="Amount.Amount">
+            <aqlMapping selectField="TimeSheetItem.AmountAccepted.Amount"/>
+        </field>
+        <field name="Amount.Currency">
+            <aqlMapping selectField="Currency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <aqlMapping selectField="TimeSheetItem.AmountAccepted.ConversionDate"/>
+        </field>
+        <field name="StartDate">
+            <aqlMapping selectField="TimeSheetItem.StartDate"/>
+        </field>
+        <field name="Contractor.UserId">
+            <aqlMapping selectField="Requester.UniqueName"/>
+        </field>
+        <field name="Contractor.PasswordAdapter">
+            <aqlMapping selectField="Requester.PasswordAdapter"/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="Location.LocationId">
+            <aqlMapping selectField="Address.UniqueName"/>
+        </field>
+        <field name="Billable">
+            <aqlMapping selectField="TimeSheetItem.Billable"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="true"/>
+                            <entry value="TRUE"/>
+                            <entry value="false"/>
+                            <entry value="FALSE"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="billable"/>
+                            <entry value="billable"/>
+                            <entry value="nonbillable"/>
+                            <entry value="nonbillable"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Status">
+            <aqlMapping selectField="TimeSheet.StatusString"/>
+        </field>
+        <field name="PayCode">
+            <aqlMapping selectField="LaborPayCode.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

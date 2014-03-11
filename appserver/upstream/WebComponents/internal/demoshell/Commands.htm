@@ -1,0 +1,64 @@
+<a:If ifTrue="$true">\
+<table border=0 bordercolor="blue" cellPadding=0 cellSpacing=0 width="100%">
+    <tr>
+        <td class="mastCmd">\
+            <AribaImage filename="cleardot.gif" height="20" width="20"/>\
+        </td>
+
+        <td align="center" class="mastCmd">\
+            <w:PopupMenuLink class="mastCmdMenu" menuId="PrefsMenu" position="this">\
+                Create\
+            </w:PopupMenuLink>\
+            &nbsp;\
+        </td>
+        <td align="center" class="mastCmd">\
+            <w:PopupMenuLink class="mastCmdMenu" menuId="PrefsMenu" position="this">\
+                Search\
+            </w:PopupMenuLink>\
+            &nbsp;\
+        </td>
+        <td align="center" class="mastCmd">\
+            <w:PopupMenuLink class="mastCmdMenu" menuId="PrefsMenu" position="this">\
+                Manage\
+            </w:PopupMenuLink>\
+            &nbsp;\
+        </td>
+        <td align="center" class="mastCmd">\
+            <w:PopupMenuLink class="mastCmdMenu" menuId="PrefsMenu" position="this">\
+                Recently Viewed\
+            </w:PopupMenuLink>\
+            &nbsp;\
+        </td>
+
+        <td align="center" class="mastCmd">\
+            <AribaPrintMenu class="mastCmd">
+                Print\
+            </AribaPrintMenu>\
+            &nbsp;\
+        </td>
+        <td>&nbsp;</td>        
+    </tr>
+</table>
+</a:If>
+<w:PopupMenu menuId="PrefsMenu">
+    <w:PopupMenuHeading showSeparator="$false">\
+        Options\
+    </w:PopupMenuHeading>
+
+    <w:PopupMenuItem action="$null">\
+            Options...\
+    </w:PopupMenuItem>
+    <w:PopupMenuItem action="$null">\
+            Toggle Currency\
+    </w:PopupMenuItem>
+    <w:PopupMenuItem action="$null">\
+            Toggle Inline Help\
+    </w:PopupMenuItem>
+</w:PopupMenu>
+<server>
+    function toggleDebug () {
+        ariba.ui.aribaweb.core.AWConcreteServerApplication.IsDebuggingEnabled = !ariba.ui.aribaweb.core.AWConcreteServerApplication.IsDebuggingEnabled;
+        Log.demoshell.debug("*** Current visibility: %s", ariba.ui.aribaweb.core.AWConcreteServerApplication.IsDebuggingEnabled);
+        return null;
+    }
+</server>

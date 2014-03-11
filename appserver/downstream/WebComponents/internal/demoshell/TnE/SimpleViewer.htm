@@ -1,0 +1,9 @@
+<w:SectionHeading title="Simple Viewer"/>
+<w:SectionBody>
+    Amount: <a:String value="$^currentItem.Amount" formatter="$formatters.money"/><br/>
+
+    Popup: <a:Popup list="${[1, 2, 3, 4]}" item="$item" selection="$^currentItem.popupSelection">$item</a:Popup>
+    Comments:
+    <a:TextArea cols="60" value="$dict.comment"/>
+</w:SectionBody>
+

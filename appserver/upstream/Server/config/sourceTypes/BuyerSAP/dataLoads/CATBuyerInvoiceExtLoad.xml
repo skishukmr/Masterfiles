@@ -1,0 +1,181 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerInvoiceLineItem">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CompanyCode as CompanyCodeCC INCLUDE INACTIVE USING CostCenter.CompanyCode
+        				LEFT OUTER JOIN ariba.core.CompanyCode as CompanyCodeGL INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode
+        				LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+        				LEFT OUTER JOIN cat.core.BuyerCode AS BuyerCodePO INCLUDE INACTIVE USING POLineItem.BuyerCode
+        				LEFT OUTER JOIN cat.core.BuyerCode AS BuyerCodeINV INCLUDE INACTIVE USING InvoiceReconciliationLineItem.BuyerCode
+        				LEFT OUTER JOIN ariba.user.core.User AS Preparer INCLUDE INACTIVE USING InvoiceReconciliation.Preparer
+        				LEFT OUTER JOIN ariba.basic.core.Money AS AmountAccepted INCLUDE INACTIVE USING POLineItem.AmountAccepted
+                              		LEFT OUTER JOIN ariba.basic.core.Currency AS AmountAcceptedCurrency INCLUDE INACTIVE USING AmountAccepted.Currency"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="CostCenter.CompanyCode"/>
+        <deleteField name="Account.CompanyCode"/>
+        <!-- 
+	    Changed by : Arasan Rajendren
+	    Changed on : 04/28/2011
+	    Changes    : Added deleteField for Amount, Currency & Date Field
+	-->
+	<deleteField name="AmountAccepted.Amount"/>
+	<deleteField name="AmountAccepted.Currency"/>
+	<deleteField name="AmountAccepted.Date"/>
+        
+	<field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CompanyCodeCC.UniqueName"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <aqlMapping selectField="CompanyCodeGL.UniqueName"/>
+        </field>
+        <!--<field name="CapitalProjectNumber">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.ProjectNumber"/>
+        </field>-->
+        <field name="ControlId">
+            <aqlMapping selectField="PurchaseOrder.ControlIdentifier"/>
+        </field>
+        <field name="FOBPoint">
+            <aqlMapping selectField="Requisition.FOBPoint"/>
+        </field>
+        <!--<field name="FDFARAttachmentIndicator">
+            <aqlMapping selectField="Requisition.FDFARAttachmentIndicator"/>
+        </field>
+        <field name="FDFARAttachment">
+            <aqlMapping selectField="Requisition.FDFARAttachment"/>
+        </field>
+        <field name="OIOAgreement">
+            <aqlMapping selectField="Requisition.OIOAgreement"/>
+        </field>-->
+        <field name="POstatus">
+            <aqlMapping selectField="PurchaseOrder.StatusString"/>
+        </field>
+        <field name="OrderMethod">
+            <aqlMapping selectField="POLineItem.OrderMethodCategory"/>
+        </field>
+        <field name="InvoiceReconciliationStatus">
+            <aqlMapping selectField="InvoiceReconciliation.StatusString"/>
+        </field>
+        <field name="InvoiceTypeLoadedFrom">
+            <aqlMapping selectField="Invoice.LoadedFrom"/>
+            <analysisMapping>
+	    	<mapValue implementation="ariba.analytics.mapValue.Decode">
+	    		<parameter name="DefaultValue" value=" "/>
+	    		<parameter name="MapKeys">
+	    			<vector>
+	    				<entry value="1"/>
+	    				<entry value="2"/>
+	    				<entry value="3"/>
+	    				<entry value="4"/>
+	    			</vector>
+	    		</parameter>
+	    		<parameter name="MapElements">
+	    			<vector>
+	    				<entry value="ASN"/>
+	    				<entry value="Ariba Provided Invoice Form"/>
+	    				<entry value="Invoice EForm"/>
+	    				<entry value="Invoice Against Contracts"/>
+	    			</vector>
+	    		</parameter>
+	    	</mapValue>
+	   </analysisMapping>
+        </field>
+	<!--Sandeep, mapping of new fields for MACH1 Accounting-->
+	<field name="MACH1CC">
+	   <aqlMapping selectField="SplitAccounting.CostCenterText"/>
+	</field>
+	<field name="GLAccount">
+	   <aqlMapping selectField="SplitAccounting.GeneralLedgerText"/>
+	</field>
+	<field name="WBSElement">
+	   <aqlMapping selectField="SplitAccounting.WBSElementText"/>
+	</field>
+	<field name="CATInternalOrder">
+           <aqlMapping selectField="SplitAccounting.InternalOrderText"/>
+        </field>
+	<field name="CompanyCode">
+           <aqlMapping selectField="InvoiceReconciliation.CompanyCode.UniqueName || ' ' || InvoiceReconciliation.CompanyCode.Description"/>
+        </field>
+        <!--<field name="Facility">
+            <aqlMapping selectField="SplitAccounting.AccountingFacility"/>
+        </field>
+        <field name="Department">
+            <aqlMapping selectField="SplitAccounting.Department"/>
+        </field>
+        <field name="Division">
+            <aqlMapping selectField="SplitAccounting.Division"/>
+        </field>
+        <field name="Section">
+            <aqlMapping selectField="SplitAccounting.Section"/>
+        </field>
+        <field name="ExpenseAccount">
+            <aqlMapping selectField="SplitAccounting.ExpenseAccount"/>
+        </field>
+        <field name="CatOrder">
+            <aqlMapping selectField="SplitAccounting.Order"/>
+        </field>
+        <field name="Misc">
+            <aqlMapping selectField="SplitAccounting.Misc"/>
+        </field>-->
+        <!--<field name="BuyerCode">
+            <aqlMapping selectField="BuyerCode.UniqueName"/>
+        </field>-->
+        <field name="BuyerCode">
+            <aqlMapping selectField="CASE BuyerCodePO.UniqueName WHEN NULL THEN BuyerCodeINV.UniqueName ELSE BuyerCodePO.UniqueName END"/>
+        </field>
+        <!--<field name="SiteFacility">
+            <aqlMapping selectField="Facility.UniqueName"/>
+        </field>-->
+        <field name="Preparer.UserId">
+            <aqlMapping selectField="Preparer.UniqueName"/>
+        </field>
+        <field name="Preparer.PasswordAdapter">
+            <aqlMapping selectField="Preparer.PasswordAdapter"/>
+        </field>
+        <field name="POOrderedDate">
+            <aqlMapping selectField="POLineItem.OrderedDate"/>
+        </field>
+        <field name="ContractCreateDate">
+            <aqlMapping selectField="ContractCoreApprovableLineItem.StartDate"/>
+        </field>
+        <field name="BookingDate">
+            <aqlMapping selectField="InvoiceReconciliation.SubmitDate"/>
+        </field>
+        <field name="AmountAccepted.Amount">
+            <aqlMapping selectField="AmountAccepted.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountAccepted.Currency">
+            <aqlMapping selectField="AmountAcceptedCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountAccepted.Date">
+            <aqlMapping selectField="AmountAccepted.ConversionDate"/>
+        </field>
+        <field name="DaysOutstanding">
+            <aqlMapping selectField="InvoiceReconciliation.PaidDate - InvoiceReconciliation.InvoiceDate"/>
+        </field>
+        <field name="PCDUSD">
+            <aqlMapping selectField="SplitAccountAmount.ApproxAmountInBaseCurrency"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<derivedDataLoad name="Tmp_BuyerInvoiceLineItem" extendsLoad="BuyerInvoiceLineItem">
+				<inLoadStages>
+				    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+				                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+		                                      />
+				</inLoadStages>
+	</derivedDataLoad>
+</allDataLoads>
+

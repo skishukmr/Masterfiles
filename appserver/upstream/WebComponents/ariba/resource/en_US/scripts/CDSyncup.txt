@@ -1,0 +1,179 @@
+Dim app
+Dim agreement
+Dim documentLocation
+Dim syncupUrl
+Dim clauseUrl
+Dim tempDocumentName
+Dim doneUrl
+
+wdMergeTargetCurrent = 1
+wdFormattingFromPrompt = 2
+
+
+Sub cleanup ()
+    On Error Resume Next
+
+    If (not (app is Nothing)) Then
+        app.Visible = false
+        document.body.style.cursor = "wait"
+        app.NormalTemplate.Saved = True
+        ' app.Documents.Close wdDoNotSaveChanges
+        app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+End Sub
+
+Function logError (message)
+    logError = false
+    If Err.number <> 0 Then
+        ' msgbox Err.Description
+        globalError = true
+        ScriptError.innerHTML = message
+        ActiveXError.style.display = ""
+        cleanup
+        logError = true
+    End If
+End Function
+
+Sub contactApp ()
+    On Error Resume Next
+
+        'launch app
+    set app = CreateObject("Word.Application")
+    If logError(GeneratingErr.contactApplicationErrorMessage) Then
+        Exit Sub
+    End If
+    app.Visible = false
+    document.body.style.cursor = "wait"
+End Sub
+
+Sub syncupClause ()
+    On Error Resume Next
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    saveOpenDocument app, documentLocation
+    openDocumentInWord app, documentLocation, False
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+    Set agreement = app.ActiveDocument
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    Dim currentSelection
+    Dim i, count
+    Dim bookmarkName
+    Dim currentBookmark, contextBookmark
+    Dim allBookmark
+    Dim treeContent
+    Dim fromPosition, toPosition
+    Dim sectionStructure
+    Dim clauseName
+    Dim index
+
+    app.Visible = False
+    document.body.style.cursor = "wait"
+    Set currentSelection = agreement.ActiveWindow.Selection
+    currentSelection.WholeStory
+    Set currentBookmark = Nothing
+    Set contextBookmark = Nothing
+    Set allBookmark = currentSelection.Bookmarks
+    count = allBookmark.count
+    sectionStructure = ""
+
+    Dim newClauseIndex
+    newClauseIndex = 1
+
+    For i = 1 To count
+        app.Visible = False
+        document.body.style.cursor = "wait"
+        Set currentBookmark = currentSelection.Bookmarks(i)
+        bookmarkName = currentBookmark.Name
+
+        index = InStr(1, bookmarkName, prefixSectionName, vbTextCompare)
+        If (index <> 0) Then
+            newClauseIndex = addCommentForAdHocClause(agreement, currentSelection, bookmarkName, newClauseIndex)
+        End If
+
+        agreement.Activate
+        Set currentSelection = agreement.ActiveWindow.Selection
+        currentSelection.WholeStory
+    Next
+
+    convertCommentToBookmarkForAdHocClause agreement
+
+    syncupContent app, documentLocation, syncupUrl, tempDocumentName, True, clauseUrl
+
+    app.NormalTemplate.Saved = True
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    ' app.Documents.Close wdDoNotSaveChanges
+    ' app.Quit wdDoNotSaveChanges
+End Sub
+
+Sub step_contact_app_sub ()
+    On Error Resume Next
+
+    contactApp
+    setStep "step_syncup_data"
+    step_syncup_data_sub
+End Sub
+
+Sub step_syncup_data_sub ()
+    On Error Resume Next
+
+    syncupClause
+
+    setStep "step_done"
+    step_done_sub
+End Sub
+
+Sub step_done_sub ()
+    On Error Resume Next
+
+    cleanup
+
+    ariba.Request.setWindowLocation(doneUrl)
+End Sub
+
+Sub startSyncupHandler (keyValues)
+    On Error Resume Next
+
+    documentLocation = awxsGetValue(keyValues, "documentLocation")
+    syncupUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "syncupUrl"))
+    clauseUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "clauseUrl"))
+    tempDocumentName = awxsGetValue(keyValues, "tempDocumentName")
+    doneUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "doneUrl"))
+
+    setClientLogLevel awxsGetValue(keyValues, "clientLogLevel")
+
+    If logError("") Then
+        Exit Sub
+    End If
+    globalError = false
+    step_contact_app_sub
+End Sub
+
+Sub setStep (name)
+    step_contact_app.className = "inactiveStep"
+    step_syncup_data.className = "inactiveStep"
+    step_done.className = "inactiveStep"
+    document.all(name).className = "activeStep"
+    ' setTimeout name & "_sub()", 1, vbscript
+End Sub
+
+Dim CDSyncupTrigger
+
+Dim eventStartSyncup
+Set eventStartSyncup = awxsCreateEvent("startSyncup", GetRef("startSyncupHandler"))
+awxsRegisterEvent "startSyncup", eventStartSyncup
+
+
+

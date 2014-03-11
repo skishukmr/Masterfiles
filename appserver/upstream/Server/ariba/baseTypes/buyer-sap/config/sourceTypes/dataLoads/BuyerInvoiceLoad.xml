@@ -1,0 +1,63 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <inDataLoad name="BuyerInvoiceLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING InvoiceReconciliationLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING InvoiceReconciliationLineItem.LineType
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Order
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING InvoiceReconciliation.Requester
+                              LEFT OUTER JOIN ariba.contract.core.MasterAgreement INCLUDE INACTIVE USING InvoiceReconciliationLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING MasterAgreement.ForecastedSpend
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING InvoiceReconciliationLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.UnitOfMeasure INCLUDE INACTIVE USING LineItemProductDescription.UnitOfMeasure
+                              LEFT OUTER JOIN ariba.purchasing.core.POLineItem USING InvoiceReconciliationLineItem.OrderLineItem
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS POLineDescription USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.Money AS POLineMoney USING POLineDescription.Price
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS POLineCurrency INCLUDE INACTIVE USING POLineMoney.Currency
+                              LEFT OUTER JOIN ariba.contract.core.MALineItem USING InvoiceReconciliationLineItem.MALineItem
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS MALineDescription USING MALineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MALineMoney USING MALineDescription.Price
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MALineCurrency INCLUDE INACTIVE USING MALineMoney.Currency
+                              LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                              LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                              LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                              LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode
+                              LEFT OUTER JOIN ariba.core.Asset as Asset INCLUDE INACTIVE USING SplitAccounting.Asset
+                              LEFT OUTER JOIN ariba.core.InternalOrder as InternalOrder INCLUDE INACTIVE USING SplitAccounting.InternalOrder
+                              LEFT OUTER JOIN ariba.core.WBSElement as Project INCLUDE INACTIVE USING SplitAccounting.WBSElement"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CostCenter.CostCenterId"/>
+            <deleteField name="CostCenter.CompanyCode"/>
+            <deleteField name="Account.AccountId"/>
+            <deleteField name="Account.CompanyCode"/>
+            <deleteField name="PurchasingCompany.BusinessUnitId"/>
+            <deleteField name="PurchasingCompany.CompanyId"/>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CostCenter.CompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="GeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GeneralLedger.CompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+</allDataLoads>

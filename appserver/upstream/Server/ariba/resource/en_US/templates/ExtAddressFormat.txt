@@ -1,0 +1,7 @@
+<AribaAddress value="this"/>\
+<AribaConditional ifNotEmpty="Phone">\
+    <AribaField value="Phone"/>
+</AribaConditional>\
+<AribaConditional ifNotEmpty="Fax">\
+    <AribaField value="Fax"/>
+</AribaConditional>\

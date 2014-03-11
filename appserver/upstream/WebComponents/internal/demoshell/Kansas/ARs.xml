@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <Contents>
+     <Requisition id="Available Items">
+         <description>3/4 inch strong wrench</description>
+         <items>
+             <LineItem>
+                 <description>Big Hammer</description>
+                 <amount>1002</amount>
+             </LineItem>
+             <LineItem>
+                 <description>Little Hammer</description>
+                 <amount>504</amount>
+             </LineItem>
+             <LineItem>
+                 <description>Medium Hammer</description>
+                 <amount>750</amount>
+             </LineItem>
+         </items>
+     </Requisition>
+
+    <Folder id="Active">
+       <items>
+           <Requisition id="AR1234">
+               <name>Wrenches in US</name>
+               <items>
+                   <LineItem>
+                       <description>3/4 inch strong wrench</description>
+                       <amount>1002</amount>
+                   </LineItem>
+                   <LineItem>
+                       <description>itty bitty wrench</description>
+                       <amount>504</amount>
+                   </LineItem>
+               </items>
+           </Requisition>
+           <Requisition id="AR0023">
+              <name>Imrportant Items for Boss with a really really long title</name>
+           </Requisition>
+           <Folder id="Important">
+               <Folder id="Special">
+               </Folder>
+           </Folder>
+           <Folder id="Lame">
+           </Folder>
+       </items>
+    </Folder>
+
+    <Folder id="Unassigned Reqs">
+       <items>
+            <Requisition id="AR0012">
+                <name>IT Goods</name>
+                <description>3/4 inch strong wrench</description>
+            </Requisition>
+            <Requisition id="AR0213">
+               <name>High dollar capital purchases</name>
+               <description>Big Hammer</description>
+            </Requisition>
+       </items>
+    </Folder>
+     <Folder id="Other Reqs">
+     </Folder>
+
+ </Contents>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemID@@">
+<cXML version="1.1" payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@">
+   <Header>
+        <From>
+            <Credential domain="@@getSenderOrgIdDomain@@">
+                <Identity>@@getSenderOrgId@@</Identity>
+            </Credential>
+        </From>
+        <To>
+            <Credential domain="AribaNetworkUserId">
+                <Identity>@@getToIdentity@@</Identity>
+            </Credential>
+        </To>
+        <Sender>
+            <Credential domain="@@getSenderOrgIdDomain@@">
+                <Identity>@@getSenderOrgId@@</Identity>
+                <SharedSecret>@@getSenderOrgSharedSecret@@</SharedSecret>
+            </Credential>
+            <UserAgent>ORMS</UserAgent>
+        </Sender>
+    </Header>
+    <Request>
+        <OrganizationDataRequest>
+            <OrganizationID>
+                <Credential domain="@@getOrganizationIdDomain@@">
+                    <Identity>@@getOrganizationId@@</Identity>
+                </Credential>
+            </OrganizationID>
+        </OrganizationDataRequest>
+    </Request>
+</cXML>

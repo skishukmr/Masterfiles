@@ -1,0 +1,61 @@
+<w:BasicPageWrapper commands="Commands.htm" toc="Toc.htm" hasForm="$false">
+    <a:SetValue lastName="Federighi"/>
+
+    <h1>JavaScript Test -- $name</h1>
+
+    <form name="form1" method="post">
+        <p>Hello $firstName</p>
+        <p>How are you doing?</p>
+        <p>Type your first name:
+          <input type="text" value="$firstName">
+        </p>
+        <p>Last name:
+          <a:TextField value="$lastName"/>
+        </p>
+        <p>
+          <input type="text" value="$a" size="4">
+          *
+          <input type="text" value="$b" size="4">
+          = <b>$result</b></p>
+        <p>
+          <input type="submit" name="$doSomething" value="Submit">
+          <a:Hyperlink action="$nextPage" submitForm="$true">Go To SimpleScript2</a:Hyperlink> (note how result propagates...)</p>
+    </form>
+
+
+    <w:PNToggle hideLabel="Make it go away!">
+          <a:PrimitiveString value="$genSomeStuff"/>
+    in between
+          <a:PrimitiveString value="$genSomeStuff"/>
+    </w:PNToggle>
+
+</w:BasicPageWrapper>
+
+
+<server>
+var firstName = "Joe";
+var a=0, b=0, result = 0;
+
+/*
+function init () {
+    set(component, "lastName", "Foo!");
+}
+*/
+
+function doSomething() {
+    firstName = firstName + "!!";
+    firstName = firstName.substr(0,1).toUpperCase() + firstName.substr(1);
+	result = a*b;
+}
+
+function nextPage () {
+    var next = page("SimpleScript2.htm");
+    set(next, "firstName", firstName+"!!!!!");
+    set(component.session(), "myVal", result);
+    return next;
+}
+
+function genSomeStuff () {
+    return "<b>hey there</b>";
+}
+</server>

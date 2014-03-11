@@ -1,0 +1,105 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<!-- Collape all these 5 loads into 1 once Lokesh change the behavior of inDataLoad -->
+
+<inDataLoad name="BuyerRequestRequisition">
+    <inLoadStages>
+       <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter"
+                   appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestExpenseReport">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter"
+                    appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestMasterAgreement">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter"
+                    appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestTravelAuthorization">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter"
+                    appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestTravelProfile">
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

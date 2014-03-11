@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+@@Include=templates/email/common/metalink.htm@@
+@@Include=templates/email/common/styles.htm@@
+</head>
+<body>
+<br>@@TextMessage@@
+<form name=formPrimary>
+  <!--header contains message subject, requestor, date. -->
+@@Include=templates/email/order/directorderheader.htm@@
+
+<!--top action button -->
+<div id="navTop">@@Include=templates/email/common/openbutton.htm@@</div>
+
+<!--message content -->
+<div id="content">
+@@Include=templates/email/common/comments.htm@@
+<br>
+<br>
+<br>
+@@@ariba.htmlemail/OpenButtonHint@@
+</div>
+
+<!--bottom action button -->
+<div id="navBottom">@@Include=templates/email/common/openbutton.htm@@</div>
+
+<!--footer -->
+<div id="footer">@@Include=templates/email/common/copyright.htm@@</div>
+
+<!--debug. Leave in document. Turn off rendering with display property in email.css -->
+<div id="debug">Template: generic.htm</div>
+</form>
+</body>
+</html>

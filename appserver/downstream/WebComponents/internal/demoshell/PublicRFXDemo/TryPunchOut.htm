@@ -1,0 +1,42 @@
+<w:BasicPageWrapper hasForm="$true">
+
+    <h1>PunchoutSetupRequest Test</h1>
+
+        <p>URL:
+          <a:TextField value="$url"/>
+        </p>
+        <w:TextButton action="$post">Post</w:TextButton>
+
+    <br/>
+    <br/>
+    <b>Result:</b>
+    <a:TextArea value="$resultString" cols=80 rows=20/>
+    <br/>
+    <br/>
+    RedirectURL: $redirectURL
+    <br/>
+</w:BasicPageWrapper>
+
+
+<server>
+var url = "http://craigf:8050/Buyer/cxmlchannel";
+var resultString = "";
+var redirectURL = "";
+
+function post () {
+    var request = page("Home.htm");
+    // set(next, "ID", "someID");
+
+    var responseDoc = ariba.ui.demoshell.XMLFactory.post(url, "PunchOutSetupRequest.xml", component);
+    resultString = ariba.ui.demoshell.XMLFactory.toString(responseDoc);
+    redirectURL = get(responseDoc, "Response.ProviderSetupResponse.StartPage.URL.text");
+    Log.demoshell.debug("Redirect URL is: %s", redirectURL);
+
+    return ariba.ui.aribaweb.core.AWRedirect.getRedirect(component.requestContext(), redirectURL.trim());
+    /*
+	var redirect = component.requestContext().pageWithName("AWUrlRedirect");
+	redirect.setUrl(redirectURL);
+	return redirect;
+	*/
+}
+</server>

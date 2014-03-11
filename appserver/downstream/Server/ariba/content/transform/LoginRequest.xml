@@ -1,0 +1,40 @@
+<request>
+  <header version="1.0">
+    <login>
+      <username></username>
+      <password><![CDATA[--password]]></password>
+    </login>
+    <action><![CDATA[shopping]]></action>
+    <language><![CDATA[US]]></language>
+    <searchLanguage/>
+    <userArea>
+      <operatingUnit><![CDATA[Engineering]]></operatingUnit>
+      <shipTo><![CDATA[--shipTo]]></shipTo>
+    </userArea>
+  </header>
+  <body>
+    <loginInfo>
+      <exchangeInfo>
+        <exchangeName><![CDATA[Exchange]]></exchangeName>
+      </exchangeInfo>
+      <userInfo>
+        <userName><![CDATA[--userName]]></userName>
+        <userContactInfo>
+          <userPhone/>
+          <userEmail><![CDATA[--userEmail]]></userEmail>
+        </userContactInfo>
+        <appUserName><![CDATA[--appUserName]]></appUserName>
+        <userCompany>
+          <companyName><![CDATA[Customer Company]]></companyName>
+          <companyDUNS><![CDATA[--companyDUNS]]></companyDUNS>
+          <contactName/>
+          <contactPhone/>
+        </userCompany>
+      </userInfo>
+      <returnURL><![CDATA[--returnURL]]></returnURL>
+    </loginInfo>
+    <partySiteId/>
+    <searchKeywords/>
+    <icxSessionCallBackURL/>
+  </body>
+</request>

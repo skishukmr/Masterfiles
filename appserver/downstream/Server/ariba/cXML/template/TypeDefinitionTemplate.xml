@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "@@dtd@@">
+<TypeDefinition>
+      <TypeProvider name="System">
+        <OrganizationID>
+           <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+        </OrganizationID>
+      </TypeProvider>
+
+   <!-- forexec getTypeDefinitionHashtable.getTypeDefinitionIterator -->
+      <Type name="@@getCurrentLoopItem.getTypeName@@" 
+                               extends="System:CatalogItem">
+          <Description xml:lang="en-US"> Auto generated from Catalog Modifier  - Edit as required  </Description>
+          <!--The  following attributes may also be specified-->
+          <!-- isRequired="no"         -->
+	      <!-- isCollection="no"       -->
+	      <!-- isCaseSensitive="yes"   -->
+	      <!-- isInKey="no"            -->
+	      <!-- isRefinable="no"        -->
+	      <!-- isHidden="yes"          -->
+	      <!-- isSortable="yes"        -->
+	      <!-- unit="abcd"             -->
+
+          <!-- forexec getCurrentLoopItem.attributeIterator -->
+               <TypeAttribute name="@@getCurrentLoopItem.getName@@"
+                   type="@@getCurrentLoopItem.getType@@"
+                   isSearchable="yes"
+	           isInFreeTextSearch="yes"
+               />
+          <!-- end for -->
+       </Type>
+   <!-- end for -->
+</TypeDefinition>
+
+
+

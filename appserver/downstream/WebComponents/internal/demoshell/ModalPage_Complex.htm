@@ -1,0 +1,102 @@
+<w:ModalPageWrapper title="A Cool Inspector!" doneTitle="Get Outta Here!">
+    <a:Content name="titleArea">
+        [ICON]
+    </a:Content>
+    <a:Content name="bodyArea">
+        <br/>
+            This is a more sophisiticated modal page!
+        <br/>
+        <w:TabSet index="$dict.selectedTab">
+          <w:Tab label="Craig Tab">
+              Howdy <a:String value="$pageComponent.dict.aUserName"/>!
+              <br/>
+              <br/>
+              <w:TextButton action="$goto.Preferences">Go to Preferences!</w:TextButton>
+          </w:Tab>
+
+          <w:Tab label="Expando!">
+                <br/>
+                <a:InitializeValue A="$false"/>
+                <w:ToggleImage state="$isExpanded" trueImageName="AWXArrowDown.gif" falseImageName="AWXArrowRight.gif"/> Expand me!
+                <br/>
+                <a:If ifTrue="$isExpanded">
+                    This is <br/>
+                    some stuff <br/>
+                </a:If>
+
+          </w:Tab>
+
+          <w:Tab label="Approval Graph">
+                   Here's some stuff...<br/>
+              <Include name="Basic_Samples.awz/substeps/Sub1.htm"/>
+          </w:Tab>
+
+          <w:Tab label="IFrames and Such">
+
+            <a:ClientSideScript>
+            var ns4 = (document.layers);
+            var ie4 = (document.all && !document.getElementById);
+            var ie5 = (document.all && document.getElementById);
+            var ns6 = (!document.all && document.getElementById);
+
+            function attach(id)
+            {
+             var obj
+              if(ns4) obj = document.layers[id];
+              else if(ie4) obj = document.all[id];
+                      else if(ie5 || ns6) obj = document.getElementById(id);
+
+             return obj
+            }
+
+            function hide_obj(id)
+            {
+             temp_Obj = attach(id);
+             if(ns4) temp_Obj.visibility = "hide";
+             else temp_Obj.style.visibility = "hidden"
+            }
+
+            function show_obj(id)
+            {
+             temp_Obj = attach(id);
+             if(ns4) temp_Obj.visibility = "show";
+             else temp_Obj.style.visibility = "visible"
+            }
+            </a:ClientSideScript>
+
+            <div id=myObject style="color:red">SHOWING: Text within the element</div><br/>
+
+            <input type=button onClick=hide_obj('myObject') value = "Hide object">
+            <input type=button onClick=show_obj('myObject') value = "Show object">
+            <br/><br/>
+
+            <b>An IFrame:</b></br>
+            <a:IFrame value="$goto.Toc.htm" width=450 height=500 frameborder=1 scrolling=auto/>
+          </w:Tab>
+
+        </w:TabSet>
+
+    </a:Content>
+
+    <a:Content name="buttons">`
+        <w:StepNavigatorButton action="$doSomething" label="Do Nothing!"/>
+    </a:Content>
+
+</w:ModalPageWrapper>
+
+<server>
+   function init () {
+       set(component, "dict.selectedTab", new java.lang.Integer(0));
+   }
+
+   function doSomething () {
+       var wrapper = ariba.ui.widgets.ModalPageWrapper.instance(component);
+       return wrapper.returnPage();
+   }
+
+   function iFramePage () {
+       var p = page("ModalPage.htm");
+       java.lang.System.out.println("page = " + p);
+       return p;
+   }
+</server>

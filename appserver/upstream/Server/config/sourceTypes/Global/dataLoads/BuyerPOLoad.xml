@@ -1,0 +1,121 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <inDataLoad name="BuyerDeletePOLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceWhereClause="PurchaseOrder.NextVersion IS NOT NULL OR
+                               PurchaseOrder.StatusString NOT IN ('Ordered', 'Receiving', 'Received')"/>
+        </inLoadStages>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerPOLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING POLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.contract.core.MasterAgreement INCLUDE INACTIVE USING POLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING MasterAgreement.ForecastedSpend
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING POLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.UnitOfMeasure INCLUDE INACTIVE USING LineItemProductDescription.UnitOfMeasure"
+                      replaceWhereClause="PurchaseOrder.NextVersion IS NULL AND
+                               PurchaseOrder.StatusString IN ('Ordered', 'Receiving', 'Received')"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="Description"/>
+            <deleteField name="LineType"/>
+            <deleteField name="Contract.ContractId"/>
+            <deleteField name="AmountLeftToInvoice.Amount"/>
+            <deleteField name="AmountLeftToInvoice.Currency"/>
+            <deleteField name="AmountLeftToInvoice.Date"/>
+            <deleteField name="AmountLeftToReconcile.Amount"/>
+            <deleteField name="AmountLeftToReconcile.Currency"/>
+            <deleteField name="AmountLeftToReconcile.Date"/>
+            <deleteField name="Part.PartKey1"/>
+            <deleteField name="Part.PartKey2"/>
+            <deleteField name="Amount.Amount"/>
+            <deleteField name="Amount.Currency"/>
+            <deleteField name="Amount.Date"/>
+            <deleteField name="OrigAmount"/>
+            <deleteField name="OrigCurrencyCode"/>
+            <deleteField name="EstimatedSavings.Amount"/>
+            <deleteField name="EstimatedSavings.Currency"/>
+            <deleteField name="EstimatedSavings.Date"/>
+            <deleteField name="StatusString"/>
+            <deleteField name="isPunchOutItem"/>
+            <deleteField name="ShipToLocation.LocationId"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+            <field name="Description">
+                <aqlMapping selectField="POLineItem.Description.Description"/>
+            </field>
+            <field name="LineType">
+                <aqlMapping selectField="CASE POLineItem.Description.IsInternalPartId WHEN TRUE THEN 'NonCatalog' ELSE (CASE POLineItem.PunchOut WHEN NULL THEN (CASE POLineItem.Description.CatalogItemRef WHEN NULL THEN 'NonCatalog' ELSE 'Catalog' END) ELSE 'Catalog' END) END"/>
+            </field>
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="MasterAgreement.InitialUniqueName"/>
+            </field>
+            <field name="Part.PartKey1">
+                <aqlMapping selectField="POLineItem.Description.SupplierPartNumber"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey2">
+                <aqlMapping selectField="POLineItem.Description.SupplierPartAuxiliaryID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="Amount.Amount">
+                <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+            </field>
+
+            <field name="EstimatedSavings.Amount">
+                <aqlMapping selectField="CASE MasterAgreement.ForecastedSpend.SavingPercentage WHEN NULL THEN 0 ELSE MasterAgreement.ForecastedSpend.SavingPercentage * SplitAccounting.Amount.Amount / (100 - MasterAgreement.ForecastedSpend.SavingPercentage) END"/>
+            </field>
+            <field name="EstimatedSavings.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="EstimatedSavings.Date">
+                <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerPCOLineItem" version="8.2" disableLoad="true"/>
+
+</allDataLoads>

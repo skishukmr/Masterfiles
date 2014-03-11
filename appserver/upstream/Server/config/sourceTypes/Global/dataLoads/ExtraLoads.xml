@@ -1,0 +1,215 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<derivedDataLoad name="BuyerPartInvoice__pcsv1" extendsLoad="BuyerPartInvoice">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation PARTITION  pcsv1 
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem PARTITION  pcsv1 USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE PARTITION  pcsv1 USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE PARTITION  pcsv1 USING LineItemProductDescription.CommonSupplier"/>
+    </inLoadStages>    
+</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice__pcsv1_1" extendsLoad="BuyerPartInvoice__pcsv1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-06 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice__pcsv1_2" extendsLoad="BuyerPartInvoice__pcsv1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-06 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice__pcsv1_3" extendsLoad="BuyerPartInvoice__pcsv1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice__pcsv1_4" extendsLoad="BuyerPartInvoice__pcsv1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-26 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2013-01-02 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="TmpBuyerPartInvoice__pcsv1_5" extendsLoad="BuyerPartInvoice__pcsv1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+	
+<derivedDataLoad name="BuyerPartInvoice__SAP" extendsLoad="BuyerPartInvoice">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation PARTITION  SAP 
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem PARTITION  SAP USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE PARTITION  SAP USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE PARTITION  SAP USING LineItemProductDescription.CommonSupplier"/>
+    </inLoadStages>    
+</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_SAP_1" extendsLoad="BuyerPartInvoice__SAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_SAP_2" extendsLoad="BuyerPartInvoice__SAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-10 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-18 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_SAP_3" extendsLoad="BuyerPartInvoice__SAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_SAP_4" extendsLoad="BuyerPartInvoice__SAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-26 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2013-01-02 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="TmpBuyerPartInvoice_SAP_5" extendsLoad="BuyerPartInvoice__SAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate  &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+
+
+
+<derivedDataLoad name="BuyerPartInvoice__LSAP" extendsLoad="BuyerPartInvoice">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation PARTITION  LSAP 
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem PARTITION  LSAP USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE PARTITION  LSAP USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE PARTITION  LSAP USING LineItemProductDescription.CommonSupplier"/>
+    </inLoadStages>    
+</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_LSAP_1" extendsLoad="BuyerPartInvoice__LSAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_LSAP_2" extendsLoad="BuyerPartInvoice__LSAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-10 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-18 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_LSAP_3" extendsLoad="BuyerPartInvoice__LSAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_LSAP_4" extendsLoad="BuyerPartInvoice__LSAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-26 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2013-01-02 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="TmpBuyerPartInvoice_LSAP_5" extendsLoad="BuyerPartInvoice__LSAP">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate  &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+
+
+<derivedDataLoad name="BuyerPartInvoice__mfg1" extendsLoad="BuyerPartInvoice">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation PARTITION  mfg1 
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem PARTITION  mfg1 USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE PARTITION  mfg1 USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE PARTITION  mfg1 USING LineItemProductDescription.CommonSupplier"/>
+    </inLoadStages>    
+</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_mfg1_1" extendsLoad="BuyerPartInvoice__mfg1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_mfg1_2" extendsLoad="BuyerPartInvoice__mfg1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-10 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-18 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_mfg1_3" extendsLoad="BuyerPartInvoice__mfg1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_mfg1_4" extendsLoad="BuyerPartInvoice__mfg1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-26 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2013-01-02 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="TmpBuyerPartInvoice_mfg1_5" extendsLoad="BuyerPartInvoice__mfg1">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate  &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+
+
+<derivedDataLoad name="BuyerPartInvoice__ezopen" extendsLoad="BuyerPartInvoice">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation PARTITION  ezopen 
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem PARTITION  ezopen USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE PARTITION  ezopen USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE PARTITION  ezopen USING LineItemProductDescription.CommonSupplier"/>
+    </inLoadStages>    
+</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_ezopen_1" extendsLoad="BuyerPartInvoice__ezopen">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_ezopen_2" extendsLoad="BuyerPartInvoice__ezopen">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-10 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-18 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>	
+<derivedDataLoad name="TmpBuyerPartInvoice_ezopen_3" extendsLoad="BuyerPartInvoice__ezopen">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="TmpBuyerPartInvoice_ezopen_4" extendsLoad="BuyerPartInvoice__ezopen">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-12-26 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2013-01-02 12:06:32 CDT'))"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="TmpBuyerPartInvoice_ezopen_5" extendsLoad="BuyerPartInvoice__ezopen">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate  &lt;= InvoiceReconciliation.TimeUpdated AND
+		    		                                          InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+</allDataLoads>

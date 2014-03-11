@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemParameter(System.Procure.AribaNetwork.ANDTDLocator)@@/cXML.dtd">
+<cXML payloadID="@@getPayloadID@@"
+      timestamp="@@getFormattedDate@@">
+    <Header>
+        @@getHeaderToDestination@@
+    </Header>
+    <Request>
+	  <StatusUpdateRequest>
+            <DocumentReference payloadID="@@getInvoicePayloadID@@"/>
+            <Status code="200" text="">            
+            </Status>
+            <!-- if hasPartialPayment -->
+            <InvoiceStatus type="@@getInvoiceStatus@@">
+		        <PartialAmount>
+                    <Money currency="@@getItemValue(ir.Invoice.TotalInvoiced.Currency.UniqueName)@@">@@getPartialPaymentAmount@@</Money>
+		        </PartialAmount>
+                <Comments xml:lang="en">@@getComment@@</Comments>                
+            </InvoiceStatus>                
+            <!-- end if -->
+            <!-- if !hasPartialPayment -->
+            <InvoiceStatus type="@@getInvoiceStatus@@">
+                <Comments xml:lang="en">@@getComment@@</Comments>                
+            </InvoiceStatus>                
+            <!-- end if -->
+	  </StatusUpdateRequest>                
+    </Request>
+</cXML>

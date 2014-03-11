@@ -1,0 +1,126 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerDeleteReceipt">
+    <loadStages>
+        <aqlStage fromClause="ariba.receiving.core.Receipt INCLUDE INACTIVE
+                JOIN ariba.receiving.core.ReceiptItem AS ReceiptItem USING Receipt.ReceiptItems
+                JOIN ariba.purchasing.core.POLineItem POLineItem USING ReceiptItem.LineItem"
+                  whereClause="Receipt.Active = false"
+                  incrementalClause="(Receipt.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      Receipt.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.Receipt"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ReceiptId">
+            <aqlMapping selectField="Receipt.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="LineItemNumber">
+            <aqlMapping selectField="POLineItem.NumberInCollection"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+<inDataLoad name="BuyerDeleteReceipt" version="8.2" disableLoad="true"/>
+
+<dataLoad name="BuyerReceipt">
+    <loadStages>
+        <aqlStage fromClause="ariba.receiving.core.Receipt INCLUDE INACTIVE
+		JOIN ariba.receiving.core.ReceiptItem AS ReceiptItem USING Receipt.ReceiptItems
+		JOIN ariba.purchasing.core.POLineItem POLineItem USING ReceiptItem.LineItem
+		JOIN ariba.purchasing.core.PurchaseOrder PurchaseOrder USING Receipt.Order
+                LEFT OUTER JOIN ariba.basic.core.Money AS AmountPreviouslyAccepted USING ReceiptItem.AmountPreviouslyAccepted
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AmountPreviouslyAcceptedCurrency INCLUDE INACTIVE USING AmountPreviouslyAccepted.Currency
+                LEFT OUTER JOIN ariba.basic.core.Money AS AmountAccepted USING ReceiptItem.AmountAccepted
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AmountAcceptedCurrency INCLUDE INACTIVE USING AmountAccepted.Currency
+                LEFT OUTER JOIN ariba.basic.core.Money AS AmountRejected USING ReceiptItem.AmountRejected
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AmountRejectedCurrency INCLUDE INACTIVE USING AmountRejected.Currency"
+          whereClause="Receipt.NextVersion IS NULL"
+	  incrementalClause="(Receipt.TimeUpdated &gt;= :IncrementalStartDate AND
+	          Receipt.TimeUpdated &lt; :IncrementalEndDate)"
+          groupByFlag="false"/>
+        <analysisStage destinationName="ariba.analytics.fact.Receipt"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ReceiptId">
+            <aqlMapping selectField="Receipt.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="NumberPreviouslyAccepted">
+            <aqlMapping selectField="ReceiptItem.NumberPreviouslyAccepted"/>
+        </field>
+        <field name="NumberAccepted">
+            <aqlMapping selectField="ReceiptItem.NumberAccepted"/>
+        </field>
+        <field name="NumberRejected">
+            <aqlMapping selectField="ReceiptItem.NumberRejected"/>
+        </field>
+
+        <field name="AmountPreviouslyAccepted.Amount">
+            <aqlMapping selectField="AmountPreviouslyAccepted.Amount"/>
+        </field>
+        <field name="AmountPreviouslyAccepted.Currency">
+            <aqlMapping selectField="AmountPreviouslyAcceptedCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountPreviouslyAccepted.Date">
+            <aqlMapping selectField="AmountPreviouslyAccepted.ConversionDate"/>
+        </field>
+
+        <field name="AmountAccepted.Amount">
+            <aqlMapping selectField="AmountAccepted.Amount"/>
+        </field>
+        <field name="AmountAccepted.Currency">
+            <aqlMapping selectField="AmountAcceptedCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountAccepted.Date">
+            <aqlMapping selectField="AmountAccepted.ConversionDate"/>
+        </field>
+
+        <field name="AmountRejected.Amount">
+            <aqlMapping selectField="AmountRejected.Amount"/>
+        </field>
+        <field name="AmountRejected.Currency">
+            <aqlMapping selectField="AmountRejectedCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountRejected.Date">
+            <aqlMapping selectField="AmountRejected.ConversionDate"/>
+        </field>
+        <field name="ReceiptDate">
+            <aqlMapping selectField="ReceiptItem.Date"/>
+        </field>
+        <field name="ProcessedState">
+            <aqlMapping selectField="Receipt.ProcessedState"/>
+        </field>
+        <field name="OrderId">
+            <aqlMapping selectField="PurchaseOrder.OrderID"/>
+        </field>
+        <field name="OrderTitle">
+            <aqlMapping selectField="PurchaseOrder.Name"/>
+        </field>
+        <field name="Quantity">
+            <aqlMapping selectField="POLineItem.Quantity"/>
+        </field>
+        <field name="LineItemNumber">
+            <aqlMapping selectField="POLineItem.NumberInCollection"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerReceipt" version="8.2" disableLoad="true"/>
+
+</allDataLoads>

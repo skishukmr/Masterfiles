@@ -1,0 +1,40 @@
+<html>
+<head>
+@@Include=templates/email/common/metalink.htm@@
+</head>
+<body>
+<form name=formPrimary>
+<div style="background-color:#FFFFFF;">
+  <div style="padding:8px 12px 8px 20px; border-bottom:1px dotted #CCD; margin:0px 0px 0px 0px; background:#FFF;">
+  <table cellSpacing=5 cellPadding=3 width="98%" border=0>
+      <tr> 
+        <td nowrap border="0" width="1%" style="margin-right:7px;">
+          <table cellspacing=0 cellpadding="0" style="border-top:1px solid #FFF; border-right:1px solid #336; border-bottom:1px solid #336; border-left:1px solid #FFF; background:#aaabd4;">
+            <tr>
+              <td nowrap align="center" style="padding:1px 5px 1px 5px; font:normal 8pt Verdana, Arial, Helvetica; text-decoration:none; cursor:pointer; cursor:hand;"><a href="@@FCN.getWebJumperURL()@@" style="text-decoration:none; color:#336;">@@@ariba.htmlemail/Open@@</a>
+              </td>
+            </tr>
+          </table>          
+        </td>
+        <td align="left" style="color:#000; font:bold 8pt Verdana,Arial, Helvetica,sans-serif;" width="99%">@@UniqueName@@ - @@Name@@ @@FCN.getHeaderMessage@@</td>
+      </tr>  
+      <tr>
+        <td width="1%">&nbsp</td>
+        <td colspan="1">
+          <table cellSpacing=0 cellPadding=5 border=0 style="background:#E5E5EE; font:8pt Verdana,Arial,Helvetica,sans-serif;">
+            <tr>
+              <td width="1%" nowrap align="left" style="padding-right:10px;">@@@ariba.htmlemail/Requester@@:</td>
+              <td width="1%" nowrap align="left" style="padding-right:100px;">@@Requester.FCN.getMyName()@@</td>
+              <td width="1%" nowrap align="left" style="padding-right:10px;">@@@ariba.htmlemail/Created@@:</td>
+              <td width="1%" nowrap align="left">@@DFL.CreateDate@@</td>
+              <td width="100">&nbsp</td>
+            </tr>   
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+</form>
+</body>
+</html>

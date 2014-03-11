@@ -1,0 +1,610 @@
+function sfcExecutionState () {
+
+    this.agreementDocumentOverride = null;
+
+    this.hideApp = function ()
+    {
+        var ec = this;
+        ec.wordApp.Visible = ec.appVisible;
+        window.focus();
+        document.body.style.cursor = "wait";
+    }
+
+    this.onErrorExit = function ()
+    {
+        var ec = this;
+        ec.quitApp();
+        LoggerUtil.logErrorOnExit();
+        if (ec.urlDoneUrl) {
+            ariba.Request.setWindowLocation(ec.urlDoneUrl);
+        }
+    }
+
+    this.quitApp = function ()
+    {
+        var ec = this;
+        sfQuitApp(ec.wordApp);
+        ec.wordApp = null;
+    }
+
+    /**
+        Hands out the right document
+    */
+    this.getAgreementDocument = function ()
+    {
+        if (this.agreementDocumentOverride != null) {
+            return this.agreementDocumentOverride;
+        }
+        else {
+            return this.agreementDocument;
+        }
+    }
+}
+
+/*
+    Trick to load the js file
+*/
+var vExecutionState = new sfcExecutionState ();
+
+/**
+    Init execution state
+*/
+function sfInitExecutionStateBasic (ec, args)
+{
+    sfClearExecutionState(ec);
+
+    /*
+        Used to indicate whether we need to open the file with Word or Excel
+    */
+    if (args[Params.sApplicationName] != null) {
+        ec.sApplicationName = args[Params.sApplicationName];
+    }
+
+    if (args[Params.sDataResource] != null) {
+        ec.sDataResource = args[Params.sDataResource];
+    }
+
+    /*
+        DFS File location
+    */
+    if (args[Params.sDocumentLocation] != null) {
+        ec.sDocumentLocation = args[Params.sDocumentLocation];
+    }
+    else if (args["documentLocation"] != null) {
+        ec.sDocumentLocation = args["documentLocation"];
+    }
+
+    if (args[Params.sSourceDocumentLocation] != null) {
+        ec.sSourceDocumentLocation = args[Params.sSourceDocumentLocation];
+    }
+
+    if (args[Params.sTargetDocumentLocation] != null) {
+        ec.sTargetDocumentLocation = args[Params.sTargetDocumentLocation];
+    }
+
+    /*
+        we seem to be using document location in some places and document full name
+        in other places
+     */
+    if (args[Params.sDocumentFullName] != null) {
+        ec.sDocumentFullName = args[Params.sDocumentFullName];
+    }
+
+    if (args[Params.sTempDocumentFolder] != null) {
+        ec.sTempDocumentFolder = args[Params.sTempDocumentFolder];
+    }
+
+    if (args[Params.sTempDocumentName] != null) {
+        ec.sTempDocumentName = args[Params.sTempDocumentName];
+    }
+    else if (args["tempDocumentName"] != null) {
+        ec.sTempDocumentName = args["tempDocumentName"];
+    }
+
+    /*
+        Bookmark the user clicked.  See sfOpenDocumentWithBookmark.
+    */
+    if (args[Params.sBookmarkName] != null) {
+        ec.sBookmarkName = args[Params.sBookmarkName];
+    }
+
+    if (args[Params.sClauseId] != null) {
+        ec.sClauseId = args[Params.sClauseId];
+    }
+
+    if (args[Params.sSectionStyleId] != null) {
+        ec.sSectionStyleId = args[Params.sSectionStyleId];
+    }
+
+    /* string properties */
+
+    if (args[Params.sFormFieldsValue] != null) {
+        ec.sFormFieldsValue = args[Params.sFormFieldsValue];
+    }
+
+    if (args[Params.sDocumentPropertiesContent] != null) {
+        ec.sDocumentPropertiesContent = args[Params.sDocumentPropertiesContent];
+    }
+
+    if (args[Params.sClientLogLevel] != null) {
+        ec.sClientLogLevel = args[Params.sClientLogLevel];
+    }
+
+    /* encoded strings */
+    if (args[Params.sFormFieldsEncodedString] != null) {
+        ec.oFormFields = sfDecodeFormFieldString(args[Params.sFormFieldsEncodedString]);
+    }
+
+    if (args[Params.sConditionalClausesEncodedString] != null) {
+        ec.oConditionalClauses = sfDecodeStringVector(args[Params.sConditionalClausesEncodedString]);
+    }
+
+    if (args[Params.sReviseBookmarkEncodedString] != null) {
+        ec.oReviseBookmarks = sfDecodeReviseBookmarkString(args[Params.sReviseBookmarkEncodedString]);
+    }
+
+    if (args[Params.sIncrementalInitializationEncodedString] != null) {
+        ec.oIncrementalIntializationCmds = sfDecodeStringVector(args[Params.sIncrementalInitializationEncodedString]);
+    }
+
+    if (args[Params.sIncrementalGenerationEncodedString] != null) {
+        ec.oIncrementalGenerationCmds = sfDecodeStringVector(args[Params.sIncrementalGenerationEncodedString]);
+    }
+
+    if (args[Params.sApplyStyleEncodedString] != null) {
+        ec.oApplyStyles = sfDecodeApplyStyleString(args[Params.sApplyStyleEncodedString]);
+    }
+
+    if (args[Params.sSectionGenerationEncodedString] != null) {
+        ec.oGenSections = sfDecodeStringVector(args[Params.sSectionGenerationEncodedString]);
+    }
+
+    if (args[Params.sSectionTreeEncodedString] != null) {
+        ec.oContentTree = sfDecodeContentString(args[Params.sSectionTreeEncodedString]);
+    }
+
+    if (args[Params.sTasksEncodedString] != null) {
+        ec.oACMTasks = sfDecodeTasks(args[Params.sTasksEncodedString]);
+    }
+
+    /* url properties */
+    if (args[Params.urlRetrievepropertyAction] != null) {
+        ec.urlRetrievepropertyAction = ClientAutomation.ResolvePartialURL(args[Params.urlRetrievepropertyAction]);
+    }
+
+    if (args[Params.urlOriginalDocumentUrl] != null) {
+        ec.urlOriginalDocumentUrl = ClientAutomation.ResolvePartialURL(args[Params.urlOriginalDocumentUrl]);
+    }
+
+    if (args[Params.urlPromoteUrl] != null) {
+        ec.urlPromoteUrl = ClientAutomation.ResolvePartialURL(args[Params.urlPromoteUrl]);
+    }
+
+    if (args[Params.urlIncrementalSyncupUrl] != null) {
+        ec.urlIncrementalSyncupUrl = ClientAutomation.ResolvePartialURL(args[Params.urlIncrementalSyncupUrl]);
+    }
+
+    if (args[Params.urlActionUrl] != null) {
+        ec.urlActionUrl = ClientAutomation.ResolvePartialURL(args[Params.urlActionUrl]);
+    }
+    else if (args["actionUrl"] != null) {
+        ec.urlActionUrl = ClientAutomation.ResolvePartialURL(args["actionUrl"]);
+    }
+
+    if (args[Params.urlDocumentUrl] != null) {
+        ec.urlDocumentUrl = ClientAutomation.ResolvePartialURL(args[Params.urlDocumentUrl]);
+    }
+    else if (args["documentUrl"] != null) {
+        ec.urlDocumentUrl = ClientAutomation.ResolvePartialURL(args["documentUrl"]);
+    }
+
+    if (args[Params.urlDoneUrl] != null) {
+        ec.urlDoneUrl = ClientAutomation.ResolvePartialURL(args[Params.urlDoneUrl]);
+    }
+    else if (args["doneUrl"] != null) {
+        ec.urlDoneUrl = ClientAutomation.ResolvePartialURL(args["doneUrl"]);
+    }
+
+    if (args[Params.urlGeneratingUrl] != null) {
+        ec.urlGeneratingUrl = ClientAutomation.ResolvePartialURL(args[Params.urlGeneratingUrl]);
+    }
+
+    if (args[Params.urlSyncupClauseContentActionUrl] != null) {
+        ec.urlSyncupClauseContentActionUrl = ClientAutomation.ResolvePartialURL(args[Params.urlSyncupClauseContentActionUrl]);
+    }
+
+    if (args[Params.urlDownloadSyncupXmlUrl] != null) {
+        ec.urlDownloadSyncupXmlUrl = ClientAutomation.ResolvePartialURL(args[Params.urlDownloadSyncupXmlUrl]);
+    }
+    else if (args["downloadSyncupXmlUrl"] != null) {
+        ec.urlDownloadSyncupXmlUrl = ClientAutomation.ResolvePartialURL(args["downloadSyncupXmlUrl"]);
+    }
+
+    if (args[Params.urlSaveSyncHistoryUrl] != null) {
+        ec.urlSaveSyncHistoryUrl = ClientAutomation.ResolvePartialURL(args[Params.urlSaveSyncHistoryUrl]);
+    }
+    else if (args["saveSyncHistoryUrl"] != null) {
+        ec.urlSaveSyncHistoryUrl = ClientAutomation.ResolvePartialURL(args["saveSyncHistoryUrl"]);
+    }
+
+    if (args[Params.urlUploadDocumentUrl] != null) {
+        ec.urlUploadDocumentUrl = ClientAutomation.ResolvePartialURL(args[Params.urlUploadDocumentUrl]);
+    }
+    else if (args["uploadDocumentUrl"] != null) {
+        ec.urlUploadDocumentUrl = ClientAutomation.ResolvePartialURL(args["uploadDocumentUrl"]);
+    }
+
+    if (args[Params.urlCheckParseErrorActionUrl] != null) {
+        ec.urlCheckParseErrorActionUrl = ClientAutomation.ResolvePartialURL(args[Params.urlCheckParseErrorActionUrl]);
+    }
+
+    if (args[Params.urlSaveCleanVersionUrl] != null) {
+        ec.urlSaveCleanVersionUrl = ClientAutomation.ResolvePartialURL(args[Params.urlSaveCleanVersionUrl]);
+    }
+
+    if (args[Params.bShowCleanedDoc] != null) {
+        ec.bShowCleanedDoc = sfBooleanValueForBinding(args[Params.bShowCleanedDoc]);
+    }
+
+    if (args[Params.sPropertyList] != null) {
+        ec.sPropertyList = args[Params.sPropertyList];
+    }
+
+    /* date properties */
+    if (args[Params.dLastSyncTimestamp] != null) {
+        ec.dLastSyncTimestamp = args[Params.dLastSyncTimestamp];
+    }
+
+    /* boolean properties */
+    /*
+        XXX This value is never set in Eagle.  Refer to CDGenerate.txt
+        if (args[Params.bIsOnlyValueUpgradeRequired] != null) {
+            ec.bIsOnlyValueUpgradeRequired = sfBooleanValueForBinding(args[Params.bIsOnlyValueUpgradeRequired]);
+        }
+    */
+    ec.bIsOnlyValueUpgradeRequired = false;
+
+    if (args[Params.bIsSimplyGeneration] != null) {
+        ec.bIsSimplyGeneration = sfBooleanValueForBinding(args[Params.bIsSimplyGeneration]);
+    }
+
+    if (args[Params.bIsTrackChangeActive] != null) {
+        ec.bIsTrackChangeActive = sfBooleanValueForBinding(args[Params.bIsTrackChangeActive]);
+    }
+
+    if (args[Params.bIsIncrementalCopyProjectGeneration] != null) {
+        ec.bIsIncrementalCopyProjectGeneration = sfBooleanValueForBinding(args[Params.bIsIncrementalCopyProjectGeneration]);
+    }
+
+    if (args[Params.bIsReviseBookmarkGeneration] != null) {
+        ec.bIsReviseBookmarkGeneration = sfBooleanValueForBinding(args[Params.bIsReviseBookmarkGeneration]);
+    }
+
+    if (args[Params.bIsIncrementalGeneration] != null) {
+        ec.bIsIncrementalGeneration = sfBooleanValueForBinding(args[Params.bIsIncrementalGeneration]);
+    }
+
+    if (args[Params.bIsCleanVersionRequired] != null) {
+        ec.bIsCleanVersionRequired = sfBooleanValueForBinding(args[Params.bIsCleanVersionRequired]);
+    }
+
+    if (args[Params.bIsRemoveChangeRequired] != null) {
+        ec.bIsRemoveChangeRequired = sfBooleanValueForBinding(args[Params.bIsRemoveChangeRequired]);
+    }
+
+    if (args[Params.bIsRemoveFieldRequired] != null) {
+        ec.bIsRemoveFieldRequired = sfBooleanValueForBinding(args[Params.bIsRemoveFieldRequired]);
+    }
+
+    if (args[Params.bIsApplyStyleRequired] != null) {
+        ec.bIsApplyStyleRequired = sfBooleanValueForBinding(args[Params.bIsApplyStyleRequired]);
+    }
+
+    if (args[Params.bFullySync] != null) {
+        ec.bFullySync = sfBooleanValueForBinding(args[Params.bFullySync]);
+    }
+
+    if (args[Params.bContractModified] != null) {
+        ec.bContractModified = sfBooleanValueForBinding(args[Params.bContractModified]);
+    }
+
+    if (args[Params.bOpenDocForceGeneration] != null) {
+        ec.bOpenDocForceGeneration = sfBooleanValueForBinding(args[Params.bOpenDocForceGeneration]);
+    }
+
+    if (args[Params.bIsDocumentEditable] != null) {
+        ec.bIsDocumentEditable = sfBooleanValueForBinding(args[Params.bIsDocumentEditable]);
+    }
+
+    if (args[Params.bIsSimplyGeneration] != null) {
+        ec.bIsSimplyGeneration = sfBooleanValueForBinding(args[Params.bIsSimplyGeneration]);
+    }
+
+    if (args[Params.bIsTrackChangeActive] != null) {
+        ec.bIsTrackChangeActive = sfBooleanValueForBinding(args[Params.bIsTrackChangeActive]);
+    }
+
+    if (args[Params.bIsTemplate] != null) {
+        ec.bIsTemplate = sfBooleanValueForBinding(args[Params.bIsTemplate]);
+    }
+    else if (args["isTemplate"] != null) {
+        ec.bIsTemplate = sfBooleanValueForBinding(args["isTemplate"]);
+    }
+
+    if (args[Params.bSkipCopyClause] != null) {
+        ec.bSkipCopyClause = sfBooleanValueForBinding(args[Params.bSkipCopyClause]);
+    }
+
+    if (args[Params.bIsWordDocValue] != null) {
+        ec.bIsWordDocValue = sfBooleanValueForBinding(args[Params.bIsWordDocValue]);
+    }
+
+    if (args[Params.bKeepTasks] != null) {
+        ec.bKeepTasks = sfBooleanValueForBinding(args[Params.bKeepTasks]);
+    }
+
+    if (args[Params.bUseFilter] != null) {
+        ec.bUseFilter = sfBooleanValueForBinding(args[Params.bUseFilter]);
+    }
+
+    /* date properties */
+    if (args[Params.dServerTimestamp] != null) {
+        ec.dServerTimestamp = args[Params.dServerTimestamp];
+    }
+}
+
+/**
+    create and init execution state
+*/
+function sfInitExecutionState (args)
+{
+    var ec = new sfcExecutionState();
+    sfInitExecutionStateBasic(ec, args);
+    return ec;
+}
+
+function sfPrintExecutionState (ec) {
+    
+    var msgStr = "";
+    msgStr = msgStr.concat("urlRetrievepropertyAction:" + ec.urlRetrievepropertyAction + "\n");
+    msgStr = msgStr.concat("urlOriginalDocumentUrl:" + ec.urlOriginalDocumentUrl + "\n");
+    msgStr = msgStr.concat("urlIncrementalSyncupUrl:" + ec.urlIncrementalSyncupUrl + "\n");
+    msgStr = msgStr.concat("urlActionUrl:" + ec.urlActionUrl + "\n");
+    msgStr = msgStr.concat("urlDoneUrl:" + ec.urlDoneUrl + "\n");
+    msgStr = msgStr.concat("urlGeneratingUrl:" + ec.urlGeneratingUrl + "\n");
+    msgStr = msgStr.concat("urlPropertyList:" + ec.sPropertyList + "\n");
+
+    LoggerUtil.logMessage(msgStr);
+}
+
+/**
+    Clear the execution state
+*/
+
+function sfClearExecutionState (ec)
+{
+    /* TODO Gopal */
+}
+
+function sfcFormField (name, value, editable)
+{
+    this.FieldName = name;
+    this.FieldValue = (value == null || value == "") ? " " : value;
+    this.Editable = sfBooleanValueForBinding(editable);
+}
+
+function sfDecodeFormFieldString (str)
+{
+    var result = new sfObjectArray();
+
+    var list = str.split(AribaEncoderSeperator.ListItemSeparator);
+    for (var i = 0; i < list.length; ++i) {
+        var entryList = (list[i]).split(AribaEncoderSeperator.ListParamSeparator);
+        var formFieldValue = entryList[1];
+        if (formFieldValue != null) {
+            formFieldValue = formFieldValue.replace(/__ZZARIBABACKSLASH__/g, "\\");
+            formFieldValue = formFieldValue.replace(/__ZZARIBADOUBLEQUOTE__/g, "\"");
+            formFieldValue = formFieldValue.replace(/__ZZARIBANEWLINE__/g, softReturnChar);
+        }
+        var formField = new sfcFormField(entryList[0], formFieldValue, entryList[2]);
+        result.AddItem(formField);
+    }
+    
+    return result;
+}
+
+/**
+    Decode a list of strings
+*/
+function sfDecodeStringVector (str)
+{
+    var result = new sfObjectArray();
+
+    if (sfIsEmptyString(str)) {
+        return result;    
+    }
+
+    var list = str.split(AribaEncoderSeperator.ListItemSeparator);
+    for (var i = 0; i < list.length; ++i) {
+        result.AddItem(list[i]);
+    }
+
+    return result;
+}
+
+function sfcReviseBookmark (t1, t2)
+{
+    this.TemplateName = t1;
+    this.WorkspaceName = t2;
+}
+
+function sfDecodeReviseBookmarkString (str)
+{
+    var result = new sfObjectArray();
+
+    var list = str.split(AribaEncoderSeperator.ListItemSeparator);
+    for (var i = 0; i < list.length; ++i) {
+        var entryList = (list[i]).split(AribaEncoderSeperator.ListParamSeparator);
+        var rb = new sfcReviseBookmark(entryList[0], entryList[1]);
+        result.AddItem(rb);
+    }
+
+    return result;
+}
+
+function sfcApplyStyle (name, styleId, isClause)
+{
+    this.Name = name;
+    this.StyleId = styleId;
+    this.IsClause = isClause;
+}
+
+function sfDecodeApplyStyleString (str)
+{
+    var result = new sfObjectArray();
+
+    var list = str.split(AribaEncoderSeperator.ListItemSeparator);
+    for (var i = 0; i < list.length; ++i) {
+        var entryList = (list[i]).split(AribaEncoderSeperator.ListParamSeparator);
+        var rb = new sfcApplyStyle(entryList[0], entryList[1], entryList[2]);
+        result.AddItem(rb);
+    }
+
+    return result;
+}
+
+/**
+    Content Node object
+*/
+function sfcContentNode (isClause, name, fullname, itemId, itemStyle, children)
+{
+    this.IsClause = isClause;
+    this.Name = name;
+    this.FullName = fullname;
+    this.ItemId = itemId;
+    this.ItemStyle = itemStyle;
+    /* children array */
+    this.Children = children;
+}
+
+/**
+    Parse the content string and generate an array of sfcContentNode objects
+*/
+function sfDecodeContentString (str)
+{
+    var result = new sfObjectArray();
+
+    var list = str.split(AribaEncoderSeperator.ListItemSeparator);
+    for (var i = 0; i < list.length; ++i) {
+        var e = (list[i]).split(AribaEncoderSeperator.ListParamSeparator);
+
+        if (e[0] == "False") {   // section node
+            var c = e[5].split(AribaEncoderSeperator.ListChildNodeSeparator);
+            result.AddItem(new sfcContentNode(e[0], e[1], e[2], e[3], e[4], c));
+        }
+        else {
+            result.AddItem(new sfcContentNode(e[0], e[1], e[2], e[3], e[4], null));
+        }
+    }
+
+    return result;
+}
+
+/**
+    Task object - see ExportToOutlook.java::taskEncodedString
+*/
+function sfcTask (e)
+{
+    this.InternalId = e[0];
+    this.Title = e[1];
+    this.TaskCompletionDate = e[2];
+    this.Status = e[3];
+    this.TaskStartDate = e[4];
+    this.TaskDueDate = e[5];
+    this.ParenteWorkspaceTitle = e[6];
+    this.Description = e[7];
+    this.WebJumper = e[8];
+}
+
+function sfPrintTask (t)
+{
+    return "InternalId " + t.InternalId +
+           ",Title " + t.Title +
+           ",TaskCompletionDate " + t.TaskCompletionDate +
+           ",Status " + t.Status +
+           ",TaskStartDate " + t.TaskStartDate +
+           ",TaskDueDate " + t.TaskDueDate +
+           ",ParenteWorkspaceTitle " + t.ParenteWorkspaceTitle +
+           ",Description " + t.Description +
+           ",WebJumper " + t.WebJumper;
+}
+/**
+    Parse the content string and generate an array of sfcContentNode objects
+*/
+function sfDecodeTasks (str)
+{
+    var result = new sfObjectArray();
+
+    var list = str.split(AribaEncoderSeperator.ListItemSeparator);
+    for (var i = 0; i < list.length; ++i) {
+        var e = (list[i]).split(AribaEncoderSeperator.ListParamSeparator);
+        var rb = new sfcTask(e);
+        result.AddItem(rb);
+    }
+
+    return result;
+}
+
+/**
+    Get the sfcContentNode from the node array based on the itemid
+*/
+function sfGetChildren (nodeArray, lookupKey)
+{
+    var node = sfGetNode(nodeArray, lookupKey);
+    return node.Children;
+}
+
+/**
+    Get the node associated with a lookup key
+*/
+function sfGetNode (nodeArray, lookupKey)
+{
+    var count = nodeArray.Count;
+    for (var i = 1; i <= count; ++i) {
+        var node = nodeArray.Item(i);
+        if (node.ItemId == lookupKey) {
+            return node;
+        }
+    }
+
+    LoggerUtil.logError(null, "sfGetNode: Node not found!! for lookup key " + lookupKey, null);
+    return null;
+}
+
+/**
+    Process a command string like the following:
+    addSectionCommandUtil Section 1, sectionDPI6996, sectionGlobalContract, Heading 1, , True
+*/
+function sfGetCommand (commandStr)
+{
+    var commandStr = sfTrim(commandStr);
+    if (commandStr == "" || commandStr == null) {
+        return null;
+    }
+
+    var index = commandStr.indexOf(" ");
+    if (index < 0) {
+        return null;
+    }
+    var cmd = commandStr.substring(0, index);
+    var args = commandStr.substring(index+1, commandStr.length);
+    var argArray = args.split(AribaEncoderSeperator.VariableSeparator);
+
+    var result = new Array ();
+    result[0] = cmd;
+    for (var i = 0; i < argArray.length; ++i) {
+        result[i+1] = sfTrim(argArray[i]);
+    }
+
+    return result;
+}

@@ -1,0 +1,97 @@
+<w:HintMessage showTopLine="$true">
+    ANXDataTable!
+</w:HintMessage>
+<br/>
+
+<t:DataTable singleSelect="$true" batchSize="15" csvPath="ER.csv" displayGroup="$displayGroup"
+        showOptionsMenu="$true" item="$currentItem">
+
+    <t:Column key="Type" label="Type!" action="$goto.Home"/>
+
+    <t:Column key="Year" formatter="$formatters.longDateTime" align="right"/>
+
+    <t:Column key="Amount" formatter="$formatters.money" align="right"/>
+
+    <t:Column align="right">
+        <div style="float:right">
+            <w:TextButton action="$selectCurrentItem">Inspect</w:TextButton>
+        </div>
+    </t:Column>
+
+<!---
+    <t:RowDetail isVisible="$true">
+      <i>
+        Just some top secret stuff about <b><a:String value="$displayGroup.currentItem.Department"/></b>
+        and it's outlandish budget of <a:String value="$displayGroup.currentItem.Amount" formatter="$formatters.money"/>!
+      </i>
+    </t:RowDetail>
+   -->
+    <t:ButtonArea>
+        <w:TextButton action="$null">Delete</w:TextButton>\
+        <w:PulldownButton menuId="AddItem">AddNewItem</w:PulldownButton>
+    </t:ButtonArea>
+
+</t:DataTable>
+
+<w:PopupMenu menuId="AddItem">
+    <w:PopupMenuHeading showSeparator="$false">\
+        Create New Expense\
+    </w:PopupMenuHeading>
+
+    <w:PopupMenuItem action="$addHotelItem">\
+            Hotel\
+    </w:PopupMenuItem>
+    <w:PopupMenuItem action="$addMealItem">\
+            Meal\
+    </w:PopupMenuItem>
+</w:PopupMenu>\
+
+<br/>
+<br/>
+<a:If notEqualNull="$displayGroup.selectedObject">
+    <a:IncludeComponent awcomponentName="$viewerForSelectedItem" currentItem="$displayGroup.selectedObject"/>
+<a:Else/>
+    <i>Nothing selected</i>
+</a:If>
+
+
+<server>
+    var displayGroup = null;
+    var selectedItem = null;
+    var currentItem = null;
+
+    function selectCurrentItem () {
+        selectedItem = currentItem;
+        return null;
+    }
+
+    function viewerForSelectedItem () {
+        var type = get(displayGroup.selectedObject(), "Type");
+        if (type == "Meal" ) return "DetailViewer.htm";
+        if (type == "Hotel" ) return "DetailViewer.htm";
+        if (type == "Airfare" ) return "SimpleViewer.htm";
+        if (type == "Car" ) return "SimpleViewer.htm";
+    }
+
+    function addItem (type)
+    {
+        // Clone selected item, add it to list, and select it
+        var newItem = new java.util.Map();  // new record
+        set(newItem, "Type", type);
+        var list = displayGroup.allObjects();
+        list.addElement(newItem);
+        displayGroup.setObjectArray(list);
+        displayGroup.setSelectedObject(newItem);
+
+        return null;  // same page
+    }
+
+    function addHotelItem () {
+        return addItem("Hotel");
+    }
+
+    function addMealItem () {
+        return addItem("Meal");
+    }
+
+</server>

@@ -1,0 +1,8 @@
+<w:SectionHeading title="Detail Viewer"/>
+<w:SectionBody>
+    Type: <a:String value="$^currentItem.Type"/><br/>
+    Amount: <a:TextField value="$^currentItem.Amount" formatter="$formatters.money"/><br/>
+    Year: <a:TextField value="$^currentItem.Year" formatter="$formatters.longDate"/><br/>
+    <w:TextButton action="$null">Submit</w:TextButton>
+</w:SectionBody>
+

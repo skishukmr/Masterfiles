@@ -1,0 +1,43 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="OpportunitySearchRange">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.core.SearchParameterRange"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="GroupName">
+            <csvMapping selectField="GroupName"/>
+        </field>
+        <field name="DisplayIndex">
+            <csvMapping selectField="DisplayIndex"/>
+        </field>
+        <field name="RangeDescription">
+            <csvMapping selectField="RangeDescription"/>
+        </field>
+        <field name="RangeMinValue">
+            <csvMapping selectField="RangeMinValue"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="RangeMaxValue">
+            <csvMapping selectField="RangeMaxValue"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="IsInclusive">
+            <csvMapping selectField="IsInclusive"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="FilterValue">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DecodeSearchParameterRange">
+                    <parameter name="MinValue"    value="RangeMinValue"/>
+                    <parameter name="MaxValue"    value="RangeMaxValue"/>
+                    <parameter name="IsInclusive" value="IsInclusive"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

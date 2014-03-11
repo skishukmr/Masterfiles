@@ -1,0 +1,109 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<!-- Collape all these 5 loads into 1 once Lokesh change the behavior of inDataLoad -->
+
+<inDataLoad name="BuyerRequestRequisition" version="8.2">
+    <inLoadStages>
+        <inAqlStage appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <deleteField name="CostCenter.CostCenterId"/>
+        <deleteField name="CostCenter.CompanyCode"/>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="Department.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestExpenseReport" version="8.2">
+    <inLoadStages>
+        <inAqlStage appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <deleteField name="CostCenter.CostCenterId"/>
+        <deleteField name="CostCenter.CompanyCode"/>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="Department.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestMasterAgreement" version="8.2">
+    <inLoadStages>
+        <inAqlStage appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <deleteField name="CostCenter.CostCenterId"/>
+        <deleteField name="CostCenter.CompanyCode"/>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="Department.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestTravelAuthorization" version="8.2">
+    <inLoadStages>
+        <inAqlStage appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <deleteField name="CostCenter.CostCenterId"/>
+        <deleteField name="CostCenter.CompanyCode"/>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="Department.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestTravelProfile" version="8.2">
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

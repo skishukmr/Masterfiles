@@ -1,0 +1,91 @@
+<a:RefreshRegion>
+<w:BucketsTOC>\
+    <w:BucketHeading label="Sample Wizards">
+        <w:BucketItem label="DataTable Tabs" action="$goto.SimpleTable.htm"/>
+        <w:BucketItem label="Pivot DataTable Tabs" action="$goto.PivotTable.htm"/>
+        <w:BucketItem label="DataTable Wizard" action="$goto.Table_Samples.awz"/>
+        <w:BucketItem label="Basic Sample Tabs" action="$goto.BasicSamples_Tabs.htm"/>
+        <w:BucketItem label="Basic Samples" action="$goto.Basic_Samples.awz" labelRight="12"/>
+        <w:BucketItem label="XML Samples" action="$goto.XML_Samples.awz"/>
+        <w:BucketItem label="Wacky Table" action="$goto.SimpleDataTablePage"/>
+    </w:BucketHeading>
+    <w:BucketHeading label="Others">
+        <w:BucketItem label="TnE -- One Screen" action="$goto.TnE.ERPage.htm"/>
+        <w:BucketItem label="Buyer Monitoring" action="$goto.Optimization.MonitoringPage.htm"/>
+        <w:BucketItem label="Scenario Editor" action="$goto.Optimization.Scenario.htm"/>
+        <w:BucketItem label="Section Editor" action="$goto.Sourcing.SectionEditor.htm"/>
+        <w:BucketItem label="Class Browser" action="$goto.ClassBrowser.Browser.htm"/>
+        <w:BucketItem label="Drag Table" action="$goto.Kansas.DragTable.htm"/>
+        <w:BucketItem label="Kansas (Workbench)" action="$goto.Kansas.Kansas.htm"/>
+    </w:BucketHeading>
+    <w:BucketHeading label="Others">
+        <w:BucketItem label="Expression Test" action="$goto.ExpressionTest"/>
+        <w:BucketItem label="Explorer Tree" action="$goto.ExplorerPage"/>
+        <w:BucketItem label="Dynamic Columns" action="$goto.SourcingTable"/>
+        <w:BucketItem label="Flash Charts" action="$goto.FlashCharts.Chart.htm"/>
+        <w:BucketItem label="Modal Page (simple)" action="$goto.ModalPage"/>
+        <w:BucketItem label="Modal Page (complex)" action="$goto.ModalPage_Complex"/>
+        <w:BucketItem label="Example App" action="$goto.StartPage"/>
+        <w:BucketItem label="Drag / Drop" action="$goto.DragTable"/>
+        <w:BucketItem label="Client JavaScript Stuff" action="$goto.ClientJSTests"/>
+        <w:BucketItem label="Chat Test" action="$goto.Chat"/>
+        <w:BucketItem label="Large File Upload Test" action="$goto.FileUpload"/>
+        <w:BucketItem label="Mail Send Test" action="$goto.MailSendPage.htm"/>
+    </w:BucketHeading>
+    <w:BucketHeading label="Script Samples" initState="$false">
+        <w:BucketItem label="Script Test" action="$goto.scriptSamples.ScriptTest"/>
+        <w:BucketItem label="Simple Script" action="$goto.scriptSamples.SimpleScript"/>
+    </w:BucketHeading>
+    <w:BucketHeading label="Bogus Links">
+        <w:BucketItem label="These are just here" action="$null"/>
+        <w:BucketItem label="To make the TOC" action="$null"/>
+        <w:BucketItem label="Taller" action="$null"/>
+        <w:BucketItem label="To test cases" action="$null"/>
+        <w:BucketItem label="Where that affects" action="$null"/>
+        <w:BucketItem label="scroll table" action="$null"/>
+        <w:BucketItem label="sizing." action="$null"/>
+        <w:BucketItem label="Okay?" action="$null"/>
+        <w:BucketItem label="Good!" action="$null"/>
+        <w:BucketItem label="I'm glad that we had" action="$null"/>
+        <w:BucketItem label="this little chat!" action="$null"/>
+    </w:BucketHeading>
+
+</w:BucketsTOC>\
+<br/>
+<a:Hyperlink action="$showWizard">Wizard the Hard Way</a:Hyperlink><br/><br/>
+<a:Hyperlink action="$showModal">Modal Page, second tab</a:Hyperlink><br><br>
+<a:Hyperlink action="$showModalPanel">Modal Panel</a:Hyperlink><br><br>
+<br/>
+<a:RefreshRegion>
+    <w:ToggleImage state="$showWideLabel" isExternal="$true"
+           trueImageName="AWXArrowDown.gif" falseImageName="AWXArrowRight.gif"/>\
+        <b>Show Wide Content</b>
+    <br/>
+    <a:If ifTrue="$showWideLabel">
+        <nobr>&nbsp;&nbsp;&nbsp;This is a very, very long string in the TOC</nobr>
+    </a:If>
+</a:RefreshRegion>
+
+</a:RefreshRegion>
+
+<!--- <div style="padding-left:300px">hello</div> -->
+<server>
+    var showWideLabel = false;
+
+    function showWizard () {
+        return ariba.ui.demoshell.AWXHTMLComponentFactory.sharedInstance().componentToReturnForRelativePath("Basic_Samples.awz", this.component);
+    }
+
+    function showModal () {
+        var page = page("ModalPage_Complex.htm");
+        set(page, "dict.selectedTab", new java.lang.Integer(1));
+        return page;
+    }
+
+    function showModalPanel () {
+        var page = ariba.ui.demoshell.AWXHTMLComponentFactory.sharedInstance().componentToReturnForRelativePath("ModalPage.htm", this.component);
+        // var page = page("ModalPage.htm");
+        page.setClientPanel(true);
+        return page;
+    }
+</server>

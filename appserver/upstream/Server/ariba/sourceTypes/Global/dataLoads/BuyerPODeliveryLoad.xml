@@ -1,0 +1,275 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerDeletePODelivery">
+    <loadStages>
+        <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE"
+                  whereClause="PurchaseOrder.NextVersion IS NOT NULL OR
+                               PurchaseOrder.StatusString IN ('Canceling', 'Canceled')"
+                  incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.PODelivery"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="POId">
+            <aqlMapping selectField="PurchaseOrder.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerPODelivery">
+    <loadStages>
+        <aqlStage fromClause="ariba.purchasing.core.PurchaseOrder
+                              JOIN ariba.purchasing.core.POLineItem USING PurchaseOrder.LineItems
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING PurchaseOrder.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING PurchaseOrder.TotalCost
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.purchasing.core.OrderConfirmation USING PurchaseOrder.OrderConfirmations
+                              LEFT OUTER JOIN ariba.purchasing.core.AdvancedShipNotice USING PurchaseOrder.AdvancedShipNotices
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING PurchaseOrder.ProcurementUnit"
+                  whereClause="PurchaseOrder.NextVersion IS NULL AND
+                               PurchaseOrder.StatusString IN ('Ordering', 'Ordered', 'Receiving', 'Received')"
+                  incrementalClause="(PurchaseOrder.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"
+                  groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.PODelivery"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="POId">
+            <aqlMapping selectField="PurchaseOrder.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="POName">
+            <aqlMapping selectField="PurchaseOrder.Name"/>
+        </field>
+        <field name="Amount.Amount">
+            <aqlMapping selectField="PurchaseOrder.TotalCost.Amount"/>
+        </field>
+        <field name="Amount.Currency">
+            <aqlMapping selectField="Currency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <aqlMapping selectField="PurchaseOrder.TotalCost.ConversionDate"/>
+        </field>
+        <field name="ConfirmationTime">
+            <aqlMapping selectField="max(OrderConfirmation.CreateDate)-PurchaseOrder.OrderedDate"
+                        groupBy="PurchaseOrder.OrderedDate"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="DeliveryTime">
+            <aqlMapping selectField="max(AdvancedShipNotice.CreateDate)-PurchaseOrder.OrderedDate"
+                        groupBy="PurchaseOrder.OrderedDate"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ReceiptTime">
+            <aqlMapping selectField="PurchaseOrder.ReceivedDate-PurchaseOrder.OrderedDate"
+                        groupBy="PurchaseOrder.ReceivedDate,PurchaseOrder.OrderedDate"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="InvoiceTime">
+            <aqlMapping selectField="PurchaseOrder.InvoicedDate-PurchaseOrder.OrderedDate"
+                        groupBy="PurchaseOrder.InvoicedDate,PurchaseOrder.OrderedDate"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="OnTimeDeliveryShip">
+            <aqlMapping selectField="Requisition.NeedBy-max(AdvancedShipNotice.CreateDate)"
+                        groupBy="Requisition.NeedBy"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="OnTimeDeliveryReceipt">
+            <aqlMapping selectField="Requisition.NeedBy-PurchaseOrder.ReceivedDate"
+                        groupBy="Requisition.NeedBy,PurchaseOrder.ReceivedDate"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="OnTimeOrLate">
+            <aqlMapping selectField="CASE Requisition.NeedBy-max(AdvancedShipNotice.CreateDate) WHEN NULL THEN Requisition.NeedBy-PurchaseOrder.ReceivedDate ELSE Requisition.NeedBy-max(AdvancedShipNotice.CreateDate) END"
+                        groupBy="Requisition.NeedBy,PurchaseOrder.ReceivedDate"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DecodeNumberSign">
+                    <parameter name="NullValue" value=""/>
+                    <parameter name="PositiveValue" value="OnTime"/>
+                    <parameter name="ZeroValue" value="OnTime"/>
+                    <parameter name="NegativeValue" value="Late"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="OrderConfirmation">
+            <aqlMapping selectField="PurchaseOrder.OrderConfirmationState"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                            <entry value="4"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Unconfirmed"/>
+                            <entry value="PartiallyConfirmed"/>
+                            <entry value="FullyConfirmed"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AdvancedShipNotice">
+            <aqlMapping selectField="PurchaseOrder.AdvancedShipNoticeState"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                            <entry value="4"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Unshipped"/>
+                            <entry value="PartiallyShipped"/>
+                            <entry value="FullyShipped"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Receipt">
+            <aqlMapping selectField="PurchaseOrder.ReceivedState"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                            <entry value="4"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Unreceived"/>
+                            <entry value="PartiallyReceived"/>
+                            <entry value="FullyReceived"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="OrderedDate">
+            <aqlMapping selectField="PurchaseOrder.OrderedDate"/>
+        </field>
+        <field name="NeedByDate">
+            <aqlMapping selectField="Requisition.NeedBy"/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="Requester.UserId">
+            <aqlMapping selectField="Requester.UniqueName"/>
+        </field>
+        <field name="Requester.PasswordAdapter">
+            <aqlMapping selectField="Requester.PasswordAdapter"/>
+        </field>
+        <field name="BackOrderedItems">
+            <aqlMapping selectField="sum(POLineItem.NumberConfirmedBackOrdered)"
+                        groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value="BackOrdered"/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="NotBackOrdered"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="RejectedItems">
+            <aqlMapping selectField="sum(POLineItem.NumberConfirmedRejected)"
+                        groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value="Rejected"/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="NotRejected"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SubstitutedItems">
+            <aqlMapping selectField="sum(POLineItem.NumberConfirmedSubstituted)"
+                        groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value="Substituted"/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="NotSubstituted"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ProcurementUnit.UniqueName">
+            <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

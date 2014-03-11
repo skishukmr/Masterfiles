@@ -1,0 +1,440 @@
+<html>
+    <head>
+        <title>Playback Viewer</title>
+    </head>
+    <style>
+        .text {
+            font:normal 11px Verdana, Arial, Helvetica, sans-serif;
+        }
+        A:link, A:visited  {
+            font:normal 11px Verdana, Arial, Helvetica, sans-serif;
+            color:#333366;
+        }
+	    .tab {
+            font:bold 11px Verdana, Arial, Helvetica, sans-serif;
+	        margin-top: 50px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            border: 1px solid black;
+            position: absolute;
+            background-color: #CCCCDD;
+            color: #333366;
+            top: expression(document.body.clientHeight - 150);
+            filter:alpha(opacity=040);
+            cursor:hand;
+        }
+        .lefttab {
+            border-right: 0px;
+            padding-right: 2px;
+            padding-left: 5px;
+            left:expression(recordFrame.frameElement.offsetWidth - 8);
+        }
+        .righttab {
+            border-left: 0px;
+            padding-left: 2px;
+            padding-right: 5px;
+            left:expression(playBackFrame.frameElement.offsetLeft + 2);
+        }
+    </style>
+    <body style="background-color:#CCCCDD" onKeyPress="shortCutKey(event);">
+        <script language="Javascript">
+
+        var messageIndex = -1;
+        var request = '_request.txt';
+        var response = '_response.txt';
+        var message = response;
+        var halfWidth = 'document.body.clientWidth/2 - 10';
+        var fullWidth = 'document.body.clientWidth - 20';
+        var exElementId;
+        var exResponse;
+        var componentPaths;
+
+        function leadingZeros ()
+        {
+           var zeros = 4;
+           if (messageIndex != 0) {
+               var i = messageIndex / 10;
+               while (i >= 1) {
+                   zeros = zeros - 1;
+                   i = i / 10;
+               }
+           }
+           var leadingZeros;
+           for (var i = 0; i < zeros; i++) {
+               if (leadingZeros == undefined) {
+                   leadingZeros = '0';
+               }
+               else {
+                   leadingZeros = leadingZeros + '0';
+               }
+           }
+           return leadingZeros;
+        }
+
+        function setMessages ()
+        {
+            var leftFrameStyle = recordFrame.frameElement.style;
+            var rightFrameStyle = playBackFrame.frameElement.style;
+            var logFrameStyle = logFrame.frameElement.style;
+            logFrameStyle.display = 'none';
+            var loc = leadingZeros() + messageIndex + message;
+            if (leftFrameStyle.getExpression('width') != '0') {
+                leftFrameStyle.display = '';
+                leftTab.style.display='';
+                recordName.innerText = 'Record';
+                setMessage(recordFrame.document, '../' + loc);
+            }
+            if (rightFrameStyle.getExpression('width') != '0') {
+                rightFrameStyle.display = '';
+                rightTab.style.display='';
+                playbackName.innerText = 'Playback';
+                setMessage(playBackFrame.document, loc);
+            }
+            indexInput.value = messageIndex;
+            var options = messageSelect.options;
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].value == message) {
+                    messageSelect.selectedIndex = i;
+                    return;
+                }
+            }
+        }
+
+        function setMessage (doc, location)
+        {
+            var xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+            xmlHttp.open('GET', location, false);
+            xmlHttp.send(null);
+            var text = xmlHttp.responseText;
+            var parent, hightlightDiv, index, i, allElements, length, currentElement, exElements;
+            doc.open();
+            if (xmlHttp.responseText.indexOf('<html') == -1) {
+                 text = text.replace(/&/g, '&amp;');
+                 text = text.replace(/>/g, '&gt;');
+                 text = text.replace(/</g, '&lt;');
+                 text = text.replace(/\"/g, '&quot;');
+                 doc.writeln('<html><body onKeyPress="top.shortCutKey(event)">');
+                 doc.writeln('<pre>');
+                 doc.writeln(text);
+                 doc.writeln('</pre>');
+                 doc.writeln('</body></html>');
+            }
+            else {
+                 text = text.replace(/<script/g, '<!--\n<script');
+                 text = text.replace(/\/script>/g, '/script>\n-->');
+                 text = text.replace(/<iframe/g, '<!--\n<iframe');
+                 text = text.replace(/\/iframe>/g, '/iframe>\n-->');
+                 text = text.replace(/onload=/ig, 'xonload=');
+                 text = text.replace(/onclick=/ig, 'xonclick=');
+                 text = text.replace(/onkeypress=/ig, 'xonkeypress=');
+                 text = text.replace(/onkeydown=/ig, 'xonkeydown=');
+                 text = text.replace(/onmouseover=/ig, 'xonmouseover=');
+                 text = text.replace(/onmouseout=/ig, 'xonmouseout=');
+                 text = text.replace(/onmousedown=/ig, 'xonmousedown=');
+                 text = text.replace(/onblur=/ig, 'xonblur=');
+                 text = text.replace(/onfocus=/ig, 'xonfocus=');
+                 text = text.replace(/target=/ig, 'xtarget=');
+                 text = text.replace(/<select/ig, '<select disabled');
+                 text = text.replace(/<input/ig, '<input disabled');
+                 text = text.replace(/<textarea/ig, '<textarea disabled');
+                 text = text.replace(/<a.*href/ig, '<a href=\"#\" xhref');
+                 text = text.replace(/<body/g, '<body onKeyPress="top.shortCutKey(event);"');
+                 index = text.indexOf('<!DOCTYPE');
+                 if (index == -1) {
+                     index = text.indexOf('<html');
+                 }
+                 text = text.substring(index, text.length);
+                 doc.writeln(text);
+                 if (location == exResponse) {
+                     allElements = doc.all;
+                     length = allElements.length;
+                     exElements = new Array();
+                     componentPaths = new Array();
+                     for (i = 0; i < length; i++) {
+                         currentElement = allElements[i];
+                         if (currentElement.id == exElementId ||
+                             currentElement.name == exElementId) {
+                             exElements[exElements.length] = currentElement;
+                             componentPaths[componentPaths.length] = componentPath(currentElement);
+                         }
+                     }
+                     for (i = 0; i < exElements.length; i++) {
+                         currentElement = exElements[i];
+                         if (currentElement.tagName == 'TD') {
+                             currentElement.style.backgroundColor = 'red';
+                             try {
+                                currentElement.focus();
+                             }
+                             catch (ex) {
+                             };
+                         }
+                         else {
+                             parent = currentElement.parentNode;
+                             hightlightDiv = doc.createElement('div');
+                             hightlightDiv.style.borderColor = 'red';
+                             hightlightDiv.style.borderStyle = 'solid';
+                             hightlightDiv.style.borderWidth = 2;
+                             parent.insertBefore(hightlightDiv, currentElement);
+                             parent.removeChild(currentElement);
+                             hightlightDiv.appendChild(currentElement);
+                             currentElement.disabled = false;
+                             try {
+                                currentElement.focus();
+                             }
+                             catch (ex) {
+                             };
+			                 currentElement.disabled = true;
+                         }
+                     }
+                 }
+            }
+            doc.close();
+        }
+
+        function componentPath (el)
+        {
+            var path = '';
+            while (el != null) {
+                var tagString = el.id;
+                if (tagString.length > 0 && tagString.indexOf(":")>0) {
+                      path += '\t' + tagString + '\n';
+                }
+                el = el.parentElement;
+            }
+            return path;
+        }
+
+        function getComponentPaths ()
+        {
+            var i;
+            var paths = '';
+            if (componentPaths) {
+                for (i = 0; i< componentPaths.length; i++) {
+                    paths += 'Path ' + i + '\n' + componentPaths[i] + '\n';
+                }
+            }
+            return paths;
+        }
+
+        function summary ()
+        {
+            messageIndex = -1;
+            message = response;
+            leftTab.style.display = "none";
+            rightTab.style.display = "none";
+            var leftFrameStyle = recordFrame.frameElement.style;
+            var rightFrameStyle = playBackFrame.frameElement.style;
+            var logFrameStyle = logFrame.frameElement.style;
+            leftFrameStyle.display = 'none';
+            rightFrameStyle.display = 'none';
+            logFrameStyle.display = '';
+            recordName.innerText = '           ';
+            playbackName.innerText = '           ';
+            setLog();
+        }
+
+        function first ()
+        {
+           messageIndex = 0;
+           message = request;
+           setMessages();
+        }
+
+        function previous ()
+        {
+           if (message == request) {
+              messageIndex = messageIndex - 1;
+              message = response;
+           }
+           else {
+              message = request;
+           }
+           setMessages();
+        }
+
+        function next ()
+        {
+            if (message == response) {
+                messageIndex = messageIndex + 1;
+                message = request;
+            }
+            else {
+                message = response;
+            }
+            setMessages();
+        }
+
+        function go (event)
+        {
+            messageIndex = parseInt(indexInput.value);
+            message = messageSelect.options[messageSelect.selectedIndex].value;
+            if (event) {
+                // enter
+                if (event.keyCode == 13) {
+                }
+                else {
+                     return;
+                }
+            }
+            setMessages();
+        }
+
+        function intValue (intString)
+        {
+            while (intString.indexOf('0') == 0 && intString != '0') {
+                intString = intString.substring(1);
+            }
+            return parseInt(intString);
+        }
+
+        function setException (exMessage, id)
+        {
+            if (id != 'null') {
+                exElementId = id;
+                exResponse = '../' + exMessage;
+                setMessage(exceptionFrame.document, exResponse);
+            }
+        }
+
+        function goto (m)
+        {
+            var index = m.indexOf('_');
+            var messageIndexString = m.substring(0, index);
+            messageIndex = intValue(messageIndexString);
+            message = m.substring(index);
+            setMessages();
+        }
+
+        function shiftLeft ()
+        {
+            var leftFrameStyle = recordFrame.frameElement.style;
+            var rightFrameStyle = playBackFrame.frameElement.style;
+	        if (leftFrameStyle.getExpression('width') == rightFrameStyle.getExpression('width')) {
+                leftFrameStyle.setExpression('width', '0');
+                rightFrameStyle.setExpression('width', fullWidth);
+                leftTab.style.display='none';
+                recordName.innerText = '           ';
+            }
+            else {
+                leftFrameStyle.setExpression('width', halfWidth);
+                rightFrameStyle.setExpression('width', halfWidth);
+                rightTab.style.display='';
+                playbackName.innerText = 'Playback';
+            }
+            setMessages();
+        }
+
+	    function shiftRight ()
+	    {
+            var leftFrameStyle = recordFrame.frameElement.style;
+            var rightFrameStyle = playBackFrame.frameElement.style;
+            if (leftFrameStyle.getExpression('width') == rightFrameStyle.getExpression('width')) {
+                rightFrameStyle.setExpression('width', '0');
+                leftFrameStyle.setExpression('width', fullWidth);
+                rightTab.style.display = "none";
+                playbackName.innerText = '              ';
+            }
+            else {
+                leftFrameStyle.setExpression('width', halfWidth);
+                rightFrameStyle.setExpression('width', halfWidth);
+                leftTab.style.display = "";
+                recordName.innerText = 'Record';
+            }
+            setMessages();
+        }
+
+        function setLog ()
+        {
+            var doc = logFrame.document;
+            var xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+            xmlHttp.open('GET', './log.txt', false);
+            xmlHttp.send(null);
+            var text = xmlHttp.responseText;
+            if (text.indexOf('*End*') == -1) {
+                doc.open();
+                doc.writeln('<html><body onKeyPress="top.shortCutKey(event)">')
+                doc.writeln('<pre>');
+                doc.writeln(text);
+                doc.writeln('</pre>');
+                doc.writeln('</body></html>');
+                doc.close();
+                if (text.indexOf('Summary') == -1) {
+                    setTimeout("setLog()",  1000);
+                }
+            }
+            else {
+                setTimeout("setLog()",  1000);
+            }
+        }
+
+        function shortCutKey (evt)
+        {
+            var keyCode = evt.keyCode;
+            if (evt.srcElement == indexInput) {
+                return;
+            }
+            if (keyCode == 110) {
+                next();
+            }
+            else if (keyCode == 112) {
+	            previous();
+            }
+            else if (keyCode == 102) {
+                first();
+            }
+            else if (keyCode == 115) {
+                summary();
+            }
+            else if (logFrame.frameElement.style.display == 'none') {
+                if (keyCode == 108 &&
+                    recordFrame.frameElement.style.getExpression('width') != '0') {
+                    shiftLeft();
+                }
+                else if (keyCode == 114 &&
+                    playBackFrame.frameElement.style.getExpression('width') != '0') {
+                    shiftRight();
+                }
+            }
+        }
+
+        function print (obj)
+        {
+            var props = obj.toString() + ':';
+            for (p in obj) {
+                if (p != 'outerText' &&
+                    p != 'innerText' &&
+                    p != 'innerHTML' &&
+                    p != 'outerHTML') {
+                    props += p + ':' + obj[p] + ', ';
+                }
+            }
+            alert(props);
+        }
+
+        setTimeout('setLog()',  500);
+        </script>
+        <table class="text" width="100%">
+            <tr valign="bottom">
+                <td align="left" id="recordName"></td>
+                <td align="center">
+                    <a href="javascript:summary()" title="Summary S">Summary</a>
+                    <a href="javascript:first()" title="First Message F">First</a>
+                    <a href="javascript:previous()" title="Previous Message P">Previous</a>
+                    <a href="javascript:next()" title="Next Message N">Next</a>
+                    Message: <input id="indexInput" type="text" size="5" onKeyPress="go(event);">
+                    <select id="messageSelect" onchange="go();">
+                    <option id="RequestOption" value="_request.txt">_request.txt</option>
+                    <option id="ResponseOption" value="_response.txt">_response.txt</option>
+                    </select>
+                </td>
+                <td id="playbackName" align="right"></td>
+            </tr>
+        </table>
+        <div id="leftTab" class="tab lefttab" onClick="shiftLeft();" style="display:none" title="Pull Left L">&lt;</div>
+        <div id="rightTab" class="tab righttab" onClick="shiftRight();" style="display:none" title="Pull Right R">&gt;</div>
+        <iframe style="display:none;width:expression(document.body.clientWidth/2 - 10);height:expression(document.body.clientHeight - 60)" id="recordFrame" src="javascript:document.write('Loading...');"/>
+        <iframe style="display:none;width:expression(document.body.clientWidth/2 - 10);height:expression(document.body.clientHeight - 60)" id="playBackFrame" src="javascript:document.write('Loading...');"/>
+        <iframe style="width:expression(document.body.clientWidth - 20);height:expression(document.body.clientHeight - 60)" id="logFrame" src="javascript:document.write('Loading...');"/>
+        <iframe style="display:none" id="exceptionFrame" src="javascript:document.write('Loading...');"/>
+    </body>
+</html>

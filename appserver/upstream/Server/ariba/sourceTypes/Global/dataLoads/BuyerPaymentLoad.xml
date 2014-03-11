@@ -1,0 +1,390 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerDeletePayment">
+    <loadStages>
+        <aqlStage fromClause="ariba.payment.core.Payment INCLUDE INACTIVE"
+                  whereClause="Payment.Active = false"
+                  incrementalClause="(Payment.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      Payment.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.Payment"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="PaymentId">
+            <aqlMapping selectField="Payment.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerPayment">
+    <loadStages>
+        <aqlStage fromClause="ariba.payment.core.Payment
+                              LEFT OUTER JOIN ariba.approvable.core.Approvable USING Payment.Payable
+                              LEFT OUTER JOIN ariba.invoicing.core.InvoiceReconciliation AS InvoiceReconciliation INCLUDE INACTIVE USING Payment.Payable
+                              LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder AS PurchaseOrder INCLUDE INACTIVE USING InvoiceReconciliation.Order
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice AS Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING InvoiceReconciliation.Requester
+                              LEFT OUTER JOIN ariba.payment.core.PaymentAmounts AS ToPayPmtAmt USING Payment.PaymentAmounts
+                              LEFT OUTER JOIN ariba.payment.core.PaymentMethodType AS PaymentMethodType USING Payment.PaymentMethodType
+                              LEFT OUTER JOIN ariba.basic.core.Money AS ToPayAmount USING ToPayPmtAmt.NetAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS ToPayCurrency INCLUDE INACTIVE USING ToPayAmount.Currency
+                              LEFT OUTER JOIN ariba.payment.core.PaymentAmounts AS PaidPmtAmt USING Payment.PaidAmounts
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PaidAmount USING PaidPmtAmt.NetAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PaidCurrency INCLUDE INACTIVE USING PaidAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS DiscountAmount USING PaidPmtAmt.DiscountAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS DiscountCurrency INCLUDE INACTIVE USING DiscountAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS GrossAmount USING PaidPmtAmt.GrossAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS GrossCurrency INCLUDE INACTIVE USING GrossAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MaxDiscountAmount USING Payment.MaxDiscountApplicable
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MaxDiscountCurrency INCLUDE INACTIVE USING MaxDiscountAmount.Currency
+                              LEFT OUTER JOIN ariba.payment.core.PaymentAmounts AS PaymentAmt INCLUDE INACTIVE USING Payment.PaymentAmounts
+                              LEFT OUTER JOIN ariba.payment.core.PaymentAdjustmentAmount AS PaymentAdjAmt INCLUDE INACTIVE USING PaymentAmt.AdjustmentAmount
+                              LEFT OUTER JOIN ariba.basic.core.Money AS AdjAmt INCLUDE INACTIVE USING PaymentAdjAmt.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS AdjAmtCurrency INCLUDE INACTIVE USING AdjAmt.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS InvAmt INCLUDE INACTIVE USING Invoice.TotalInvoiced
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS InvAmtCurrency INCLUDE INACTIVE USING InvAmt.Currency
+                              LEFT OUTER JOIN ariba.payment.core.PaymentSchedule USING PaymentSchedules
+                              LEFT OUTER JOIN ariba.payment.core.PaymentTransaction USING PaymentTransaction
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING Payment.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.payment.core.PaymentTerms AS PaymentTerms INCLUDE INACTIVE USING InvoiceReconciliation.PaymentTerms
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Payment.ProcurementUnit"
+                  whereClause="Payment.NextVersion IS NULL"
+                  incrementalClause="(Payment.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      Payment.TimeUpdated &lt; :IncrementalEndDate)"
+                  groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.Payment"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="PaymentId">
+            <aqlMapping selectField="Payment.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="Payable">
+            <aqlMapping selectField="Approvable.UniqueName || ': ' || Approvable.Name"/>
+        </field>
+        <field name="PayableType">
+            <aqlMapping selectField="Approvable.Type"/>
+        </field>
+        <field name="PayableStatus">
+            <aqlMapping selectField="Approvable.StatusString"/>
+        </field>
+        <field name="InvoiceNumber">
+            <aqlMapping selectField="Invoice.InvoiceNumber"/>
+        </field>
+        <field name="Requester.UserId">
+            <aqlMapping selectField="Requester.UniqueName"/>
+         </field>
+        <field name="Requester.PasswordAdapter">
+             <aqlMapping selectField="Requester.PasswordAdapter"/>
+         </field>
+        <field name="ToPayAmount.Amount">
+            <aqlMapping selectField="Payment.PaymentAmounts.NetAmount.Amount"/>
+        </field>
+        <field name="ToPayAmount.Currency">
+            <aqlMapping selectField="ToPayCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ToPayAmount.Date">
+            <aqlMapping selectField="Payment.PaymentAmounts.NetAmount.ConversionDate"/>
+        </field>
+        <field name="PaidAmount.Amount">
+            <aqlMapping selectField="Payment.PaidAmounts.NetAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PaidAmount.Currency">
+            <aqlMapping selectField="PaidCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PaidAmount.Date">
+            <aqlMapping selectField="Payment.PaidAmounts.NetAmount.ConversionDate"/>
+        </field>
+        <field name="MaxAvailableDiscount.Amount">
+            <aqlMapping selectField="Payment.MaxDiscountApplicable.Amount"/>
+        </field>
+        <field name="MaxAvailableDiscount.Currency">
+            <aqlMapping selectField="MaxDiscountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MaxAvailableDiscount.Date">
+            <aqlMapping selectField="Payment.MaxDiscountApplicable.ConversionDate"/>
+        </field>
+        <field name="DiscountEarned.Amount">
+            <aqlMapping selectField="Payment.PaidAmounts.DiscountAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="DiscountEarned.Currency">
+            <aqlMapping selectField="DiscountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="DiscountEarned.Date">
+            <aqlMapping selectField="Payment.PaidAmounts.NetAmount.ConversionDate"/>
+        </field>
+        <field name="DiscountPercent">
+            <aqlMapping selectField="CASE COALESCE(Payment.Amount.Amount,0) WHEN 0 THEN 0
+                                     ELSE COALESCE(Payment.MaxDiscountApplicable.Amount,0.0)/Payment.Amount.Amount END"/>
+        </field>
+        <field name="DiscountTerms">
+            <aqlMapping selectField="PaymentTransaction.PaymentDate - max(PaymentSchedule.DueDate)" groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DecodeNumberSign">
+                    <parameter name="NullValue" value="NoDiscount"/>
+                    <parameter name="PositiveValue" value="OutsideDiscountTerms"/>
+                    <parameter name="ZeroValue" value="WithinDiscountTerms"/>
+                    <parameter name="NegativeValue" value="WithinDiscountTerms"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="NetTerms">
+            <aqlMapping selectField="PaymentTransaction.PaymentDate - Payment.NetDueDate" groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DecodeNumberSign">
+                    <parameter name="NullValue" value="NotPaid"/>
+                    <parameter name="PositiveValue" value="OutsideNetTerms"/>
+                    <parameter name="ZeroValue" value="WithinNetTerms"/>
+                    <parameter name="NegativeValue" value="WithinNetTerms"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Discount">
+            <aqlMapping selectField="Payment.PaidAmounts.DiscountAmount.Amount" groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DecodeNumberSign">
+                    <parameter name="NullValue" value="NotPaid"/>
+                    <parameter name="PositiveValue" value="HadDiscount"/>
+                    <parameter name="ZeroValue" value="NoDiscount"/>
+                    <parameter name="NegativeValue" value="NoDiscount"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AdjustmentAmount.Amount">
+            <aqlMapping selectField="AdjAmt.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AdjustmentAmount.Currency">
+            <aqlMapping selectField="AdjAmt.Currency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AdjustmentAmount.Date">
+            <aqlMapping selectField="AdjAmt.ConversionDate"/>
+        </field>
+
+        <field name="InvoiceAmount.Amount">
+            <aqlMapping selectField="InvAmt.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="InvoiceAmount.Currency">
+            <aqlMapping selectField="InvAmtCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="InvoiceAmount.Date">
+            <aqlMapping selectField="InvAmt.ConversionDate"/>
+        </field>
+
+        <field name="DebitCredit">
+            <aqlMapping selectField="Payment.PaymentAmounts.NetAmount.Amount" groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.DecodeNumberSign">
+                    <parameter name="NullValue" value=""/>
+                    <parameter name="PositiveValue" value="debit"/>
+                    <parameter name="ZeroValue" value="debit"/>
+                    <parameter name="NegativeValue" value="credit"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="Status">
+            <aqlMapping selectField="Payment.RequestState"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                            <entry value="4"/>
+                            <entry value="8"/>
+                            <entry value="16"/>
+                            <entry value="32"/>
+                            <entry value="64"/>
+                            <entry value="128"/>
+                            <entry value="256"/>
+                            <entry value="512"/>
+                            <entry value="1024"/>
+                            <entry value="2048"/>
+                            <entry value="4096"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Unprocessed"/>
+                            <entry value="Approved"/>
+                            <entry value="Sending"/>
+                            <entry value="Sending"/>
+                            <entry value="Sending"/>
+                            <entry value="OnHold"/>
+                            <entry value="Scheduled"/>
+                            <entry value="Scheduled"/>
+                            <entry value="Paying"/>
+                            <entry value="Paid"/>
+                            <entry value="Canceled"/>
+                            <entry value="Canceled"/>
+                            <entry value="Rejected"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="CreatedDate">
+            <aqlMapping selectField="Payment.CreateDate"/>
+        </field>
+        <field name="ApprovedDate">
+            <aqlMapping selectField="Payment.ApprovedDate"/>
+        </field>
+        <field name="PaymentDate">
+            <aqlMapping selectField="PaymentTransaction.PaymentDate"/>
+        </field>
+        <field name="NetDueDate">
+            <aqlMapping selectField="Payment.NetDueDate"/>
+        </field>
+        <field name="DiscountTermsDate">
+            <aqlMapping selectField="max(PaymentSchedule.DueDate)" groupBy=""/>
+        </field>
+        <field name="ProcurementUnit.UniqueName">
+            <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+        </field>
+        <field name="DynamicDiscountTaken">
+            <aqlMapping selectField="Payment.ScheduledForDynamicDiscount"/>
+        </field>
+        <field name="EligibleForDynamicDiscount">
+            <aqlMapping selectField="Payment.EligibleForDynamicDiscount"/>
+        </field>
+
+        <field name="PaymentSchedulingApplication">
+            <aqlMapping selectField="Payment.PaymentScheduling"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="External Systems"/>
+                            <entry value="Ariba Buyer"/>
+                            <entry value="Ariba SN"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PaymentAggregationApplication">
+            <aqlMapping selectField="Payment.PaymentSettlement"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="External Systems"/>
+                            <entry value="Ariba Buyer"/>
+                            <entry value="Ariba SN"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PaymentTermsDescription">
+            <aqlMapping selectField="PaymentTerms.Description"/>
+        </field>
+        <field name="PaymentMethodType">
+            <aqlMapping selectField="PaymentMethodType.Description"/>
+        </field>
+        <field name="PaymentStatusString">
+            <aqlMapping selectField="Payment.StatusString"/>
+        </field>
+        <field name="GrossAmount.Amount">
+            <aqlMapping selectField="Payment.PaidAmounts.GrossAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="GrossAmount.Currency">
+            <aqlMapping selectField="GrossCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="GrossAmount.Date">
+            <aqlMapping selectField="Payment.PaidAmounts.GrossAmount.ConversionDate"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerPayment" version="9s4">
+    <fieldMappings>
+        <deleteField name="PaymentSchedulingApplication"/>
+        <deleteField name="PaymentAggregationApplication"/>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

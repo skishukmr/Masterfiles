@@ -1,0 +1,17 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://ariba/objectEncoding" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance">
+<soap:Header>
+</soap:Header>
+<soap:Body>
+    
+<tns:PortletConfig>
+    <Type>FolderView</Type>
+    <Owner>
+        <PasswordAdapter>PasswordAdapter1</PasswordAdapter>
+        <UniqueName>aribasystem</UniqueName>
+    </Owner>
+    <ObjectReference>WSFolder:/Vault/Knowledge Areas/Prepackaged Reports/Spend Visibility/Commodity Analysis</ObjectReference>
+    <ExternalId>Portlet61</ExternalId>
+</tns:PortletConfig>
+    
+</soap:Body>
+</soap:Envelope>

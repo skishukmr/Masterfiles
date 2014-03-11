@@ -1,0 +1,52 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerProcureCharge">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.BusinessUnit INCLUDE INACTIVE USING ChargeReconciliation.BusinessUnit
+                              LEFT OUTER JOIN ariba.core.GLBusinessUnit INCLUDE INACTIVE USING BusinessUnit.GLBusinessUnit
+                              LEFT OUTER JOIN ariba.core.Department INCLUDE INACTIVE USING SplitAccounting.Department
+                              LEFT OUTER JOIN ariba.core.SetId AS DepSetId INCLUDE INACTIVE USING Department.SetId
+                              LEFT OUTER JOIN ariba.core.Account AS SplitAccount INCLUDE INACTIVE USING SplitAccounting.Account
+                              LEFT OUTER JOIN ariba.core.SetId AS AccSetId INCLUDE INACTIVE USING SplitAccount.SetId
+                              LEFT OUTER JOIN ariba.core.GLBusinessUnit AS LineGLBU INCLUDE INACTIVE USING SplitAccounting.GLBusinessUnit"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="Department.DepartmentId"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="DepSetId.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <aqlMapping selectField="SplitAccount.AccountId"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <aqlMapping selectField="AccSetId.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="AccountingCompany.CompanyId">
+            <aqlMapping selectField="LineGLBU.UniqueName"/>
+        </field>
+        <field name="AccountingCompany.BusinessUnitId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="PurchasingCompany.BusinessUnitId">
+            <aqlMapping selectField="BusinessUnit.UniqueName"/>
+        </field>
+        <field name="PurchasingCompany.CompanyId">
+            <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

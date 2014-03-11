@@ -1,0 +1,64 @@
+<!--- Title section --->
+<PortletTitle dashboardItem="$^dashboardItem"
+              title="Contracts Expiring">\
+    <!--- Body section --->
+    <AWLoadXML filename=^data
+            value="$contracts"/>
+    <AWTDataTable multiSelect="$false" singleSelect="$false"
+                list="$contracts.Contract[]"
+                item="$item"
+                batchSize="5" valign="left">
+        <AWTColumn>
+            <AWImage filename="$alertImage" />
+        </AWTColumn>
+        <AWTColumn key="commodity.text" label="Category" align="left"/>
+        <AWTColumn key="name.text" label="Contract" align="left">
+            <AWHyperlink action=$contractClicked>
+                $item.name.text
+            </AWHyperlink>
+        </AWTColumn>
+        <AWTColumn key="scope.text" label="Scope" align="right"/>
+        <AWTColumn key="used.text" label="Used" align="right"/>
+        <AWTColumn key="expires.text" label="Expires"/>
+    </AWTDataTable>
+</PortletTitle>\
+
+<server>
+   var item = null;
+   var contracts = null;
+
+   function init () {
+      }
+
+   function contractClicked () {
+      var type = component.valueForBinding("type");
+      if (type.equals("Manager")) {
+         var type = get(item, "commodity.text");
+         if (type.equals("Scaffolding")) {
+           return page("Buyer/MAScaff.htm");
+         }
+         else {
+           return page("Buyer/MA.htm");
+         }
+      }
+      else if (type.equals("Live")) {
+         return page("Buyer/MALive.htm");
+      }
+   }
+
+   function alertImage () {
+      return "/resources/cleardot.gif";
+
+      var status = ariba.util.fieldvalue.FieldValue.getFieldValue(item, "status.text");
+      if (status.equals("Red")) {
+         return "/resources/phaseAlertRed.gif";
+      }
+      else if (status.equals("Yellow")) {
+         return "/resources/phaseAlertYellow.gif";
+      }
+      else {
+         return "/resources/cleardot.gif";
+      }
+   }
+
+</server>

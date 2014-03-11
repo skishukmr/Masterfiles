@@ -1,0 +1,123 @@
+<w:HintMessage showTopLine="$false">
+    Example of the <i>AWTDataTable!</i>...  THis is a very long hint message with all
+    kinds of great information that is sure to peak the attention of out more inquisitive
+    users.  They will surely find the process of getting to this information rewarding!
+    <br/>
+    <a:If ifTrue="$someFlag">Something more...</a:If>
+    <br/>
+    SomeFlag: $someFlag
+</w:HintMessage>
+<a:InitializeValue layoutChangeLatch="$true"/>
+<a:SetValue layoutChangeLatch="$true"/>
+<t:DataTable multiSelect="$true" batchSize="30" displayGroup="$displayGroup" csvPath="SampleSpend.csv"
+        initialSortDirection="descending"
+        initialSortKey="Category"
+        reorderAction="$null" tableConfigName="SimpleTable"
+        enableScrolling="$true" useRefresh="$true"showOptionsMenu="$true" title="Wide Table With Scrolling!"
+        scopeSubcomponentsByItem="$true"
+        forceColumnUpdate="$layoutChangeLatch">
+
+    <t:Column key="Department" label="Big D!123456788" action="$goto.Home"nowrap/>
+
+    <t:Column key="Category" label="$columnLabel" isVisible="$showColumn"/>
+
+    <!---
+
+    <t:DynamicColumns list="$dynamicColumns" item="$currentColName" label="$currentColName" key="$currentColName">
+        <a:If isEqual="$currentColName" value="Year">
+            <a:String value="$displayGroup.currentItem.Year" formatter="$formatters.shortDate"/>
+       <a:Else/>
+            <a:IncludeComponent awcomponentName="StatefulColorFlag"/>
+       </a:If>
+    </t:DynamicColumns>
+
+    <t:Column key="Amount" formatter="$formatters.money" align="right">
+        <a:SetValue menuId="$requestContext.nextElementId"/>
+        <w:PopupMenuLink menuId="$menuId" position="this">
+            <b emitTags="$isBig">$displayGroup.currentItem.Amount|$formatters.money</b>
+        </w:PopupMenuLink>
+        <w:PopupMenu menuId="$menuId">
+            Amout: <a:TextField value="$displayGroup.currentItem.Amount" formatter="$formatters.money"/>
+        </w:PopupMenu>
+    </t:Column>
+
+    <t:Column label="Blank Column">
+
+    </t:Column>
+
+    <t:RowDetail isVisible="$hasValidationError">
+        <a:Hyperlink action="$null"><b><a:String value="$displayGroup.currentItem.ValidationErrorMessage"/></b></a:Hyperlink>
+    </t:RowDetail>
+
+-->
+    <t:Column>
+        <w:TextButton action="$null" disabled="$!isBig">Inspect</w:TextButton>
+    </t:Column>
+
+    <t:ButtonArea>
+        <w:TextButton action="$null">Delete</w:TextButton>\
+        <w:TextButton action="$longRequest">Run Long Request</w:TextButton>
+    </t:ButtonArea>
+
+</t:DataTable>
+<br/>
+<a:RefreshRegion>
+    <b>Selected Object:</b> <a:String value="$displayGroup.selectedObject"/><br/>
+</a:RefreshRegion>
+<a:Checkbox value="$showColumn"/>Show Category column<br/>
+
+<a:Checkbox value="$someFlag"/>Show Something More...
+
+
+<server>
+    var menuId = null;
+    var isChecked = false;
+    var someFlag = true;
+    var showColumn = true;
+    var displayGroup = null;
+    var dynamicColumns = null;
+    var currentColName = null;
+
+    function init () {
+        dynamicColumns = ariba.util.core.ListUtil.list();
+        dynamicColumns.add("Year");
+        dynamicColumns.add("Flag");    
+    }
+/*
+    function init () {
+        displayGroup = new ariba.ui.table.AWTDisplayGroup();
+        var list = ariba.ui.table.AWTCSVDataSource.dataSourceForPath("SampleSpend.csv", component).fetchObjects();
+        displayGroup = new ariba.ui.table.AWTDisplayGroup();
+        displayGroup.setObjectArray(list);
+
+        // Force no sort
+        displayGroup.setSortOrderings(ariba.util.core.ListUtil.list());
+    }
+*/
+    function testWrite () {
+       isChecked = true;
+       return null;
+    }
+
+    function longRequest () {
+        Log.demoshell.debug("Starting long running request...");
+
+        java.lang.Thread.sleep(90000);
+
+        Log.demoshell.debug("Done!  Returning response...");
+        return page("Home.htm");
+    }
+
+    function columnLabel () {
+        return "Category";
+    }
+
+    function isBig () {
+        return displayGroup.currentItem().get("Amount").intValue() > 1000000;
+    }
+
+    function hasValidationError () {
+        var message = displayGroup.currentItem().get("ValidationErrorMessage");
+        return message && message.length() > 0;
+    }
+</server>

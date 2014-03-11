@@ -1,0 +1,188 @@
+Dim app
+Dim documentLocation
+Dim actionUrl
+Dim tempDocumentName
+Dim uploadDocumentUrl
+Dim doneUrl
+Dim downloadSyncupXmlUrl
+Dim syncupApplyXmlString
+Dim saveSyncHistoryUrl
+
+
+Sub applyBookmarks ()
+    On Error Resume Next
+    
+    logMessage "CDReviewOkGenerate applyBookmarks start"
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    saveOpenDocument app, documentLocation
+    openDocumentInWord app, documentLocation, False
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+	Dim agreement
+    Set agreement = app.ActiveDocument
+
+    '// ---------------------------------------------------------
+	'// Save the current settings such as View Type, track change
+	saveWordSettings agreement
+	
+    '// Set the view type to be normal, all regen will be done in this setting
+	setDocumentViewType agreement, ViewTypeNormal
+    '// ---------------------------------------------------------
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+	applyBookmarksUtil agreement,syncupApplyXmlString
+	
+    '// ---------------------------------------------------------
+	'// Restore the current settings such as View Type, track change
+	restoreWordSettings agreement
+
+    agreement.Saved = false
+    agreement.Save
+End Sub
+
+
+Sub cleanup ()
+    On Error Resume Next
+
+    If (not (app is Nothing)) Then
+        app.Visible = false
+        document.body.style.cursor = "wait"
+        app.NormalTemplate.Saved = True
+        app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+End Sub
+
+Function logError (message)
+    logError = false
+    If Err.number <> 0 Then
+        globalError = true
+        ScriptError.innerHTML = message
+        ActiveXError.style.display = ""
+        cleanup
+        logError = true
+    End If
+End Function
+
+Sub contactApp ()
+    On Error Resume Next
+
+        'launch app
+    set app = CreateObject("Word.Application")
+    If logError(GeneratingErr.contactApplicationErrorMessage) Then
+        Exit Sub
+    End If
+    app.Visible = false
+    document.body.style.cursor = "wait"
+End Sub
+
+Sub step_contact_app_sub ()
+    On Error Resume Next
+
+    contactApp
+    setStep "step_build_clause"
+    step_build_clause_sub
+End Sub
+
+Sub step_build_clause_sub ()
+    On Error Resume Next
+
+    applyBookmarks
+    setStep "step_done"
+    step_done_sub
+End Sub
+
+Sub step_done_sub ()
+    On Error Resume Next
+
+    cleanup
+
+    Dim resourceData
+    resourceData = getFileBytes(documentLocation)
+
+    Dim responseText
+    responseText = sendDataToServer(resourceData, uploadDocumentUrl)
+
+    logMessage "responseText " & responseText
+
+    Dim ts
+    ts = clientFileTimestamp(documentLocation)
+    logMessage " client file timestamp = " & ts
+
+    If (ts = "") Then
+        logError "CDReviewOkgenerate: Invalid timestamp = " & ts
+        logMessage "CDReviewOkgenerate: Invalid timestamp = " & ts
+    End If
+
+    If (saveSyncHistory(ts,saveSyncHistoryUrl) < 0) Then
+        logError "CDReviewOkgenerate: Error while saveSyncHistoryWithCommit"
+        logMessage "CDReviewOkgenerate: Error while saveSyncHistoryWithCommit"
+    End If
+
+    ariba.Request.setWindowLocation(doneUrl)
+End Sub
+
+Sub reviewOkGenerateHandler (keyValues)
+    On Error Resume Next
+
+    If logError("") Then
+        Exit Sub
+    End If
+    globalError = false
+
+    documentLocation = awxsGetValue(keyValues, "documentLocation")
+
+    actionUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl"))
+
+    tempDocumentName = awxsGetValue(keyValues, "tempDocumentName")
+
+    uploadDocumentUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "uploadDocumentUrl"))
+
+    doneUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "doneUrl"))
+    
+    downloadSyncupXmlUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "downloadSyncupXmlUrl"))
+
+    saveSyncHistoryUrl = ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "saveSyncHistoryUrl"))
+
+    logMessage "saveSyncHistoryUrl = " & saveSyncHistoryUrl
+
+    logMessage "setting log level"
+    setClientLogLevel awxsGetValue(keyValues, "clientLogLevel")        
+
+    logMessage "Start download syncupXml"
+
+    Dim returnResponse
+    returnResponse = sendDataToServer("DownloadSyncupXmlUrl", downloadSyncupXmlUrl)
+
+    logMessage "response = " & returnResponse
+
+    syncupApplyXmlString = Trim(returnResponse)
+
+    If(    syncupApplyXmlString <> "" ) Then
+        step_contact_app_sub
+    End If
+    
+End Sub
+
+Sub setStep (name)
+    step_contact_app.className = "inactiveStep"
+    step_build_clause.className = "inactiveStep"
+    step_done.className = "inactiveStep"
+    document.all(name).className = "activeStep"
+    ' setTimeout name & "_sub()", 1, vbscript
+End Sub
+
+Dim CDReviewOkGenerateTrigger
+
+Dim eventReviewOkGenerate
+Set eventReviewOkGenerate = awxsCreateEvent("reviewOkGenerate", GetRef("reviewOkGenerateHandler"))
+awxsRegisterEvent "reviewOkGenerate", eventReviewOkGenerate
+

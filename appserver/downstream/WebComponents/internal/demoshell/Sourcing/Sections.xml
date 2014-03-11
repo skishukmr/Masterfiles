@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <Sections>
+     <Section id="All Sections">
+         <subsections>
+             <Section id="1">
+                <name>Introduction</name>
+                <description>Welcome to this RFX. What rumple the lampshade ipsorla midst replace often presented in
+                    destiny. Do wa diddy diddy dum diddy do. Wham a lamb a bim bam bing bam boo. Reflect moss upstart coffee
+                    replaces bottle with cucumber.
+                </description>
+             </Section>
+
+            <Section id="2">
+               <name>Background</name>
+
+               <subsections>
+                    <Question id="2.1" type="question">
+                       <name>How many years has your company been in business?</name>
+                       <value>3</value>
+                    </Question>
+                    <Question id="2.2" type="question">
+                       <name>Number of employees (estimate)?</name>
+                       <value>350</value>
+                    </Question>
+               </subsections>
+            </Section>
+
+            <Section id="2">
+               <name>Assemblies section with a very long name</name>
+
+               <subsections>
+                   <Item id="2.1">
+                       <name>Wrench</name>
+                       <description>3/4 inch strong wrench</description>
+                       <attributes>
+                           <attribute name="width">.75</attribute>
+                           <attribute name="color">red</attribute>
+                       </attributes>
+                   </Item>
+                   <Item id="2.2">
+                      <name>Hammer</name>
+                      <description>Big Hammer</description>
+                      <attributes>
+                          <attribute name="width">.75</attribute>
+                          <attribute name="color">red</attribute>
+                      </attributes>
+                   </Item>
+               </subsections>
+            </Section>
+
+            <Section id="3">
+               <name>Items</name>
+
+               <subsections>
+                    <Section id="3.1" >
+                      <name>Widgets</name>
+                        <subsections>
+                            <Item id="3.1.1">
+                                <name>Thingy</name>
+                                <description>3/4 inch strong wrench</description>
+                                <attributes>
+                                    <attribute name="width">.75</attribute>
+                                    <attribute name="color">red</attribute>
+                                </attributes>
+                            </Item>
+                            <Item id="3.1.2">
+                               <name>Doohickey</name>
+                               <description>Big Hammer</description>
+                               <attributes>
+                                   <attribute name="width">.75</attribute>
+                                   <attribute name="color">red</attribute>
+                               </attributes>
+                            </Item>
+                        </subsections>
+                    </Section>
+
+                    <Section id="3.2" >
+                      <name>Sprockets</name>
+                    </Section>
+
+                    <Section id="3.3" >
+                      <name>Gaplets</name>
+                    </Section>
+
+                    <Section id="3.4" >
+                      <name>Zaplets</name>
+                   </Section>
+                   </subsections>
+            </Section>
+        </subsections>
+    </Section>
+ </Sections>

@@ -1,0 +1,18 @@
+<!DOCTYPE variants SYSTEM "../ariba/base/meta/core/variants.dtd">
+<variants>
+    <variant name="Plain" label="Plain" index="0" default="true">
+    	<partition index="1" name="supplierdirect" label="Supplier Direct"/>
+    </variant>
+    <variant index="1" name="vcsv1" label="vcsv1">
+    	<partition index="2" name="pcsv1" label="US Corporate"/>
+    </variant>
+    <variant index="2" name="vcsv2" label="vcsv2">
+    	<partition index="3" name="mfg1" label="Perkins"/>
+    </variant>
+    <variant index="3" name="vcsv3" label="vcsv3">
+    	<partition index="4" name="ezopen" label="Geneva"/>
+    </variant>
+    <variant index="4" name="SAP" label="SAP">
+    	<partition index="5" name="SAP" label="MACH1 - CBS"/>
+    <partition index="6" name="LSAP" label="NonMACH1 - SAP"/></variant>
+</variants>

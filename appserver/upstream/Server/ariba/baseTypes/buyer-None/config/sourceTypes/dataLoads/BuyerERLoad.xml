@@ -1,0 +1,492 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+    <inDataLoad name="BuyerExpenseType" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.common.core.ExpenseType INCLUDE INACTIVE"/>
+        </inLoadStages>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeader" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerERLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING ExpenseItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ERName"/>
+            <deleteField name="ERStatus"/>
+            <deleteField name="ERDate"/>
+            <deleteField name="TransactionDate"/>
+            <deleteField name="OrigAmount"/>
+            <deleteField name="OrigCurrencyCode"/>
+            <deleteField name="TaxReceipt"/>
+            <deleteField name="Justification"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerPerDiemERLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerVATERLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerCountAttendeesERLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING ExpenseItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ERName"/>
+            <deleteField name="ERStatus"/>
+            <deleteField name="ERDate"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <!-- itemized Expense Report -->
+
+    <inDataLoad name="BuyerERItemizedLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING Itemized.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType AS ItemizedType INCLUDE INACTIVE USING Itemized.ExpenseType
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseType.UniqueName = 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ERName"/>
+            <deleteField name="ERStatus"/>
+            <deleteField name="ERDate"/>
+            <deleteField name="OrigAmount"/>
+            <deleteField name="OrigCurrencyCode"/>
+            <deleteField name="Justification"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerCountAttendeesERItemizedLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING Itemized.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType AS ItemizedType INCLUDE INACTIVE USING Itemized.ExpenseType"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseType.UniqueName = 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ERName"/>
+            <deleteField name="ERStatus"/>
+            <deleteField name="ERDate"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <!-- Expense Report Header Violation -->
+    <inDataLoad name="BuyerERHeaderViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeaderViolationCountLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"/>
+        </inLoadStages>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeaderViolationCountItemizedItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"/>
+        </inLoadStages>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeaderViolationCountLineViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.Violation USING ExpenseItem.Violations
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"/>
+        </inLoadStages>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeaderViolationCountItemizedViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                              JOIN ariba.expense.core.Violation USING Itemized.Violations
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"/>
+        </inLoadStages>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeaderViolationType" version="8.2">
+        <fieldMappings>
+            <deleteField name="ViolationType.ViolationLevel"/>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Information"/>
+                                <entry value="Warning"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="NullValue" value="No Violation"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeaderViolationTypeLine" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.Violation AS Viol USING ExpenseItem.Violations
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ViolationType.ViolationLevel"/>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Information"/>
+                                <entry value="Warning"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="NullValue" value="No Violation"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERHeaderViolationTypeItemized" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                              JOIN ariba.expense.core.Violation AS Viol USING Itemized.Violations
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ViolationType.ViolationLevel"/>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Information"/>
+                                <entry value="Warning"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="NullValue" value="No Violation"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <!-- Expense Report Line Violation -->
+
+    <inDataLoad name="BuyerDeleteERLineViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceWhereClause="(ExpenseReport.NextVersion IS NOT NULL OR
+                          ExpenseReport.StatusString NOT IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')) AND
+                          ExpenseType.UniqueName &lt;&gt; 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERLineViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING ExpenseItem.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              JOIN ariba.common.core.SplitAccountingCollection USING ExpenseItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting AS SplitAccounting USING SplitAccountingCollection.SplitAccountings"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseType.UniqueName &lt;&gt; 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERLineViolationCountViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.Violation USING ExpenseItem.Violations"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseType.UniqueName &lt;&gt; 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+            <deleteField name="ViolationDetails.Description"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERLineViolationType" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseType.UniqueName &lt;&gt; 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+            <deleteField name="ViolationType.ViolationLevel"/>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Information"/>
+                                <entry value="Warning"/>
+                           </vector>
+                        </parameter>
+                        <parameter name="NullValue" value="No Violation"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <!-- Expense Report Itemized Line Violation -->
+
+    <inDataLoad name="BuyerDeleteERItemizedLineViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceWhereClause="(ExpenseReport.NextVersion IS NOT NULL AND
+                               ExpenseReport.StatusString NOT IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')) OR
+                               ExpenseItem.ExpenseType.UniqueName = 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERItemizedLineViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING Itemized.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                              LEFT OUTER JOIN ariba.common.core.ExpenseType INCLUDE INACTIVE USING Itemized.ExpenseType
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING Itemized.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseItem.ExpenseType.UniqueName = 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERItemizedLineViolationCountViolation" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                              JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                              JOIN ariba.expense.core.Violation USING Itemized.Violations"
+                        replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseItem.ExpenseType.UniqueName = 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+            <deleteField name="ViolationDetails.Description"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERItemizedLineViolationType" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceWhereClause="ExpenseReport.NextVersion IS NULL AND
+                               ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                               ExpenseItem.ExpenseType.UniqueName = 'Itemized'"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="CreateDate"/>
+            <deleteField name="ViolationType.ViolationLevel"/>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Information"/>
+                                <entry value="Warning"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="NullValue" value="No Violation"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerDeleteAttendeeERLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerAttendeesERLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerBreakfastAttendeeLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerLunchAttendeeLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerDinnerAttendeeLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerEntertainmentAttendeeLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerGiftsAttendeeLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerDeleteAttendeeERItemizedItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerAttendeesERItemizedLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerBreakfastAttendeeItemizedItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerLunchAttendeeItemizedItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerDinnerAttendeeItemizedItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerEntertainmentAttendeeItemizedItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerGiftsAttendeeItemizedItem" version="8.2" disableLoad="true"/>
+
+    <dataLoad name="BuyerPolicyType">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.PolicyType INCLUDE INACTIVE"
+                      incrementalClause="(:IncrementalStartDate &lt;= PolicyType.TimeUpdated AND
+                                      PolicyType.TimeUpdated &lt; :IncrementalEndDate)"
+                      orderByClause="PolicyType.UniqueName,PolicyType.Active"/>
+            <analysisStage destinationName="ariba.analytics.dimension.ViolationPolicyType"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="PolicyType">
+                <aqlMapping selectField="Name"/>
+            </field>
+            <field name="PolicyTypeId">
+                <aqlMapping selectField="UniqueName"/>
+            </field>
+            <field name="Violation">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Has Violation"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <inDataLoad name="BuyerPolicyType" version="9r1" disableLoad="true"/>
+
+    <derivedDataLoad name="BuyerInformationPolicyType" extendsLoad="BuyerPolicyType">
+        <fieldMappings>
+            <field name="ViolationLevel">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Information"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <inDataLoad name="BuyerInformationPolicyType" version="9r1" disableLoad="true"/>
+
+    <derivedDataLoad name="BuyerWarningPolicyType" extendsLoad="BuyerPolicyType">
+        <fieldMappings>
+            <field name="ViolationLevel">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Warning"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <inDataLoad name="BuyerWarningPolicyType" version="9r1" disableLoad="true"/>
+
+</allDataLoads>

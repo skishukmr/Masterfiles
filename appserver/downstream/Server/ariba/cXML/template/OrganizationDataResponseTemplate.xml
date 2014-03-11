@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemParameter(System.Procure.AribaNetwork.ANDTDLocator)@@/Private.dtd">
+<cXML payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@" xml:lang="@@getLocale@@">
+    <Response>
+        <!-- try -->
+        <Status code="@@getResponseCode@@" text="@@getResponseText@@">@@getResponseMessage@@</Status>
+        <!-- end try -->
+        <!-- if hasResponse -->
+        <OrganizationDataResponse>
+            <!-- for organizations -->
+            <Organization>
+                <Name xml:lang="@@getLocale@@">@@getItemValue(cs.Name)@@</Name>
+                <!-- for credentials -->
+                <Credential domain="@@getItemValue(cr.Domain)@@">
+                    <Identity>@@getItemValue(cr.Value)@@</Identity>
+                </Credential>
+                <!-- end for -->
+                <OrganizationRole name="supplier"/>
+                <Address isoCountryCode="@@getItemValue(lo.Country.UniqueName)@@">
+                    <Name xml:lang="@@getLocale@@">@@getItemValue(cs.Name)@@</Name>
+                        <!-- try -->
+                        <PostalAddress>
+                            <!-- Lines in buyer are separates by \n and isn't quite to spec -->
+                            <Street>@@getItemValue(lo.Lines)@@</Street>
+                            <City>@@getItemValue(lo.City)@@</City>
+                            <State>@@getItemValue(lo.State)@@</State>
+                            <PostalCode>@@getItemValue(lo.PostalCode)@@</PostalCode>
+                            <Country isoCountryCode="@@getItemValue(lo.Country.UniqueName)@@">@@getItemValue(lo.Country.Name.PrimaryString)@@</Country>
+                        </PostalAddress>
+                        <Email>@@getItemValue(lo.EmailAddress)@@</Email>
+                        <!-- if hasPhone -->
+                        <Phone name="work">
+                            <TelephoneNumber>
+                                <CountryCode isoCountryCode="@@getItemValue(lo.Country.UniqueName)@@">@@getCountryCode@@</CountryCode>
+                                <AreaOrCityCode>@@getAreaCode@@</AreaOrCityCode>
+                                <Number>@@getPhoneNumber@@</Number>
+                                <!-- if hasExtension -->
+                                <Extension>@@getExtension@@</Extension>
+                                <!-- end if -->
+                            </TelephoneNumber>    
+                        </Phone>
+                        <!-- end if -->
+                        <!-- if hasFax -->
+                        <Fax name="work">
+                            <TelephoneNumber>
+                                <CountryCode isoCountryCode="@@getItemValue(lo.Country.UniqueName)@@">@@getCountryCode@@</CountryCode>
+                                <AreaOrCityCode>@@getAreaCode@@</AreaOrCityCode>
+                                <Number>@@getPhoneNumber@@</Number>
+                                <!-- if hasExtension -->
+                                <Extension>@@getExtension@@</Extension>
+                                <!-- end if -->
+                            </TelephoneNumber>
+                        </Fax>
+                        <!-- end if -->
+                        <URL>@@getItemValue(lo.URL)@@</URL>
+                        <!-- end try -->
+                </Address>
+                <!-- if hasPerson -->
+                <Person>
+                    <Contact>
+                        <Name xml:lang="@@getLocale@@">@@getItemValue(lo.Contact)@@</Name>
+                    </Contact>
+                    <PersonRole name="Contact"/>              
+                </Person>
+                <!-- end if -->
+                <!-- if hasExtrinsics -->
+                <!-- for extrinsics -->
+                <Extrinsic name="@@getExtrinsicName@@">@@getExtrinsicValue@@</Extrinsic>
+                <!-- end for -->
+                <!-- end if -->
+            </Organization>
+            <!-- end for -->
+        </OrganizationDataResponse>
+        <!-- end if -->
+    </Response>
+</cXML>

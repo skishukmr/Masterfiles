@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Profiles SYSTEM "../../etc/dtds/ProfileMap.dtd">
+<Profiles>
+    <Source>
+       <Map businessKey = "SpendManagement">
+             <Profile effectiveDate="2002-01-01T05:24:29-08:00">
+                <Option name="SpendManagement.SSOAuthenticator.URL">@incominghttpserverurl@/@contextroot@/Main/ad/loginPage/SSOActions</Option>
+                <Option name="PortletProviderInfo.URL">@internalurl@/@contextroot@/Main/ad/providerInfo/PortletProviderActions</Option>
+                <Option name="AttachmentServlet">@internalurl@/@contextroot@/remoteattachment</Option>  
+                <Option name="SpendManagement.Dashboard.URL">@incominghttpserverurl@/@contextroot@/Main</Option>
+                <Transaction requestName="AQLDataPull">
+                    <URL>@internalurl@/@contextroot@/aqlpull</URL>
+                </Transaction>
+                <Transaction requestName="ProviderSetupRequest">
+                    <URL>@internalurl@/@contextroot@/cxml</URL>
+                    <Option name="selectedService">buyerpunchout</Option>
+                </Transaction>
+                <Transaction requestName="ProviderSetupRequest">
+                    <URL>@internalurl@/@contextroot@/cxml</URL>
+                    <Option name="selectedService">CreateObject</Option>
+                </Transaction>
+                <Transaction requestName="ProviderSetupRequest">
+                    <URL>@internalurl@/@contextroot@/cxml</URL>
+                    <Option name="selectedService">ImportRequisitionUpdate</Option>
+                </Transaction>
+		        <Transaction requestName="ExcelExportServlet">
+    			    <URL>@internalurl@/@contextroot@/contractexcelexport</URL>
+		        </Transaction>
+            </Profile>
+        </Map>
+        <Map businessKey = "AribaNetwork">
+             <Profile effectiveDate="2002-01-01T05:24:29-08:00">
+                 <Transaction requestName="PunchOutSetupRequest">
+                     <URL>@incominghttpserverurl@/@contextroot@/@cxmlservletname@</URL>
+                 </Transaction>
+                 <Transaction requestName="ProviderSetupRequest">
+                     <URL>@incominghttpserverurl@/@contextroot@/@cxmlservletname@</URL>
+                 </Transaction>
+            </Profile>
+        </Map>
+    </Source>
+</Profiles>

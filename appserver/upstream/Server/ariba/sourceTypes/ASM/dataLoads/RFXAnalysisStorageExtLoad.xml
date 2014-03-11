@@ -1,0 +1,334 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <!--
+         Update data load operation to pull storage fields into FACT_EVENT_SUMMARY
+
+         NOTE:
+         We need to flat out composite object into fact table primitive columns
+         This implicity result inner join which cause the row not returned if the
+         member object is null.  We need to explicitly do outter join to ensure
+         rows are turned
+
+         This should be kept in sync with SourcingProject fact pulls in ACMLoadStorageExt.xml
+    -->
+
+
+<dataLoad name="RFXEventSummaryStorageExt">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS ThisRFX
+                                  JOIN ariba.sourcing.rfx.SourcingProject AS Project USING ThisRFX.ParentWorkspace"
+                     whereClause="Project.WorkspaceType != 'Template'
+                                  AND ThisRFX.EventType IN ('1','2','3','4','6')
+                                  AND (ThisRFX.IsAvailableForAnalysis = true OR ThisRFX.IsAvailableForAnalysisSummaryReport = true)
+                                  AND ThisRFX.Status = 'Complete'
+                                  AND ThisRFX.NextVersion IS NULL"
+                      incrementalClause="ThisRFX.TimeUpdated &gt;= :IncrementalStartDate AND
+                                         ThisRFX.TimeUpdated &lt;= :IncrementalEndDate OR
+                                         Project.TimeUpdated &gt;= :IncrementalStartDate AND
+                                         Project.TimeUpdated &lt;= :IncrementalEndDate"/>
+            <analysisStage destinationName="ariba.analytics.fact.EventSummary"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key  -->
+            <field name="Event.ItemId">
+                <aqlMapping selectField="ThisRFX.InternalId"/>
+
+            </field>
+            <field name="Event.EventId">
+                <aqlMapping selectField="ThisRFX.InternalId"/>
+            </field>
+            <field name="Event.VersionNumber">
+                <aqlMapping selectField="ThisRFX.DocumentVersion"/>
+            </field>
+
+            <!-- Storage fields -->
+            <field name="UF_int1">
+                <aqlMapping selectField="Project.UF_int1"/>
+            </field>
+            <field name="UF_int2">
+                <aqlMapping selectField="Project.UF_int2"/>
+            </field>
+            <field name="UF_int3">
+                <aqlMapping selectField="Project.UF_int3"/>
+            </field>
+            <field name="UF_int4">
+                <aqlMapping selectField="Project.UF_int4"/>
+            </field>
+            <field name="UF_int5">
+                <aqlMapping selectField="Project.UF_int5"/>
+            </field>
+            <field name="UF_int6">
+                <aqlMapping selectField="Project.UF_int6"/>
+            </field>
+            <field name="UF_int7">
+                <aqlMapping selectField="Project.UF_int7"/>
+            </field>
+
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_int8">
+                <aqlMapping selectField="Project.UF_int11"/>
+            </field>
+            <field name="UF_int9">
+                <aqlMapping selectField="Project.UF_int12"/>
+            </field>
+            <field name="UF_int10">
+                <aqlMapping selectField="Project.UF_int13"/>
+            </field>
+            <field name="UF_int11">
+                <aqlMapping selectField="Project.UF_int14"/>
+            </field>
+            <field name="UF_int12">
+                <aqlMapping selectField="Project.UF_int15"/>
+            </field>
+
+
+            <field name="UF_string1">
+                <aqlMapping selectField="Project.UF_string1"/>
+            </field>
+            <field name="UF_string2">
+                <aqlMapping selectField="Project.UF_string2"/>
+            </field>
+            <field name="UF_string3">
+                <aqlMapping selectField="Project.UF_string3"/>
+            </field>
+            <field name="UF_string4">
+                <aqlMapping selectField="Project.UF_string4"/>
+            </field>
+            <field name="UF_string5">
+                <aqlMapping selectField="Project.UF_string5"/>
+            </field>
+            <field name="UF_string6">
+                <aqlMapping selectField="Project.UF_string6"/>
+            </field>
+            <field name="UF_string7">
+                <aqlMapping selectField="Project.UF_string7"/>
+            </field>
+
+            <field name="UF_time1">
+                <aqlMapping selectField="Project.UF_date1"/>
+            </field>
+            <field name="UF_time2">
+                <aqlMapping selectField="Project.UF_date2"/>
+            </field>
+            <field name="UF_time3">
+                <aqlMapping selectField="Project.UF_date3"/>
+            </field>
+            <field name="UF_time4">
+                <aqlMapping selectField="Project.UF_date4"/>
+            </field>
+
+            <field name="UF_boolean1">
+                <aqlMapping selectField="Project.UF_boolean1"/>
+            </field>
+            <field name="UF_boolean2">
+                <aqlMapping selectField="Project.UF_boolean2"/>
+            </field>
+            <field name="UF_boolean3">
+                <aqlMapping selectField="Project.UF_boolean3"/>
+            </field>
+            <field name="UF_boolean4">
+                <aqlMapping selectField="Project.UF_boolean4"/>
+            </field>
+
+            <field name="UF_bigdecimal1">
+                <aqlMapping selectField="Project.UF_bigdecimal1"/>
+            </field>
+            <field name="UF_bigdecimal2">
+                <aqlMapping selectField="Project.UF_bigdecimal2"/>
+            </field>
+            <field name="UF_bigdecimal3">
+                <aqlMapping selectField="Project.UF_bigdecimal3"/>
+            </field>
+            <field name="UF_bigdecimal4">
+                <aqlMapping selectField="Project.UF_bigdecimal4"/>
+            </field>
+            <field name="UF_bigdecimal5">
+                <aqlMapping selectField="Project.UF_bigdecimal5"/>
+            </field>
+            <field name="UF_bigdecimal6">
+                <aqlMapping selectField="Project.UF_bigdecimal6"/>
+            </field>
+            <field name="UF_bigdecimal7">
+                <aqlMapping selectField="Project.UF_bigdecimal7"/>
+            </field>
+
+
+              <!-- money objects flatted out on fact table -->
+            <field name="UF_money1_amount">
+                <aqlMapping selectField="Project.UF_money1.Amount"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money1_currency">
+                <aqlMapping selectField="Project.UF_money1.Currency"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money1"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money2_amount">
+                <aqlMapping selectField="Project.UF_money2.Amount"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money2_currency">
+                <aqlMapping selectField="Project.UF_money2.Currency"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money2"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money3_amount">
+                <aqlMapping selectField="Project.UF_money3.Amount"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money3_currency">
+                <aqlMapping selectField="Project.UF_money3.Currency"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money3"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+            <field name="UF_money4_amount">
+                <aqlMapping selectField="Project.UF_money4.Amount"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money4_currency">
+                <aqlMapping selectField="Project.UF_money4.Currency"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money4"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+            <!-- these are not mapped to consecutive flex field,
+                 but the one that are create specifically for it -->
+            <field name="UF_money5_amount">
+                <aqlMapping selectField="Project.UF_money7.Amount"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/amount_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/amount_desc"/>
+            </field>
+            <field name="UF_money5_currency">
+                <aqlMapping selectField="Project.UF_money7.Currency"
+                            remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                            remoteStorageFieldPath="UF_money7"
+                            flexFieldLabelFormatOverlay="@flexfield.format.overlay/currency_label"
+                            flexFieldDescriptionFormatOverlay="@flexfield.format.overlay/currency_desc"/>
+                     <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.GetCurrencyNameFromBaseId"/>
+                     </analysisMapping>
+            </field>
+
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="RFXEventSummaryVectorString1Load">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS ThisRFX INCLUDE INACTIVE
+                                  JOIN ariba.sourcing.rfx.SourcingProject AS Project INCLUDE INACTIVE USING ThisRFX.ParentWorkspace"
+                      whereClause="Project.WorkspaceType != 'Template'
+                                  AND ThisRFX.EventType IN ('1','2','3','4','6')
+                                  AND (ThisRFX.IsAvailableForAnalysis = true OR ThisRFX.IsAvailableForAnalysisSummaryReport = true)
+                                  AND ThisRFX.Status = 'Complete'
+                                  AND ThisRFX.NextVersion IS NULL"
+                     incrementalClause="ThisRFX.TimeUpdated &gt;= :IncrementalStartDate AND
+                                         ThisRFX.TimeUpdated &lt;= :IncrementalEndDate OR
+                                         Project.TimeUpdated &gt;= :IncrementalStartDate AND
+                                         Project.TimeUpdated &lt;= :IncrementalEndDate"/>
+            <analysisStage destinationName="ariba.analytics.fact.EventSummary"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key  -->
+            <field name="Event.ItemId">
+                <aqlMapping selectField="ThisRFX.InternalId"/>
+            </field>
+            <field name="Event.EventId">
+                <aqlMapping selectField="ThisRFX.InternalId"/>
+            </field>
+            <field name="Event.VersionNumber">
+                <aqlMapping selectField="ThisRFX.DocumentVersion"/>
+            </field>
+
+            <!-- Storage fields -->
+
+            <field name="VUF_1string.VUF_1string" >
+                <aqlMapping selectField="Project.VUF_1string"
+                    remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                    remoteStorageFieldPath="VUF_1string"
+                />
+            </field>
+         </fieldMappings>
+    </dataLoad>
+
+
+    <dataLoad name="RFXEventSummaryVectorString2Load">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS ThisRFX INCLUDE INACTIVE
+                                  JOIN ariba.sourcing.rfx.SourcingProject AS Project INCLUDE INACTIVE USING ThisRFX.ParentWorkspace"
+                      whereClause="Project.WorkspaceType != 'Template'
+                                  AND ThisRFX.EventType IN ('1','2','3','4','6')
+                                  AND (ThisRFX.IsAvailableForAnalysis = true OR ThisRFX.IsAvailableForAnalysisSummaryReport = true)
+                                  AND ThisRFX.Status = 'Complete'
+                                  AND ThisRFX.NextVersion IS NULL"
+                     incrementalClause="ThisRFX.TimeUpdated &gt;= :IncrementalStartDate AND
+                                         ThisRFX.TimeUpdated &lt;= :IncrementalEndDate OR
+                                         Project.TimeUpdated &gt;= :IncrementalStartDate AND
+                                         Project.TimeUpdated &lt;= :IncrementalEndDate"/>
+            <analysisStage destinationName="ariba.analytics.fact.EventSummary"/>
+        </loadStages>
+
+        <fieldMappings>
+
+            <!-- Look up key  -->
+            <field name="Event.ItemId">
+                <aqlMapping selectField="ThisRFX.InternalId"/>
+            </field>
+            <field name="Event.EventId">
+                <aqlMapping selectField="ThisRFX.InternalId"/>
+            </field>
+            <field name="Event.VersionNumber">
+                <aqlMapping selectField="ThisRFX.DocumentVersion"/>
+            </field>
+
+            <!-- Storage fields -->
+
+            <field name="VUF_2string.VUF_2string" >
+                <aqlMapping selectField="Project.VUF_2string"
+                    remoteStorageClass="ariba.sourcing.rfx.SourcingProject"
+                    remoteStorageFieldPath="VUF_2string"
+                />
+            </field>
+         </fieldMappings>
+     </dataLoad>
+</allDataLoads>

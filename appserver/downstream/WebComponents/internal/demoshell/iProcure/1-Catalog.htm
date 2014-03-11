@@ -1,0 +1,133 @@
+<w:BasicPageWrapper omitWrapperFrame="$true" hasForm="$true">
+    <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td valign="top" colspan="2">
+                <img src="1-Cat-Top.gif">
+            </td>
+        </tr>
+        
+        <tr>
+            <td valign="top">
+                <img src="1-Cat-Stores.gif">
+                <br/>
+                <div style="padding:2px 8px 10px 8px">
+                    <a:For list="$catalogs" item="$catalog">
+                        <a:Hyperlink style="color:#73624d" action="$linkOut">$catalog.title</a:Hyperlink><br/>
+                        Includes all internal catalogs and punchouts.
+                        <br/>
+                    </a:For>
+                </div>
+            </td>
+            <td>
+               <table cellpadding="0" cellspacing="0" border="0">
+                   <tr>
+                       <td colspan="3">
+                           <img src="SC-Top.gif">
+                       </td>
+                   </tr>
+                   <tr>
+                       <td style="padding:2px 12px 2px 12px; border-left:1px solid #d3d6bb;border-right:1px solid #d3d6bb;;background-color:#ffffe3;">
+                           Your cart contains no items
+                       </td>
+                   </tr>
+                   <tr>
+                       <td colspan="3">
+                           <img src="SC-Bottom.gif">
+                       </td>
+                   </tr>
+               </table>
+            </td>
+        </tr>
+        <tr>
+            <td valign="top" colspan="2"  style="padding-left:4px;padding-top:18px">
+                <img src="1-Cat-Bottom.gif">
+            </td>
+        </tr>
+    </table>
+</w:BasicPageWrapper>
+    <a:Hyperlink action="$toggleOptions">Options</a:Hyperlink>
+    <a:Hyperlink action="$goto.2-ShoppingCart.htm">Next</a:Hyperlink>
+
+    <br/>
+    <a:If ifTrue="$showOptions">
+        <w:FormTable>
+            <w:FormRow label="Realm">
+                <a:TextField value="$realm"/>
+            </w:FormRow>
+            <w:FormRow label="User Name">
+                <a:TextField value="$username"/>
+            </w:FormRow>
+            <w:FormRow label="Password">
+                <a:TextField value="$password"/>
+            </w:FormRow>
+            <w:FormRow label="Catalog URL">
+                <a:TextField value="$catalogURL"/>
+            </w:FormRow>
+        </w:FormTable>
+    </a:If>
+
+<server>
+    var catalogs = [
+        /*
+        {
+            title : "Realm 5",
+            ANID : "AN71000000361",
+            realm : "realm_5",
+            username : "test1",
+            password : "welcome1a",
+            email : "nobody@devnull.com"
+        },
+        */
+        {
+            title : "Ariba Catalog 1",
+            ANID : "AN02000004483", // MAS1SSP id [mdoherty 20080226]
+            realm : "MAS1SSP",
+            username : "apcgpunchout",
+            password : "welcome1a", // Punchin Password on Site Profile
+            email : "nobody@demo.ariba.com",
+        },
+        {
+            title : "Ariba Catalog 2",
+            ANID : "AN02000004924",
+            realm : "apcgpunchout",
+            username : "test1",
+            password : "welcome1a",
+            email : "nobody@devnull.com",
+        }
+    ];
+    var catalog = null;
+
+    var catalogURL = computeCatalogURL();
+
+    function linkOut() {
+        var redirect = page("AWFormRedirect");
+        redirect.setFormActionUrl(catalogURL);
+        redirect.addFormValue("PunchinId", catalog.ANID);
+        redirect.addFormValue("UniqueName", catalog.username);
+        redirect.addFormValue("PunchinPassword", catalog.password);
+        redirect.addFormValue("realm", catalog.realm);
+        redirect.addFormValue("EmailAddress", catalog.email);
+        // redirect.addFormValue("passwordadapter", "PasswordAdapter1");
+        redirect.addFormValue("HOOK_URL", computeReturnURL());
+
+        return redirect;
+//      return page("2-ShoppingCart.htm");
+    }
+
+    function computeCatalogURL () {
+        // return "https://brobot1.ariba.com/Buyer/Main/ad/contentPunchin/ariba.htmlui.procure.content.ProviderRequestDirectAction";
+        return "https://s1.demo.ariba.com/Buyer/Main/ad/contentPunchin/OCIPunchinDirectAction";
+    }
+
+    function computeReturnURL () {
+        var url = ariba.ui.aribaweb.core.AWDirectActionUrl.fullUrlForDirectAction("showPage/DemoShellActions/iProcure/2-ShoppingCart.htm", component.requestContext());
+            // "page", "SAP/2-ShoppingCart.htm"
+        return url;
+    }
+
+    var showOptions = false;
+    function toggleOptions () {
+        showOptions = !showOptions;
+        return null;
+    }
+</server>

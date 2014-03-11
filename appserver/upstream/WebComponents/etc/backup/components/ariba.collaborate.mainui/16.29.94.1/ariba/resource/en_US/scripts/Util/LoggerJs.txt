@@ -1,0 +1,307 @@
+// Logger class
+
+var LoggerUtil = new function ()
+{
+    this.enableLogging = false;
+    this.logLevel = 0;
+    this.Space = "                                                    ";
+    this.logPadding = "";
+
+    this.setLogLevel = function (level)
+    {
+        if (level != null) {
+            this.enableLogging = (level == "debug");
+        }
+    };
+
+    this.logAlert = function (msg)
+    {
+        this.logMessage("!!! ALERT !!!!" + msg);        
+    }
+
+    this.logMessage = function (msg)
+    {
+        if (this.enableLogging) {
+            DFS.debugMessage(Date() +  " " + this.logPadding + " " + msg + "\n");
+        }
+    };
+
+    this.logBegin = function (msg)
+    {
+        this.logBeginBlock(msg, false);
+    }
+
+    this.logBeginBlock = function (msg, isBlock)
+    {
+        if (this.enableLogging) {
+            if (isBlock) {
+                this.logMessage("");
+            }
+            this.logMessage("Begin " + msg);
+            this.logLevel = this.logLevel + 2;
+            if (this.logLevel > 25) {
+                this.logLevel = 25;
+            }
+            this.logPadding = this.Space.substring(0, this.logLevel);
+        }
+    };
+
+    this.logEnd = function (msg)
+    {
+        this.logEndBlock(msg, false);        
+    }
+
+    this.logEndBlock = function (msg, isBlock)
+    {
+        if (this.enableLogging) {
+            if (this.logLevel >= 2) { this.logLevel = this.logLevel - 2; }
+            this.logPadding = this.Space.substring(0, this.logLevel);
+            this.logMessage("End " + msg);
+            if (isBlock) {
+                this.logMessage("");
+            }
+        }
+    };
+
+    this.logXmlTree = function (headermsg, xmlTree, depth)
+    {
+        if (this.enableLogging) {
+            if (headermsg != "") {
+                this.logMessage(headermsg);
+            }
+            var str = this.Space.substring(0, depth);
+            if (xmlTree.hasChildNodes()) {
+                this.logXmlNode(xmlTree, depth);
+                var len = xmlTree.childNodes.length;
+                for (var i = 0; i < len; ++i) {
+                    this.logXmlTree("", xmlTree.childNodes[i], depth+1);
+                }
+            }
+            else {
+                this.logXmlNode(xmlTree, depth);
+            }
+            if (xmlTree.tagName != null) {
+                // do not display the tag for CDATA
+                this.logMessage(str + "&lt;/"  + xmlTree.tagName + "&gt;");
+            }
+        }
+    };
+
+    this.logXmlNode = function (xmlNode, indent)
+    {
+        if (this.enableLogging) {
+            var str = this.Space.substring(0, indent);
+            if (xmlNode.nodeType == 3) { // TEXT_NODE
+                str = str.concat(xmlNode.innerText);
+            }
+            else if (xmlNode.nodeType == 4) { // CDATA_SECTION_NODE
+                str = str.concat(xmlNode.nodeValue);
+            }
+            else {
+                str = str.concat("&lt;");
+                str = str.concat(xmlNode.tagName);
+                var len = xmlNode.attributes.length;
+                for (var i = 0; i < len; ++i) {
+                    str = str.concat(" ");
+					str = str.concat(xmlNode.attributes[i].name);
+                    str = str.concat("=");
+                    str = str.concat(xmlNode.attributes[i].nodeValue);
+                }
+                str = str.concat("&gt;");
+            }
+            this.logMessage(str);
+        }
+    };
+
+    /**
+        Log args
+    */
+    this.logArgs = function (headermsg, args)
+    {
+        if (headermsg != null && args != null) {
+            this.logMessage(this.getArgString(headermsg, args));
+        }
+    };
+
+    this.getArgString = function (headermsg, args)
+    {
+        var argStr = headermsg;
+        argStr = argStr.concat("\n");
+        for (var key in args) {
+            argStr += key + " : " + args[key] + "\n";
+        }
+        return argStr;
+    };
+
+    this.logInfo = function (divMsg, logMsg, ex)
+    {
+        this.logMessage("[INFO] " + logMsg);
+    }
+
+    this.logErrorOnExit = function ()
+    {
+        try {
+            var msg = ScriptError.innerHTML;
+            if (msg == null || msg == "") {
+                ScriptError.innerHTML = "Generic Script Error";
+            }
+        }
+        catch (ex) {
+            /* Nothing here - div not found */
+        }
+    }
+
+    this.logError = function (divMsg, logMsg, ex)
+    {
+        if (ex != null) {
+            this.logMessage("[ERROR] " + logMsg + " " + ex);
+        }
+        else {
+            this.logMessage("[ERROR]" + logMsg);
+        }
+
+        /* Todo: the div must be passed part of the args */
+        if (divMsg != null) {
+            var hasError = false;
+            try {
+                SmartClientScriptError.innerHTML = divMsg;
+                //ActiveXError.style.display = "";
+            }
+            catch (ex) {
+                hasError = true;
+                /* nothing here */
+            }
+
+            if (hasError) {
+                try {
+                    ScriptError.innerHTML = divMsg;
+                    ActiveXError.style.display = "";
+                }
+                catch (ex) {
+                    /* nothing here */
+                }
+            }
+        }
+    };
+
+    this.updateWindowStatus = function (msg)
+    {
+        window.status = msg;
+    };
+
+    /* utility routines */
+    this.logRevision = function (editType, parentBookmark, range)
+    {
+        if (this.enableLogging) {
+            this.logMessage("Processing Revision " + this.formatRange(range) + " Type: " + editType + " ParentBookmark:" +
+                this.formatBookmark(parentBookmark) + " Content: " + sfDomRangeForRange(range));
+        }
+    };
+
+    this.logRevisionCount = function (editType, count)
+    {
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage("Revision Info: " + "Revisions Type "
+                + editType + " Count " + count);
+        }
+    };
+
+    this.logMissingGlobalBookmark = function ()
+    {
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage("Did not find the global bookmark!!!");
+        }
+    };
+
+    this.logEmptyRange = function (range)
+    {
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage(" Empty deleted range found" + " rangeStart = " +
+                                  range.Start & " rangeEnd = " + range.End);
+        }
+    };
+
+    this.logMissingParentBookmark = function (range)
+    {
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage("Missing Parent Bookmark for Range " + this.formatRange(range));
+        }
+    };
+
+    this.logCollection = function (headermsg, coll)
+    {
+        if (LoggerUtil.enableLogging) {
+            this.logMessage("Collection " + headermsg);
+            var len = coll.Count;
+            var str = "";
+            for (var i = 1; i <= len; ++i) {if (i != 1) { str += ","; } str += coll.Item(i); }
+            this.logMessage(str);
+        }
+    };
+
+    this.formatRange = function (rangeObj)
+    {
+        var str = "";
+        str = str.concat("(");
+        str = str.concat(rangeObj.Start);
+        str = str.concat(":");
+        str = str.concat(rangeObj.End);
+        str = str.concat(")");
+        return str;
+    };
+
+    this.formatBookmark = function (bookmark)
+    {
+        var str = "";
+        str = str.concat(bookmark.Name);
+        str = str.concat(this.formatRange(bookmark));
+        return str;
+    };
+
+    this.logBookmarks = function (headermsg, coll)
+    {
+        if (LoggerUtil.enableLogging) {
+            this.logMessage("Bookmarks " + headermsg);
+            var len = coll.Count;
+            var str = "";
+            for (var i = 1; i <= len; ++i) {
+                if (i != 1) { str += ","; }
+                var bm = coll.Item(i);
+                str += this.formatBookmark(bm);
+            }
+            this.logMessage(str);
+        }
+    };
+
+    /**
+     * @param c - command array
+     */
+    this.logCommand = function (c)
+    {
+        if (LoggerUtil.enableLogging) {
+            var str = "";
+            var len = c.length;
+            for (var i = 0; i < len; ++i) {
+                if (i == 0) {
+                    str = str.concat("Command:" + c[i] + " Args: ");
+                }
+                else {
+                    str = str.concat(c[i] + " ");
+                }
+            }
+            this.logMessage(str);
+        }
+    };
+} ();
+
+
+function sfLoggerInit (ec, headermsg, args)
+{
+    if (args[Params.sClientLogLevel] != null) {
+        LoggerUtil.setLogLevel(args[Params.sClientLogLevel]);
+    }
+
+    if (LoggerUtil.enableLogging) {
+        LoggerUtil.logArgs(headermsg, args);
+    }
+}

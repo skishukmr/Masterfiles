@@ -1,0 +1,1914 @@
+Dim app
+Dim agreement
+Dim properties
+Dim allFormField
+Dim currentSelection
+
+Dim documentLocation
+Dim actionUrl
+Dim aBookmarkName
+Dim isOnlyValueUpgradeRequired
+Dim isSimplyGeneration
+Dim isTrackChangeActive
+Dim isIncrementalCopyProjectGeneration
+Dim getDocumentUrl
+Dim doneUrl
+Dim isReviseBookmarkGeneration
+Dim isIncrementalGeneration
+Dim isCleanVersionRequired
+Dim isRemoveChangeRequired
+Dim isRemoveFieldRequired
+Dim isApplyStyleRequired
+
+'// copyProjectSourceLocation is the String fullFilePath for the copyProjectSource temp file, or Empty.
+Dim copyProjectSourceLocation
+'// copyProjectSourceAgreement is the COM IAutomation Document for copyProjectSource open in Word, or Nothing.
+Dim copyProjectSourceAgreement
+
+Dim noStyle
+Dim AdHocStyle
+Dim appVisible
+Dim wordType
+Dim FolderSeparator
+
+
+noStyle = "noStyle"
+AdHocStyle = "--------"
+FolderSeparator = "\"
+
+Sub cleanup ()
+    On Error Resume Next
+
+    If (not (app is Nothing)) Then
+        app.NormalTemplate.Saved = True
+        '// app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+End Sub
+
+Sub fullyCleanup ()
+    On Error Resume Next
+
+    If (not (app is Nothing)) Then
+        app.NormalTemplate.Saved = True
+        app.Quit wdDoNotSaveChanges
+        set app = Nothing
+    End If
+End Sub
+
+Function logError (message)
+    logError = false
+
+    If Err.number <> 0 Then
+        globalError = true
+        ScriptError.innerHTML = message
+        ActiveXError.style.display = ""
+        fullyCleanup
+        logError = true
+    End If
+End Function
+
+Sub contactApp ()
+    On Error Resume Next
+
+        'launch app
+    set app = CreateObject("Word.Application")
+    If logError(GeneratingErr.contactApplicationErrorMessage) Then
+        Exit Sub
+    End If
+
+    Dim appVersion
+    appVersion = app.Version
+
+    wordType = getWordType(appVersion)
+
+    If (wordType = Word2000Type) Then
+        appVisible = True
+    Else
+        If (wordType = WordXPType OR wordType = Word07Type) Then
+            appVisible = False
+        End If
+    End If
+
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+    '// Do errorCheck on cursor type in this one place to remind us to fix it everywhere.
+    logErrorCheck "document.body.style.cursor in contactApp"
+End Sub
+
+Sub importValues ()
+    On Error Resume Next
+
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    sfilename = documentLocation
+
+    If (isOnlyValueUpgradeRequired = True) Then
+        saveOpenDocument app, sfilename
+        autoOpenSyncupDocument sfilename
+        openDocumentInWord app, sfilename, False
+        Set agreement = app.ActiveDocument
+    Else
+        agreement.Activate
+    End If
+
+    If logError(GeneratingErr.wordOpenErrorMessage & sfilename) Then
+        Exit Sub
+    End If
+
+    Set properties = agreement.CustomDocumentProperties
+    Set allFormField = agreement.FormFields
+
+    Dim originalTrack
+
+    originalTrack = agreement.TrackRevisions
+    agreement.TrackRevisions = False
+    logMessage "setting TrackRevisions = " & False & " (importValues)"
+
+    doImportValues
+
+    Set currentSelection = agreement.ActiveWindow.Selection
+    Dim pos
+    pos = currentSelection.HomeKey(6, 0) '// wdStory = 6, wdMove = 0
+
+    '// currentSelection.ProtectedForForms = True
+
+    agreement.Fields.Update
+
+    updateFieldInHeaderFooter agreement
+
+    agreement.TrackRevisions = originalTrack
+    logMessage "restoring TrackRevisions = " & originalTrack & " (importValues)"
+
+    If (isCleanVersionRequired = True) Then
+        generatingCleanVersion agreement, isRemoveChangeRequired, isRemoveFieldRequired
+    End If
+
+    agreement.Saved = false
+    agreement.Save
+
+    '// meetingAppointment
+
+    postProcess
+End Sub
+
+
+Sub meetingAppointment ()
+    On Error Resume Next
+
+    Dim anOutlook
+    Set anOutlook = CreateObject("Outlook.Application")
+    Dim anItem
+    Set anItem = anOutlook.CreateItem(1) '// olAppointmentItem = 1
+
+    Dim aConferenceRoom
+    Set aConferenceRoom = anItem.Recipients.Add("Conf. Giants Bldg. 2_2-419.20")
+    aConferenceRoom.Type = 3 '// olResource = 3
+    Dim freeBusyInfo
+
+    '// freeBusyInfo = aConferenceRoom.FreeBusy(#5/17/2004#, 60, False)
+    '// msgbox("busy " & freeBusyInfo)
+
+    Dim aNameSpace
+    Set aNameSpace = anOutlook.GetNameSpace("MAPI")
+    Dim aRecipient
+    Set aRecipient = aNameSpace.CreateRecipient("Conf. Giants Bldg. 2_2-419.20")
+    freeBusyInfo = aRecipient.FreeBusy(#5/17/2004#, 60, False)
+    '// msgbox("busy " & freeBusyInfo)
+
+    anItem.MeetingStatus = 1 '// olMeeting = 1
+    anItem.Subject = "temptemp"
+    anItem.Location = "Conf. Giants Bldg. 2_2-419.20"
+    anItem.Start = #5/17/2004 11:00AM#
+    anItem.Duration = 60
+    Dim aRequiredItem
+    Set aRequiredItem = anItem.Recipients.Add("Gang Lan")
+    aRequiredItem.Type = 1 '// olRequired = 1
+    Dim anOptionalItem
+    Set anptionalItem = anItem.Recipients.Add("Gang Lan")
+    aOptionalItem.Type = 2 '// olOptional = 2
+    anItem.Display
+
+    '// anItem.Send
+
+End Sub
+
+Sub updateFieldInHeaderFooter (aDocument)
+    On Error Resume Next
+
+    If (aDocument.Sections.Count > 0) Then
+        Dim primarySection
+        Set primarySection = aDocument.Sections(1)
+        If (primarySection.Headers.Count > 0) Then
+            primarySection.Headers(1).Range.Fields.Update '// wdHeaderFooterPrimary = 1
+        End If
+        If (primarySection.Footers.Count > 0) Then
+            primarySection.Footers(1).Range.Fields.Update '// wdHeaderFooterPrimary = 1
+        End If
+    End If
+End Sub
+
+Sub inImportValues (sField, sValue, isEditable)
+    On Error Resume Next
+    '// logBegin "inImportValues(sField='" & sField & "', sValue='" & sValue & "', isEditable=" & isEditable & ")"
+
+    Dim fieldProperty
+    Dim aFormField
+
+    sField = prefixFieldName & sField
+    LogMessage "Property name=" & sField & " value='" & sValue & "' editable=" & isEditable
+    If (isEditable = False) Then
+        Set fieldProperty = Nothing
+        Set fieldProperty = properties.item(sField)
+        If (Not fieldProperty is Nothing) Then
+            fieldProperty.Value = sValue
+        End If
+    Else
+        Set aFormField = Nothing
+        Set aFormField = allFormField.Item(sField)
+        If (Not aFormField is Nothing) Then
+            aFormField.Result = sValue
+            aFormField.TextInput.Default = sValue
+        End If
+    End If
+    '// logEnd "inImportValues"
+End Sub
+
+Sub inImportValuesHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    inImportValues e.sField, e.sValue, e.isEditable
+End Sub
+
+Sub reviseBookmark ()
+    On Error Resume Next
+
+    '// msgbox "revise "
+
+    Dim originalTrack
+
+    originalTrack = agreement.TrackRevisions
+    agreement.TrackRevisions = False
+    logMessage "setting TrackRevisions = false (reviseBookmark)"
+
+    '// currentSelection.WholeStory
+    Set allBookmarks = agreement.Bookmarks
+
+    '// doReviseBookmark
+
+    Set currentSelection = agreement.ActiveWindow.Selection
+
+    doIncrementalInitialization
+
+    agreement.Revisions.AcceptAll
+
+    agreement.TrackRevisions = originalTrack
+    logMessage "restoring TrackRevisions = " & originalTrack & " (reviseBookmark)"
+End Sub
+
+Sub inReviseBookmark (bookmarkItemNameInTemplate, bookmarkItemNameInWorkspace)
+    On Error Resume Next
+
+    '// msgbox "bookmarkItemNameInTemplate " & bookmarkItemNameInTemplate
+    '// msgbox "bookmarkItemNameInWorkspace " & bookmarkItemNameInWorkspace
+
+    Dim currentBookmark
+    Dim aBookmark
+    Dim pos
+
+    Set currentBookmark = allBookmarks.Item(bookmarkItemNameInTemplate)
+    Set aBookmark = currentBookmark.Copy(bookmarkItemNameInWorkspace)
+    '// Set aBookmark = allBookmarks.Add(bookmarkItemNameInWorkspace, currentBookmark.Range)
+    pos = allBookmarks.Item(bookmarkItemNameInTemplate).Delete
+End Sub
+
+Sub inReviseBookmarkHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    inReviseBookmark e.bookmarkItemNameInTemplate, e.bookmarkItemNameInWorkspace
+End Sub
+
+Sub applyStyle ()
+    On Error Resume Next
+
+    agreement.Activate
+    Set currentSelection = agreement.ActiveWindow.Selection
+
+    doApplyStyle
+End Sub
+
+Sub inApplyStyleHandler
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    applyStyleInBookmark e.bookmarkName, e.styleId, booleanValue(e.isClause)
+End Sub
+
+Sub applyStyleInBookmark (bookmarkName, styleId, isClause)
+    On Error Resume Next
+
+    logMessage " applyStyleInBookmark, styleId = " & styleId & " bookmarkName = " & bookmarkName
+
+    selectBookmark currentSelection, bookmarkName
+        
+    applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+End Sub
+
+Sub postProcess ()
+    On Error Resume Next
+
+    agreement.Activate
+    If (isTrackChangeActive = True) Then
+        agreement.TrackRevisions = True
+        logMessage "set TrackRevisions = " & True & " (postProcess)"
+        agreement.ShowRevisions = True
+
+        If (app.ActiveWindow.View.ShowRevisionsAndComments = False) Then
+            app.WordBasic.ViewChanges
+        End If
+    Else
+        agreement.TrackRevisions = False
+        logMessage "set TrackRevisions = " & False & " (postProcess)"
+    End If
+
+    agreement.Saved = false
+    agreement.Save
+
+    app.NormalTemplate.Saved = True
+End Sub
+
+Sub addClauseUtil (clauseDocumentName, clauseName, contextSectionBookmarkName, styleId)
+    On Error Resume Next
+
+    addClauseCommand clauseDocumentName, clauseName, contextSectionBookmarkName, styleId, "", False
+End Sub
+
+Sub addSectionUtil (sectionName, nameId, contextSectionBookmarkName, styleId)
+    On Error Resume Next
+
+    addSectionCommand sectionName, nameId, contextSectionBookmarkName, styleId, "", False
+End Sub
+
+Sub addClauseHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    addClauseUtil e.clauseDocumentName, e.clauseName, e.contextSectionBookmarkName, e.styleId
+End Sub
+
+Sub addSectionHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    addSectionUtil e.sectionName, e.nameId, e.contextSectionBookmarkName, e.styleId
+End Sub
+
+
+Sub addClauseCommand (clauseDocumentName, clauseName, contextSectionBookmarkName, styleId, previousBookmarkName, isAddInBegin)
+    On Error Resume Next
+
+    logBegin "addClauseCommand. clauseDocumentName = " & clauseDocumentName & " clauseName = " & clauseName & " previousBookmarkName = " & previousBookmarkName
+
+    addClauseToClipboard clauseDocumentName
+    addClauseFromClipboard clauseName, contextSectionBookmarkName, styleId, true, previousBookmarkName
+
+    logEnd "addClauseCommand"
+End Sub
+
+Sub addClauseToClipboard (clauseDocumentName)
+    LogMessage " addClauseToClipboard: clauseDocumentName = " & clauseDocumentName
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord app, clauseDocumentName, False
+    Dim newSelection
+    Set newSelection = app.ActiveDocument.ActiveWindow.Selection
+    newSelection.WholeStory
+
+    populateProperty newSelection.Range, agreement
+
+    newSelection.Copy
+    LogMessage " addClauseToClipboard: newSelection = " & newSelection
+    app.ActiveDocument.Close
+End Sub
+
+Sub addClauseFromClipboard (clauseName, contextSectionBookmarkName, styleId, isReapplyStyles, previousBookmarkName)
+
+    logBegin "addClauseFromClipboard: clauseName = " & clauseName & ", contextSectionBookmarkName= " & contextSectionBookmarkName 
+    agreement.Activate
+
+    Dim pos
+    Dim aRange
+    Dim addParagraph
+
+    newPositionClauseSection agreement, currentSelection, previousBookmarkName, contextSectionBookmarkName
+
+    '// msgbox "clauseBookmark " & clauseName
+
+    addParagraph = False
+    if (isReapplyStyles) Then
+        addParagraph = True
+    End If
+    addBookmarkWithOptions agreement, currentSelection, clauseName, addParagraph
+
+    LogMessage " CompatiblePaste: currentSelection = (" & currentSelection.start & "," & currentSelection.end & "), wordType = " & wordType
+    CompatiblePaste currentSelection, wordType
+    deleteChar currentSelection,1
+
+    '// If not isReapplyStyles, then copySourceClauseToClipboard should have included the
+    '// end para marker in the clipboard and we will have pasted it within the bookmark.
+    '// So we delete the para marker right after the selection, and we retract the bookmark
+    '// by one char to put the copied para marker outside the bookmark.  We check to make
+    '// sure that the para markers are really where we expect them to be, before
+    '// we change things.
+    if (not isReapplyStyles) Then
+        Dim aBookmark
+	    Set aBookmark = agreement.Bookmarks(clauseName)
+	    '// If there is a para marker just inside the bookmark at the end...
+        If (isNextCharPara(agreement, aBookmark.Range.End - 1)) Then
+            '// If there is a para marker just outside the bookmark at the end...
+	        If (isNextCharPara(agreement, currentSelection.End)) Then
+	            '// Then delete the preexisting trailing para marker.
+	            deleteChar currentSelection, 1
+	        End If
+	        '// Then retract the bookmark so the pasted para is after the bookmark.
+		    aBookmark.Range.End = aBookmark.Range.End - 1
+		End If
+    End If
+        
+    '// Note the side effect of changing currentSelection, which is used after the if block;
+    '// that is why this line is not within the if block.
+    Set aRange = currentSelection.GoTo(-1, , , clauseName) '// wdGoToBookmark = -1
+
+    If (isReapplyStyles) Then
+        applyStyleInSectionClause agreement, styleId, currentSelection, contentType(clauseName)
+        currentSelection.Font.Reset
+    End If
+
+    goodToGreatBookmark agreement, currentSelection, clauseName    
+    removeEmptyParaAfterBookmark agreement, currentSelection, clauseName    
+
+    logEnd "addClauseFromClipboard"
+End Sub
+
+Sub addSectionCommand (sectionName, nameId, contextSectionBookmarkName, styleId, previousBookmarkName, isAddInBegin)
+    On Error Resume Next
+
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+    LogMessage "    Start addSectionCommand"
+
+    agreement.Activate
+    Dim pos
+    Dim aRange
+
+    LogMessage "    previousBookmarkName: " & previousBookmarkName
+    LogMessage "    contextSectionBookmarkName: " & contextSectionBookmarkName
+
+    newPositionClauseSection agreement, currentSelection, previousBookmarkName, contextSectionBookmarkName
+
+    addBookmarkWithOptions agreement, currentSelection, nameId, False
+
+    applyStyleInSectionClause agreement, styleId, currentSelection, contentType(nameId)
+
+    currentSelection.TypeText sectionName
+
+    Set aRange = currentSelection.GoTo(-1, , , nameId) '// wdGoToBookmark = -1
+    pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+    pos = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+    createNewLine agreement, currentSelection
+    currentSelection.Range.ListFormat.RemoveNumbers
+End Sub
+
+Sub copySourceOpenCommand (sourceLocation)
+    On Error Resume Next
+    dim success
+    success = true
+
+    logBegin "copySourceOpenCommand(sourceLocation='" & sourceLocation & "')"
+
+    '// Remember DFS full file name for copySource
+    copyProjectSourceLocation = sourceLocation
+
+    '// Download the copyProjectSource document.
+    '// Pass special clauseId=copyProjectSource so server code knows to special case it.
+    success = saveClauseToClient(sourceLocation, "copyProjectSource")
+    if (success) then
+        '// Must open primary document first, since for downloadable doc we do some cleanup of other docs.
+        '// Open or find open the target agreement document, downloading it if needed.
+        Set agreement = Nothing
+        '// arguments are: (filename, canDownload, readonly)
+        success = openOrFindDocumentByDFSFilename(documentLocation, True, False)
+        if (success) then
+            Set agreement = app.ActiveDocument
+            if (Err.Number <> 0) then
+                logErrorCheck "Set agreement = app.ActiveDocument"
+                success = false
+            end if
+        end if
+    end if
+    if (success) then
+        '// Open or find open the downloaded copyProjectSource document
+        Set copyProjectSourceAgreement = Nothing
+        '// arguments are: (filename, canDownload, readonly)
+        success = openOrFindDocumentByDFSFilename(sourceLocation, False, True)
+        if (success) then
+            Set copyProjectSourceAgreement = app.ActiveDocument
+            if (Err.Number <> 0) then
+                logErrorCheck "Set copyProjectSourceAgreement = app.ActiveDocument"
+                success = false
+            end if
+        end if
+    end if
+    
+    logEnd "copySourceOpenCommand, success=" & success
+End Sub
+
+Sub copySourceCloseCommand ()
+    On Error Resume Next
+    dim success
+
+    logBegin "copySourceCloseCommand()"
+
+    if not copyProjectSourceAgreement is Nothing then
+        copyProjectSourceAgreement.Activate
+        logErrorCheck "copyProjectSourceAgreement.Activate"
+        app.ActiveDocument.Close
+        logErrorCheck "app.ActiveDocument.Close"
+        set copyProjectSourceAgreement = Nothing
+        deleteFileAndMaybeFolder copyProjectSourceLocation, 2
+        copyProjectSourceLocation = Empty
+    end if
+    if agreement is Nothing then
+        success = openOrFindDocumentByDFSFilename(documentLocation, True, False)
+        if (success) then
+            Set agreement = app.ActiveDocument
+        else
+            logMessage "Error: cannot open primary doc=" & documentLocation
+        end if
+    end if
+
+    agreement.Activate
+    logErrorCheck "agreement.Activate"
+    '// Turn change tracking back on and save the agreement
+    postProcess
+    app.ActiveDocument.Close
+    Set agreement = Nothing
+
+    logEnd "copySourceCloseCommand"
+End Sub
+
+'// Return true if open succeeds, else False.
+Function openOrFindDocumentByDFSFilename (filename, canDownload, readonly)
+    On Error Resume Next
+    logBegin "openOrFindDocumentByDFSFilename(filename='" & filename & "', canDownload='" & canDownload & "', readonly='" & readonly & "')"
+    openOrFindDocumentByDFSFilename = True
+
+    '// Only vault files with sync history can be "auto-loaded".  Vault files are
+    '// explicitly downloaded by client code generated by the server if the sync history
+    '// indicates that the client copy is out of date.  But if the user has explicitly
+    '// deleted it from the client vault in Windows, we should just download a fresh copy
+    '// and update the sync history.  Temp files used for added clauses from the library
+    '// or conditional clauses that have just become applicable, or copyProjectSource
+    '// documents are downloaded explicitly when used and we cannot auto-load them.
+
+    If (canDownload and clientFileExists(filename) <> 0) Then
+        openOrFindDocumentByDFSFilename = autoOpenSyncupDocument(filename)
+    End If
+    
+    if (openOrFindDocumentByDFSFilename) then
+        '// Opens and activates the file, or just activates if already open.
+        Dim confirmConversions, addToRecentFiles, passwordDocument, passwordTemplate, revert
+        confirmConversions = False
+        addToRecentFiles = False
+        passwordDocument = ""
+        passwordTemplate = ""
+        revert = False
+
+        Dim appVersion
+        appVersion = wordApplication.Version
+
+        Dim wordType
+        wordType = getWordType(appVersion)
+
+        Dim fileNameOnly
+        fileNameOnly = filename
+
+        If wordType = Word07Type Then
+            Dim filePath
+            filePath = getFilePath(documentLocation)
+            fileName = getFileName(documentLocation)
+            If filePath <> "" Then
+                wordApplication.ChangeFileOpenDirectory filePath
+            End If
+        End If
+        
+        app.Documents.Open filename, confirmConversions, readonly, addToRecentFiles, passwordDocument, passwordTemplate, revert
+        If Err.Number <> 0 Then
+           logErrorCheck "app.Documents.Open filename, readonly, confirmConversions, addToRecentFiles, passwordDocument, passwordTemplate, revert"
+           openOrFindDocumentByDFSFilename = False
+        End If
+        app.Visible = appVisible
+        window.focus
+        document.body.style.cursor = "wait"
+    End If
+
+    logEnd "openOrFindDocumentByDFSFilename, returns " & openOrFindDocumentByDFSFilename
+End Function
+
+Function openDocumentInWord (wordApplication, documentLocation, readOnly)
+    On Error Resume Next
+    
+    logBegin "openDocumentInWord"
+
+    Dim appVersion
+    appVersion = wordApplication.Version
+
+    Dim wordType
+    wordType = getWordType(appVersion)
+
+    Dim fileName
+    fileName = documentLocation
+
+    If wordType = Word07Type Then
+        Dim filePath
+        filePath = getFilePath(documentLocation)
+        fileName = getFileName(documentLocation)
+ 
+        If filePath <> "" Then
+            wordApplication.ChangeFileOpenDirectory filePath
+        End If
+    End If
+
+    If readOnly = False Then
+        wordApplication.Documents.Open fileName
+    Else
+        wordApplication.Documents.Open fileName, , True
+    End If
+    logEnd "openDocumentInWord"
+End Function
+
+Sub copySourceClauseToClipboard (bookmarkName, isCopyProjectReapplyStyles)
+    logBegin "copySourceClauseToClipboard(bookmarkName=" & bookmarkName & " isCopyProjectReapplyStyles = " & isCopyProjectReapplyStyles
+    '// Switch to source doc, and copy source bookmark contents to clipboard.
+    copyProjectSourceAgreement.Activate
+    Dim sourceSelection
+    Set sourceSelection = app.ActiveDocument.ActiveWindow.Selection
+    selectBookmark sourceSelection, bookmarkName
+    '// If we are not going to reapply styles, extend the selection to include the end
+    '// paragraph marker, since it contains the paragraph formatting like numbering
+    '// and indentation that we want to copy.  See corresponding extendToEndPara in
+    '// replaceClauseFromClipboard.
+    If (not isCopyProjectReapplyStyles) Then
+        extendToEndPara sourceSelection
+    End If
+    sourceSelection.Copy
+    logErrorCheck "sourceSelection.Copy"
+    logEnd "copySourceClauseToClipboard"
+End Sub
+
+Sub copyReplaceClauseCommand (isCopyProjectReapplyStyles, contextSectionBookmarkName, previousBookmarkName, bookmarkName, styleId)
+    On Error Resume Next
+    logBegin "copyReplaceClauseCommand(isCopyProjectReapplyStyles=" & isCopyProjectReapplyStyles & ", bookmark='" & bookmarkName & "', contextBookmark='" & contextSectionBookmarkName & "', styleId='" & styleId & "', prevBookmark='" & previousBookmarkName & "')"
+
+    If (isBookmarkExists(copyProjectSourceAgreement, bookmarkName)) Then
+        copySourceClauseToClipboard bookmarkName, isCopyProjectReapplyStyles
+        replaceClauseFromClipboard contextSectionBookmarkName, previousBookmarkName, bookmarkName, styleId, isCopyProjectReapplyStyles
+    Else
+        '// We didn't find the content in the document we're copying to replace from the original template
+        '// Delete the existing bookmark and content if exists, to match the document we're copying
+        '// originally tried to fix this by clearing the clipboard, but couldn't find a good way to do that
+        If (isBookmarkExists(agreement,bookmarkName)) Then
+            '// This call always does extendToEndPara and deletes the para marker as well.
+            removeBookmarkAndContent agreement, currentSelection, bookmarkName
+        End If
+    End If
+    logEnd "copyReplaceClauseCommand"
+End Sub
+
+Sub copyAddClauseCommand (isCopyProjectReapplyStyles, bookmarkName, contextSectionBookmarkName, styleId, previousBookmarkName, isAddInBegin)
+    On Error Resume Next
+
+    logBegin "copyAddClauseCommand(isCopyProjectReapplyStyles=" & isCopyProjectReapplyStyles & " bookmark='" & bookmarkName & "', contextBookmark='" & contextSectionBookmarkName & "', styleId='" & styleId & "', prevBookmark='" & previousBookmarkName & "')"
+
+    copySourceClauseToClipboard bookmarkName, isCopyProjectReapplyStyles
+    addClauseFromClipboard bookmarkName, contextSectionBookmarkName, styleId, isCopyProjectReapplyStyles, previousBookmarkName
+
+    logEnd "copyAddClauseCommand"
+End Sub
+
+Sub setSectionCommand (sectionContent, bookmarkName, styleId, keepSectionTile)
+    On Error Resume Next
+
+    Dim aRange
+    Dim pos
+
+    If (agreement.Bookmarks.Exists(bookmarkName) = True) Then
+        selectBookmark currentSelection, bookmarkName
+        moveToStartSelection currentSelection
+        moveToEndPara currentSelection
+
+        Set aRange = currentSelection.Range
+        logMessage " currentSelection is " & aRange
+
+        '//1-9Y0VEN: If keepSectionTitle is true, then the deletion of the section title gets rejected
+	    If (keepSectionTile = True) Then
+	        Dim revTemp
+	        Set revTemp = currentSelection.NextRevision
+	        If ((Not (revTemp Is Nothing)) AND (revTemp.Type = 2)) Then
+	            logMessage " Section bookmark title deletion is rejected"
+                revTemp.Reject
+                selectBookmark currentSelection, bookmarkName
+	            moveToStartSelection currentSelection
+	            extendToEndPara currentSelection
+	            applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+	            '// 12.10.08 Gopal - This is causing extra CRs to be added to the document
+	            '// I am not sure whether Kee meant to remove these but didn't
+	            '//kkim: this is to prevent the first clause style from changing to Normal.
+	            '//But I don't know why 2 new lines have to be added. Should come back later
+	            '//moveToEndPara currentSelection
+	            '//createNewLine agreement, currentSelection
+	            '//moveToDownPara currentSelection
+	            '//createNewLine agreement, currentSelection
+	            '//moveToDownPara currentSelection
+	        End If
+        Else
+            Dim sectionParaEnd
+            sectionParaEnd = currentSelection.End
+            Dim bookmarkObject
+            Set bookmarkObject = agreement.Bookmarks(bookmarkName)
+            Set aRange = currentSelection.Range
+            logMessage "Section para end = " & sectionParaEnd
+            logMessage "bookmark end = " & bookmarkObject.End
+
+            If (sectionParaEnd >= bookmarkObject.End) Then
+                insertAfterBookmarkTitle agreement, currentSelection, bookmarkName
+            End If
+
+            selectBookmark currentSelection, bookmarkName
+	    moveToStartSelection currentSelection
+	    extendToEndPara currentSelection
+	    applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+            currentSelection.TypeText sectionContent
+        End If
+
+
+    Else
+        applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+        currentSelection.TypeText sectionContent
+    End If
+
+End Sub
+
+Function isBookmarkExists (agreement, bookmarkName)
+    On Error Resume Next
+
+    isBookmarkExists = False
+
+    Dim selectionStartPos
+    Dim selectionEndPos
+    Dim aRange
+
+    '// the bookmark may exist as a track change, figure out if there is any content
+    '// in the bookmark
+    If (agreement.Bookmarks.Exists(bookmarkName) = True) Then
+        Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+        selectionStartPos = currentSelection.Start
+        selectionEndPos = currentSelection.End
+        If(selectionEndPos > selectionStartPos) Then
+            isBookmarkExists = True
+        End If
+    End If
+End Function
+
+
+Sub removeBookmarkAndContent(agreement, currentSelection, bookmarkName)
+    On Error Resume Next
+
+    Dim pos
+    
+    '// Select the bookmark, extend to end of current paragraph and delete selection
+    selectBookmark currentSelection, bookmarkName
+    extendToEndPara currentSelection
+    deleteSelection currentSelection
+    
+    clearupBookmark agreement.Bookmarks.Item(bookmarkName)
+End Sub
+
+
+'// This method substitutes the content of a bookmark by new content. Used by
+'// both clause substitute and clause soft delete
+Sub setClauseCommand (clauseDocumentName, contextSectionBookmarkName, previousBookmarkName, bookmarkName, styleId)
+    On Error Resume Next
+
+    LogMessage "    Start setClauseCommand"
+    LogMessage "    Start setClauseCommand: clauseDocumentName = " & clauseDocumentName
+    LogMessage "    Start setClauseCommand: contextSectionBookmarkName = " & contextSectionBookmarkName
+    LogMessage "    Start setClauseCommand: previousBookmarkName = " & previousBookmarkName
+    LogMessage "    Start setClauseCommand: bookmarkName = " & bookmarkName
+    LogMessage "    Start setClauseCommand: styleId = " & styleId
+
+
+    addClauseToClipboard (clauseDocumentName)
+    replaceClauseFromClipboard contextSectionBookmarkName, previousBookmarkName, bookmarkName, styleId, true
+End Sub
+    
+Sub replaceClauseFromClipboard (contextSectionBookmarkName, previousBookmarkName, bookmarkName, styleId, isReapplyStyles)
+    logBegin "replaceClauseFromClipboard"
+    agreement.Activate
+    Dim aRange
+    Dim pos
+
+    Dim isRestoreNewLineRequired
+    isRestoreNewLineRequired = False
+
+    '// Delete the existing bookmark and content if exists
+    If (isBookmarkExists(agreement,bookmarkName)) Then
+        '// This call always does extendToEndPara and deletes the para marker as well.
+        removeBookmarkAndContent agreement, currentSelection, bookmarkName
+    End If
+
+    '// logMessage "    setClauseCommand, contextSectionBookmarkName = " & contextSectionBookmarkName
+    '// logMessage "    setClauseCommand, previousBookmarkName = " & previousBookmarkName
+    
+    If (contextSectionBookmarkName = "" AND previousBookmarkName = "") Then
+        LogMessage "ERROR: both contextSectionBookmarkName and previousBookmarkName are null"
+    End If
+
+    '// This call inserts a new para marker in the right place, and positions the
+    '// collapsed currentSelection after or before the new para marker.
+    newPositionClauseSection agreement, currentSelection, previousBookmarkName, contextSectionBookmarkName
+
+    '// False means it doesn't add a para marker in the bookmark, just a space.
+    '// The bookmark and currentSelection are set to contain just the added space.
+    addBookmarkWithOptions agreement, currentSelection, bookmarkName, False
+
+    '// Replace the currentSelection with the clipboard contents.
+    CompatiblePaste currentSelection, wordType
+
+    '// Delete one char after the presumably collapsed selection, presumably an extra para marker?
+    deleteChar currentSelection, 1
+    
+    '// If not isReapplyStyles, then copySourceClauseToClipboard should have included the
+    '// end para marker in the clipboard and we will have pasted it within the bookmark.
+    '// So we delete the para marker right after the selection, and we retract the bookmark
+    '// by one char to put the copied para marker outside the bookmark.  We check to make
+    '// sure that the para markers are really where we expect them to be, before
+    '// we change things.
+    if (not isReapplyStyles) Then
+        Dim aBookmark
+	    Set aBookmark = agreement.Bookmarks(bookmarkName)
+	    '// If there is a para marker just inside the bookmark at the end...
+        If (isNextCharPara(agreement, aBookmark.Range.End - 1)) Then
+            '// If there is a para marker just outside the bookmark at the end...
+	        If (isNextCharPara(agreement, currentSelection.End)) Then
+	            '// Then delete the preexisting trailing para marker.
+	            deleteChar currentSelection, 1
+	        End If
+	        '// Then retract the bookmark so the pasted para is after the bookmark.
+		    aBookmark.Range.End = aBookmark.Range.End - 1
+		End If
+    End If
+        
+    '// Note the side effect of changing currentSelection, which is used after the if block;
+    '// that is why this line is not within the if block.
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+    If (isReapplyStyles) Then
+	    applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+	    currentSelection.Font.Reset
+	End If
+
+    goodToGreatBookmark agreement, currentSelection, bookmarkName    
+    removeEmptyParaAfterBookmark agreement, currentSelection, bookmarkName
+    logEnd "replaceClauseFromClipboard"
+End Sub
+
+Sub moveClauseSectionCommand (bookmarkName, oldSectionName, newSectionName, styleId, previousBookmarkName)
+    On Error Resume Next
+
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    agreement.Activate
+
+    logMessage "    Start moveClauseSectionCommand " 
+    logMessage "    bookmarkName " & bookmarkName
+    logMessage "    oldSectionName " & oldSectionName
+    logMessage "    newSectionName " & newSectionName
+    logMessage "    previousBookmarkName" & previousBookmarkName
+    
+    Dim pos
+    Dim aRange
+
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+    Dim currentSectionName
+    currentSectionName = withinBookmarkNameInSelection(currentSelection, aRange, True)
+
+    If (currentSectionName = newSectionName) Then
+        Dim currentPreviousBookmarkName
+        currentPreviousBookmarkName = findPreviousBookmarkName(currentSelection, bookmarkName, newSectionName)
+
+        '// already right
+        If (currentPreviousBookmarkName = previousBookmarkName) Then
+            Exit Sub
+        End If
+    End If
+
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+    '// Extend the selection to end of para - to get the right styles for the 
+    '// sub-content
+    extendToEndPara currentSelection
+    
+    currentSelection.Copy
+
+    removeBookmarkAndContent agreement, currentSelection, bookmarkName
+
+    logMessage "    newSectionName = " & newSectionName
+    logMessage "    currentSectionName = " & currentSectionName
+
+    newPositionClauseSection agreement, currentSelection, previousBookmarkName, newSectionName
+
+    addBookmarkWithOptions agreement, currentSelection, bookmarkName, False
+
+    CompatiblePaste currentSelection, wordType
+    
+    '// delete 1 char that was added inside the bookmark during addBookmarkWithOptions
+    pos = currentSelection.Delete(1, 1)     '// Unit:=wdCharacter, Count:=1
+        
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+    applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+
+    goodToGreatBookmark agreement, currentSelection, bookmarkName
+    removeEmptyParaAfterBookmark agreement, currentSelection, bookmarkName
+End Sub
+
+Sub reviseMoveForwardBookmark (currentDocument, currentSelection, bookmarkName)
+    On Error Resume Next
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+    pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+    pos = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+
+    Dim aBookmarkName
+    aBookmarkName = withinBookmarkName(currentDocument, currentSelection.Range)
+    '// msgbox("aBookmarkName " & aBookmarkName)
+    If (bookmarkName <> aBookmarkName) Then
+        Dim aBookmark
+        Set aBookmark = currentDocument.Bookmarks.Item(aBookmarkName)
+        Dim sourceBookmark
+        Set sourceBookmark = currentDocument.Bookmarks.Item(bookmarkName)
+
+        If (sourceBookmark.End = aBookmark.End) Then
+            Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+            pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+            createASpace currentDocument, currentSelection
+            sourceBookmark.End = sourceBookmark.End + 1
+        End If
+    End If
+End Sub
+
+Sub removeClauseSectionCommand (bookmarkName)
+    On Error Resume Next
+
+    logBegin "removeClauseSectionCommand('" & bookmarkName & "')"
+    
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    agreement.Activate
+
+    Dim pos
+    Dim aRange
+
+    goodToGreatBookmark agreement, currentSelection, bookmarkName
+
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+    '// extend to entire Para and delete
+    extendToEndPara currentSelection    
+    pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+    
+    pos = agreement.Bookmarks.Item(bookmarkName).Delete
+    logEnd "removeClauseSectionCommand"
+End Sub
+
+Sub addClauseCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    addClauseCommand e.clauseDocumentName, e.clauseName, e.contextSectionBookmarkName, e.styleId, e.previousBookmarkName, booleanValue(e.isAddInBegin)
+End Sub
+
+Sub addSectionCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    addSectionCommand e.sectionName, e.nameId, e.contextSectionBookmarkName, e.styleId, e.previousBookmarkName, booleanValue(e.isAddInBegin)
+End Sub
+
+Sub copySourceOpenCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    copySourceOpenCommand e.copyProjectSourceLocation
+End Sub
+
+Sub copySourceCloseCommandHandler ()
+    On Error Resume Next
+
+    copySourceCloseCommand
+End Sub
+
+Sub copyReplaceClauseCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    copyReplaceClauseCommand e.isCopyProjectReapplyStyles, e.contextSectionBookmarkName, e.previousBookmarkName, e.bookmarkName, e.styleId
+End Sub
+
+Sub copyAddClauseCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    copyAddClauseCommand e.isCopyProjectReapplyStyles, e.bookmarkName, e.contextSectionBookmarkName, e.styleId, e.previousBookmarkName, e.isAddInBegin
+End Sub
+
+Sub setSectionCommandHandler  ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    setSectionCommand e.sectionContent, e.bookmarkName, e.styleId, e.keepSectionTitle
+End Sub
+
+Sub setClauseCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    setClauseCommand e.clauseDocumentName, e.contextSectionBookmarkName, e.previousBookmarkName, e.bookmarkName, e.styleId
+End Sub
+
+
+Sub moveClauseSectionCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    logMessage "    Start moveClauseSectionCommandHandler"
+    moveClauseSectionCommand e.bookmarkName, e.oldSectionName, e.newSectionName, e.styleId, e.previousBookmarkName
+End Sub
+
+
+Sub removeClauseSectionCommandHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    removeClauseSectionCommand e.bookmarkName
+End Sub
+
+
+Sub setSectionContent (bookmarkName, sectionContent, styleId, previousBookmarkName)
+    On Error Resume Next
+
+    Dim aRange
+    Dim pos
+
+    Dim newBookmarkAdded
+    newBookmarkAdded = False
+
+    If (agreement.Bookmarks.Exists(bookmarkName) = True) Then
+        Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+        pos = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+        pos = currentSelection.EndKey(5, 1) '// wdLine = 5, wdExtend = 1
+        pos = currentSelection.MoveLeft(1, 1, 1) '// wdCharacter = 1, wdExtend = 1
+        pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+        '// currentSelection.TypeText "great"
+    Else
+        If (agreement.Bookmarks.Exists(previousBookmarkName) = True) Then
+            insertAfterBookmark agreement, currentSelection, previousBookmarkName
+
+            addBookmark agreement, currentSelection, bookmarkName
+            newBookmarkAdded = True
+        End If
+    End If
+
+    applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+
+    currentSelection.TypeText sectionContent
+
+    If (newBookmarkAdded = True) Then
+        Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+        pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+        pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+        pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+
+    End If
+End Sub
+
+Sub setClauseContent (bookmarkName, clauseDocumentName, styleId, previousBookmarkName)
+    On Error Resume Next
+
+    '// msgbox "setClauseContent"
+
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    openDocumentInWord app, clauseDocumentName, False
+    Dim newSelection
+    Set newSelection = app.ActiveDocument.ActiveWindow.Selection
+    newSelection.WholeStory
+
+    populateProperty newSelection.Range, agreement
+
+    newSelection.Copy
+
+    app.ActiveDocument.Close
+
+    agreement.Activate
+    Dim aRange
+    Dim pos
+
+    Dim newBookmarkAdded
+    newBookmarkAdded = False
+
+    If (agreement.Bookmarks.Exists(bookmarkName) = True) Then
+        Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+
+        currentSelection.End = currentSelection.End - 1
+
+        pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+        pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+    Else
+        If (agreement.Bookmarks.Exists(previousBookmarkName) = True) Then
+            insertAfterBookmark agreement, currentSelection, previousBookmarkName
+
+            addBookmark agreement, currentSelection, bookmarkName
+            newBookmarkAdded = True
+        End If
+    End If
+
+    CompatiblePaste currentSelection, wordType
+
+    applyStyleInSectionClause agreement, styleId, currentSelection, contentType(bookmarkName)
+
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+    pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+    pos = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+
+    restoreNewLine agreement, currentSelection
+
+    If (newBookmarkAdded = True) Then
+        Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+        pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+        pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+        pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+    End If
+    
+    goodToGreatBookmark agreement, currentSelection, bookmarkName
+End Sub
+
+Sub addBookmarkWithOptions (currentDocument, currentSelection, bookmarkName, isCreateNewLine)
+    On Error Resume Next
+    logBegin "addBookmarkWithOptions"
+    logMessage "Params (" & currentDocument & "," & currentSelection & "," & bookmarkName & "," & isCreateNewLine & ")"
+    Dim pos
+    '// msgbox "addBookmark with options" & bookmarkName
+
+    If (isCreateNewLine = True) Then
+        createNewLine currentDocument, currentSelection
+        pos = currentSelection.MoveUp(5, 1) '// wdLine = 5
+    End If
+
+    '// reset the style, its caller's responsibility to apply correct style
+    '// on the bookmark
+    currentSelection.Style = currentDocument.Styles("Normal")
+
+    Dim delta
+
+    delta = 1
+    currentSelection.TypeText " "
+
+    Dim bookmarkRange
+    Set bookmarkRange = currentDocument.Range(currentSelection.Start - delta, currentSelection.Start)
+    Dim aBookmark
+    Set aBookmark = currentDocument.Bookmarks.Add(bookmarkName, bookmarkRange)
+
+    Dim aRange
+    Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+    
+    logMessage " currentSelection.End, currentSelection.Start = " & currentSelection.End & " " & currentSelection.Start
+    currentSelection.End = currentSelection.Start  
+    logEnd "addBookmarkWithOptions"  
+End Sub
+
+
+Sub addBookmark (currentDocument, currentSelection, bookmarkName)
+    On Error Resume Next
+
+    '// msgbox "addBookmark plain" & bookmarkName
+
+    addBookmarkWithOptions currentDocument, currentSelection, bookmarkName, True
+End Sub
+
+Sub clearupBookmark (bookmark)
+    On Error Resume Next
+
+    Dim bookmarkRange
+    Set bookmarkRange = bookmark.Range
+    
+    Dim allBookmark
+    Set allBookmark = bookmarkRange.Bookmarks
+
+    If (allBookmark.Count > 0) Then
+        Dim aBookmark
+        For each aBookmark in allBookmark
+            If (bookmarkFullyIncluded(bookmarkRange, aBookmark) = 1) Then
+                Dim pos
+                pos = aBookmark.Delete
+            End If
+        Next
+    End If
+End Sub
+
+Sub addGlobalContractBookmark ()
+    On Error Resume Next
+
+    agreement.Activate
+
+    If (agreement.Bookmarks.Exists(GlobalContractBookmarkName) = False) Then
+        Set currentSelection = agreement.ActiveWindow.Selection
+        Dim pos
+
+        pos = currentSelection.EndKey(6, 0) '// wdStory = 6, wdMove = 0
+        addBookmark agreement, currentSelection, GlobalContractBookmarkName
+        pos = currentSelection.EndKey(6, 0) '// wdStory = 6, wdMove = 0
+        restoreNewLine agreement, currentSelection
+
+        Set aRange = currentSelection.GoTo(-1, , , GlobalContractBookmarkName) '// wdGoToBookmark = -1
+        pos = currentSelection.MoveRight(1, 1) '// wdCharacter = 1
+        pos = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+        createNewLine agreement, currentSelection
+        currentSelection.Range.ListFormat.RemoveNumbers
+    End If
+End Sub
+
+Sub resetContractContent ()
+    On Error Resume Next
+
+    agreement.Activate
+
+    If (agreement.Bookmarks.Exists(GlobalContractBookmarkName) = True) Then
+        Set currentSelection = agreement.ActiveWindow.Selection
+        Dim aRange
+        Set aRange = currentSelection.GoTo(-1, , , GlobalContractBookmarkName) '// wdGoToBookmark = -1
+        Dim pos
+        pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+        pos = agreement.Bookmarks.Item(GlobalContractBookmarkName).Delete
+        addBookmark agreement, currentSelection, GlobalContractBookmarkName
+    End If
+End Sub
+
+Function saveClauseToClient (fileFullPath, clauseId)
+    On Error Resume Next
+    document.body.style.cursor = "wait"
+    Err.clear '// ignore error from obsolete code for setting cursor.
+    saveClauseToClient = false
+
+    set fso = CreateObject("Scripting.FileSystemObject")
+    If logError(GeneratingErr.openDocumentErrorMessage) Then
+        Exit Function
+    End If
+
+    Dim index1, index2
+    index1 = 1
+    index2 = InStr(index1, fileFullPath, FolderSeparator, vbTextCompare)
+    Do While (index2 <> 0)
+        Dim directoryName
+        directoryName = Trim(Mid(fileFullPath, 1, index2))
+
+        If (not (fso.FolderExists (directoryName))) Then
+            fso.CreateFolder directoryName
+
+            If logError(GeneratingErr.failedToCreateFolderErrorMessage & " '" & directoryName & "'") Then
+                Exit Function
+            End If
+        End If
+
+        index1 = index2 + 1
+        index2 = InStr(index1, fileFullPath, FolderSeparator, vbTextCompare)
+    Loop
+
+    strUrl = getDocumentUrl
+
+    If (Not clauseId = "") Then
+        strUrl = strUrl & "&clauseId=" & clauseId
+    End If
+
+    saveClauseToClient = saveDocumentToClient(fileFullPath, strUrl)
+End Function
+
+Sub processClause ()
+    On Error Resume Next
+
+        'get file name and open file in Word
+    sfilename = documentLocation
+
+    window.focus
+
+    saveOpenDocument app, sfilename
+    autoOpenSyncupDocument sfilename
+    openDocumentInWord app, sfilename, False
+
+    If logError(GeneratingErr.wordOpenErrorMessage & sfilename) Then
+        Exit Sub
+    End If
+
+    Set agreement = app.ActiveDocument
+
+    '// Save the current settings such as View Type, track change
+    saveWordSettings agreement
+    
+    '// Set the view type to be normal, all regen will be done in this setting
+    setDocumentViewType agreement, ViewTypeNormal
+    
+    window.focus 
+
+    agreement.TrackRevisions = False
+    logMessage "set TrackRevisions = " & False & " (processClause)"
+
+    If (isReviseBookmarkGeneration = True) Then
+        reviseBookmark
+    Else
+        If (isIncrementalGeneration = True) Then
+            If (isTrackChangeActive = True and isIncrementalCopyProjectGeneration <> True) Then
+                agreement.TrackRevisions = True
+                logMessage "set TrackRevisions = " & True & " (processClause)"
+            End If
+
+            addGlobalContractBookmark
+
+            incrementalUpgradeClause
+            If (isApplyStyleRequired = True) Then
+                applyStyle
+            End If
+        Else
+            assembleClause
+        End If
+    End If
+
+    '// Restore the settings such as View Type, track change
+    restoreWordSettings agreement
+    
+End Sub
+
+
+Sub assembleClause ()
+    On Error Resume Next
+
+    '// msgbox "assemble "
+
+    window.focus
+
+    resetContractContent
+
+    addGlobalContractBookmark
+
+    agreement.Activate
+
+    Set currentSelection = agreement.ActiveWindow.Selection
+
+    window.focus
+
+    doSectionGeneration
+
+    app.ActiveDocument.Saved = false
+    app.ActiveDocument.Save
+End Sub
+
+Sub incrementalUpgradeClause ()
+    On Error Resume Next
+
+    '// msgbox "incremental "
+
+    If (isIncrementalGeneration = True) Then
+        app.Visible = appVisible
+        window.focus
+        document.body.style.cursor = "wait"
+
+        agreement.Activate
+
+        Set currentSelection = agreement.ActiveWindow.Selection
+
+        reviseMoveForwardBookmark agreement, currentSelection, GlobalContractBookmarkName
+
+        doIncrementalGeneration
+    End If
+End Sub
+
+Sub mergeClauseTree (serverClauseTree, clientClauseTree)
+    On Error Resume Next
+
+End Sub
+
+Sub syncConditionalClauses ()
+    doSyncConditionalClauseContent
+End Sub
+
+Sub inSyncClauseContentHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+    
+    Dim clauseId, postDataUrl
+    clauseId =  e.clauseBookmark
+    postDataUrl = ClientAutomation.ResolvePartialURL(e.postDataUrl)
+
+    LogMessage "inSyncClauseContentHandler clauseId = " & clauseId
+    
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    LogMessage "appVersion = " & app.Version
+    LogMessage "DEBUG: Word track revisions = " & agreement.TrackRevisions
+    
+    agreement.Activate
+
+    Dim tempFolder
+    tempFolder = getTempFolderPath() & "\"
+    syncupClauseDocumentInternal app, agreement, documentLocation, clauseId, tempFolder, postDataUrl
+End Sub
+
+Sub uploadDocument ()
+    On Error Resume Next
+
+    Dim fileFullPath, sData, strUrl
+
+    fileFullPath = documentLocation
+
+    sData = getFileBytes(fileFullPath)
+
+    If logError(GeneratingErr.openDocumentErrorMessage) Then
+        Exit Sub
+    End If
+
+    Dim xmlhttp
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.3.0")
+    If logError(GeneratingErr.browserErrorMessage) Then
+        Exit Sub
+    End If
+    strUrl = actionUrl
+
+    xmlhttp.Open "POST", strUrl, false
+    xmlhttp.Send sData
+    Set xmlhttp = Nothing
+End Sub
+
+Sub syncHistory ()
+    On Error Resume Next
+
+    Dim ts
+
+    ts = clientFileTimestamp(documentLocation)
+    If (ts = "") Then
+        Exit Sub
+    End If
+    SmartClientScriptUtil.saveSyncHistoryWithCommit(ts)
+End Sub
+
+Sub autoOpenSyncupClauseHandler ()
+    On Error Resume Next
+
+    Dim e
+    Set e = window.event.srcElement
+
+    saveClauseToClient e.fileFullPath, e.clauseId
+End Sub
+
+Function autoOpenSyncupDocument (sfilename)
+    On Error Resume Next
+    logBegin "autoOpenSyncupDocument(sfilename='" & sfilename & "')"
+    autoOpenSyncupDocument = true
+
+    autoOpenSyncupDocument = SmartClientScriptUtil.saveFileToClient(sfilename)
+
+    if (autoOpenSyncupDocument) then
+        Dim ts
+        ts = clientFileTimestamp(sfilename)
+        if (ts <> "") then
+            SmartClientScriptUtil.saveSyncHistoryWithCommit(ts)
+            if (SmartClientScriptUtil.saveSyncHistoryWithCommit(ts) <> 0) then
+                logMessage "Error: saveSyncHistoryWithCommit failed with ts=" & ts
+                autoOpenSyncupDocument = false
+            end if
+        else
+            logMessage "Error: clientFileTimestamp is bad for sfilename=" & sfilename
+            autoOpenSyncupDocument = false
+        end if
+    
+    end if
+    logEnd "autoOpenSyncupDocument, returns " & autoOpenSyncupDocument
+End Function
+
+Sub autoOpenDocument ()
+    On Error Resume Next
+
+    app.Visible = True
+    agreement.Activate
+    app.Activate
+
+    Dim bookmarkName
+    bookmarkName = aBookmarkName
+    If (bookmarkName <> "") Then
+        Set currentSelection = agreement.ActiveWindow.Selection
+        Dim aRange
+        Set aRange = currentSelection.GoTo(-1, , , bookmarkName) '// wdGoToBookmark = -1
+    End If
+End Sub
+
+Sub step_contact_app_sub ()
+    On Error Resume Next
+
+    contactApp
+    setStep "step_import_data"
+    '// step_import_data_sub
+End Sub
+
+Sub step_import_data_sub ()
+    On Error Resume Next
+
+    LogMessage "##### step_import_data_sub"
+    
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    If (isOnlyValueUpgradeRequired = False) Then
+        processClause
+    End If
+
+    importValues
+    setStep "step_upload_clause"
+End Sub
+
+Sub step_upload_clause_sub ()
+    On Error Resume Next
+
+    LogMessage "##### step_upload_clause_sub"
+    
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    syncConditionalClauses
+    setStep "step_upload_data"
+End Sub
+
+Sub step_upload_data_sub ()
+    On Error Resume Next
+
+    LogMessage "##### step_upload_data_sub"
+    
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    uploadDocument
+    setStep "step_syncup_data"
+    '// step_syncup_data_sub
+End Sub
+
+Sub step_syncup_data_sub ()
+    On Error Resume Next
+
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    syncHistory
+    setStep "step_done"
+    '// step_done_sub
+End Sub
+
+Sub step_done_sub ()
+    On Error Resume Next
+
+    app.Visible = appVisible
+    window.focus
+    document.body.style.cursor = "wait"
+
+    autoOpenDocument
+    cleanup
+
+    ariba.Request.setWindowLocation(doneUrl)
+End Sub
+
+Sub startGenerateHandler ()
+    globalError = false
+    Dim e
+    Set e = window.event.srcElement
+    setClientLogLevel e.clientLogLevel
+
+    '// We can't log usefully until the clientLogLevel has been set.
+    logBegin "startGenerateHandler"
+    
+    documentLocation = e.documentLocation
+    actionUrl = ClientAutomation.ResolvePartialURL(e.actionUrl)
+    aBookmarkName = e.aBookmarkName
+
+    '// required a fix in server side, booleanValue(e.isOnlyValueUpgradeRequired)
+    isOnlyValueUpgradeRequired = False 
+    
+    isSimplyGeneration = booleanValue(e.isSimplyGeneration)
+    isTrackChangeActive = booleanValue(e.isTrackChangeActive)
+    isIncrementalCopyProjectGeneration = booleanValue(e.isIncrementalCopyProjectGeneration)
+    getDocumentUrl = ClientAutomation.ResolvePartialURL(e.getDocumentUrl)
+    doneUrl = ClientAutomation.ResolvePartialURL(e.doneUrl)
+    isReviseBookmarkGeneration = booleanValue(e.isReviseBookmarkGeneration)
+    isIncrementalGeneration = booleanValue(e.isIncrementalGeneration)
+    isCleanVersionRequired = booleanValue(e.isCleanVersionRequired)
+    isRemoveChangeRequired = booleanValue(e.isRemoveChangeRequired)
+    isRemoveFieldRequired = booleanValue(e.isRemoveFieldRequired)
+    isApplyStyleRequired = booleanValue(e.isApplyStyleRequired)
+
+    '//LogMessage "isSimplyGeneration " & isSimplyGeneration
+    '//LogMessage "isTrackChangeActive " & isTrackChangeActive
+    '//LogMessage "isIncrementalCopyProjectGeneration " & isIncrementalCopyProjectGeneration
+    '//LogMessage "getDocumentUrl " & getDocumentUrl
+    '//LogMessage "doneUrl " & doneUrl
+    '//LogMessage "isReviseBookmarkGeneration " &  isReviseBookmarkGeneration
+    '//LogMessage "isIncrementalGeneration " & isIncrementalGeneration
+    '//LogMessage "isCleanVersionRequired "  & isCleanVersionRequired
+    '//LogMessage "isRemoveChangeRequired " & isRemoveChangeRequired
+    '//LogMessage "isRemoveFieldRequired " & isRemoveFieldRequired
+    '//LogMessage "isApplyStyleRequired " & isApplyStyleRequired
+
+    If (isSimplyGeneration = False) Then
+        step_contact_app_sub
+    Else
+        contactApp
+        If (isOnlyValueUpgradeRequired = False) Then
+            processClause
+        End If
+        importValues
+        syncConditionalClauses
+        uploadDocument
+        syncHistory
+        fullyCleanup
+        ariba.Request.setWindowLocation(doneUrl)
+    End If
+    logEnd "startGenerateHandler"
+End Sub
+
+Sub setStepInContractGenerationHandler (keyValues)
+    Dim subName
+
+    subName = awxsGetValue(keyValues, "stepName") & "_sub"
+
+    eval(GetRef(subName))
+End Sub
+
+Sub setStep (name)
+    step_contact_app.className = "inactiveStep"
+    step_import_data.className = "inactiveStep"
+    step_upload_clause.className = "inactiveStep"
+    step_upload_data.className = "inactiveStep"
+    step_syncup_data.className = "inactiveStep"
+    step_done.className = "inactiveStep"
+    document.all(name).className = "activeStep"
+    Dim subName
+    subName = "setStepUtil(" & "'" & name & "'" & ")"
+
+    setTimeout subName, 1, vbscript
+End Sub
+
+Dim CDGenerateTrigger
+
+Dim eventSetStepInContractGeneration
+Set eventSetStepInContractGeneration = awxsCreateEvent("setStepInContractGeneration", GetRef("setStepInContractGenerationHandler"))
+awxsRegisterEvent "setStepInContractGeneration", eventSetStepInContractGeneration
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("startGenerateTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "documentLocation", ""
+    CDGenerateTrigger.setAttribute "actionUrl", ""
+    CDGenerateTrigger.setAttribute "aBookmarkName", ""
+    CDGenerateTrigger.setAttribute "isOnlyValueUpgradeRequired", ""
+    CDGenerateTrigger.setAttribute "isSimplyGeneration", ""
+    CDGenerateTrigger.setAttribute "isTrackChangeActive", ""
+    CDGenerateTrigger.setAttribute "isIncrementalCopyProjectGeneration", ""
+    CDGenerateTrigger.setAttribute "getDocumentUrl", ""
+    CDGenerateTrigger.setAttribute "doneUrl", ""
+    CDGenerateTrigger.setAttribute "isReviseBookmarkGeneration", ""
+    CDGenerateTrigger.setAttribute "isIncrementalGeneration", ""
+    CDGenerateTrigger.setAttribute "isCleanVersionRequired", ""
+    CDGenerateTrigger.setAttribute "isRemoveChangeRequired", ""
+    CDGenerateTrigger.setAttribute "isRemoveFieldRequired", ""
+    CDGenerateTrigger.setAttribute "isApplyStyleRequired", ""
+    CDGenerateTrigger.setAttribute "clientLogLevel", ""
+    CDGenerateTrigger.onclick = GetRef("startGenerateHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("inImportValuesTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "sField", ""
+    CDGenerateTrigger.setAttribute "sValue", ""
+    CDGenerateTrigger.setAttribute "isEditable", ""
+    CDGenerateTrigger.onclick = GetRef("inImportValuesHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("inSyncClauseContentTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "clauseBookmark", ""
+    CDGenerateTrigger.setAttribute "postDataUrl", ""
+    CDGenerateTrigger.onclick = GetRef("inSyncClauseContentHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("inReviseBookmarkTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "bookmarkItemNameInTemplate", ""
+    CDGenerateTrigger.setAttribute "bookmarkItemNameInWorkspace", ""
+    CDGenerateTrigger.onclick = GetRef("inReviseBookmarkHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("inApplyStyleTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "bookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.setAttribute "isClause", ""
+    CDGenerateTrigger.onclick = GetRef("inApplyStyleHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("addClauseCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "clauseDocumentName", ""
+    CDGenerateTrigger.setAttribute "clauseName", ""
+    CDGenerateTrigger.setAttribute "contextSectionBookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.setAttribute "previousBookmarkName", ""
+    CDGenerateTrigger.setAttribute "isAddInBegin", ""
+    CDGenerateTrigger.onclick = GetRef("addClauseCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("addSectionCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "sectionName", ""
+    CDGenerateTrigger.setAttribute "nameId", ""
+    CDGenerateTrigger.setAttribute "contextSectionBookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.setAttribute "previousBookmarkName", ""
+    CDGenerateTrigger.setAttribute "isAddInBegin", ""
+    CDGenerateTrigger.onclick = GetRef("addSectionCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("setSectionCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "sectionContent", ""
+    CDGenerateTrigger.setAttribute "bookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.setAttribute "keepSectionTitle", ""
+    CDGenerateTrigger.onclick = GetRef("setSectionCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("setClauseCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "clauseDocumentName", ""
+    CDGenerateTrigger.setAttribute "contextSectionBookmarkName", ""
+    CDGenerateTrigger.setAttribute "previousBookmarkName", ""
+    CDGenerateTrigger.setAttribute "bookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.onclick = GetRef("setClauseCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("moveClauseSectionCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "bookmarkName", ""
+    CDGenerateTrigger.setAttribute "oldSectionName", ""
+    CDGenerateTrigger.setAttribute "newSectionName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.setAttribute "previousBookmarkName", ""
+    CDGenerateTrigger.onclick = GetRef("moveClauseSectionCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("removeClauseSectionCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "bookmarkName", ""
+    CDGenerateTrigger.onclick = GetRef("removeClauseSectionCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("addClauseTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "clauseDocumentName", ""
+    CDGenerateTrigger.setAttribute "clauseName", ""
+    CDGenerateTrigger.setAttribute "contextSectionBookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.onclick = GetRef("addClauseHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("addSectionTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "sectionName", ""
+    CDGenerateTrigger.setAttribute "nameId", ""
+    CDGenerateTrigger.setAttribute "contextSectionBookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.onclick = GetRef("addSectionHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("autoOpenSyncupClauseTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "fileFullPath", ""
+    CDGenerateTrigger.setAttribute "clauseId", ""
+    CDGenerateTrigger.onclick = GetRef("autoOpenSyncupClauseHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("copySourceOpenCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "copyProjectSourceLocation", ""
+    CDGenerateTrigger.onclick = GetRef("copySourceOpenCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("copySourceCloseCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.onclick = GetRef("copySourceCloseCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("copyReplaceClauseCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "isCopyProjectReapplyStyles", ""
+    CDGenerateTrigger.setAttribute "contextSectionBookmarkName", ""
+    CDGenerateTrigger.setAttribute "previousBookmarkName", ""
+    CDGenerateTrigger.setAttribute "bookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.onclick = GetRef("copyReplaceClauseCommandHandler")
+End If
+
+Set CDGenerateTrigger = Nothing
+Set CDGenerateTrigger = document.all("copyAddClauseCommandTrigger")
+If (Not CDGenerateTrigger is Nothing) Then
+    CDGenerateTrigger.setAttribute "isCopyProjectReapplyStyles", ""
+    CDGenerateTrigger.setAttribute "bookmarkName", ""
+    CDGenerateTrigger.setAttribute "contextSectionBookmarkName", ""
+    CDGenerateTrigger.setAttribute "styleId", ""
+    CDGenerateTrigger.setAttribute "previousBookmarkName", ""
+    CDGenerateTrigger.setAttribute "isAddInBegin", ""
+    CDGenerateTrigger.onclick = GetRef("copyAddClauseCommandHandler")
+End If

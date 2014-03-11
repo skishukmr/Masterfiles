@@ -1,0 +1,6 @@
+<!DOCTYPE variants SYSTEM "../ariba/base/meta/core/variants.dtd">
+<variants>
+    <variant name="Plain" label="Plain" index="0" default="true">
+    <partition index="1" name="supplierdirect" label="supplierdirect"/>
+    </variant>
+</variants>

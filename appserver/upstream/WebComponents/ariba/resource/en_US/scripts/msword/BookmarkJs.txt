@@ -1,0 +1,1036 @@
+/**
+    Class sfObjectArray
+*/
+function sfObjectArray ()
+{
+    this.array1 = new Array ();
+    this.array2 = new Array ();
+    this.Count = 0;
+
+    this.AddItem = function (obj) {
+        if (obj != null) {
+            this.array1[this.Count++] = obj;
+        }
+    }
+
+    this.Item = function (index) {
+        // 1 based index
+        return this.array1[index-1];
+    }
+
+    // Add and retrieve items by Name. NOTE!!! This does not interfere with indices
+    this.AddItemByName = function (name, obj) {
+        this.array2[name] = obj;
+        this.AddItem(obj);
+    }
+
+    this.ItemByName = function (name) { return this.array2[name]; }
+    this.Contains = function (name) { return this.array2[name] != null; }
+
+    /**
+     * Use this method carefully - we do not remove the object from the int arry
+     * @param name
+     */
+    this.RemoveItemByName = function (name)
+    {
+        this.array2[name] = null;
+    }
+
+    this.init = function ()
+    {
+        this.array1 = new Array ();
+        this.array2 = new Array ();
+        this.Count = 0;
+    }
+
+    /**
+     * Invokes the delete on all the memebers
+     */
+    this.DeleteAll = function ()
+    {
+        for (var i = 1; i <= this.Count; ++i) {
+            var item = this.Item(i);
+            item.Delete();
+        }
+        this.init();
+    }
+}
+
+/**
+ *  clone the collection
+ */
+function sfCloneObjectArray (coll)
+{
+    var count = coll.Count;
+    var clonedArray = new sfObjectArray();
+    for (var i = 1; i <= count; ++i) {
+        clonedArray.AddItem(coll.Item(i));
+    }
+
+    return clonedArray;
+}
+
+/**
+    Class Bookmark Proxy
+*/
+function sfBookmarkProxy (name, start, end, domBookmark) {
+    this.Name = name;
+    this.Start = start;
+    this.End = end;
+    this.DomBookmark = domBookmark;
+
+    this.setEnd = function (newValue) {
+        this.DomBookmark.End = newValue;
+        this.End = newValue;
+    }
+}
+
+/**
+    Class Range Proxy
+*/
+function sfRangeProxy (start, end, domRange)
+{
+    this.Start = start;
+    this.End = end;
+    this.DomRange = domRange;
+
+    // all the bookmarks in the range
+    this.BookmarkProxies = new sfObjectArray ();
+
+    // all the paragraphs in the range
+    this.ParagraphProxies = new sfObjectArray ();
+
+    this.addBookmark = function (name, start, end, domBookmark)
+    {
+        var bmp = new sfBookmarkProxy (name, start, end, domBookmark);
+        this.BookmarkProxies.AddItem(bmp);
+    }
+
+    this.BookmarkProxy = function (index) { return this.BookmarkProxies.Item(index); }
+    this.BookmarkProxyByName = function (name) { return this.BookmarkProxies.ItemByName(name); }
+    this.BookmarkCount = function () {return this.BookmarkProxies.Count;}
+
+    this.resync = function () {this.Start = this.DomRange.Start; this.End = this.DomRange.End};
+
+}
+
+function sfDomRangeForRange (aRange)
+{
+    if (aRange instanceof sfRangeProxy) {
+        return aRange.DomRange;
+    }
+    else {
+        return aRange;
+    }
+}
+
+function sfRangeProxyForBookmark (aBookmark)
+{
+    if (aBookmark == null) {
+        return aBookmark;
+    }
+    else if (aBookmark instanceof sfBookmarkProxy) {
+        return sfCreateFullRangeProxy(aBookmark.DomBookmark.Range);
+    }
+    else {
+        return sfCreateFullRangeProxy(aBookmark.Range);
+    }
+}
+
+function sfSetBookmarkEnd (aBookmark, newValue)
+{
+    if (LoggerUtil.enableLogging) {
+        LoggerUtil.logMessage("Bookmark modified! " + aBookmark.End + " TO " + newValue);
+    }
+
+    if (aBookmark instanceof sfBookmarkProxy) {
+        aBookmark.setEnd(newValue);
+    }
+    else {
+        aBookmark.End = newValue;
+    }
+}
+
+/**
+    Class Revision Proxy
+*/
+function sfRevisionProxy (type, rangeProxy, domRevision)
+{
+    this.Type = type;
+    this.RangeProxy = rangeProxy;
+    this.DomRevision = domRevision;
+}
+
+/**
+    Class Bookmark Container
+*/
+function sfBookmarkContainer ()
+{
+    this.bookmarkProxies = new sfObjectArray ();
+    this.ranges = new sfObjectArray ();
+
+    this.addBookmark = function (bookmarkName, bmStart, bmEnd, domBookmark, domRange)
+    {
+        var bmp = new sfBookmarkProxy (bookmarkName, bmStart, bmEnd, domBookmark);
+        /* AddItemByName also adds it to the main array */
+        this.bookmarkProxies.AddItemByName(bookmarkName, bmp);
+        this.ranges.AddItemByName(bookmarkName, domRange);
+    }
+
+    this.BookmarkProxy = function (bookmarkName) {
+        var obj = this.bookmarkProxies.ItemByName(bookmarkName);
+        if (obj == null) {
+            LoggerUtil.logAlert("Bookmark Container: Null bookmark proxy");
+        }
+        return obj;
+    }
+
+    this.DomRange = function (bookmarkName) {
+        var obj = this.ranges.ItemByName(bookmarkName);
+        if (obj == null) {
+            LoggerUtil.logAlert("Bookmark Container: Null dom range");
+        }
+        return obj;
+    }
+
+    this.Log = function () {
+        LoggerUtil.logMessage("Printing Bookmarks Container");
+        var len = this.bookmarkProxies.Count;
+        for (var i = 1; i <= len; ++i) {
+            var bookmarkProxy = this.bookmarkProxies.Item(i);
+            LoggerUtil.logMessage(bookmarkProxy.Name + "," + bookmarkProxy.Start + "," + bookmarkProxy.End);
+        }
+    }
+}
+/*****************************************************************************************
+                Proxy Methods
+******************************************************************************************/
+/**
+    Builds the bookmarks for associated with the range as well
+*/
+function sfCreateFullRangeProxy (range)
+{
+    var rangeProxy = new sfRangeProxy (range.Start, range.End, range);
+    /* XXX Does the bookmarks includes non fully contained bookmarks as well? */
+    var rangeBookmarks = range.Bookmarks;
+    var len = rangeBookmarks.Count;
+    for (var i = 1; i <= len; ++i) {
+        var bookmark = rangeBookmarks.Item(i);
+        rangeProxy.addBookmark(bookmark.Name, bookmark.Start, bookmark.End, bookmark);
+    }
+    return rangeProxy;
+}
+
+function sfCreateBasicRangeProxy (range)
+{
+    return new sfRangeProxy (range.Start, range.End, range);
+}
+
+function sfCreateRevisionProxy (revision)
+{
+    var range = revision.Range;
+    return new sfRevisionProxy (revision.Type, sfCreateFullRangeProxy(range), revision);
+}
+
+function sfCreateRevisionProxies (revisions)
+{
+    var array = new sfObjectArray ();
+    var count = revisions.Count;
+    for (var i = 1; i <= count; ++i) {
+        var revision = revisions.Item(i);
+        array.AddItem(sfCreateRevisionProxy(revision));
+    }
+    return array;
+}
+
+function sfCreateBookmarkProxy (bookmark)
+{
+    return bookmark != null ? new sfBookmarkProxy (bookmark.Name, bookmark.Start, bookmark.End, bookmark) : null;
+}
+
+function sfCreateBookmarkContainer (agreementDoc) {
+    var bookmarks = agreementDoc.Bookmarks;
+    var bc = new sfBookmarkContainer();
+    var len = bookmarks.Count;
+    for (var i = 1; i <= len; ++i) {
+        var bookmark = bookmarks.Item(i);
+        bc.addBookmark(bookmark.Name, bookmark.Start, bookmark.End, bookmark, bookmark.Range);
+    }
+    return bc;
+}
+
+/**
+    Returns all the clause bookmarks within the section bookmark associated with the name
+    the section bookmark will be the first node in the item
+*/
+function sfGetSectionBookmarks (aDocument, sectionBookmarkName)
+{
+    var selection = aDocument.ActiveWindow.Selection;
+    var sectionRange = sfGotoBookmarkName(selection, sectionBookmarkName);
+    return sfGetRangeBookmarks(sectionRange);
+}
+
+/**
+    Returns true if b1 contains b2
+*/
+function sfBookmarkIncluded (b1, b2)
+{
+    return b1.Start <= b2.Start && b1.End >= b2.End;
+}
+
+/**
+    Returns true if b1 contains b2 and b1 and b2 are NOT the same
+*/
+function sfBookmarkFullyIncluded (b1, b2) {
+    return sfBookmarkIncluded(b1, b2) && (b1.Start != b2.Start || b1.End != b2.End);
+}
+
+/**
+    Returns true if the Range contains a section or a clause bookmark
+*/
+function sfIsContainBookmark (aRange)
+{
+    var allBookmark = aRange.Bookmarks;
+    var count = allBookmark.Count;
+    for (var i = 1; i <= count; ++i) {
+        var aBookmark = allBookmark.Item(i);
+        var name = aBookmark.Name;
+        if (name.indexOf(prefixClauseName) >= 0 || name.indexOf(prefixSectionName) >= 0) {
+            if (sfBookmarkFullyIncluded(aRange, aBookmark)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function sfIsSectionBookmark (bookmark)
+{
+    return bookmark.Name.indexOf(prefixSectionGenName) >= 0;
+}
+
+/**
+    Todo doc this
+*/
+function sfIsGenBookmark (bookmarkName)
+{
+    return bookmarkName.indexOf(prefixClauseGenName) >= 0 ||
+           bookmarkName.indexOf(prefixSectionGenName) >= 0 ||
+           bookmarkName.indexOf(GlobalContractBookmarkName) >= 0 ||
+           bookmarkName.indexOf(prefixClauseNewName) >= 0; // XXX Temp hack to support clauseAriba_ during sync
+}
+
+/**
+    Todo doc this
+*/
+function sfIsNewBookmark (bookmarkName)
+{
+    return bookmarkName.indexOf(prefixClauseNewName) >= 0 ||
+           bookmarkName.indexOf(prefixSectionNewName) >= 0 ||
+           bookmarkName.indexOf(GlobalContractBookmarkName) >= 0;
+}
+
+/**
+    Todo doc this
+*/
+function sfIsGenBookmarkForLoad (bookmarkName)
+{
+    if (bookmarkName.indexOf(prefixClauseGenName) >= 0) {
+        return GeneratedClause;
+    }
+    else if (bookmarkName.indexOf(prefixSectionGenName) >= 0) {
+        return GeneratedSection;
+    }
+    else {
+        return GeneratedUnknown;
+    }
+}
+
+/**
+    Returns the innermost bookmark (in the bookmark tree) that contains the range
+    NOTE: currentSelection is never used
+    NOTE: This method and the sfWithinGenBookmarkInSelection needs to be merged into one
+*/
+function sfWithinBookmarkNameInSelection (currentSelection, aRange, isSection)
+{
+    var allBookmark = aRange.Bookmarks;
+    var count = allBookmark.Count;
+    var currentBookmark = null;
+
+    for (var i = 1; i <= count; ++i) {
+        var aBookmark = allBookmark.Item(i);
+        if (sfBookmarkFullyIncluded(aBookmark, aRange)) {
+            var bookmarkName = aBookmark.name;
+            var index1 = bookmarkName.indexOf(prefixSectionName);
+            // There is a defect in computing index2
+            var index2 = isSection ? 0 : bookmarkName.indexOf(prefixClauseName);
+            if (index1 >= 0 || index2 >= 0) {
+                if (currentBookmark == null || sfBookmarkIncluded(currentBookmark, aBookmark)) {
+                    currentBookmark = aBookmark;
+                }
+            }
+        }
+    }
+
+    return currentBookmark;
+}
+
+/**
+    Returns the deepest bookmark (in the bookmark tree) that contains the range
+*/
+function sfWithinBookmarkName (aDocument, aRange)
+{
+    return sfWithinBookmarkNameInSelection(aDocument.ActiveWindow.Selection, aRange, false);
+}
+
+/**
+    Returns the innermost bookmark proxy which fully contains the range
+    If isSection is true only section bookmarks are considered
+*/
+function sfWithinGenBookmarkInSelection (aRangeProxy, isSection)
+{
+
+    if (!(aRangeProxy instanceof sfRangeProxy)) {
+        LoggerUtil.logError(null, "sfWithinGenBookmarkInSelection: Got Non proxy object", null);
+    }
+
+    var rangeBookmarks = aRangeProxy.BookmarkProxies;
+    var count = rangeBookmarks.Count;
+    var currentBookmark = null;
+
+    for (var i = 1; i <= count; ++i) {
+        var rangeBookmark = rangeBookmarks.Item(i);
+
+        /*
+            If the candidate bookmark is a clause bookmark, then the deletes have to
+            be fully contained within the clause. Otherwise we need to return the
+            parent section.
+
+            However, if the candidate bookmark is a section bookmark, then the delete
+            have to contained in it.  This is because the way the server is processing
+            sections.
+        */
+        var isIncluded = sfIsSectionBookmark(rangeBookmark) ?
+            sfBookmarkIncluded(rangeBookmark, aRangeProxy) :
+            sfBookmarkFullyIncluded(rangeBookmark, aRangeProxy);
+
+        if (!isIncluded) {
+            continue;
+        }
+
+        if (rangeBookmark.Name == GlobalContractBookmarkName) {
+            currentBookmark = rangeBookmark;
+        }
+        else {
+            var index1 = rangeBookmark.Name.indexOf(prefixSectionName);
+            var index2 = isSection ? 0 : rangeBookmark.Name.indexOf(prefixClauseName);
+            /* found a relevant bookmark */
+            if (index1 >= 0 || index2 >= 0) {
+                if (currentBookmark == null ||
+                    sfBookmarkIncluded(currentBookmark, rangeBookmark)) {
+                    currentBookmark = rangeBookmark;
+                }
+            }
+        }
+    }
+
+    return currentBookmark;
+}
+
+/**
+    ec.processedInserts
+        - all the contained bookmarks that has the changes
+    ec.processedDeletes
+        - all the contained bookmarks that has the changes
+    ec.combinedBookmarks -
+        - Merges two bookmark collection with
+        a) duplicates removed b) contained bookmarks removed
+ 
+    TODO: Make them into proxies
+*/
+function sfCombineIntoUniqueBookmarks(array1, array2)
+{
+    var result = new sfObjectArray();
+    var resultByName = new sfObjectArray();
+    for (var i = 1; i <= array1.Count; ++i) {
+        var bookmark = array1.Item(i);
+        if (!resultByName.Contains(bookmark.Name)) {
+            result.AddItem(bookmark);
+            resultByName.AddItemByName(bookmark.Name, bookmark);
+        }
+    }
+    for (var i = 1; i <= array2.Count; ++i) {
+        var bookmark = array2.Item(i);
+        if (!resultByName.Contains(bookmark.Name)) {
+            result.AddItem(bookmark);
+            resultByName.AddItemByName(bookmark.Name, bookmark);
+        }
+    }
+
+    for (var i = 1; i <= result.Count; ++i) {
+        for (var j = i+1; j <= result.Count; ++j) {
+
+            var iBookmark = result.Item(i);
+            var jBookmark = result.Item(j);
+
+            if (sfBookmarkIncluded(iBookmark, jBookmark)) {
+                resultByName.AddItemByName(jBookmark.Name, null);
+            }
+            else if (sfBookmarkIncluded(jBookmark, iBookmark)) {
+                resultByName.AddItemByName(iBookmark.Name, null);
+            }
+        }
+    }
+
+    var finalResult = new sfObjectArray();
+    for (var i = 1; i <= result.Count; ++i) {
+        var bookmark = result.Item(i);
+        if (resultByName.Contains(bookmark.Name)) {
+            finalResult.AddItem(bookmark.Name);
+        }
+    }
+
+    LoggerUtil.logBookmarks("Combined Bookmarks", result);
+    
+    return finalResult;
+}
+
+/**
+    Todo Doc this
+*/
+function sfGetBookmarksStartingAt (aSelection, position) {
+
+	var bookmarks = new sfObjectArray();
+	sfMoveToPosition(aSelection, position);
+    var aRange = aSelection.Range;
+
+    var overlapBookmarks = aRange.bookmarks;
+    var count = overlapBookmarks.Count;
+    for (var i = 1; i <= count; ++i) {
+        var overlapBookmark = overlapBookmarks.Item(i);
+        bookmarks.AddItemByName(overlapBookmark.Name, overlapBookmark);
+    }
+
+    return bookmarks;
+}
+
+/**
+    Returns all the included book marks in the range
+*/
+function sfGetRangeBookmarks (aRange)
+{
+    if (aRange == null) {
+        return new sfObjectArray();
+    }
+
+    try {
+        var rangeBookmarks = aRange.Bookmarks;
+        var array = new sfObjectArray();
+        var count = rangeBookmarks.Count;
+        for (var i = 1; i <= count; ++i) {
+            var aBookmark = rangeBookmarks.Item(i);
+            if (sfBookmarkIncluded(aRange, aBookmark)) {
+                array.AddItem(aBookmark);
+            }
+        }
+        return array;
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfGetRangeBookmarks", ex);
+        return null;
+    }
+}
+
+/**
+ *  Return the bookmark object associated with name; returns null if doesn't exist
+ */
+function sfGetBookmarkByName (document, bookmarkName)
+{
+    try {
+        var bookmark = document.Bookmarks.Item(bookmarkName);
+        return bookmark;
+    }
+    catch (ex) {
+        return null;
+    }
+}
+
+/**
+    Returns all the included book marks in the range plus or minus epsilon
+*/
+function sfGetRangeBookmarksWithinEpsilon (aDocument, aRange, leftEpsilon, rightEpsilon)
+{
+    var fatRange = aDocument.Range(aRange.Start-leftEpsilon, aRange.End + rightEpsilon);
+    return sfGetRangeBookmarks(fatRange);
+}
+
+/**
+ * Convert a set of bookmark objects into bookmark names
+ * @param bookmarks input bookmarks array
+ */
+function sfConvertBookmarksToNames (bookmarks)
+{
+    var names = new sfObjectArray();
+    var count = bookmarks.Count;
+    for (var i = 1; i <= count; ++i) {
+        var bm = bookmarks.Item(i);
+        if (bm != null) {
+            names.AddItem(bm.Name);
+        }
+    }
+    return names;
+}
+
+/**
+ * returns the text in the range
+ */
+function sfGetRangeContent (aRange)
+{
+    var rangeObj = sfDomRangeForRange(aRange);
+    var trm = rangeObj.TextRetrievalMode;
+    if (trm != null) {
+        trm.ViewType = 3; // wdPrintView = 3
+        trm.IncludeHiddenText = false;
+        trm.IncludeFieldCodes = false;
+    }
+    return rangeObj.Text;
+}
+
+function sfGetSelectionContent (aSelection)
+{
+    var aRange = aSelection.Range;
+    var rc = sfGetRangeContent(aRange);
+    return rc;
+}
+
+function sfIsEmptyRange (aRange)
+{
+    var str = sfGetRangeContent(aRange);
+    str = sfTrim(str);
+    return str.Length <= 0; //' wdStatisticWords = 0
+}
+
+/**
+ * Returns true if the range contains empty text excluding the paragraph character
+ */
+function sfIsEmptyParagraph (aRange)
+{
+    var str = sfGetRangeContent(aRange);
+    str = sfTrim(str);
+    return sfIsEmptyString(str);
+}
+
+function sfIsSpace (aChar)
+{
+    return aChar == paraChar || aChar == lineFeed || aChar == tabChar || aChar == spaceChar;
+}
+
+function sfIsEmptyString (aStr)
+{
+    if (aStr == null || aStr == ""){
+        return true;
+    }
+    for (var i = 0; i < aStr.length; ++i) {
+        if (!sfIsSpace(aStr.charAt(i))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function sfIsEmptyRange2 (aRange, aContent)
+{
+    var str = aContent;
+    str = sfTrim(str);
+    return str.length <= 0; //' wdStatisticWords = 0
+}
+
+function sfIsEmptyText (aRange)
+{
+    if (aRange == null) {
+        return true;
+    }
+    var str = sfGetRangeContent(aRange);
+
+    str = sfTrim(str);
+
+    return str == null || str.length == 0;
+}
+
+/**
+    TODO Doc this
+*/
+function sfGetClauseSummaryImpl (bookmark, bIsAll)
+{
+    var clauseRange = bookmark.Range;
+    // TODO Replace this by sfIsEmptyRange2
+    if (!sfIsEmptyText(clauseRange)) {
+        var str = sfGetRangeContent(clauseRange);
+        if (!bIsAll) {
+            str = str.substr(0, MaxSummaryLength);
+            str = sfTrim(str);
+        }
+        return str;
+    }
+    else {
+        return EmptyClauseSummary;
+    }
+}
+
+function sfGetRangeSummary (aRange)
+{
+    var str = sfGetRangeContent(aRange);
+    str = str.substr(0, MaxSummaryLength);
+    str = sfTrim(str);
+    return str;
+}
+
+function sfGetClauseSummary (bookmark)
+{
+    return sfGetClauseSummaryImpl(bookmark, false);
+}
+
+function sfGetClauseSummaryAll (bookmark)
+{
+    return sfGetClauseSummaryImpl(bookmark, true);
+}
+
+function sfGetClauseSummaryAllByRange (clauseRange)
+{
+    var rangeContent = sfGetRangeContent(clauseRange);
+    return !sfIsEmptyRange2(clauseRange, rangeContent) ? rangeContent : EmptyClauseSummary;
+}
+
+function getClauseSummaryByName (document, bookmarkName)
+{
+    return sfGetClauseSummaryImpl(document.Bookmarks.Item(bookmarkName), false);
+}
+
+function sfGetChildBookmarksForRange(aDocument,theRange)
+{
+    return sfGetChildBookmarks(sfGetChildBookmarks(aDocument, theRange, false));
+}
+
+function sfGetChildBookmarks (aDocument, theRange, fullyIncluded)
+{
+    var array = new sfObjectArray();
+    var rangeBookmarks = theRange.Bookmarks;
+    var count = rangeBookmarks.Count;
+    var lastBookmark = null;
+    for (var i = 1; i <= count; ++i) {
+        var bookmark = rangeBookmarks.Item(i);
+        var hit = fullyIncluded ? sfBookmarkFullyIncluded(theRange, bookmark) :
+                                  sfBookmarkIncluded(theRange, bookmark);
+        if (!hit) {
+            continue;
+        }
+
+        // process only child bookmarks, grand child are processed while processing child sections.
+        // remember lastChildBookmark , so that grand children can be skipped by doing a include check
+        if (lastBookmark == null || !sfBookmarkIncluded(lastBookmark, bookmark)) {
+            array.AddItem(bookmark);
+        }
+    }
+
+    return array;
+}
+
+function sfContentType (bookmarkName)
+{
+    if (bookmarkName.indexOf(prefixClauseName) >= 0) {
+        return ContentType.ContentClauseType;
+    }
+    else if (bookmarkName.indexOf(prefixSectionName) >= 0) {
+        return ContentType.ContentSectionType;
+    }
+    else {
+        return ContentType.ContentUnknownType;
+    }
+}
+
+/**
+    Copy the content within the bookmark into a temp document and return the location
+*/
+function sfTempClauseCreated (ec, currentSelection)
+{
+    try {
+        LoggerUtil.logBegin("sfTempClauseCreated");
+
+        var aRange = sfGotoBookmarkName(currentSelection, ec.sClauseId);
+        currentSelection.Copy();
+
+        ec.hideApp();
+
+        var tempDocument = sfAddTempWordDocument(ec);
+        tempDocument.Activate();
+
+        sfPopulateProperty(aRange, tempDocument);
+
+        var newSelection = tempDocument.ActiveWindow.Selection;
+
+        sfCompatiblePasteWithAllValue(newSelection, ec.wordType);
+
+        if (tempDocument.Bookmarks.Exists(ec.sClauseId)) {
+            tempDocument.Bookmarks(ec.sClauseId).Delete();
+        }
+
+        var tempDocumentFolder = sfForwardToBackSlash(ec.sTempDocumentFolder);
+        if (sfCreateDirectory(tempDocumentFolder + TempFolderName)) {
+            var ext = WordType.WordDocExtension;
+            if (ec.wordType == WordType.Word07Type) {
+                ext = WordType.Word07DocExtension;
+            }
+            else if (ec.wordType == WordType.Word10Type) {
+                ext = WordType.Word10DocExtension;
+            }
+
+            var tempDocumentName = tempDocumentFolder + TempFolderName + "\\" + ec.sClauseId + "." + ext;
+            tempDocument.SaveAs(tempDocumentName);
+            tempDocument.Close();
+
+            LoggerUtil.logEnd("sfTempClauseCreated");
+            return tempDocumentName;
+        }
+        else {
+            LoggerUtil.logError(null, "sfTempClauseCreated: Cannot create temp document", null);
+            LoggerUtil.logEnd("sfTempClauseCreated");
+            return "";
+        }
+    }
+    catch (ex) {
+        LoggerUtil.logError("", "Invokation Error: sfTempClauseCreated", ex);
+        throw ex;
+    }
+}
+
+/**
+ * Pastes the content of the clipboard
+ */
+function sfCompatiblePaste (currentSelection, wordType)
+{
+    sfCompatiblePasteWithFormat(currentSelection, wordType, 0); // wdPasteDefault = 0
+}
+
+/**
+    Todo doc this
+*/
+function sfCompatiblePasteWithAllValue (currentSelection, wordType)
+{
+    currentSelection.TypeText("a");
+    var pos = currentSelection.MoveLeft(1, 1); // wdCharacter = 1
+    sfCompatiblePasteWithFormat(currentSelection, wordType, 16); // wdFormatOriginalFormatting = 16
+    pos = currentSelection.MoveRight(1, 1); // wdCharacter = 1
+    currentSelection.TypeBackspace();
+}
+
+/**
+    Pastes the clipboard contents at the selection position
+*/
+function sfCompatiblePasteWithFormat (aSelection, wordType, typePaste)
+{
+    if (wordType == WordType.Word2000Type) {
+        aSelection.Paste();
+    }
+    else if (wordType == WordType.WordXPType) {
+        aSelection.PasteAndFormat(typePaste);
+    }
+    else if (wordType == WordType.Word07Type) {
+        aSelection.PasteAndFormat(16); //wdFormatOriginalFormatting
+    }
+    else if (wordType == WordType.Word10Type) {
+        aSelection.PasteAndFormat(16); //wdFormatOriginalFormatting
+    }
+    else {
+        LoggerUtil.logError(null, "Unknown word format", null);
+    }
+}
+
+/**
+    This method moves the bookmark end position to be just before the
+    paragraph end marker. This is need to create a new paragraph after the
+    bookmark both programatically and also useful for user to insert
+    new paragraph after the bookmark.
+*/
+function sfGoodToGreatBookmark (currentDocument, currentSelection, bookmarkName)
+{
+    // This should be done only for clause bookmarks
+    // Careful not to declare var as contentType since thats a function
+    var ctype = sfContentType(bookmarkName);
+    if (ctype == ContentType.ContentClauseType) {
+        sfFixClauseBookmark(currentDocument, currentDocument.Bookmarks.Item(bookmarkName));
+    }
+}
+
+function sfIsBookmarkExists (agreement, currentSelection, bookmarkName)
+{
+    // the bookmark may exist as a track change, figure out if there is any content in the bookmark
+    if (agreement.Bookmarks.Exists(bookmarkName)) {
+        var aRange = sfGotoBookmarkName(currentSelection, bookmarkName); // wdGoToBookmark = -1
+        if (currentSelection.End > currentSelection.Start) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Returns true if the range ends with a section bookmark; false otherwise
+ */
+function sfEndsWithASectionBookmark (range)
+{
+    var rangeBookmarks = sfGetRangeBookmarks(range);
+    var rangeEnd = range.End;
+    var count = rangeBookmarks.Count;
+    for (var i = 1; i <= count; ++i) {
+        var bm = rangeBookmarks.Item(i);
+        if (sfIsSectionBookmark(bm) && bm.End == rangeEnd) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+    Take a list of bookmarks, and get the summary, location for each bookmark and non-bookmarked paragraphs
+*/
+function sfScanBookmarksForLoad(ec, scanForParagraphs, scanForSummary, xmlNode_loadRequest)
+{
+    LoggerUtil.logBegin("sfScanBookmarksForLoad");
+
+    var bookmarkList = ec.currentSelection.Bookmarks;
+    var count = bookmarkList.Count;
+    var newEntityNode = sfCreateNewEntityNode(ec);
+    for (var i = 1; i <= count; ++i) {
+        var aBookmark = bookmarkList.Item(i);
+
+        // check for previously generated bookmarks and replace them with new type bookmarks
+        // We try and keep the names unique so we don't conflict with user added bookmarks
+        var genType = sfIsGenBookmarkForLoad(aBookmark.Name);
+        if (genType != GeneratedUnknown) {
+
+            var newBookmarkName = null;
+            var bookmarkName = aBookmark.Name;
+
+            if (genType == GeneratedSection) {
+                newBookmarkName = prefixSectionNewName + prefixAribaOldGenId +
+                    bookmarkName.substring(prefixSectionGenName.length, bookmarkName.length);
+            }
+            else {
+                newBookmarkName = prefixClauseNewName + prefixAribaOldGenId +
+                    bookmarkName.substring(prefixClauseGenName.length, bookmarkName.length);
+            }
+
+            var aRange = ec.getAgreementDocument().Bookmarks.Item(bookmarkName).Range;
+            aBookmark = ec.getAgreementDocument().Bookmarks.Add(newBookmarkName, aRange);
+            var pos = ec.getAgreementDocument().Bookmarks.Item(bookmarkName).Delete();
+        }
+
+        if (sfIsNewBookmark(aBookmark.Name)) {
+            sfBookmarkNode(ec, ec.getAgreementDocument(), aBookmark, newEntityNode, scanForSummary);
+        }
+        else {
+            sfAppendBookmarkOtherNode(ec.xmlDOM, aBookmark, ec.xmlNode_otherBookmarkList);
+        }
+    }
+
+    if (scanForParagraphs) {
+        sfParseNewEntities(ec.getAgreementDocument(), ec.xmlDOM, newEntityNode);    
+    }
+
+    LoggerUtil.logEnd("sfScanBookmarksForLoad");
+}
+
+/****************************************************************************************
+                    SEARCH FUNCTIONS
+*****************************************************************************************/
+function sfFindSectionName (selection, bookmarkName) {
+    sfGotoBookmarkName(selection, bookmarkName); // wdGoToBookmark = -1
+    var allBookmark = selection.Bookmarks;
+    var count = allBookmark.Count;
+    var currentBookmark = null;
+
+    for (var i = 1; i <= count; ++i) {
+        var aBookmark = allBookmark.Item(i);
+        if (currentBookmark == null) {
+            if (sfBookmarkIncluded(currentBookmark, aBookmark)) {
+                currentBookmark = aBookmark;
+            }
+        }
+        else {
+            currentBookmark = aBookmark;
+        }
+    }
+
+    return currentBookmark != null ? currentBookmark.Name : "";
+}
+
+/**
+    section name is the parent bookmark of the range
+    We need to understand this method a little more
+*/
+function sfFindPreviousBookmarkName (selection, bookmarkName, sectionName)
+{
+    sfGotoBookmarkName(selection, sectionName); // wdGoToBookmark = -1
+    var allBookmark = selection.Bookmarks;
+    var count = allBookmark.Count;
+    var currentBookmark = null;
+    var prevIndex = -1;
+
+    /* get the previous book mark */
+    for (var i = 1; i <= count; ++i) {
+        if (allBookmark.Item(i).Name == bookmarkName) {
+            prevIndex = i - 1;
+            break;
+        }
+    }
+
+    for (var i = prevIndex; i >= 1; --i) {
+        var aBookmark = allBookmark.Item(i);
+        var aSectionName = sfWithinBookmarkNameInSelection(selection, aBookmark.Range, true);
+        if (aSectionName == sectionName) {
+            currentBookmark = aBookmark;
+            break;
+        }
+    }
+
+    return currentBookmark != null ? currentBookmark.Name : null;
+}
+
+/**
+    Find the first fully contained bookmark in the section associated with the section bookmark
+*/
+function sfFindFirstBookmarkNameInSection (currentDocument, selection, sectionBookmarkName)
+{
+    sfGotoBookmarkName(selection, sectionBookmarkName); // wdGoToBookmark = -1
+    var allBookmark = selection.Bookmarks;
+    var sectionBookmark = currentDocument.Bookmarks(sectionBookmarkName);
+    var count = allBookmark.Count;
+    for (var i = 1; i <= count; ++i) {
+        var bookmark = allBookmark.Item(i);
+        var bookmarkName = bookmark.Name;
+        if (bookmarkName != sectionBookmarkName &&
+            sfBookmarkFullyIncluded(sectionBookmark, bookmark) &&
+            (sfIsNewBookmark(bookmarkName) || sfIsGenBookmark(bookmarkName))) {
+            return bookmarkName;
+        }
+    }
+    return "";
+}
+
+/**
+ * return true if the range is a section
+ */
+function sfIsRangeASection (rangeProxy)
+{
+    var bookmarkProxies = rangeProxy.BookmarkProxies;
+    for (var i = 1; i <= bookmarkProxies.Count; ++i) {
+        var bmProxy = bookmarkProxies.Item(i);
+        LoggerUtil.logMessage(" bmProxy " + bmProxy.Start + " :" + bmProxy.End);
+        if (bmProxy.Start == rangeProxy.Start &&
+            bmProxy.End == rangeProxy.End &&
+            sfIsSectionBookmark(bmProxy) ) {
+            return true;
+        }
+    }
+    return false;
+}

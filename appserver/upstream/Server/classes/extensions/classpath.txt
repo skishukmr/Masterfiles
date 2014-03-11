@@ -1,0 +1,39 @@
+# This file allows customers to extend the classpath that is used to run Ariba
+# application.  Extending the classpath here affects both command-line programs, such
+# as initdb, and also the Application Server.
+#
+# IF YOU MAKE CHANGES TO THIS FILE, you must run the rebuildclasspath utility
+# to cause these changes to be pushed to the application server.
+#
+# For more information, consult the Ariba API manual.
+#
+# Format of this file
+# -------------------
+# Blank lines and lines beginning with # are ignored.  Wildcards that occur in
+# this file, such as *.jar, are expanded at runtime.  Entries that are not
+# absolute paths are interpreted relative to the application installation
+# directory.  At this time environment variable references are not supported.
+# It does not hurt to have references to files that don't exist (they will be
+# silently ignored).
+#
+#  $Id: extensions.txt#2 $
+
+
+# Put this directory on the classpath so that loose classes may be dropped in
+# here, in package hierarchy of course.
+
+classes/extensions
+
+# Customers are required to drop in the non-redistributable JDBC driver for
+# their database of choice.  
+
+classes/extensions/aribaDBOracleJDBC.zip
+classes/extensions/aribaDBDB2JDBC.zip
+classes/extensions/aribaDBMssqlJDBC.zip
+
+# Customers using a SQLServer database need the JDBC classes for that system.
+# We are using the classes provided by WebLogic in this case. These classes are
+# included in the main "weblogic.jar" that is located in the BEA installation
+# directory.  The installer/configurator will update the line below with the
+# resolved location of this jar.
+

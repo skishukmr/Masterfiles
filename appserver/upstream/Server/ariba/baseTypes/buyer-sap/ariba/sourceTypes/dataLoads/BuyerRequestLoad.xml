@@ -1,0 +1,84 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerRequestRequisition">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode AS CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode"
+                    appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestExpenseReport">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode AS CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode"
+                    appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestMasterAgreement">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode AS CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode"
+                    appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerRequestTravelAuthorization">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode AS CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode"
+                    appendToWhereClause="AND SplitAccounting.NumberInCollection = 1"/>
+    </inLoadStages>
+
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

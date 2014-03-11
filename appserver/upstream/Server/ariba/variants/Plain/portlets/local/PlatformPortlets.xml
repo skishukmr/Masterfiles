@@ -1,0 +1,114 @@
+<PortletProviders>
+    <PortletProvider stringFile="&lt;ProviderURL&gt;/ad/stringFile/PortletProviderActions?stringFile=ariba.platform.portlets">
+        <UniqueName>Platform</UniqueName>
+        <DisplayName>$[a001]General</DisplayName>
+        <Description>$[a002]General</Description>
+        <BusinessKey></BusinessKey>
+        <HttpURL>&HttpURL;</HttpURL>
+        <ServerURL>&ServerURL;</ServerURL>
+        <Permissions></Permissions>
+        <Portlets>
+           <Portlet>
+                <UniqueName>NewsPortlet</UniqueName>
+                <DisplayName>$[a003]News</DisplayName>
+                <Description>$[a004]Company News</Description>
+                <Controller></Controller>
+                <ContentType>Aggregator</ContentType>
+                <AggregationDataType>News</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>true</IsEditable>
+                <IsEditAllowed>false</IsEditAllowed>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>CommonActions</UniqueName>
+                <DisplayName>$[a005]Common Actions</DisplayName>
+                <Description>$[a006]Shortcuts for common actions</Description>
+                <Controller></Controller>
+                <ContentType>Aggregator</ContentType>
+                <AggregationDataType>Actions</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <IsTOC>false</IsTOC>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>RecentlyViewedActions</UniqueName>
+                <DisplayName>$[a007]Recently Viewed</DisplayName>
+                <Description>$[a008]Shortcuts for recently viewed documents</Description>
+                <Controller></Controller>
+                <ContentType>Aggregator</ContentType>
+                <AggregationDataType>RecentlyViewed</AggregationDataType>                
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>SearchPortlet</UniqueName>
+                <DisplayName>$[a009]Search</DisplayName>
+                <Description>$[a010]Search available document types</Description>
+                <Controller></Controller>
+                <ContentType>Aggregator</ContentType>
+                <AggregationDataType>Search</AggregationDataType>                
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>ToDoPortlet</UniqueName>
+                <DisplayName>$[a011]To Do</DisplayName>
+                <Description>$[a012]Items requiring action</Description>
+                <Controller></Controller>
+                <ContentType>Aggregator</ContentType>
+                <AggregationDataType>ToDo</AggregationDataType>                
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                    <String>ACMAuthorized</String>
+                    <String>ACWAuthorized</String>
+                    <String>SPMAuthorized</String>
+                    <String>SVAuthorized</String>
+                    <String>P2PDashboardAuthorized</String>
+                </Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>MyDocsPortlet</UniqueName>
+                <DisplayName>$[a013]My Documents</DisplayName>
+                <Description>$[a014]Documents managed by this user</Description>
+                <Controller></Controller>
+                <ContentType>Aggregator</ContentType>
+                <AggregationDataType>MyDocs</AggregationDataType>                
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+            <Portlet>
+                <UniqueName>Buyer82Actions</UniqueName>
+                <DisplayName>$[a017]Buyer</DisplayName>
+                <Description>$[a018]Spend management links</Description>
+        		<Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/ariba.dashboard.component.Buyer82ActionsController</Controller>
+                <ContentType>ActionList</ContentType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions></Permissions>
+            </Portlet>
+
+        </Portlets>
+        <DocTypes>
+            <DocType>
+                <UniqueName>ariba.platform.Administrator</UniqueName>
+                <DisplayName>$[a015]Administration</DisplayName>
+                <Description>$[a016]Application Administration</Description>
+                <ActionRank>1000</ActionRank>
+                <Permissions></Permissions>
+            </DocType>
+        </DocTypes>
+    </PortletProvider>
+</PortletProviders>

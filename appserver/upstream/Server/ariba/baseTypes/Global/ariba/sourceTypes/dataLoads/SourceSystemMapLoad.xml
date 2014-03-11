@@ -1,0 +1,224 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="GenericSourceSystemMap">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.basic.AnalysisMapEntry"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Key">
+            <csvMapping selectField="Key"/>
+        </field>
+        <field name="Value">
+            <csvMapping selectField="Value"/>
+        </field>
+        <field name="Preferred">
+            <csvMapping selectField="Preferred"/>
+        </field>
+        <field name="SourceSystem">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.SourceSystemName"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<derivedDataLoad name="SourceSystemCurrencyMap" extendsLoad="GenericSourceSystemMap">
+    <fieldMappings>
+        <field name="MapType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<derivedDataLoad name="SourceSystemUOMMap" extendsLoad="GenericSourceSystemMap">
+    <fieldMappings>
+        <deleteField name="Key"/>
+        <deleteField name="Value"/>
+        <field name="Key">
+            <csvMapping selectField="Key"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Value">
+            <csvMapping selectField="Value"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="MapType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="SourceSystemUOM"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+
+
+<!-- This load is used to load the currency/UOM map information from the ERP to the
+     currency/UOM used in Analysis. If the currency/UOM in Analysis is the same
+     as the currency/UOM in Buyer, than we can pull in the simple maps loaded
+     for the given ERP directly from the Buyer system using this data load.
+
+     If the currency/UOM are different, the user has to define the maps from the
+     ERP system to the Analysis system using a CSV file and using the
+     "ERPCurrencyMapFromCSV" and "ERPUOMMapFromCSV" data load definitions.
+
+     This is also assuming that ERP data is loaded using the source system as that
+     defined for your Buyer partition. That is likely not the case, so you probably
+     want to change the SourceSystem mapping below to provide the appropriate
+     name.
+-->
+<dataLoad name="ERPMapFromBuyer">
+    <loadStages>
+        <aqlStage fromClause="ariba.base.core.SimpleMapEntry"
+                  whereClause="SimpleMapEntry.MapType = 'Ccy'"
+                  incrementalClause="(:IncrementalStartDate &lt;= SimpleMapEntry.TimeUpdated AND
+                                        SimpleMapEntry.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.basic.AnalysisMapEntry"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Key">
+            <aqlMapping selectField="SimpleMapEntry.Key"/>
+        </field>
+        <field name="Value">
+            <aqlMapping selectField="SimpleMapEntry.Value"/>
+        </field>
+        <field name="Preferred">
+            <aqlMapping selectField="SimpleMapEntry.Preferred"/>
+        </field>
+        <field name="SourceSystem">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.SourceSystemName"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ERPMapFromBuyer" version="7.1">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.common.core.SimpleMapEntry"/>
+    </inLoadStages>
+</inDataLoad>
+
+<derivedDataLoad name="ERPCurrencyMapFromBuyer" extendsLoad="ERPMapFromBuyer">
+    <inLoadStages>
+        <inAqlStage replaceWhereClause="SimpleMapEntry.MapType = 'Ccy'"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="MapType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="ERPCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+
+<derivedDataLoad name="ERP_UOMMapFromBuyer" extendsLoad="ERPMapFromBuyer">
+    <inLoadStages>
+        <inAqlStage replaceWhereClause="SimpleMapEntry.MapType = 'UOM'"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="Key"/>
+        <deleteField name="Value"/>
+
+        <field name="Key">
+            <aqlMapping selectField="SimpleMapEntry.Key"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Value">
+            <aqlMapping selectField="SimpleMapEntry.Value"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="MapType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="ERP_UOM"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+
+<dataLoad name="GenericERPMapFromCSV">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.basic.AnalysisMapEntry"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Key">
+            <csvMapping selectField="Key"/>
+        </field>
+        <field name="Value">
+            <csvMapping selectField="Value"/>
+        </field>
+        <field name="Preferred">
+            <csvMapping selectField="Preferred"/>
+        </field>
+        <field name="SourceSystem">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.SourceSystemName"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+
+<derivedDataLoad name="ERPCurrencyMapFromCSV" extendsLoad="GenericERPMapFromCSV">
+    <fieldMappings>
+        <field name="MapType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="ERPCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<derivedDataLoad name="ERP_UOMMapFromCSV" extendsLoad="GenericERPMapFromCSV">
+    <fieldMappings>
+        <deleteField name="Key"/>
+        <deleteField name="Value"/>
+
+        <field name="Key">
+            <csvMapping selectField="Key"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Value">
+            <csvMapping selectField="Value"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="MapType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="ERP_UOM"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+</allDataLoads>

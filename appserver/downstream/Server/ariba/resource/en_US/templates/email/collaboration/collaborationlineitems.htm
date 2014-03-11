@@ -1,0 +1,32 @@
+<!--Line Items -->
+<span style="margin-top:25px; margin-bottom:10px; font:8pt Verdana, Arial, Helvetica; font-weight:bold;"><b>@@@ariba.htmlemail/LineItems@@</b></span>
+    <table width="98%" border=0 margin=0 cellPadding="3" cellSpacing="2">
+      <tr style="border:0px; color:#000; font:8pt Verdana, Arial, Helvetica; font-weight:bold;  background:#E5E5EE;">
+        <th align="left" nowrap>#</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Description@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/Qty@@</th>
+        <th align="left" nowrap>@@@ariba.htmlemail/Unit@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/Price@@</th>
+        <th align="right" nowrap>@@@ariba.htmlemail/Amount@@</th>
+      </tr>
+      @@StartVector1=LineItems@@
+      <tr style="vertical-align:top; border:0px; color:#000; font:8pt Verdana, Arial, Helvetica;">
+        <td>@@NumberInCollection@@</td>
+        <td>@@Description.ShortName@@</td>
+        <td align="right">@@FCN.getQuantity()@@</td>
+        <td align="left">@@Description.UnitOfMeasure.Name.FCN.getString()@@</td>
+		<td align="right" nowrap>@@Description.Price.FCN.getAmount()@@ @@Description.Price.Currency.UniqueName@@</td>
+        <td align="right" nowrap>@@Amount.FCN.getAmount()@@ @@Amount.Currency.UniqueName@@</td>
+      </tr>
+      @@EndVector1@@
+    </table>
+<br />
+<table cellSpacing=0 cellPadding=0 border=0 margin=0 width="98%">
+  <tr>
+    <td width="600">&nbsp;</td>
+    <td style="border:1px solid #99C; background:#FFEAAA; font:9pt Verdana, Arial, Helvetica; padding:3px 5px 3px 5px;" noWrap align="right" width="1%">@@@ariba.htmlemail/TotalCost@@:&nbsp;
+    <span style="font:9pt Verdana, Arial, Helvetica; font-weight:bold;">@@TotalCost.FCN.getAmount()@@ @@TotalCost.Currency.UniqueName@@</span>
+    </td>
+  </tr>
+</table><br /><br />
+

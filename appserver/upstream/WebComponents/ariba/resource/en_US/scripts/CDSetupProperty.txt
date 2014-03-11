@@ -1,0 +1,298 @@
+Dim app
+Dim agreement
+Dim documentLocation
+Dim documentProperties
+Dim formProperties
+Dim DocumentPropertiesContentKey
+DocumentPropertiesContentKey = "documentPropertiesContent"
+Dim defaultFormPropertyPrefix
+defaultFormPropertyPrefix = "_"
+
+Sub initializePropertyUtil (aDocument)
+    On Error Resume Next
+
+    documentLocation = aDocument
+
+    Set app = contactApp()
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    saveOpenDocument app, documentLocation
+    openDocumentInWord app, documentLocation, False
+
+    Dim value
+    If (Err.Number <> 0) Then
+        Err.Clear
+        saveOpenDocument app, documentLocation
+            ' syncup then reopen
+        value = SmartClientScriptUtil.saveFileToClient(documentLocation)
+        openDocumentInWord app, documentLocation, False
+    End If
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    If logError(GeneratingErr.wordOpenErrorMessage & documentLocation) Then
+        Exit Sub
+    End If
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    Set agreement = app.ActiveDocument
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    Set documentProperties = agreement.CustomDocumentProperties
+    Set formProperties = agreement.FormFields
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+End Sub
+
+Sub initializePropertyHandler (keyValues)
+    On Error Resume Next
+
+    initializePropertyUtil(awxsGetValue(keyValues, "documentLocation"))
+End Sub
+
+Sub retrieveDocumentPropertiesUtil (retrieveDocumentPropertiesUrl)
+    On Error Resume Next
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    Dim documentPropertiesContent
+    documentPropertiesContent = ""
+    Dim aName
+    Dim aIndex
+    Dim aDocumentProperty
+    For Each aDocumentProperty In documentProperties
+        aName = aDocumentProperty.Name
+        aIndex = InStr(1, aName, prefixFieldName, vbTextCompare)
+        If (aIndex <> 0) Then
+            documentPropertiesContent = documentPropertiesContent & objectSeparator & aName
+        End If
+        app.Visible = false
+        document.body.style.cursor = "wait"
+    Next
+
+    Dim aFormProperty
+    For Each aFormProperty In formProperties
+        aName = aFormProperty.Name
+        aIndex = InStr(1, aName, prefixFieldName, vbTextCompare)
+        If (aIndex <> 0) Then
+            documentPropertiesContent = documentPropertiesContent & objectSeparator & defaultFormPropertyPrefix & aName
+        End If
+        app.Visible = false
+        document.body.style.cursor = "wait"
+    Next
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    ' msgbox "retrieve " & documentPropertiesContent
+
+    If (Not documentPropertiesContent = "") Then
+        retrieveDocumentPropertiesUrl = retrieveDocumentPropertiesUrl & "&" & DocumentPropertiesContentKey & "=yes"
+        sendDataToServer documentPropertiesContent, retrieveDocumentPropertiesUrl
+    Else
+        retrieveDocumentPropertiesUrl = retrieveDocumentPropertiesUrl & "&" & DocumentPropertiesContentKey & "=no"
+        sendDataToServer "a", retrieveDocumentPropertiesUrl
+    End If
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    app.NormalTemplate.Saved = True
+
+    ' app.Documents.Close wdDoNotSaveChanges
+    app.Quit wdDoNotSaveChanges
+End Sub
+
+Sub retrieveDocumentPropertiesHandler (keyValues)
+    On Error Resume Next
+
+    retrieveDocumentPropertiesUtil(ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl")))
+End Sub
+
+Sub setupDocumentPropertiesUtil (documentPropertiesContent, agreementSyncupUrl)
+    On Error Resume Next
+
+    If (Not documentPropertiesContent = "") Then
+        Dim length
+        length = Len(objectSeparator)
+
+        Dim index1, index2
+
+        index1 = length + 1
+        index2 = InStr(index1, documentPropertiesContent, objectSeparator, vbTextCompare)
+
+        Dim aProperty
+        Dim aPropertyName
+
+        Dim modified
+        modified = False
+
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        ' msgbox "content " & documentPropertiesContent
+            ' insert
+        Do While (index2 <> 0)
+            aPropertyName = Mid(documentPropertiesContent, index1, index2 - index1)
+
+            ' msgbox("property " & aPropertyName)
+
+            app.Visible = false
+            document.body.style.cursor = "wait"
+
+            If (addAProperty(aPropertyName) = True) Then
+                modified = True
+            End If
+            index1 = index2 + length
+            index2 = InStr(index1, documentPropertiesContent, objectSeparator, vbTextCompare)
+        Loop
+
+        aPropertyName = Right(documentPropertiesContent, Len(documentPropertiesContent) - index1 + 1)
+
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        If (addAProperty(aPropertyName) = True) Then
+            modified = True
+        End If
+    End If
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+        ' remove
+    documentPropertiesContent = documentPropertiesContent & objectSeparator
+
+    Dim aName
+    Dim aIndex
+    Dim aDocumentProperty
+    For Each aDocumentProperty In documentProperties
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        aName = aDocumentProperty.Name
+        aName = objectSeparator & aName & objectSeparator
+        aIndex = InStr(1, aName, prefixFieldName, vbTextCompare)
+        If (aIndex <> 0) Then
+            aIndex = InStr(1, documentPropertiesContent, aName, vbTextCompare)
+            If (aIndex = 0) Then
+                aDocumentProperty.Delete
+                app.Visible = false
+                document.body.style.cursor = "wait"
+                modified = True
+            End If
+        End If
+    Next
+
+    Dim aFormProperty
+    For Each aFormProperty In formProperties
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        aName = defaultFormPropertyPrefix & aFormProperty.Name
+        aName = objectSeparator & aName & objectSeparator
+        aIndex = InStr(1, aName, prefixFieldName, vbTextCompare)
+        If (aIndex <> 0) Then
+            aIndex = InStr(1, documentPropertiesContent, aName, vbTextCompare)
+            If (aIndex = 0) Then
+                aFormProperty.Delete
+                app.Visible = false
+                document.body.style.cursor = "wait"
+                modified = True
+            End If
+        End If
+    Next
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    If (modified = True) Then
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        agreement.Fields.Update
+
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        agreement.Saved = false
+        agreement.Save
+        agreement.Close
+
+        app.Visible = false
+        document.body.style.cursor = "wait"
+
+        Dim sData
+        sData = getFileBytes(documentLocation)
+
+        sendDataToServer sData, agreementSyncupUrl
+
+        Dim ts
+        ts = clientFileTimestamp(documentLocation)
+        If (ts = "") Then
+            Exit Sub
+        End If
+        SmartClientScriptUtil.saveSyncHistoryWithCommit(ts)
+    End If
+
+    app.Visible = false
+    document.body.style.cursor = "wait"
+
+    app.NormalTemplate.Saved = True
+
+    ' app.Documents.Close wdDoNotSaveChanges
+    app.Quit wdDoNotSaveChanges
+End Sub
+
+Function addAProperty (aPropertyName)
+    On Error Resume Next
+
+    Dim aIndex
+    aIndex = InStr(1, aPropertyName, defaultFormPropertyPrefix, vbTextCompare)
+
+    If (aIndex = 1) Then
+        aPropertyName = Right(aPropertyName, Len(aPropertyName) - 1)
+        addAProperty = addAFormProperty(aPropertyName, formProperties)
+    Else
+        addAProperty = addADocumentProperty(aPropertyName, documentProperties)
+    End If
+End Function
+
+Sub setupDocumentPropertiesHandler (keyValues)
+    On Error Resume Next
+
+    setupDocumentPropertiesUtil awxsGetValue(keyValues, "propertyContent"), ClientAutomation.ResolvePartialURL(awxsGetValue(keyValues, "actionUrl"))
+End Sub
+
+Dim CDSetupPropertyTrigger
+
+Dim eventInitializeProperty
+Set eventInitializeProperty = awxsCreateEvent("initializeProperty", GetRef("initializePropertyHandler"))
+awxsRegisterEvent "initializeProperty", eventInitializeProperty
+
+Dim eventRetrieveDocumentProperties
+Set eventRetrieveDocumentProperties = awxsCreateEvent("retrieveDocumentProperties", GetRef("retrieveDocumentPropertiesHandler"))
+awxsRegisterEvent "retrieveDocumentProperties", eventRetrieveDocumentProperties
+
+Dim eventSetupDocumentProperties
+Set eventSetupDocumentProperties = awxsCreateEvent("setupDocumentProperties", GetRef("setupDocumentPropertiesHandler"))
+awxsRegisterEvent "setupDocumentProperties", eventSetupDocumentProperties
+
+
+
+
+
+
+
+
+
+

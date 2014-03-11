@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemParameter(System.Procure.AribaNetwork.ANDTDLocator)@@/cXML.dtd">
+<cXML payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@">
+   <Header>
+        @@getHeaderToDestination@@
+    </Header>
+    <Request>
+        <SupplierDataRequest>
+                <!-- for supplierPartIds -->
+                <SupplierID domain="@@supplierIDDomain@@">@@supplierID@@</SupplierID>
+                <!-- end for -->
+        </SupplierDataRequest>
+    </Request>
+</cXML>

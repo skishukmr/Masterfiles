@@ -1,0 +1,946 @@
+function sfGetHttp ()
+{
+    try {
+        var xmlhttp = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+        return xmlhttp;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg3, MIE + "sfGetHttp", ex);
+        throw ex;
+    }
+}
+
+function sfGetFso ()
+{
+    try {
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        return fso;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg1, MIE + "sfGetFso", ex);
+        throw ex;
+    }
+}
+
+function sfGetXmlDom ()
+{
+    try {
+        var xmlDom = new ActiveXObject("MSXML2.DOMDocument");
+        return xmlDom;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg1, MIE + "sfGetXmlDom", ex);
+        throw ex;
+    }
+}
+
+/**
+    Returns the temp folder on the client
+*/
+function sfGetTempFolderPath ()
+{
+    try {
+        var fso = sfGetFso();
+        /* system folder = 1; temporary folder = 2; windows folder = 0 - Refer to msdn for info */
+        var  tfolder = fso.GetSpecialFolder(2);
+        return tfolder.Path;
+    }
+    catch (ex) {
+        LoggerUtil.logMessage(MIE + "sfGetTempFolderPath");
+        throw ex;
+    }
+}
+
+/**
+ * Public API
+ */
+function siGetTempFolderPath ()
+{
+    return sfGetTempFolderPath();
+}
+
+/**
+    Creates a directory for the path specified if it does not exists
+*/
+function sfCreateDirectory (path)
+{
+    try {
+        var fso = sfGetFso();
+        if (!fso.FolderExists(path)) {
+            fso.CreateFolder(path);
+        }
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg1,  MIE + "sfCreateDirectory", ex);
+        throw ex;
+    }
+}
+
+/**
+ *  public api
+ */
+function siCreateDirectory (args)
+{
+    sfLoggerInit(null, "siCreateDirectory", args);
+
+    return sfCreateDirectory(sfForwardToBackSlash(args[Params.sFolderName]));
+}
+
+/**
+    Returns true if the file exists; false otherwise
+*/
+function sfClientFileExists (fileFullPath)
+{
+    try {
+        var fso = sfGetFso();
+        return fso.FileExists(fileFullPath);
+    }
+    catch (ex) {
+        LoggerUtil.logMessage(MIE + "sfClientFileExists");
+        throw ex;
+    }
+}
+
+function siClientFileExists (args)
+{
+    try {
+        return sfClientFileExists(
+            sfForwardToBackSlash(args[Params.sDocumentLocation]));
+    }
+    catch (ex) {
+        /* no need to call LoggerUtil.logErrorOnExit() as doc location could be bogus */
+        return false;
+    }
+}
+
+/**
+    Returns the client file time stamp utc string;
+*/
+function sfClientFileTimestamp (documentLocation)
+{
+    return DFS.toUTCString(sfCompatibleClientFileTimestamp(documentLocation));
+}
+
+/**
+ * @param args takes document location
+ */
+function siClientFileTimestamp (args)
+{
+    try {
+        return sfClientFileTimestamp(
+                sfForwardToBackSlash(args[Params.sDocumentLocation]));
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+        return "";
+    }
+}
+
+/**
+    Returns the date/time at which the file got modified
+*/
+function sfCompatibleClientFileTimestamp (documentLocation)
+{
+    try {
+        var fileSys = sfGetFso();
+        var f = fileSys.GetFile(documentLocation);
+        return f != null ? f.DateLastModified : "";
+    }
+    catch (ex) {
+    	SmartClientDFSDirectoryError.style.display = "";
+        LoggerUtil.logError(DFSErr.Msg1, MIE + "sfCompatibleClientFileTimestamp: Exception "
+            + ex + " File Path : "  + documentLocation, ex);
+        throw ex;
+    }
+}
+
+/**
+ * public API
+ */
+function siCompatibleClientFileTimestamp (args)
+{
+    try {
+        return sfCompatibleClientFileTimestamp(
+            sfForwardToBackSlash(args[Params.sDocumentLocation]));
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+        return "";
+    }
+}
+
+/**
+    Returns true if the time stamps are equal
+*/
+function sfAreTimestampsEqual (fileFullPath, serverTimestamp)
+{
+    try {
+        var timeStamp = sfCompatibleClientFileTimestamp(fileFullPath);
+        if (timeStamp == null) {
+            return false;
+        }
+        /* XXX why can't we use the UTC string to compare??? */
+        var str = timeStamp.toString();
+        return serverTimestamp == timeStamp;
+    }
+    catch (ex) {
+        LoggerUtil.logMessage(MIE + "sfAreTimestampsEqual");
+        throw ex;
+    }
+}
+
+/**
+ * public API
+ */
+function siAreTimestampsEqual (args)
+{
+    try {
+        return sfAreTimestampsEqual(sfForwardToBackSlash(args[Params.sDocumentLocation]),
+            args[Params.dServerTimestamp]);
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+        return false;
+    }
+}
+
+/**
+    Get the file path (upto the last /) or the file name
+*/
+function sfGetFilePath (documentLocation, bIsFolder)
+{
+    if (documentLocation == null || documentLocation == "") {
+        return "";
+    }
+
+    var strArray = documentLocation.split("/");
+    var str = "";
+    if (bIsFolder) {
+        for (var i = 0; i < (strArray.length-1); ++i) {
+            str = str.concat(strArray[i]);
+            str = str.concat("/");
+        }
+        return str;
+    }
+    else {
+        return strArray[strArray.length-1];
+    }
+}
+
+/**
+    Convert p1/fff.doc to p1/fffCLIENT.doc
+*/
+function sfAppendStringToFileLocation (documentLocation, stringToAppend)
+{
+    var index = documentLocation.lastIndexOf(".");
+    var path = documentLocation.substring(0, index); // upto "."
+    var ext = documentLocation.substring(index+1, documentLocation.length);
+    return path + stringToAppend + "." + ext;
+}
+
+/**
+ * returns the file name from path name, e.g., xyz.doc from \\ab\b\c\xyz.doc
+ */
+function sfGetFileNameFromPathName (pathName)
+{
+    var index = pathName.lastIndexOf("\\");
+    return index > 0 ? pathName.substring(index+1, pathName.length) : "";
+}
+
+/**
+    documentName - name of the document to save the changes
+    actionUrl - server action url to get the document
+*/
+function sfSaveDocumentToClient (documentName, actionUrl)
+{
+    try {
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage("sfSaveDocumentToClient "  + "document Name "
+                + documentName + " strUrl " + actionUrl);
+        }
+        
+        if (sfClientFileExists(documentName)) {
+            sfSetDocumentAttributes(documentName, true);
+        }
+        
+        var xmlhttp = sfGetHttp();
+        xmlhttp.Open("Get", actionUrl, false);
+        xmlhttp.Send(null);
+        
+        var outStream = new ActiveXObject("ADODB.Stream");
+        outStream.Type = 1; // adTypeBinary
+	    outStream.Open();
+
+        /* 0 - uninitialized; 1 - open;  2 - sent; 3 - receiving; 4 - loaded */
+        while (xmlhttp.readyState != 4) {
+            // Wait for the http to come back - XXX need to fix this
+        }
+        
+        outStream.Write(xmlhttp.ResponseBody);
+        outStream.saveToFile(documentName, 2);
+        outStream.close();
+        outStream = null; // Is this necessary??
+
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg2, MIE + "sfSaveDocumentToClient ", ex);
+        throw ex;
+    }
+}
+
+/**
+ *  public api
+ */
+function siSaveDocumentToClient (args)
+{
+    sfLoggerInit(null, "siSaveDocumentToClient", args);
+    try {
+        return sfSaveDocumentToClient(sfForwardToBackSlash(args[Params.sDocumentLocation]),
+            ClientAutomation.ResolvePartialURL(args[Params.urlActionUrl]));
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+        return false;
+    }
+}
+
+function sfSaveFile (document)
+{
+    if (document != null) {
+        document.Save();
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage("Saving Document " + document.Path);
+        }
+    }
+}
+
+/**
+    Save clause to Client;
+    this also creates the folders on the client side - used for templates
+    Gopal todo - need to move the folder creation part outside of this
+*/
+function sfSaveClauseToClient (fileFullPath, clauseId, docUrl)
+{
+    try {
+        document.body.style.cursor = "wait";
+        var fso = sfGetFso();
+        var index1 = 0;
+        var index2 = fileFullPath.indexOf(FolderSeparator);
+
+        do  {
+            /* index2 is not inclusive */
+            var directoryName = sfTrim(fileFullPath.substring(0, index2));
+            if (!fso.FolderExists(directoryName)) {
+                fso.CreateFolder(directoryName);
+            }
+            index1 = index2 + 1;
+            index2 = fileFullPath.indexOf(FolderSeparator, index1);
+        } while (index2 >= 0)
+
+        var strUrl = docUrl;
+        if (clauseId != "") {
+            strUrl = strUrl.concat("&clauseId=");
+            strUrl = strUrl.concat(clauseId);
+        }
+
+        return sfSaveDocumentToClient(fileFullPath, strUrl);
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "saveClauseToClient", null);
+        throw ex;
+    }
+}
+
+/**
+    Posts the file time stamp to the strUrl
+*/
+function sfSaveSyncHistory (fileTimestamp, strUrl)
+{
+    try {
+        /*
+                
+        The following request used to be a POST before. However, it was causing the issue 
+        described in CR 1-AW5920, so as a fix, we set Connection "close" request header
+        on the caller explicitly and force the POST body to get sent.
+        Reference for the fix: 
+        http://blogs.x2line.com/al/archive/2010/01/04/3718.aspx  
+        
+        However, this fix caused another issue described below.
+        CR 1-B6LDKS: The POST method above is causing an issue on IIS with Single Sign ON:
+        After sending the header, the Web Server and the Client both wait 
+        for each other for a response. Eventually, the Server times out waiting 
+        for the message body. As a result, DFS becomes unusable.
+        The fix: do a GET instead of a POST. As such, only timestamp needs to be sent,
+        so it is easy to send it as a GET.
+        
+        Also modified SmartClientScriptUtil.saveSyncHistoryUtil to parse the timestamp
+        from the URL itself.
+        */
+        
+        if (fileTimestamp != "") {
+            strUrl = strUrl.concat("&timestamp=");
+            strUrl = strUrl.concat(fileTimestamp);
+        }
+        
+        var xmlhttp = sfGetHttp();
+        xmlhttp.Open("Get", strUrl, false);
+        xmlhttp.Send(null);
+
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg3, MIE + "sfSaveSyncHistory: URL=" + strUrl, ex);
+        throw ex;
+    }
+}
+
+/**
+ *  public api
+ */
+function siSaveSyncHistory (args)
+{
+    sfLoggerInit(null, "siSaveSyncHistory", args);
+    return sfSaveSyncHistory(args[Params.dDocumentTimestamp],
+            ClientAutomation.ResolvePartialURL(args[Params.urlActionUrl]));
+}
+
+/**
+    Replaces the forward slash to backward slash; also changes c:\xxx to c:\\xxx
+*/
+function sfForwardToBackSlash (inputStr)
+{
+    try {
+        var str = inputStr;
+        /* the following statment does a global replacement */
+        str = str.replace(/\//g, "\\");
+        str = str.replace(/:\\/, ":\\\\");
+        return str;
+    }
+    catch (ex){
+        return inputStr;
+    }
+}
+
+/**
+    Set the read only property of a file
+*/
+function sfSetDocumentAttributes (documentName, isDocumentEditable)
+{
+    try {
+        var str = sfForwardToBackSlash(documentName);
+        var fileSys = sfGetFso();
+        if (!fileSys.FileExists(str)) {
+            LoggerUtil.logError(null, "sfSetDocumentAttributes: document is not found", null);
+            return false;
+        }
+        var aDocument = fileSys.GetFile(str);
+        if (isDocumentEditable) {
+            if ((aDocument.attributes & 1) == 1) { // ReadOnly = 1
+                aDocument.attributes = aDocument.attributes - 1;
+            }
+        }
+        else {
+            if ((aDocument.attributes & 1) == 0) { // ReadOnly = 1
+                aDocument.attributes = aDocument.attributes + 1;
+            }
+        }
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfSetDocumentAttributes  DocumentName:" + documentName, ex);
+        throw ex;
+    }
+}
+
+/**
+    Opens the client file after the setting the document editable attribute
+*/
+function sfOpenClientFileWithApp (fileFullPath, isDocumentEditable)
+{
+    sfSetDocumentAttributes(fileFullPath, isDocumentEditable);
+    return sfOpenClientDocument(fileFullPath);
+}
+
+/**
+ *  public API
+ */
+function siOpenClientFileWithApp (args)
+{
+    return sfOpenClientFileWithApp(args[Params.sDocumentLocation],
+            args[Params.bIsDocumentEditable]);
+}
+
+/**
+    Opens the document with the right mode
+    From MSDN: if Word is installed on your computer system, calling Run on a *.doc
+    file starts Word and loads the document.
+    XXX: Do we need this?  This seems to be a short cut to open the doucment quickly
+*/
+function sfOpenClientDocument (fileFullPath)
+{
+    try {
+        var objWSH = new ActiveXObject("WScript.Shell");
+        var filePath = sfForwardToBackSlash(fileFullPath);
+        objWSH.Run("\"" + filePath + "\"", 1);
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg1, MIE + "sfOpenClientDocument " + fileFullPath, ex);
+        throw ex;
+    }
+}
+
+/**
+ *  public api
+ */
+function siOpenClientDocument (args)
+{
+    return sfOpenClientDocument(args[Params.sDocumentLocation]);
+}
+
+/**
+    Saves the file to client - this also create the folder hierarchy if it does not exist
+*/
+function sfSaveFileToClient (folderArray, documentName, actionUrl)
+{
+    try {
+        if (!sfCreateFolderTree(folderArray)) {
+            return false;
+        }
+        return sfSaveDocumentToClient(documentName, actionUrl);
+    }
+    catch (ex) {
+        LoggerUtil.logMessage(MIE + "sfSaveFileToClient" + "Folder Array=" + folderArray +
+            ", DocumentName=" + documentName + ", ActionURL=" + actionUrl);
+        throw ex;
+    }
+}
+
+/**
+ * public API
+ */
+function siSaveFileToClient (args)
+{
+    try {
+        sfLoggerInit(null, "siSaveFileToClient", args);
+        var folderArray = args[Params.sFolderName].split("******");
+        return sfSaveFileToClient(folderArray, args[Params.sDocumentLocation],
+            ClientAutomation.ResolvePartialURL(args[Params.urlActionUrl]));
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+        return false;
+    }
+}
+
+/**
+    Move the file from oldLocation to newLocation
+*/
+function sfMoveClientFile (folderArray, oldLocation, newLocation)
+{
+    try {
+        if (!sfCreateFolderTree(folderArray)) {
+            return false;
+        }
+        var fso = sfGetFso();
+        if (fso.FileExists(newLocation)) {
+            var myfile = fso.GetFile(newLocation);
+            myfile.Delete(true);
+        }
+        fso.MoveFile(oldLocation, newLocation);
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg6,  MIE + "sfMoveClientFile" + "Folder Array=" + folderArray +
+            ", oldLocation=" + oldLocation + ", newLocation=" + newLocation, ex);
+        throw ex;
+    }
+}
+
+/**
+ *  public api
+ */
+function siMoveClientFile (args)
+{
+    try {
+        sfLoggerInit(null, "siMoveClientFile", args);
+        var folderArray = args[Params.sFolderName].split("******");
+        return sfMoveClientFile(folderArray,
+            sfForwardToBackSlash(args[Params.sDocumentOldLocation]),
+            sfForwardToBackSlash(args[Params.sDocumentNewLocation]));
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+        return false;
+    }
+}
+
+/**
+    folderArray - array (not a collection) of folder starting from the parent
+*/
+function sfCreateFolderTree (folderArray)
+{
+    try {
+        var fso = sfGetFso();
+        for (var i = 0; i < folderArray.length; ++i) {
+            var folder = folderArray[i];
+            if (folder != null && folder.length > 0 && !fso.FolderExists(folder)) {
+                fso.CreateFolder(folder);
+            }
+        }
+        return true;
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg4,
+                MIE + "sfCreateFolderTree(folderArray=" +
+                folderArray + ")" + " Exception ", ex);
+        throw ex;
+    }
+}
+
+/**
+    Copies the file name into a temp file, open a file stream, read the stream
+    and return the byte array.  See below for usage
+    http://www.w3schools.com/ADO/met_stream_read.asp
+*/
+function sfGetFileBytes (filename)
+{
+    try {
+        var tmpFileName = filename.concat(".tmp");
+        var fso = sfGetFso();
+        fso.CopyFile(filename, tmpFileName);
+        var fileStream = new ActiveXObject("ADODB.Stream");
+        fileStream.Type = 1;  //adTypeBinary
+        fileStream.Open();
+        fileStream.LoadFromFile(tmpFileName);
+        var byteArray = fileStream.Read();
+        fileStream.Close();
+        fso.DeleteFile(tmpFileName, true);
+        return byteArray;
+    }
+    catch (ex) {
+        LoggerUtil.logError(GeneratingErr.openDocumentErrorMessage,
+            MIE + "sfGetFileBytes " + "file Name:" + filename, ex);
+        throw ex;
+    }
+}
+
+/**
+ *  public api
+ */
+function siGetFileBytes (args)
+{
+    return sfGetFileBytes(sfForwardToBackSlash(args[Params.sDocumentLocation]));
+}
+
+/**
+    Post data to the server url
+*/
+function sfSendDataToServer (sData, serverUrl)
+{
+    try {
+        var xmlhttp = sfGetHttp();
+        xmlhttp.Open("POST", serverUrl, false);
+        xmlhttp.Send(sData);
+        return xmlhttp.responseText;
+    }
+    catch (ex) {
+        LoggerUtil.logMessage(MIE + "sfSendDataToServer " + "server url " + serverUrl);
+        throw ex;
+    }
+}
+
+/**
+    public api
+*/
+function siCallServer (args)
+{
+    sfSendDataToServer("", ClientAutomation.ResolvePartialURL(args[Params.urlActionUrl]));
+}
+
+/**
+    public api
+    xxx why do we need this?  this seems to be quite expensive
+*/
+function siSendDataToServer (args)
+{
+    var fileBytes = "";
+    try {
+        fileBytes = sfGetFileBytes(sfForwardToBackSlash(args[Params.sDocumentLocation]));
+    }
+    catch (ex) {
+        /* there are places we are calling this with a invalid file name - doc id */
+    }
+
+    sfSendDataToServer(fileBytes, ClientAutomation.ResolvePartialURL(args[Params.urlActionUrl]));
+}
+
+/**
+    Returns true if the client document has changed
+*/
+function sfIsClientChanged (clientDocumentName, serverTimestamp)
+{
+    if (!sfClientFileExists(clientDocumentName)) {
+        return false;
+    }
+    var cachedTimestamp = sfClientFileTimestamp(clientDocumentName);
+    if (cachedTimestamp == "") {
+        return false;
+    }
+    
+    if (cachedTimestamp != serverTimestamp) {
+        return true;
+    }
+    else {
+        var anApp = null;
+        try {
+            anApp = new ActiveXObject("Word.Application");
+            var aIndex = clientDocumentName.lastIndexOf("/");
+            var strlen = clientDocumentName.length;
+            var documentName = clientDocumentName.substr(aIndex+1, (strlen-aIndex)-1);
+            var appDocs = anApp.Documents;
+            var count = appDocs.Count;
+            for (var i = 1; i <= count; ++i) {
+                var appDoc = appDocs.Item(i);
+                if (appDoc.Name == documentName) {
+                    return !appDoc.Saved;  // document is not saved yet ==> document is changed
+                }
+            }
+        }
+        catch (ex) {
+            LoggerUtil.logMessage(GeneratingErr.contactApplicationErrorMessage);
+            throw ex;
+        }
+        finally {
+             if (anApp != null) {
+                 sfQuitApp(anApp);
+             }
+        }
+    }
+
+    return false;
+}
+
+/**
+    This flow is totally weird
+    We are asking SmartClientScriptUtil for folder array as well
+    as filedownload reponse and the folder string
+    TODO Gopal - we need to fix this for sure
+*/
+function sfAutoOpenSyncupDocument (sfilename)
+{
+    var retVal = SmartClientScriptUtil.saveFileToClient(sfilename);
+    if (retVal) {
+        var ts = sfClientFileTimestamp(sfilename);
+        if (ts != "") {
+            if (!sfSaveSyncHistory(ts, sfFormatUrl(SmartClientScriptUtil.actionIds.saveSyncHistoryWithCommit))) {
+                // TODO This was called twice
+                LoggerUtil.logMessage("Error: saveSyncHistoryWithCommit failed with ts=" +  ts);
+                return false;
+            }
+        }
+        else {
+            LoggerUtil.logMessage("Error: clientFileTimestamp is bad for sfilename=" + sfilename);
+            return false;
+        }
+    }
+
+    return retVal;
+}
+
+/**
+    Return true if open succeeds, else False.
+*/
+function sfOpenOrFindDocumentByDFSFilename (ec, filename, canDownload, readonly)
+{
+    try {
+        var retVal = true;
+        /*
+            Only vault files with sync history can be "auto-loaded".  Vault files are
+            explicitly downloaded by client code generated by the server if the sync history
+            indicates that the client copy is out of date.  But if the user has explicitly
+            deleted it from the client vault in Windows, we should just download a fresh copy
+            and update the sync history.  Temp files used for added clauses from the library
+            or conditional clauses that have just become applicable, or copyProjectSource
+            documents are downloaded explicitly when used and we cannot auto-load them.
+        */
+
+        if (canDownload && !sfClientFileExists(filename)) {
+            retVal = sfAutoOpenSyncupDocument(filename);
+        }
+
+        if (retVal) {
+            // Opens and activates the file, or just activates if already open.
+            if (ec.wordType == WordType.Word07Type || 
+                    ec.wordType == WordType.Word10Type) {
+                var filePath = sfGetFilePath(ec.sDocumentLocation, true);
+                var fileName = sfGetFilePath(ec.sDocumentLocation, false);
+                if (filePath != "") {
+                    ec.wordApp.ChangeFileOpenDirectory(filePath);
+                }
+            }
+
+            var confirmConversions = false;
+            var addToRecentFiles = false;
+            var passwordDocument = "";
+            var passwordTemplate = "";
+            var revert = false;
+            
+            ec.wordApp.Documents.Open(filename, confirmConversions, readonly,
+                addToRecentFiles, passwordDocument, passwordTemplate, revert);
+
+            ec.hideApp();
+        }
+
+        return retVal;
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfOpenOrFindDocumentByDFSFilename", ex);
+        throw ex;
+    }
+}
+
+/**
+    Delete the file forcefully, and if its folder is now empty, delete the folder too.
+    This is cool because under DFS particularly for temp files, we put each file in its
+    own folder with a name derived from the bookmark or the internalId (or both),
+    and the folder is worthless and annoying debris if the single file it  contained is
+    deleted.  It will recursively delete up to folderCount parent folders, if they are
+    empty after each previous deletion.
+*/
+function sfDeleteFileAndMaybeFolder(fileName, folderCount)
+{
+    try {
+        var fso = sfGetFso();
+        var parentFolderName = fso.getParentFolderName(filename);
+        if (fso.FileExists(fileName)) {
+            fso.DeleteFile(fileName, true); // force delete of read only files
+        }
+        if (folderCount > 0) {
+            sfDeleteMaybeFolderHelper(fso, parentFolderName, folderCount - 1);
+        }
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg5, MIE + "sfDeleteFileAndMaybeFolder: file name is " + fileName, ex);
+        throw ex;
+    }
+}
+
+/**
+    Removes the folder (if empty) and the parent folders based on the folder count
+    TODO Gopal - change this weird name; we are keeping it for compatibility
+*/
+function sfDeleteMaybeFolderHelper(fso, folderName, folderCount)
+{
+    try {
+        var parentFolderName = fso.getParentFolderName(folderName);
+        if (fso.FolderExists(folderName)) {
+            var folder = fso.getFolder(folderName);
+            var files = folder.Files;
+            var subFolders = folder.SubFolders;
+            if (files.Count <= 0 && subFolders.Count <= 0) {
+                /* we are deleting only empty folders */
+                fso.DeleteFolder(folderName, true); /* force delete of folder */
+                if (folderCount > 0) {
+                    sfDeleteMaybeFolderHelper(fso, parentFolderName, folderCount - 1);
+                }
+            }
+        }
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg5, MIE + "sfDeleteMaybeFolderHelper: folder name is " + folderCount, null);
+        throw ex;
+    }
+}
+
+function sfClientDocumentDetect (documentLocation, dlastSyncTimestamp)
+{
+    var fso = sfGetFso();
+
+    if (dlastSyncTimestamp != "" && fso.FileExists(documentLocation)) {
+        return DFS.isFileChanged(dlastSyncTimestamp, documentLocation, documentLocation);
+    }
+    else {
+        return false;
+    }
+}
+
+/**
+ * public API
+ */
+function siClientDocumentDetect (args)
+{
+    return sfClientDocumentDetect(sfForwardToBackSlash(args[Params.sDocumentLocation]),
+            args[Params.dLastSyncTimestamp]);
+}
+
+function sfDeleteFile (fileName)
+{
+    try {
+        var fso = sfGetFso();
+        fso.DeleteFile(fileName, true);
+    }
+    catch (ex) {
+        LoggerUtil.logError(DFSErr.Msg5, "sfDeleteFile: cannot delete file" + fileName, ex);
+        throw ex;
+    }
+}
+
+/**
+ *  copy the contents from source to target
+ */
+function sfCopyFile (srcFileName, targetFileName)
+{
+    try {
+        var fso = sfGetFso();
+        fso.CopyFile(srcFileName, targetFileName);
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, "sfCopyFile: cannot copy files " + srcFileName + 
+                            " " + targetFileName, ex);
+        throw ex;
+    }
+}
+
+/**
+ * Given a temp folder d:\temp and file name d:\dfs\agreement.doc this would return
+ * the full path name d:\temp43\agreement.doc
+ * xxx Gopal - what happens if there are collisons? milliseconds a better choice?
+ */
+function sfGetTempFileNameUsingTimestamp (tempFolder, documentLocation)
+{
+    var loc = sfForwardToBackSlash(tempFolder);
+    var d = new Date();
+    loc = loc.concat(d.getSeconds());
+
+    sfCreateDirectory(loc);  // catch exception??
+
+    loc = loc.concat("\\");
+    loc = loc.concat(sfGetFileNameFromPathName(documentLocation));
+
+    return loc;
+}
+
+/* Register events as non secure scripts cannot look into the secure scripts */
+sfExportFunctions(
+    new Array (
+        "siCallServer", siCallServer,
+        "siSendDataToServer", siSendDataToServer,
+        "siSaveSyncHistory", siSaveSyncHistory,
+        "siGetTempFolderPath", siGetTempFolderPath,
+        "siCreateDirectory", siCreateDirectory,
+        "siSaveFileToClient", siSaveFileToClient,
+        "siClientFileExists", siClientFileExists,
+        "siOpenClientDocument", siOpenClientDocument,
+        "siOpenClientFileWithApp", siOpenClientFileWithApp,
+        "siMoveClientFile", siMoveClientFile,
+        "siSaveDocumentToClient", siSaveDocumentToClient,
+        "siGetFileBytes", siGetFileBytes,
+        "siClientDocumentDetect", siClientDocumentDetect,
+        "siAreTimestampsEqual", siAreTimestampsEqual,
+        "siCompatibleClientFileTimestamp", siCompatibleClientFileTimestamp,
+        "siClientFileTimestamp", siClientFileTimestamp
+    )
+);

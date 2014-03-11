@@ -1,0 +1,37 @@
+<w:ModalPageWrapper title="Ariba Expression Madness">
+
+    Max(10, 20) = <a:String value='${java.lang.Math.max(10, 20)}'/> <br/>
+    2 + 3 = <a:String value="${2+3}"/> <br/>
+
+    null == null:  <a:String value="${null == null}"/> <br/>
+
+    <a:For list="${['one', 2^5, 'three']}" item="$item">
+        Element: $item   <a:String value="${item + 5}"/>
+        <a:If ifTrue="${item.equals('three')}">-- it's three!</a:If>
+        <br/>
+    </a:For>
+    <br/>
+    List access: <a:String value="${['one', 2^5, 'three'][1]}"/><br/>
+    Session ID: <a:String value="${session().sessionId()}"/><br/>
+
+    Find odds: <a:String value="${[1, 2, 3, 4, 5, 6].collect { it*3 }.findAll { it % 2 == 1 }}"/><br/>
+    Sum: <a:String value="${[5, 10.5, 100].sum { it*10 }}"/><br/>
+
+    <a:InitializeValue nums='${[5, 10.5, 3, 5.5]}'/>
+    Min: <a:String value="${nums.min { it*2 }}"/><br/>
+
+    Dict: <a:String value='${["a":"ay"]}'/><br/>
+    Should be "b":<a:String value='${[a : [a1 : ["a", "b", "c"]], b: "bee"].a.a1[1]}'/><br/>
+
+    Local var: <a:String value="${aa=['one', 2^5, 'three'];aa[0]}"/><br/>
+    
+    <a:String value="$aa"/><br/>
+    Middle should be [1, "yeah", 3]:
+
+    <a:String value='${def v=[a : [a1 : [1, 2, 3]], b: "bee"];v.a.a1[1]="yeah";v.b="cee";v}'/><br/>
+
+    Min: <a:String value="${java.lang.Math.min(3,5)}"/><br/>
+
+    Static method invocation: <a:String value="${ariba.ui.aribaweb.util.AWUtil.lastComponent('one.two.last', '.')}"/><br/>
+
+</w:ModalPageWrapper>

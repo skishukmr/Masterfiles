@@ -1,0 +1,132 @@
+<ModalPageWrapper title="Create Contract Invoices: Select Customer" okAction="$goto.Invoicing" doneTitle="Exit">
+        <span class="bodyText"><br>
+        <table cellSpacing="0" cellPadding="0" border="0">
+          <tbody>
+          <tr><td class="hint" width="1%">&nbsp;</td>
+                <td width="98%" class="hint" colSpan="2"><p><dt:loc id=8>
+                <br/>Select a customer from the list below, and click <b>Go</b> to continue the process.
+                                    If the customer is not in the list displayed, you can search for them by entering the name
+                                    in the Customer Name entry field.
+                        <br/><br/></dt:loc></p></td>
+                        <td class="hint" width="1%">&nbsp;</td></tr>
+                        <tr><td width="1%" valign="top">
+                        <img height="7" width="12" src="resources/hint_lc.gif" border="0" class="block"></td>
+                        <td class="hint" width="49%"><img height="1" width="1" src="resources/cleardot.gif" border="0" class="block"></td>
+                        <td class="hint" width="49%"><img height="1" width="1" src="resources/cleardot.gif" border="0" class="block"></td>
+                        <td width="1%" align="right" valign="top">
+                        <img height="7" width="12" src="resources/hint_rc.gif" border="0" class="block"></td></tr>
+                        </tbody>
+                    </table>
+                    <br/>
+          <table border="0" width="95%" cellpadding="4" cellspacing="0" align="center"><tr>
+              <td class="bodyText" style="border: #666666 1px solid; background-color: #FFFFCC" colspan="2">
+              When you click <b>Go</b>, the contracts site of the selected customer will be opened in a
+              separate browser window.  Contact the customer for any technical problems that arise in that site.
+               </td></tr><tr><td class="bodyText" colspan="2"><br/><br/></td></tr><tr><td align="right" class="bodyText" nowrap width="10%">Customer Name:&nbsp;
+                    <input id="_fg" type="text" value="" maxlength="128" size="20" name="_fg" awname="buyerName">
+        </td><td align="left" class="bodyText">
+        <TextButton action="$null">Search</TextButton>
+
+        </td></tr><tr><td colspan="2"><br/>
+                <div id="_fl" style="display:inline;">
+</div>
+                </td></tr>
+        </table>
+</span>
+<AWXDCLoadAQL value="$supplierSysId"
+              query="select SystemID from ariba.common.core.CommonSupplier where Name.PrimaryString = :supplierName"
+              supplierName="$session.dict.demoSession.supplierName"
+              scalar="$true"/>
+<AWXDCLoadAQL value="$buyers"
+              query="select Organization TheObject from ariba.user.core.Organization where IsSupplier=false and IsCustomer=false"/>
+<AWTDataTable list="$buyers" item="$buyer"
+              showBatchNavigation="$true"
+              batchSize="15"
+              enableScrolling="$false">
+  <AWTHeadingArea>&nbsp;</AWTHeadingArea>
+  <AWTColumn label="Customer" key="Name.PrimaryString"/>
+  <AWTColumn label="Actions">
+    <AWHyperlink action="$punchin">Go!</AWHyperlink>
+  </AWTColumn>
+</AWTDataTable>
+</ModalPageWrapper>
+<server>
+  function punchin ()
+  {
+
+     var appinfo = ariba.util.parameters.AppInfo.getRunningAppInfo();
+     var rootUrl = appinfo.getInternalURL();
+     if (rootUrl.toLowerCase().indexOf("https:") >= 0) {
+       Log.javascript.debug("Warning: internal URL is ssl, cooking up my own! Internal URL="+rootUrl);
+       var url = new URL(rootUrl);
+       var p = new java.util.Properties();
+       p.load(new java.io.FileInputStream("config/deployer.properties"));
+       var port = p.get("server1.port");
+       Log.javascript.debug("Found server 1 port:"+port);
+       url = new URL("http", url.getHost(), port, url.getFile());
+       rootUrl = url.toString();
+       Log.javascript.debug("Cooked up non-ssl URL: "+rootUrl);
+     }
+
+     var url = rootUrl+"/"+
+               appinfo.getContextRoot()+"/"+
+               appinfo.getCXMLServletName();
+     var returnUrl = appinfo.getIncomingHttpServerURL()+"/"+
+               appinfo.getContextRoot()+"/Main/ad/showPage/Demo?dsID="+
+               get(component,"session.dict.demoSession.sessionId")+
+               "&amp;page=DemoCollaboration/ContractInvoicing.htm";
+     user = get(component, "session.dict.demoSession.username");
+     var p1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE cXML SYSTEM \"http://xml.cxml.org/schemas/cXML/1.2.011/cXML.dtd\"><cXML version=\"1.2.009\" xml:lang=\"en-US\" timestamp=\"2003-07-01T17:47:28-07:00\" payloadID=\"1057106848405.1771336533.000000001@4zBzbqLjvulD1NpvZtmr8BbajUc=\">"+
+              "<Header><From><Credential domain=\"buyersystemid\"><Identity>"+
+              get(component, "supplierSysId")+
+           "</Identity></Credential>"+
+             "</From>"+
+               "<To>"+
+                  "<Credential domain=\"NetworkID\">"+
+                       "<Identity>AN10189911</Identity>"+
+                  "</Credential>"+
+      "</To>"+
+      "<Sender>"+
+        "<Credential domain=\"NetworkID\">"+
+            "<Identity>AN01000000001</Identity>"+
+            "<SharedSecret>"
+            +appinfo.getSharedSecret()+
+            "</SharedSecret>"+
+        "</Credential>      "+
+           "<UserAgent>www.procuron.com</UserAgent>"+
+      "</Sender>"+
+   "</Header>"+
+   "<Request>"+
+      "<ProviderSetupRequest>"+
+            "<OriginatorCookie>"+java.lang.System.currentTimeMillis()+"</OriginatorCookie>"+
+            "<BrowserFormPost><URL></URL></BrowserFormPost>"+
+            "<Followup><URL></URL></Followup>"+
+            "<SelectedService>BuyerPortal</SelectedService>"+
+            "<Extrinsic name=\"OperationMode\">ViewContract</Extrinsic>"+
+            "<Extrinsic name=\"SupplierName\">"+user+"</Extrinsic>"+
+            "<Extrinsic name=\"SupplierUniqueID\">"+user+"</Extrinsic>"+
+
+
+            "<Extrinsic name=\"ReturnToLinkURL\">"+returnUrl+"</Extrinsic>"+
+            "<Extrinsic name=\"ReturnToLinkLabel\">ASN</Extrinsic>"+
+      "</ProviderSetupRequest>"+
+   "</Request>"+
+  "</cXML>";
+
+     var responseDoc = ariba.ui.demoshell.XMLFactory.post(url, p1);
+     var resultString = ariba.ui.demoshell.XMLFactory.toString(responseDoc);
+     var redirectURL = get(responseDoc, "Response.ProviderSetupResponse.StartPage.URL.text");
+     Log.javascript.debug(resultString);
+     if (redirectURL != null && redirectURL.trim() != '') {
+       return ariba.ui.aribaweb.core.AWRedirect.getRedirect(component.requestContext(), redirectURL.trim());
+     }
+     else {
+       var next = page("PunchinFailure.htm");
+       set(next, "returnPage", "DemoCollaboration/ContractInvoicing.htm");
+       set(next, "isPending", resultString.indexOf("ERR_USER_PENDING_APPROVAL") >= 0);
+       return next;
+     }
+     return null;
+  }
+
+</server>

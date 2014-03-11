@@ -1,0 +1,218 @@
+<w:ModalPageWrapper title="A Cool Inspector!" editable="$true" okayTitle="Submit">
+
+    <br/>
+    <b onClick="pullHttp('http://www.yahoo.com')">Click to Run Pull</b>
+    <br/>
+    <br/>
+
+    <span id="same">number one</span>
+    <span id="same">number two</span>
+    <b onClick="alert(awgetElementById('same').innerHTML)">Test look up </b><br/>
+    <b onClick="addContent();">Add span </b><br/>
+    <div id="container"></div>
+
+    <br/>
+
+    <script language="javascript">
+      function addContent () {
+            awgetElementById('container').innerHTML="<span id='same'>number three</span>";
+      }
+
+      function newConnection () {
+          var xmlhttp = null;
+          try {
+              // IE?
+              xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+          } catch (e) {
+              try {
+                  // Netscape
+                  xmlhttp = new XMLHttpRequest();
+              } catch (e) {
+                  alert("Your browser does not support incremental refresh.  You need IE 5.5+ or NS 7.0+");
+              }
+          }
+          return xmlhttp;
+      }
+
+      function pullHttp (url) {
+            var xmlhttp = newConnection();
+            xmlhttp.open( "GET" , url , true );
+            xmlhttp.onreadystatechange = function () {
+                    debug("Called back: " + xmlhttp.readyState);
+                    if (xmlhttp.readyState == 4 || xmlhttp.readyState == 'complete') {
+                        var responseText = xmlhttp.ResponseText;
+                        debug("Response text: " + responseText);
+                        var div = awgetElementById("result");
+                        div.innerHTML = responseText;
+                    }
+                };
+            xmlhttp.send();
+      }
+  </script>
+
+    <div id="result">Result goes here...</div>
+    
+    <!---
+
+
+    <textarea id="jsTextArea" rows="15" cols="60">var a = 10; alert("a = " + a);</textarea>
+    \<a onClick="runJs()">Run JS!\</a>
+    <br/><br/>
+    <span id="jsRunElement">Script will run here?</span>
+    <br/><br/>
+    <script>
+        function runJs() {
+            var jsElem = awgetElementById("jsTextArea");
+            window.eval = eval;
+            window.eval(jsElem.value);
+
+        /*
+            var script = '\<script language="JavaScript"\>' + jsElem.value + '\</script\>';
+            // var script = '\<pre\>' + jsElem.value + '\</pre\>';
+            alert("Running..." + script);
+
+            // var jsRun = awgetElementById("jsRunElement");
+            // jsRun.innerHTML = script;
+            document.write(script);
+        */
+        }
+    </script>
+
+
+<br/>
+<br/>
+    <script language="JavaScript">
+        function reportScroll (obj, event) {
+            var spacer = awgetElementById("spacer");
+            awgetElementById("scrollStats").innerHTML =
+                          "pixelHeight: " + obj.style.pixelHeight + "<br/>"
+                        + "scrollHeight: " + obj.scrollHeight + "<br/>"
+                        + "scrollTop: " + obj.scrollTop + "<br/>"
+                        + "spacerHeight: " + spacer.style.pixelHeight + "<br/>";
+            if ((obj.scrollTop + obj.style.pixelHeight + spacer.style.pixelHeight) > obj.scrollHeight) {
+                // delay is just for show...
+                setTimeout("loadMoreContent()", 1000);
+            }
+        }
+
+        function loadMoreContent() {
+            // show hidden div
+            spacer.style.display="none";
+            awgetElementById("lazy").style.display="inline";
+        }
+    </script>
+
+    <br/>
+
+    <div style="overflow:auto;width:80%;height:200px;" onScroll='reportScroll(this, event); return true;'>
+        <div>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            .clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            ..clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+            ...clientX, clientY, offsetX, offsetY, screenX, screenY, srcElement, type, x, y <br/>
+        </div>
+        <div id="spacer" style="height:30px">
+            <br/>
+            <b><i>loading....</i></b><br/>
+        </div>
+        <div id="lazy" style="display:none">
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+            And some dynamically loaded stuff.....<br/>
+        </div>
+    </div>
+
+    <br/>
+    <br/>
+    Scroll Stats:<br/>
+    <div id="scrollStats">
+    </div>
+    -->
+</w:ModalPageWrapper>

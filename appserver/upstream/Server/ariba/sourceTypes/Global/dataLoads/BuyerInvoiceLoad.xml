@@ -1,0 +1,526 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerDeleteInvoiceLineItem">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation  INCLUDE INACTIVE"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage fromClause=":InterfaceTable JOIN FACT_INVOICE_LINE_ITEM INV ON :InterfaceTable.InvoiceId = INV.INVOICE_ID"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName" sourceLookupField="UniqueName" />
+        </field>
+        <field name="InvoiceLineNumber">
+            <interfaceSqlMapping selectColumn="INV.INVOICE_LINE_NUMBER"/>
+        </field>
+        <field name="ExtraInvoiceLineKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ExtraInvoiceKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SplitAccountingNumber">
+            <interfaceSqlMapping selectColumn="INV.SPLIT_ACCOUNTING_NUMBER"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceLineItem">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING InvoiceReconciliationLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING InvoiceReconciliationLineItem.LineType
+                              LEFT OUTER JOIN ariba.common.core.Address AS ShipTo SUBCLASS NONE INCLUDE INACTIVE USING InvoiceReconciliationLineItem.ShipTo
+                              LEFT OUTER JOIN ariba.tax.core.TaxInfo As Tax SUBCLASS NONE INCLUDE INACTIVE USING InvoiceReconciliationLineItem.ExpectedTax
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Order
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING InvoiceReconciliation.Requester
+                              LEFT OUTER JOIN ariba.contract.core.Contract PARTITION ANY INCLUDE INACTIVE USING InvoiceReconciliationLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.contract.core.ForecastedSpend AS ForecastedSpend INCLUDE INACTIVE USING Contract.ForecastedSpend
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING InvoiceReconciliationLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money AS SplitAccountAmount USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING SplitAccountAmount.Currency
+                              LEFT OUTER JOIN ariba.payment.core.PaymentAmounts AS PaidAmt USING InvoiceReconciliation.PaidAmounts
+                              LEFT OUTER JOIN ariba.basic.core.Money AS PaidNetAmt INCLUDE INACTIVE USING PaidAmt.NetAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS PaidNetAmtCurrency INCLUDE INACTIVE USING PaidNetAmt.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.UnitOfMeasure INCLUDE INACTIVE USING LineItemProductDescription.UnitOfMeasure
+                              LEFT OUTER JOIN ariba.invoicing.core.InvoiceLineItem AS InvLI USING InvoiceReconciliationLineItem.StatementLineItem
+                              LEFT OUTER JOIN ariba.basic.core.Money AS InvLIAmount INCLUDE INACTIVE USING InvLI.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Money AS IRLIAmount INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Money AS IRLIExpectedTaxAmount INCLUDE INACTIVE USING InvoiceReconciliationLineItem.TaxAmount
+                              LEFT OUTER JOIN ariba.basic.core.Money AS IRLIAccrualTaxAmount INCLUDE INACTIVE USING InvoiceReconciliationLineItem.AccrualTaxAmount
+                              LEFT OUTER JOIN ariba.purchasing.core.POLineItem USING InvoiceReconciliationLineItem.OrderLineItem
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS POLineDescription USING POLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.Money AS POLineMoney USING POLineDescription.Price
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS POLineCurrency INCLUDE INACTIVE USING POLineMoney.Currency
+                              LEFT OUTER JOIN ariba.contract.core.ContractLineItem AS ContractCoreApprovableLineItem USING InvoiceReconciliationLineItem.MALineItem
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS MALineDescription USING ContractCoreApprovableLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MALineMoney USING MALineDescription.Price
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MALineCurrency INCLUDE INACTIVE USING MALineMoney.Currency
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING InvoiceReconciliation.ProcurementUnit"
+                whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="InvoiceNumber">
+                <aqlMapping selectField="Invoice.InvoiceNumber"/>
+            </field>
+            <field name="InvoiceId">
+                <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="InvoiceLineNumber">
+                <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+            </field>
+            <field name="ExtraInvoiceLineKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExtraInvoiceKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+
+            <field name="InvoiceDate">
+                <aqlMapping selectField="Invoice.InvoiceDate"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="LineItemProductDescription.Description"/>
+            </field>
+            <field name="AccountingDate">
+                <aqlMapping selectField="InvoiceReconciliation.CreateDate"/>
+            </field>
+            <field name="PaidDate">
+                <aqlMapping selectField="InvoiceReconciliation.PaidDate"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="InvoiceReconciliation.ApprovedDate"/>
+            </field>
+            <field name="Supplier.SupplierLocationId">
+                <aqlMapping selectField="SupplierLocation.UniqueName"/>
+            </field>
+            <field name="Supplier.SupplierId">
+                <aqlMapping selectField="Supplier.UniqueName"/>
+            </field>
+
+            <field name="InvoiceType">
+                <aqlMapping selectField="CASE POLineItem WHEN NULL THEN CASE ContractCoreApprovableLineItem WHEN NULL THEN 'Others' ELSE 'Contract' END ELSE 'PurchaseOrder' END"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="SourceCommodityDomain">
+                <aqlMapping selectField="CommodityCode.Domain"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="Commodity.CommodityId">
+                <aqlMapping selectField="CommodityCode.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+                </analysisMapping>
+            </field>
+            <field name="ERPCommodity.CommodityId">
+                <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+            </field>
+            <field name="UnitOfMeasure.UnitOfMeasureId">
+                <aqlMapping selectField="UnitOfMeasure.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemUOM"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="PoToInvoiceIntervalInt">
+                <aqlMapping selectField="PurchaseOrder.OrderedDate - InvoiceReconciliation.CreateDate"/>
+            </field>
+            <field name="Quantity">
+                <aqlMapping selectField="SplitAccounting.Quantity"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="SplitAccountAmount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="SplitAccountAmount.ConversionDate"/>
+            </field>
+            <field name="OrigAmount">
+                <aqlMapping selectField="SplitAccountAmount.Amount"/>
+            </field>
+            <field name="OrigCurrencyCode">
+                <aqlMapping selectField="Currency.UniqueName"/>
+            </field>
+            <field name="InvoiceStatus">
+                <aqlMapping selectField="Invoice.StatusString"/>
+            </field>
+            <field name="ReconciliationStatus">
+                <aqlMapping selectField="InvoiceReconciliation.StatusString"/>
+            </field>
+
+            <field name="AmountInvoiced.Amount">
+                <aqlMapping selectField="CASE SplitAccounting.Type.UniqueName WHEN '_Quantity'
+                                         THEN (CASE InvoiceReconciliationLineItem.Quantity WHEN 0 THEN 0 
+                                               ELSE InvLIAmount.Amount * SplitAccounting.Quantity / InvoiceReconciliationLineItem.Quantity END)
+                                         ELSE InvLIAmount.Amount * SplitAccounting.Percentage / 100.0 END"/>
+            </field>
+            <field name="AmountInvoiced.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountInvoiced.Date">
+                <aqlMapping selectField="InvLIAmount.ConversionDate"/>
+            </field>
+
+            <field name="AmountAccepted.Amount">
+                <aqlMapping selectField="CASE SplitAccounting.Type.UniqueName WHEN '_Quantity'
+                                         THEN (CASE InvoiceReconciliationLineItem.Quantity WHEN 0 THEN 0
+                                               ELSE IRLIAmount.Amount * SplitAccounting.Quantity / InvoiceReconciliationLineItem.Quantity END)
+                                         ELSE IRLIAmount.Amount * SplitAccounting.Percentage / 100.0 END"/>
+            </field>
+            <field name="AmountAccepted.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountAccepted.Date">
+                <aqlMapping selectField="IRLIAmount.ConversionDate"/>
+            </field>
+
+            <field name="AmountDisputed.Amount">
+                <aqlMapping selectField="CASE SplitAccounting.Type.UniqueName WHEN '_Quantity'
+                                         THEN (CASE InvoiceReconciliationLineItem.Quantity WHEN 0 THEN 0
+                                               ELSE (InvLIAmount.Amount - IRLIAmount.Amount) * SplitAccounting.Quantity / InvoiceReconciliationLineItem.Quantity END)
+                                         ELSE (InvLIAmount.Amount - IRLIAmount.Amount) * SplitAccounting.Percentage / 100.0 END"/>
+            </field>
+            <field name="AmountDisputed.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountDisputed.Date">
+                <aqlMapping selectField="InvLIAmount.ConversionDate"/>
+            </field>
+
+            <field name="POAmount.Amount">
+                <aqlMapping selectField="round(CASE POLineItem WHEN NULL THEN MALineDescription.Price.Amount ELSE POLineDescription.Price.Amount END * SplitAccounting.Quantity, 5)"/>
+            </field>
+            <field name="POAmount.Currency">
+                <aqlMapping selectField="CASE POLineItem WHEN NULL THEN MALineCurrency.UniqueName ELSE POLineCurrency.UniqueName END"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="POAmount.Date">
+                <aqlMapping selectField="CASE POLineItem WHEN NULL THEN MALineDescription.Price.ConversionDate ELSE POLineDescription.Price.ConversionDate END"/>
+            </field>
+
+            <field name="POId">
+                <aqlMapping selectField="PurchaseOrder.UniqueName"/>
+            </field>
+            <field name="POLineNumber">
+                <aqlMapping selectField="POLineItem.NumberInCollection"/>
+            </field>
+            <field name="PODescription">
+                <aqlMapping selectField="POLineDescription.Description"/>
+            </field>
+
+            <field name="CatalogType">
+                <aqlMapping selectField="CASE LineItemProductDescription.IsInternalPartId WHEN TRUE THEN 'NonCatalog' ELSE (CASE InvoiceReconciliationLineItem.PunchOut WHEN NULL THEN (CASE LineItemProductDescription.CatalogItemRef WHEN NULL THEN 'NonCatalog' ELSE 'Catalog' END) ELSE 'Catalog' END) END"/>
+                <analysisMapping enabled="false"/>
+            </field>
+
+            <!-- Null out all Part related fields if this is NonCatalog line item -->
+            <field name="Part.PartKey1">
+                <aqlMapping selectField="LineItemProductDescription.SupplierPartNumber"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="CatalogType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey2">
+                <aqlMapping selectField="LineItemProductDescription.SupplierPartAuxiliaryID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="CatalogType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey3">
+                <aqlMapping selectField="CommonSupplier.SystemID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="CatalogType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="Contract.InitialUniqueName"/>
+            </field>
+            <field name="LineType">
+                <aqlMapping selectField="ProcureLineType.UniqueName"/>
+            </field>
+            <field name="ProcurementSystem">
+                <aqlMapping selectField="CASE POLineItem WHEN NULL THEN CASE ContractCoreApprovableLineItem WHEN NULL THEN 'Non Ariba Buyer' ELSE 'Ariba Buyer' END ELSE 'Ariba Buyer' END"/>
+            </field>
+            <field name="EstimatedSavings.Amount">
+                <aqlMapping selectField="CASE ForecastedSpend.SavingPercentage WHEN NULL THEN 0 ELSE ForecastedSpend.SavingPercentage * SplitAccountAmount.Amount / (100 - ForecastedSpend.SavingPercentage) END"/>
+            </field>
+            <field name="EstimatedSavings.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="EstimatedSavings.Date">
+                <aqlMapping selectField="SplitAccountAmount.ConversionDate"/>
+            </field>
+            <field name="ShipToLocation.LocationId">
+                <aqlMapping selectField="ShipTo.UniqueName"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+			<field name="TaxRate">
+                <aqlMapping selectField="Tax.TaxRate"/>
+            </field>
+			<field name="AccrualTaxAmount.Amount">
+                <aqlMapping selectField="IRLIAccrualTaxAmount.Amount"/>
+            </field>
+            <field name="AccrualTaxAmount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+			<field name="AccrualTaxAmount.Date">
+                <aqlMapping selectField="IRLIAccrualTaxAmount.ConversionDate"/>
+            </field>
+			<field name="ExpectedTaxAmount.Amount">
+                <aqlMapping selectField="Case ProcureLineType.Category WHEN 1 THEN 0 ELSE IRLIExpectedTaxAmount.Amount END"/>
+            </field>
+            <field name="ExpectedTaxAmount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>	
+			 <field name="ExpectedTaxAmount.Date">
+                <aqlMapping selectField="IRLIExpectedTaxAmount.ConversionDate"/>
+            </field>
+            <field name="PaidAmount.Amount">
+                <aqlMapping selectField="PaidNetAmt.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="PaidAmount.Currency">
+                <aqlMapping selectField="PaidNetAmtCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="PaidAmount.Date">
+                <aqlMapping selectField="PaidNetAmt.ConversionDate"/>
+            </field>
+        </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceLineItemAddress">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING InvoiceReconciliationLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.common.core.Address AS ShipFrom SUBCLASS NONE INCLUDE INACTIVE USING InvoiceReconciliationLineItem.ShipFrom"
+                whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="InvoiceId">
+                <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="InvoiceLineNumber">
+                <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+            </field>
+            <field name="ExtraInvoiceLineKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExtraInvoiceKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+			 <field name="ShipFromLocation.LocationId">
+                <aqlMapping selectField="ShipFrom.UniqueName"/>
+            </field>
+		</fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceLineItemSupplierLocation">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING InvoiceReconciliationLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.common.core.SupplierLocation AS ShipFrom SUBCLASS NONE INCLUDE INACTIVE USING InvoiceReconciliationLineItem.ShipFrom"
+                whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="InvoiceId">
+                <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="InvoiceLineNumber">
+                <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+            </field>
+            <field name="ExtraInvoiceLineKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExtraInvoiceKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+			 <field name="ShipFromLocation.LocationId">
+                <aqlMapping selectField="ShipFrom.UniqueName"/>
+            </field>
+		</fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceLineItemPunchOutAddress">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING InvoiceReconciliationLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              JOIN ariba.common.core.punchout.PunchOutAddress AS ShipFrom SUBCLASS NONE INCLUDE INACTIVE USING InvoiceReconciliationLineItem.ShipFrom"
+                whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="InvoiceId">
+                <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="InvoiceLineNumber">
+                <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+            </field>
+            <field name="ExtraInvoiceLineKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExtraInvoiceKey">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+			 <field name="ShipFromLocation.LocationId">
+                <aqlMapping selectField="ShipFrom.UniqueName"/>
+            </field>
+		</fieldMappings>
+</dataLoad>
+
+</allDataLoads>

@@ -1,0 +1,283 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <dataLoad name="BuyerDeleteRequest">
+        <loadStages>
+            <aqlStage fromClause=""
+                      whereClause="Request.SubmitDate IS NULL OR
+                    Request.NextVersion IS NOT NULL OR
+                    Request.StatusString = 'Composing'"
+                      incrementalClause="(Request.TimeUpdated &gt;= :IncrementalStartDate AND
+                    Request.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Request"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="RequestId">
+                <aqlMapping selectField="Request.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerRequest">
+        <loadStages>
+            <aqlStage fromClause="LEFT OUTER JOIN ariba.approvable.core.ApprovalRecord AS SimpleRecord USING Request.Records
+                LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Request.Requester"
+                      whereClause="Request.SubmitDate IS NOT NULL AND
+                    Request.NextVersion IS NULL AND
+                    Request.StatusString != 'Composing'"
+                      incrementalClause="(Request.TimeUpdated &gt;= :IncrementalStartDate AND
+                    Request.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.Request"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="RequestId">
+                <aqlMapping selectField="Request.UniqueName"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="Request.Name"/>
+            </field>
+            <field name="SubmitDate">
+                <aqlMapping selectField="Request.SubmitDate"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="Request.ApprovedDate"/>
+                <interfaceSqlMapping insertColumn="ApprovedDate"
+                                     selectColumn="CASE WHEN ApprovedDate IS NULL THEN LastModified ELSE ApprovedDate END"
+                                     groupBy="ApprovedDate"/>
+            </field>
+            <field name="LastModified">
+                <aqlMapping selectField="Request.LastModified"/>
+                <interfaceSqlMapping insertColumn="LastModified" groupBy="LastModified"/>
+            </field>
+            <field name="ApprovalTime">
+                <interfaceSqlMapping selectColumn="(CASE WHEN ApprovedDate IS NULL THEN TO_DATE(LastModified,'YYYY-MM-DD') ELSE TO_DATE(ApprovedDate,'YYYY-MM-DD') END) - TO_DATE(SubmitDate,'YYYY-MM-DD')"
+                                     db2SelectColumn="(CASE WHEN ApprovedDate is NULL THEN DAYS(LastModified) ELSE DAYS(ApprovedDate) END) - DAYS(SubmitDate)"
+                                     mssqlSelectColumn="DATEDIFF(DAY, CONVERT(datetime, SubmitDate, 20), CONVERT(datetime, (CASE WHEN ApprovedDate is NULL THEN LastModified ELSE ApprovedDate END), 20))"
+                                     groupBy=""/>
+            </field>
+            <field name="Status">
+                <aqlMapping selectField="Request.StatusString"/>
+            </field>
+            <field name="NumberOfApprovers">
+                <aqlMapping selectField="CASE SimpleRecord.RecordType WHEN 'ApproveRecord' THEN 1 WHEN 'DenyRecord' THEN 1 ELSE 0 END"/>
+                <interfaceSqlMapping insertColumn="ApprovalFlag"
+                                     selectColumn="sum(ApprovalFlag)"
+                                     db2SelectColumn="sum(int(ApprovalFlag))"
+                                     mssqlSelectColumn="sum(cast(ApprovalFlag AS INT))"
+                                     groupBy=""/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <!-- Requisition loads -->
+
+    <derivedDataLoad name="BuyerDeleteRequestRequisition" extendsLoad="BuyerDeleteRequest">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.purchasing.core.Requisition AS Request INCLUDE INACTIVE"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerRequestRequisition" extendsLoad="BuyerRequest">
+        <inLoadStages>
+            <inAqlStage prependToFromClause="ariba.purchasing.core.Requisition AS Request
+                LEFT OUTER JOIN ariba.purchasing.core.ReqLineItem INCLUDE INACTIVE USING Request.DefaultLineItems
+                LEFT OUTER JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING ReqLineItem.Accountings
+                LEFT OUTER JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings
+                LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING Request.TotalCost
+                LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="Request.TotalCost.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="Request.TotalCost.ConversionDate"/>
+            </field>
+            <field name="RequestType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Requisition"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <!-- ExpenseReport loads -->
+
+    <derivedDataLoad name="BuyerDeleteRequestExpenseReport" extendsLoad="BuyerDeleteRequest">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport AS Request INCLUDE INACTIVE"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerRequestExpenseReport" extendsLoad="BuyerRequest">
+        <inLoadStages>
+            <inAqlStage prependToFromClause="ariba.expense.core.ExpenseReport AS Request
+                LEFT OUTER JOIN ariba.expense.core.ExpenseItem INCLUDE INACTIVE USING Request.DefaultLineItems
+                LEFT OUTER JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING ExpenseItem.Accountings
+                LEFT OUTER JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings
+                LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING Request.TotalCost
+                LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="Request.TotalCost.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="Request.TotalCost.ConversionDate"/>
+            </field>
+            <field name="RequestType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="ExpenseReport"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <!-- MasterAgrrement loads -->
+
+    <derivedDataLoad name="BuyerDeleteRequestMasterAgreement" extendsLoad="BuyerDeleteRequest">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.contract.core.ContractRequest AS Request INCLUDE INACTIVE"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerRequestMasterAgreement" extendsLoad="BuyerRequest">
+        <inLoadStages>
+            <inAqlStage prependToFromClause="ariba.contract.core.ContractRequest AS Request INCLUDE INACTIVE
+                LEFT OUTER JOIN ariba.contract.core.ContractRequestLineItem INCLUDE INACTIVE USING Request.DefaultLineItems
+                LEFT OUTER JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING ContractRequestLineItem.Accountings
+                LEFT OUTER JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Amount">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="RequestType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="ContractRequest"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+
+    <!-- TravelAuthorization loads -->
+
+    <derivedDataLoad name="BuyerDeleteRequestTravelAuthorization" extendsLoad="BuyerDeleteRequest">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.TravelAuthorization AS Request INCLUDE INACTIVE"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerRequestTravelAuthorization" extendsLoad="BuyerRequest">
+        <inLoadStages>
+            <inAqlStage prependToFromClause="ariba.expense.core.TravelAuthorization AS Request
+                LEFT OUTER JOIN ariba.expense.core.TravelAuthorizationItem INCLUDE INACTIVE USING Request.DefaultLineItems
+                LEFT OUTER JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING TravelAuthorizationItem.Accountings
+                LEFT OUTER JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings
+                LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING Request.TotalCost
+                LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="Request.TotalCost.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="Request.TotalCost.ConversionDate"/>
+            </field>
+            <field name="RequestType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="TravelAuthorization"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <!-- TravelProfile loads -->
+
+    <derivedDataLoad name="BuyerDeleteRequestTravelProfile" extendsLoad="BuyerDeleteRequest">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.TravelProfile AS Request INCLUDE INACTIVE"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerRequestTravelProfile" extendsLoad="BuyerRequest">
+        <inLoadStages>
+            <inAqlStage prependToFromClause="ariba.expense.core.TravelProfile AS Request"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Amount">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="RequestType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="TravelProfile"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+</allDataLoads>

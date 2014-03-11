@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ariba [
+<!ELEMENT ariba (languageUnicodeRanges,fileEncoding)>
+<!ELEMENT fileEncoding (charset+)>
+<!ELEMENT charset EMPTY>
+<!ATTLIST charset name CDATA #IMPLIED>
+<!ATTLIST charset language CDATA #IMPLIED>
+<!ELEMENT languageUnicodeRanges (language+)>
+<!ELEMENT language (range+)>
+<!ATTLIST language name CDATA #IMPLIED>
+<!ELEMENT range EMPTY>
+<!ATTLIST range name CDATA #IMPLIED>
+<!ATTLIST range start CDATA #IMPLIED>
+<!ATTLIST range end CDATA #IMPLIED>
+<!ATTLIST range weight (high|low|invalid) "high">
+] >
+<ariba>
+	<languageUnicodeRanges>
+		<language name="any">
+            <range start="\u0000" end="\u0009" name="Control Characters 1" weight="invalid"/>
+            <range start="\u000a" end="\u000a" name="Line Feed"/>
+            <range start="\u000b" end="\u000b" name="Control Characters 2" weight="invalid"/>
+            <range start="\u000c" end="\u000d" name="Form Feed / Carriage Return"/>
+            <range start="\u000e" end="\u001f" name="Control Characters 3" weight="invalid"/>
+            <range start="\u0020" end="\u0040" name="Punctuation 1"/>
+            <range start="\u007b" end="\u007f" name="Punctuation 2"/>
+            <range start="\u0080" end="\u009f" name="Control Characters 4" weight="invalid"/>
+            <range start="\u0220" end="\u0221" name="Reserved 1" weight="invalid"/>
+            <range start="\u0234" end="\u024f" name="Reserved 2" weight="invalid"/>
+			<range start="\u2000" end="\u245f" name="General Punctuation Characters"/>
+			<range start="\ufeff" end="\ufeff" name="Byte Order Mark"/>
+		</language>
+		<language name="english">
+			<range start="\u0041" end="\u007a" name="Basic Latin"/>
+		</language>
+		<language name="latin">
+            <range start="\u0041" end="\u007a" name="Basic Latin"/>
+            <range start="\u00a0" end="\u00bf" name="Latin-1 Supplement Symbols" weight="low"/>
+            <range start="\u00c0" end="\u00ff" name="Latin-1 Supplement"/>
+			<range start="\u0100" end="\u017f" name="Latin Extended-A"/>
+            <range start="\u0180" end="\u021f" name="Latin Extended-B 1"/>
+            <range start="\u0222" end="\u0233" name="Latin Extended-B 2"/>
+			<range start="\u1e00" end="\u1eff" name="Latin Extended Additional"/>
+		</language>
+		<language name="greek">
+			<range start="\u0374" end="\u03ff" name="Greek/Coptic"/>
+			<range start="\u1f00" end="\u1fff" name="Greek Extende"/>
+		</language>
+		<language name="cyrillic">
+			<range start="\u0400" end="\u04ff" name="Cyrillic"/>
+			<range start="\u0500" end="\u052f" name="Cyrillic Supplement"/>
+		</language>
+		<language name="korean">
+			<range start="\u2E80" end="\u2EFF" name="CJK Radicals Supplement"/>
+			<range start="\u2F00" end="\u2FDF" name="Kangxi Radicals"/>
+			<range start="\u3000" end="\u303F" name="CJK Symbols and Punctuation"/>
+			<range start="\u3200" end="\u32FF" name="Enclosed CJK Letters and Months"/>
+			<range start="\u3300" end="\u33FF" name="CJK Compatibility"/>
+			<range start="\u3400" end="\u4DBF" name="CJK Unified Ideographs Extension A"/>
+			<range start="\u4E00" end="\u9FAF" name="CJK Unified Ideographs"/>
+			<range start="\uF900" end="\uFAFF" name="CJK Compatibility Ideographs"/>
+			<range start="\uFE30" end="\uFE4F" name="CJK Compatibility Forms"/>
+			<range start="\uFF00" end="\uFFEF" name="Halfwidth and Fullwidth Forms"/>
+
+			<range start="\u1100" end="\u11ff" name="Hangul Jamo"/>
+			<range start="\u3130" end="\u318f" name="Hangul Compatibility Jamo"/>
+			<range start="\uac00" end="\ud7af" name="Hangul Syllables"/>
+		</language>
+		<language name="japanese">
+			<range start="\u2E80" end="\u2EFF" name="CJK Radicals Supplement"/>
+			<range start="\u2F00" end="\u2FDF" name="Kangxi Radicals"/>
+			<range start="\u3000" end="\u303F" name="CJK Symbols and Punctuation"/>
+			<range start="\u3200" end="\u32FF" name="Enclosed CJK Letters and Months"/>
+			<range start="\u3300" end="\u33FF" name="CJK Compatibility"/>
+			<range start="\u3400" end="\u4DBF" name="CJK Unified Ideographs Extension A"/>
+			<range start="\u4E00" end="\u9FAF" name="CJK Unified Ideographs"/>
+			<range start="\uF900" end="\uFAFF" name="CJK Compatibility Ideographs"/>
+			<range start="\uFE30" end="\uFE4F" name="CJK Compatibility Forms"/>
+			<range start="\uFF00" end="\uFFEF" name="Halfwidth and Fullwidth Forms"/>
+
+			<range start="\u3040" end="\u309f" name="Hiragana"/>
+			<range start="\u30a0" end="\u30ff" name="Katakana"/>
+			<range start="\u31f0" end="\u31ff" name="Katakana Phonetic Extensions"/>
+		</language>
+		<language name="chinese">
+			<range start="\u2E80" end="\u2EFF" name="CJK Radicals Supplement"/>
+			<range start="\u2F00" end="\u2FDF" name="Kangxi Radicals"/>
+			<range start="\u3000" end="\u303F" name="CJK Symbols and Punctuation"/>
+			<range start="\u3200" end="\u32FF" name="Enclosed CJK Letters and Months"/>
+			<range start="\u3300" end="\u33FF" name="CJK Compatibility"/>
+			<range start="\u3400" end="\u4DBF" name="CJK Unified Ideographs Extension A"/>
+			<range start="\u4E00" end="\u9FAF" name="CJK Unified Ideographs"/>
+			<range start="\uF900" end="\uFAFF" name="CJK Compatibility Ideographs"/>
+			<range start="\uFE30" end="\uFE4F" name="CJK Compatibility Forms"/>
+			<range start="\uFF00" end="\uFFEF" name="Halfwidth and Fullwidth Forms"/>
+
+			<range start="\u3100" end="\u312f" name="Bopomofo"/>
+			<range start="\u31a0" end="\u31bf" name="Bopomofo Extended"/>
+			<range start="\ua000" end="\ua48f" name="Yi Syllables"/>
+			<range start="\ua490" end="\ua4cf" name="Yi Radicals"/>
+		</language>
+	</languageUnicodeRanges>
+	<fileEncoding>
+		<charset name="UTF-8" language="any"/>
+		<charset name="windows-1252" language="latin"/>
+		<charset name="UTF-16" language="any"/>
+		<charset name="ISO-8859-1" language="latin"/>
+		<charset name="ISO-8859-7" language="greek"/>
+		<charset name="Shift_JIS" language="japanese"/>
+		<charset name="EUC-JP" language="japanese"/>
+        <charset name="MS932" language="japanese"/>
+ 		<charset name="ISO-2022-JP" language="japanese"/>
+		<charset name="EUC-KR" language="korean"/>
+		<charset name="US-ASCII" language="english"/>
+		<charset name="TIS-620" language="english"/>
+		<charset name="ISO-8859-5" language="cyrillic"/>
+	</fileEncoding>
+</ariba>

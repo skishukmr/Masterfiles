@@ -1,0 +1,7 @@
+The presentation and dataload instances have been contacted to export SV user data so that they can be migrated to the 
+shared services environment.  You will recive email notification from these two instances when the export task has been
+completed.
+
+Customer Name: $customerName
+Status: $status
+Errors: $error

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/Catalog.dtd">
+<TypeDefinition>
+<TypeProvider name="System">
+    <OrganizationID>
+      <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+    </OrganizationID>
+</TypeProvider>
+
+<Comments>Ariba internal approvable type wrapper, not to be used in cif/cXML catalog load</Comments>
+<!--
+    Catalog Type Definition for a wrapper around a form launching approvable
+-->
+<Type name="approvabletypewrapper" extends="System:CatalogItem">
+   <Name xml:lang="en-US">Form</Name>
+   <Description xml:lang="en-US">Wraps form style approvables, so they can be found in the catalog</Description>
+</Type>
+</TypeDefinition>

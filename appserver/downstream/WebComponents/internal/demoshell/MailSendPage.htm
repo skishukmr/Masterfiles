@@ -1,0 +1,36 @@
+<w:ModalPageWrapper title="Email Sending Test" doneTitle="Get Outta Here!" hasForm="$true">
+    <w:HintMessage>
+        See console for exception output (if any)
+    </w:HintMessage>
+
+    <w:FormTable>
+        <w:FormRow label="To" required="$true">
+            <a:TextField value="$to"/>
+        </w:FormRow>
+        <w:FormRow label="From" required="$true">
+            <a:TextField value="$from"/>
+        </w:FormRow>
+        <w:FormRow label="Subject" required="$true">
+            <a:TextField value="$subject"/>
+        </w:FormRow>
+        <w:FormRow label="Message" required="$true">
+            <a:TextArea value="$body" cols=80 rows=30/>
+        </w:FormRow>
+        <w:FormRow label="">
+            <w:TextButton action="$send">Send</w:TextButton>
+        </w:FormRow>
+    </w:FormTable>
+
+</w:ModalPageWrapper>
+
+<server>
+    var to = "craigf@ariba.com";
+    var from = "craigf@ariba.com";
+    var subject = "Test message";
+    var body = "body of message...";
+    function send () {
+        ariba.ui.scratch.MailTest.send(to, from, subject, body);
+        return null;
+    }
+
+</server>

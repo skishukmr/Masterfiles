@@ -1,0 +1,38 @@
+<!DOCTYPE allDataExports SYSTEM "../../../../ariba/analytics/core/dataExports.dtd">
+<allDataExports>
+
+<inDataExport name="InvoiceDE">
+    <fieldMappings>
+        <field name="FlexDimension1.FieldId">
+            <csvMapping destinationField="FlexDim1Id"/>
+        </field>
+        <field name="FlexDimension1.SourceSystem">
+            <csvMapping destinationField="FlexDim1SS"/>
+        </field>
+        <field name="FlexDimension1.FieldName">
+            <csvMapping destinationField="FlexDim1Name"/>
+        </field>
+
+        <field name="FlexDimension2.FieldId">
+            <csvMapping destinationField="FlexDim2Id"/>
+        </field>
+        <field name="FlexDimension2.SourceSystem">
+            <csvMapping destinationField="FlexDim2SS"/>
+        </field>
+        <field name="FlexDimension2.FieldName">
+            <csvMapping destinationField="FlexDim2Name"/>
+        </field>
+
+        <field name="FlexDimension3.FieldId">
+            <csvMapping destinationField="FlexDim3Id"/>
+        </field>
+        <field name="FlexDimension3.SourceSystem">
+            <csvMapping destinationField="FlexDim3SS"/>
+        </field>
+        <field name="FlexDimension3.FieldName">
+            <csvMapping destinationField="FlexDim3Name"/>
+        </field>
+    </fieldMappings>
+</inDataExport>
+
+</allDataExports>

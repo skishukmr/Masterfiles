@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE AppInfo SYSTEM "../../etc/dtds/AppInfo.dtd">
+
+<!--
+
+This file stores Application specific information that allows various
+applications to communicate with one another. 
+
+-->
+
+<AppInfo Version = "3.0">
+   <Instance name = "AribaNetwork">
+      <Param name = "Type" value = "Ariba Supplier Network"/>
+      <Param name = "IncomingHttpServerURL" value = "https://service.ariba.com/service/transaction/cxml.asp"/>
+      <Param name = "NetworkId" value = "AN01000000001" />
+      <Param name = "AribaNetworkUserId" value = "sysadmin@ariba.com" />
+      <Param name = "AuthMode" value = "Self"/>
+      <Param name = "Version" value = "AN40"/>
+   </Instance>
+   <Param name = "ASMSharedSecret" value = "asmwel1come" />
+   <CommonNetworkCredential identity = "" domain = "NetworkId">
+        <Param name = "SharedSecret" value = "abracadabra"/>
+   </CommonNetworkCredential>
+   <Param name="CXMLSource" value="http://xml.cxml.org/schemas/cXML/1.2.019"/>
+   <Param name = "AuthResolver" value = ""/>
+</AppInfo>

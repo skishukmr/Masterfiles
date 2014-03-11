@@ -1,0 +1,17 @@
+<a:If ifTrue="$isVisible">
+   <a:Hyperlink action="$toggle">\
+        <a:String value="$^hideLabel:Hide"/> (your visible state is: <a:String value="$isVisible"/>)
+   </a:Hyperlink><br/>
+   <a:IncludeContent/>
+<a:Else/>
+   <a:Hyperlink action="$toggle"><a:String value="$^showLabel:Show"/></a:Hyperlink><br/>
+</a:If>
+
+
+<server>
+        var isVisible=false;
+        function toggle () {
+                isVisible = !isVisible;
+                return null;
+        }
+</server>

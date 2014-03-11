@@ -1,0 +1,172 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <!-- IMPORTANT
+     Do not remove the interface table stage in these loads even though
+     it appears we do not really neet it by doing the GROUP BY directly
+     in the AQL stage.
+     If the grouping happens on the SubmitDate in AQL stage, it will
+     use the whole time stamp (date part + time part) and we want to
+     group only on the date part of it.
+     However doing the grouping on the same field in the interface table
+     works fine because we truncate the time part when sending data
+     back to Analysis.
+    -->
+
+    <dataLoad name="BuyerUserSubmit">
+        <loadStages>
+            <aqlStage fromClause=""
+                      whereClause="NextVersion IS NULL AND SubmitDate IS NOT NULL"
+                      incrementalClause="(TimeUpdated &gt;= :IncrementalStartDate AND
+                                      TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.UserActivity"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="DocumentCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+            <field name="UserData.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="UserData.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ActivityDate">
+                <aqlMapping selectField="SubmitDate"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerUserSubmitRequisition" extendsLoad="BuyerUserSubmit">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.purchasing.core.Requisition
+                                       JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                                       LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Requisition.ProcurementUnit"
+                        replaceIncrementalClause="(Requisition.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               Requisition.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="DocumentType">
+                <aqlMapping selectField="Requisition.Type"/>
+            </field>
+            <field name="ActivityType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Submitted"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerUserSubmitExpenseReport" extendsLoad="BuyerUserSubmit">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                                       JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                                       LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                        replaceIncrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="DocumentType">
+                <aqlMapping selectField="ExpenseReport.Type"/>
+            </field>
+            <field name="ActivityType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Submitted"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <dataLoad name="BuyerUserApprove">
+        <loadStages>
+            <aqlStage fromClause=""
+                      whereClause="SimpleRecord.RecordType = 'ApproveRecord' AND
+                               NextVersion IS NULL AND
+                               SubmitDate IS NOT NULL"
+                      incrementalClause="(TimeUpdated &gt;= :IncrementalStartDate AND
+                                      TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.UserActivity"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="DocumentCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+            <field name="UserData.UserId">
+                <aqlMapping selectField="Approver.UniqueName"/>
+            </field>
+            <field name="UserData.PasswordAdapter">
+                <aqlMapping selectField="Approver.PasswordAdapter"/>
+            </field>
+            <field name="ActivityDate">
+                <aqlMapping selectField="SimpleRecord.Date"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerUserApproveExpenseReport" extendsLoad="BuyerUserApprove">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                                       JOIN ariba.approvable.core.SimpleRecord SUBCLASS ariba.approvable.core.ApprovalRecord 
+                                       USING ExpenseReport.Records
+                                       JOIN ariba.user.core.User AS Approver INCLUDE INACTIVE USING SimpleRecord.User
+                                       LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                        replaceIncrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="DocumentType">
+                <aqlMapping selectField="ExpenseReport.Type"/>
+            </field>
+            <field name="ActivityType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Approved"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerUserApproveRequisition" extendsLoad="BuyerUserApprove">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.purchasing.core.Requisition
+                                       JOIN ariba.approvable.core.SimpleRecord SUBCLASS ariba.approvable.core.ApprovalRecord
+                                       USING Requisition.Records
+                                       JOIN ariba.user.core.User AS Approver INCLUDE INACTIVE USING SimpleRecord.User
+                                       LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Requisition.ProcurementUnit"
+                        replaceIncrementalClause="(Requisition.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               Requisition.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="DocumentType">
+                <aqlMapping selectField="Requisition.Type"/>
+            </field>
+            <field name="ActivityType">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Approved"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+</allDataLoads>

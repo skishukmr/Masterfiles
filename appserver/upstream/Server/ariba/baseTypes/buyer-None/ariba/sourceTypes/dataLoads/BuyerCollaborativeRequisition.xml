@@ -1,0 +1,194 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerDeleteCollaborationRequest">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaboration.core.CollaborationRequest INCLUDE INACTIVE
+                              JOIN ariba.collaboration.core.CollaborationLineItem USING CollaborationRequest.LineItems
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition As REQ INCLUDE INACTIVE USING CollaborationRequest.OriginatingDocument
+                              LEFT OUTER JOIN ariba.collaboration.core.CollaborationState AS CState Using REQ.CollaborationState"
+                  whereClause="CollaborationRequest.NextVersion IS NOT NULL OR
+                               CollaborationRequest.CollaborationRequestState.State &lt;&gt; 8  OR CState.State &lt; 2"
+                  incrementalClause="(:IncrementalStartDate &lt;= CollaborationRequest.TimeUpdated AND
+                                      CollaborationRequest.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.CollaborationRequest"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CollaborationRequestId">
+            <aqlMapping selectField="CollaborationRequest.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="CRLineNumber">
+            <aqlMapping selectField="CollaborationLineItem.NumberInCollection"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerDeleteCollaborationRequest" version="7.1,8.0,8.1" disableLoad="true"/>
+
+<dataLoad name="BuyerCollaborationRequest">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaboration.core.CollaborationRequest
+                              LEFT OUTER JOIN ariba.purchasing.core.Requisition USING CollaborationRequest.OriginatingDocument
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING CollaborationRequest.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.collaboration.core.CollaborationThread USING CollaborationRequest.CollaborationThreads
+                              LEFT OUTER JOIN ariba.collaboration.core.Proposal USING CollaborationThread.Documents
+                              LEFT OUTER JOIN ariba.collaboration.core.CollaborationLineItem AS ProposalLine USING Proposal.LineItems
+                              LEFT OUTER JOIN ariba.collaboration.core.CollaborationLineItem AS CLRLine USING ProposalLine.RequestLineItem
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING ProposalLine.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING CLRLine.Description
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING CLRLine.CommodityCode
+                              LEFT OUTER JOIN ariba.collaboration.core.Reason AS RejectReason INCLUDE INACTIVE USING Proposal.RejectReason
+                              LEFT OUTER JOIN ariba.collaboration.core.Reason AS WithdrawReason INCLUDE INACTIVE USING Proposal.WithdrawReason
+                              LEFT OUTER JOIN ariba.collaboration.core.Reason AS CancelReason INCLUDE INACTIVE USING CollaborationThread.CancelReason
+                              LEFT OUTER JOIN ariba.collaboration.core.Reason AS DeclineReason INCLUDE INACTIVE USING CollaborationThread.DeclineReason"
+                  whereClause="CollaborationRequest.NextVersion IS NULL AND
+                               CollaborationRequest.CollaborationRequestState.State = 8 AND
+                               CollaborationRequest.StatusString IN ('CollaborationDocumentThreadSubmitted','CollaborationDocumentThreadDeclined','CollaborationDocumentThreadCanceled')"
+                  incrementalClause="(:IncrementalStartDate &lt;= CollaborationRequest.TimeUpdated AND
+                                      CollaborationRequest.TimeUpdated &lt; :IncrementalEndDate)"
+                  groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.CollaborationRequest"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CollaborationRequestId">
+            <aqlMapping selectField="CollaborationRequest.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="CRLineNumber">
+            <aqlMapping selectField="CLRLine.NumberInCollection"/>
+        </field>
+        <field name="Requisition">
+            <aqlMapping selectField="Requisition.UniqueName || ': ' || Requisition.Name"/>
+        </field>
+        <field name="ResponseTime">
+            <aqlMapping selectField="min(Proposal.SubmitDate)-CollaborationRequest.SubmitDate" groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="CollaborationTime">
+            <aqlMapping selectField="max(CollaborationThread.CompletionDate)-CollaborationRequest.SubmitDate" groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountProposed.Amount">
+            <aqlMapping selectField="ProposalLine.Amount.Amount"/>
+        </field>
+        <field name="AmountProposed.Currency">
+            <aqlMapping selectField="Currency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountProposed.Date">
+            <aqlMapping selectField="ProposalLine.Amount.ConversionDate"/>
+        </field>
+        <field name="Response">
+            <aqlMapping selectField="min(Proposal.SubmitDate)" groupBy=""/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value="Responded"/>
+                    <parameter name="NullValue" value="No Response"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <!-- this field will be overloaded by the BuyerCollaborationRequestStatus load -->
+        <field name="Status">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value="NotAccepted"/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="CollaborationDocumentThreadSubmitted"/>
+                            <entry value="CollaborationDocumentThreadDeclined"/>
+                            <entry value="CollaborationDocumentThreadCanceled"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Accepted"/>
+                            <entry value="Declined By Supplier"/>
+                            <entry value="NotAccepted"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SubmitDate">
+            <aqlMapping selectField="CollaborationRequest.SubmitDate"/>
+        </field>
+        <field name="ResponseDate">
+            <aqlMapping selectField="min(Proposal.SubmitDate)" groupBy=""/>
+        </field>
+        <field name="CompletedDate">
+            <aqlMapping selectField="max(CollaborationThread.CompletionDate)" groupBy=""/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="CommodityCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+            </analysisMapping>
+        </field>
+        <field name="ERPCommodity.CommodityId">
+            <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerCollaborationRequest" version="7.1,8.0,8.1" disableLoad="true"/>
+
+<dataLoad name="BuyerCollaborationRequestStatus">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaboration.core.CollaborationRequest
+                              JOIN ariba.collaboration.core.CollaborationThread USING CollaborationRequest.CollaborationThreads
+                              JOIN ariba.collaboration.core.Proposal USING CollaborationThread.LeadingDocument
+                              JOIN ariba.collaboration.core.CollaborationLineItem AS ProposalLine USING Proposal.LineItems
+                              JOIN ariba.collaboration.core.CollaborationLineItem AS CLRLine USING ProposalLine.RequestLineItem"
+                  whereClause="CollaborationRequest.NextVersion IS NULL AND
+                               ProposalLine.Accepted = TRUE AND
+                               CollaborationRequest.CollaborationRequestState.State = 8 AND
+                               CollaborationRequest.StatusString = 'CollaborationDocumentThreadSubmitted'"
+                  incrementalClause="(:IncrementalStartDate &lt;= CollaborationRequest.TimeUpdated AND
+                                      CollaborationRequest.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.CollaborationRequest"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="CollaborationRequestId">
+            <aqlMapping selectField="CollaborationRequest.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="CRLineNumber">
+            <aqlMapping selectField="CLRLine.NumberInCollection"/>
+        </field>
+        <field name="Status">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="Accepted"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="BuyerCollaborationRequestStatus" version="7.1,8.0,8.1" disableLoad="true"/>
+
+</allDataLoads>

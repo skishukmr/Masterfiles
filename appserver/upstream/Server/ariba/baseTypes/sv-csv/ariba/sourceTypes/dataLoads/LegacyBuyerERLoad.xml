@@ -1,0 +1,1060 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <dataLoad name="LegacyBuyerExpenseTypeCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.ExpenseType"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ExpenseTypeId">
+                <csvMapping selectField="UniqueName" />
+            </field>
+            <field name="ExpenseType">
+                <csvMapping selectField="Name"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERHeaderCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeader"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="Title">
+                <csvMapping selectField="ExpenseReportName"/>
+            </field>
+            <field name="Requester.UserId">
+                <csvMapping selectField="RequesterUniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <csvMapping selectField="RequesterPasswordAdapter"/>
+            </field>
+            <field name="SubmitDate">
+                <csvMapping selectField="ExpenseReportSubmitDate"/>
+            </field>
+            <field name="Status">
+                <csvMapping selectField="ExpenseReportStatusString"/>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <csvMapping selectField="AccountingCompanyId"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TotalExpense.Amount">
+                <csvMapping selectField="TotalExpensesInOrigCurrency"/>
+            </field>
+            <field name="TotalExpense.Currency">
+                <csvMapping selectField="TotalExpensesOrigCurrencyCode"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountDue.Amount">
+                <csvMapping selectField="AmountDueInOrigCurrency"/>
+            </field>
+            <field name="AmountDue.Currency">
+                <csvMapping selectField="AmountDueOrigCurrencyCode"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="BaseTotalExpense.Amount">
+                <csvMapping selectField="TotalExpensesInOrigCurrency"/>
+            </field>
+            <field name="BaseTotalExpense.Currency">
+                <csvMapping selectField="TotalExpensesOrigCurrencyCode"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseAmountDue.Amount">
+                <csvMapping selectField="AmountDueInOrigCurrency"/>
+            </field>
+            <field name="BaseAmountDue.Currency">
+                <csvMapping selectField="AmountDueOrigCurrencyCode"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ReceiptsReceived">
+                <csvMapping selectField="ExpenseReportReceiptsReceived"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="received"/>
+                                <entry value="received"/>
+                                <entry value="notreceived"/>
+                                <entry value="notreceived"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <!--- Currency in expenses are the same as for amount due-->
+            <field name="OrigCurrency">
+                <csvMapping selectField="TotalExpensesOrigCurrencyCode"/>
+            </field>
+            <field name="OrigTotalExpenses">
+                <csvMapping selectField="TotalExpensesInOrigCurrency"/>
+            </field>
+
+            <field name="OrigAmountDue">
+                <csvMapping selectField="AmountDueInOrigCurrency"/>
+            </field>
+            <field name="TotalExpensesInBaseCurrency">
+                <csvMapping selectField="TotalExpensesApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="AmountDueInBaseCurrency">
+                <csvMapping selectField="AmountDueApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="ApprovedDate">
+                <csvMapping selectField="ApprovedDate"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERMealLineItemCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName" />
+            </field>
+            <field name="ERName">
+                <csvMapping selectField="ExpenseReportName"/>
+            </field>
+
+            <field name="ERStatus">
+                <csvMapping selectField="ExpenseReportStatusString"/>
+            </field>
+            <field name="ERDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <csvMapping selectField="SplitAccountingNumberInCollection"/>
+            </field>
+            <field name="NumberAttendees">
+                <csvMapping selectField="NumberAttendees"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERMealItemizedLineCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName" />
+            </field>
+            <field name="ERName">
+                <csvMapping selectField="ExpenseReportName"/>
+            </field>
+
+            <field name="ERStatus">
+                <csvMapping selectField="ExpenseReportStatusString"/>
+            </field>
+            <field name="ERDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <csvMapping selectField="ItemizedNumberInCollection"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <csvMapping selectField="SplitAccountingNumberInCollection"/>
+            </field>
+            <field name="NumberAttendees">
+                <csvMapping selectField="NumberAttendees"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERLineItemCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName" />
+            </field>
+            <field name="ERName">
+                <csvMapping selectField="ExpenseReportName"/>
+            </field>
+            <field name="ERStatus">
+                <csvMapping selectField="ExpenseReportStatusString"/>
+            </field>
+            <field name="ERDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TransactionDate">
+                <csvMapping selectField="ExpenseItemDate"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <csvMapping selectField="SplitAccountingNumberInCollection"/>
+            </field>
+            <field name="City">
+                <csvMapping selectField="ExpenseItemCity"/>
+            </field>
+            <field name="Vendor">
+                <csvMapping selectField="ExpenseItemVendor"/>
+            </field>
+            <field name="ApprovedDate">
+                <csvMapping selectField="ExpenseReportApprovedDate"/>
+            </field>
+            <field name="Description">
+                <csvMapping selectField="ExpenseItemDescription"/>
+            </field>
+            <field name="ExpenseType">
+                <csvMapping selectField="ExpenseTypeUniqueName"/>
+            </field>
+            <field name="Requester.UserId">
+                <csvMapping selectField="RequesterUniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <csvMapping selectField="RequesterPasswordAdapter"/>
+            </field>
+            <field name="Amount.Amount">
+                <csvMapping selectField="SplitAccountingAmountAmount"/>
+            </field>
+            <field name="Amount.Currency">
+                <csvMapping selectField="CurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <csvMapping selectField="SplitAccountingAmountConversionDate"/>
+            </field>
+            <field name="OrigAmount">
+                <csvMapping selectField="SplitAccountingAmountAmount"/>
+            </field>
+            <field name="OrigCurrencyCode">
+                <csvMapping selectField="CurrencyUniqueName"/>
+            </field>
+            <field name="NumberAttendees">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="NumberDays">
+                <csvMapping selectField="NumberDays"/>
+            </field>
+            <field name="Billable">
+                <csvMapping selectField="ExpenseItemBillable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TaxReceipt">
+                <csvMapping selectField="ExpenseItemTaxReceipt"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="tax"/>
+                                <entry value="tax"/>
+                                <entry value="notax"/>
+                                <entry value="notax"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <csvMapping selectField="DepartmentUniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <csvMapping selectField="DepartmentSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="Account.AccountId">
+                <csvMapping selectField="SplitAccountUniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <csvMapping selectField="SplitAccountSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <csvMapping selectField="AccountingCompanyId"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field  name="Justification">
+                <csvMapping selectField="Justification"/>
+            </field>
+            <field  name="ProjectId">
+                <csvMapping selectField="ProjectId"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="LegacyBuyerPerDiemERLineItemCSV" extendsLoad="LegacyBuyerERLineItemCSV">
+        <fieldMappings>
+            <field name="PerDiemLocation">
+                <csvMapping selectField="PerDiemExpenseLocationName"/>
+            </field>
+            <field name="PerDiemStartDate">
+                <csvMapping selectField="PerDiemExpenseStartDate"/>
+            </field>
+            <field name="PerDiemEndDate">
+                <csvMapping selectField="PerDiemExpenseEndDate"/>
+            </field>
+            <field name="PerDiemTaxableIncome.Amount">
+                <csvMapping selectField="PerDiemTaxableIncomeAmount"/>
+            </field>
+            <field name="PerDiemTaxableIncome.Currency">
+                <csvMapping selectField="PerDiemTaxableIncomeCurrency"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="LegacyBuyerVATERLineItemCSV" extendsLoad="LegacyBuyerERLineItemCSV">
+        <fieldMappings>
+            <field name="VATRate">
+                <csvMapping selectField="ExpenseItemVATRate"/>
+            </field>
+            <field name="TaxCountry">
+                <csvMapping selectField="TaxCountryName"/>
+            </field>
+            <field name="VATAmount.Amount">
+                <csvMapping selectField="TaxAmountAmount"/>
+            </field>
+            <field name="VATAmount.Currency">
+                <csvMapping selectField="TaxCurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="NetAmount.Amount">
+                <csvMapping selectField="netAmountAmount"/>
+            </field>
+            <field name="NetAmount.Currency">
+                <csvMapping selectField="NetCurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="GrossAmount.Amount">
+                <csvMapping selectField="GrossAmountAmount"/>
+            </field>
+            <field name="GrossAmount.Currency">
+                <csvMapping selectField="GrossCurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseVATAmount.Amount">
+                <csvMapping selectField="TaxAmountApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="BaseVATAmount.Currency">
+                <csvMapping selectField="BaseCurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseNetAmount.Amount">
+                <csvMapping selectField="NetAmountApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="BaseNetAmount.Currency">
+                <csvMapping selectField="BaseCurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseGrossAmount.Amount">
+                <csvMapping selectField="GrossAmountApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="BaseGrossAmount.Currency">
+                <csvMapping selectField="BaseCurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <!-- itemized Expense Report -->
+
+    <dataLoad name="LegacyBuyerERItemizedLineItemCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="ERName">
+                <csvMapping selectField="ExpenseReportName"/>
+            </field>
+            <field name="ERStatus">
+                <csvMapping selectField="ExpenseReportStatusString"/>
+            </field>
+            <field name="ERDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <csvMapping selectField="ItemizedNumberInCollection"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <csvMapping selectField="SplitAccountingNumberInCollection"/>
+            </field>
+            <field name="City">
+                <csvMapping selectField="ItemizedCity"/>
+            </field>
+            <field name="Vendor">
+                <csvMapping selectField="ItemizedVendor"/>
+            </field>
+            <field name="ApprovedDate">
+                <csvMapping selectField="ExpenseReportApprovedDate"/>
+            </field>
+            <field name="Description">
+                <csvMapping selectField="ItemizedDescription"/>
+            </field>
+            <field name="ExpenseType">
+                <csvMapping selectField="ItemizedTypeUniqueName"/>
+            </field>
+            <field name="Requester.UserId">
+                <csvMapping selectField="RequesterUniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <csvMapping selectField="RequesterPasswordAdapter"/>
+            </field>
+            <field name="Amount.Amount">
+                <csvMapping selectField="SplitAccountingAmountAmount"/>
+            </field>
+            <field name="Amount.Currency">
+                <csvMapping selectField="CurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="OrigAmount">
+                <csvMapping selectField="SplitAccountingAmountAmount"/>
+            </field>
+            <field name="OrigCurrencyCode">
+                <csvMapping selectField="CurrencyUniqueName"/>
+            </field>
+            <field name="Amount.Date">
+                <csvMapping selectField="SplitAccountingAmountConversionDate"/>
+            </field>
+            <field name="NumberAttendees">
+                <csvMapping selectField="NumberAttendees"/>
+            </field>
+            <field name="NumberDays">
+                <csvMapping selectField="NumberDays"/>
+            </field>
+            <field name="Billable">
+                <csvMapping selectField="ItemizedBillable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <csvMapping selectField="DepartmentUniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <csvMapping selectField="DepartmentSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="Account.AccountId">
+                <csvMapping selectField="SplitAccountUniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <csvMapping selectField="SplitAccountSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <csvMapping selectField="AccountingCompanyId"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field  name="Justification">
+                <csvMapping selectField="Justification"/>
+            </field>
+            <field  name="ProjectId">
+                <csvMapping selectField="ProjectId"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <!-- Expense Report Header Violation -->
+
+    <dataLoad name="LegacyBuyerERHeaderViolationCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="ApprovedDate.Day">
+                <csvMapping selectField="ExpenseReportApprovedDate"/>
+            </field>
+            <field name="Requester.UserId">
+                <csvMapping selectField="RequesterUniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <csvMapping selectField="RequesterPasswordAdapter"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERHeaderViolationCountViolationCSV">
+        <loadStages>
+            <csvStage/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="ViolationCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERHeaderViolationTypeCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <csvMapping selectField="ViolLevel"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <csvMapping selectField="ViolPolicyTypeUniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+    <dataLoad name="LegacyBuyerERHeaderViolationCountLineItemCSV">
+        <loadStages>
+            <csvStage/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="LineItemCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <!--- ER line violations -->
+    <dataLoad name="LegacyBuyerERLineViolationCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Amount">
+                <csvMapping selectField="ExpenseItemAmount"/>
+            </field>
+            <field name="Amount.Currency">
+                <csvMapping selectField="CurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <csvMapping selectField="ExpenseItemConversionDate"/>
+            </field>
+            <field name="Billable">
+                <csvMapping selectField="ExpenseItemBillable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExpenseType">
+                <csvMapping selectField="ExpenseTypeUniqueName"/>
+            </field>
+            <field name="ApprovedDate">
+                <csvMapping selectField="ExpenseReportApprovedDate"/>
+            </field>
+            <field name="Requester.UserId">
+                <csvMapping selectField="RequesterUniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <csvMapping selectField="RequesterPasswordAdapter"/>
+            </field>
+            <field name="Account.AccountId">
+                <csvMapping selectField="SplitAccountUniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <csvMapping selectField="SplitAccountSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <csvMapping selectField="DepartmentUniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <csvMapping selectField="DepartmentSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <csvMapping selectField="AccountingCompanyId"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERLineViolationCountViolationCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationDetails.Description">
+                <csvMapping selectField="ViolDescription"/>
+            </field>
+            <field name="ViolationCount">
+                <csvMapping selectField="ViolationCount"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERLineViolationTypeCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <csvMapping selectField="ViolLevel"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <csvMapping selectField="ViolPolicyTypeUniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERItemizedLineViolationCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <csvMapping selectField="ItemizedNumberInCollection"/>
+            </field>
+            <field name="Amount.Amount">
+                <csvMapping selectField="ItemizedAmount"/>
+            </field>
+            <field name="Amount.Currency">
+                <csvMapping selectField="CurrencyUniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <csvMapping selectField="ItemizedConversionDate"/>
+            </field>
+            <field name="Billable">
+                <csvMapping selectField="ItemizedBillable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExpenseType">
+                <csvMapping selectField="ExpenseTypeUniqueName"/>
+            </field>
+            <field name="ApprovedDate">
+                <csvMapping selectField="ExpenseReportApprovedDate"/>
+            </field>
+            <field name="Requester.UserId">
+                <csvMapping selectField="RequesterUniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <csvMapping selectField="RequesterPasswordAdapter"/>
+            </field>
+            <field name="Account.AccountId">
+                <csvMapping selectField="SplitAccountUniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <csvMapping selectField="SplitAccountSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <csvMapping selectField="DepartmentUniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <csvMapping selectField="DepartmentSetId"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <csvMapping selectField="AccountingCompanyId"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERItemizedLineViolationCountViolationCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <csvMapping selectField="ItemizedNumberInCollection"/>
+            </field>
+            <field name="ViolationDetails.Description">
+                <csvMapping selectField="ViolDescription"/>
+            </field>
+            <field name="ViolationCount">
+                <csvMapping selectField="ViolationCount"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="LegacyBuyerERItemizedLineViolationTypeCSV">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <csvMapping selectField="ExpenseReportUniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <csvMapping selectField="ExpenseReportCreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <csvMapping selectField="ExpenseItemNumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <csvMapping selectField="ItemizedNumberInCollection"/>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <csvMapping selectField="ViolLevel"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <csvMapping selectField="ViolPolicyTypeUniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+</allDataLoads>

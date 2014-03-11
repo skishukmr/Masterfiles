@@ -1,0 +1,240 @@
+var Params = new function() {}();
+
+/* constants declartion */
+
+Params.urlOriginalDocumentUrl = "urlOriginalDocumentUrl";
+Params.urlIncrementalSyncupUrl = "urlIncrementalSyncupUrl";
+Params.urlActionUrl = "urlActionUrl";
+Params.urlOriginalUrl = "urlOriginalUrl";
+Params.urlSaveCleanVersionUrl = "urlSaveCleanVersionUrl";
+Params.urlGeneratingUrl = "urlGeneratingUrl";
+Params.urlDoneUrl = "urlDoneUrl";
+Params.urlDocumentUrl = "urlDocumentUrl";
+Params.urlRetrievepropertyAction = "urlRetrievepropertyAction";
+Params.urlSyncupClauseContentActionUrl = "urlSyncupClauseContentActionUrl";
+Params.urlDownloadSyncupXmlUrl = "urlDownloadSyncupXmlUrl";
+Params.urlSaveSyncHistoryUrl = "urlSaveSyncHistoryUrl";
+Params.urlUploadDocumentUrl = "urlUploadDocumentUrl";
+Params.urlPromoteUrl = "urlPromoteUrl";
+Params.urlCheckParseErrorActionUrl = "urlCheckParseErrorActionUrl";
+
+Params.sClientLogLevel = "sClientLogLevel";
+
+/* date properties */
+Params.dDocumentTimestamp = "dDocumentTimestamp";
+Params.dServerTimestamp = "dServerTimestamp";
+Params.dLastSyncTimestamp = "dLastSyncTimestamp";
+Params.requestType = "requestType";
+
+/* TODO Change the name */
+Params.sDataResource = "sDataResource";
+
+/* string properties */
+Params.sFolderName = "sFolderName";
+Params.sDocumentOldLocation = "sDocumentOldLocation";
+Params.sDocumentNewLocation = "sDocumentNewLocation";
+Params.sSourceDocumentLocation = "sSourceDocumentLocation";
+Params.sTargetDocumentLocation = "sTargetDocumentLocation";
+Params.sDocumentFullName = "sDocumentFullName";
+Params.sDocumentLocation = "sDocumentLocation";
+Params.sTempDocumentName = "sTempDocumentName";
+Params.sBookmarkName = "sBookmarkName";
+Params.sTempDocumentFolder = "sTempDocumentFolder";
+Params.sPropertyList = "sPropertyList";
+Params.sClauseId = "sClauseId";
+Params.sSectionStyleId = "sSectionStyleId";
+Params.sFormFieldsValue = "sFormFieldsValue";
+Params.sApplicationName = "sApplicationName";
+Params.sDocumentPropertiesContent = "sDocumentPropertiesContent";
+
+Params.sFormFieldsEncodedString = "sFormFieldsEncodedString";
+Params.sConditionalClausesEncodedString = "sConditionalClausesEncodedString";
+Params.sReviseBookmarkEncodedString = "sReviseBookmarkEncodedString";
+Params.sIncrementalInitializationEncodedString = "sIncrementalInitializationEncodedString";
+Params.sIncrementalGenerationEncodedString = "sIncrementalGenerationEncodedString";
+Params.sApplyStyleEncodedString = "sApplyStyleEncodedString";
+Params.sSectionGenerationEncodedString = "sSectionGenerationEncodedString";
+Params.sSectionTreeEncodedString = "sSectionTreeEncodedString";
+Params.sTasksEncodedString = "sTasksEncodedString";
+
+Params.bFullySync = "bFullySync";
+Params.bIsDocumentEditable = "bIsDocumentEditable";
+Params.bIsRemoveChangeRequired = "bIsRemoveChangeRequired";
+Params.bIsRemoveFieldRequired = "bIsRemoveFieldRequired";
+Params.bIsOnlyValueUpgradeRequired = "bIsOnlyValueUpgradeRequired";
+Params.bIsSimplyGeneration = "bIsSimplyGeneration";
+Params.bIsTrackChangeActive = "bIsTrackChangeActive";
+Params.bIsReviseBookmarkGeneration = "bIsReviseBookmarkGeneration";
+Params.bIsIncrementalGeneration = "bIsIncrementalGeneration";
+Params.bIsApplyStyleRequired = "bIsApplyStyleRequired";
+Params.bContractModified = "bContractModified";
+Params.bOpenDocForceGeneration = "bOpenDocForceGeneration";
+Params.bIsCleanVersionRequired = "bIsCleanVersionRequired";
+Params.bIsTemplate = "bIsTemplate";
+Params.bSkipCopyClause = "bSkipCopyClause";
+Params.bIsWordDocValue = "bIsWordDocValue";
+Params.bKeepTasks = "bKeepTasks";
+Params.bUseFilter = "bUseFilter";
+Params.bShowCleanedDoc = "bShowCleanedDoc";
+
+/**
+    Returns the boolean value for binding
+*/
+function sfBooleanValueForBinding (arg) {
+    if (arg == null) {
+        return false;
+    }
+    else if (typeof arg == "string") {
+        var lc = arg.toLowerCase();
+        return lc == "true";
+    }
+    else if (typeof arg == "boolean") {
+        return arg;
+    }
+    else {
+        LoggerUtil.logError(null, "Invalid Boolean Argument typeof is " + typeof arg, null);
+        return arg;
+    }
+}
+
+var prefixClauseNewName = "clauseAriba_";
+var prefixSectionNewName = "sectionAriba_";
+var prefixClauseGenName = "clauseDPI";
+var prefixSectionGenName = "sectionDPI";
+var prefixAribaOldGenId = "aribaOldGenId";
+var GeneratedUnknown = 0;
+var GeneratedClause = 1;
+var GeneratedSection = 2;
+var prefixClauseName = "clause";
+var prefixSectionName = "section";
+var aribaKeyword = "Ariba_";
+var ClauseIdKey = "clauseId";
+var SectionIdKey = "sectionId";
+var prefixFieldName = "ca";
+var NewClauseIdValue = "NewClause";
+var SameClauseKey = "sameClause";
+var SummaryContentKey = "summaryContent";
+var syncupTypeIdKey = "syncupTypeId";
+var bookmarkNameKey = "bookmarkName";
+var previousBookmarkKey = "previousBookmark";
+var SectionContextKey = "sectionContext";
+var VirtualUploadKey = "virtualUpload";
+var GlobalContractBookmarkName = "sectionGlobalContract";
+var globalBookmarkTree = GlobalContractBookmarkName;
+var globalBookmark = "";
+var SectionBeginValue = "(";
+var SectionEndValue = ")";
+var defaultPropertyValue = " ";
+var DocumentPropertyKey = "DOCPROPERTY ";
+var TempFolderName = "temp";
+var objectSeparator = "********";
+var summarySeparator = "******";
+var sectionSeparator = "$$$$$$";
+var sectionSeparatorLength = 6;
+var EmptyClauseSummary = "-----empty------";
+var noStyle = "noStyle";
+var AdHocStyle = "--------";
+var defaultFormPropertyPrefix = "_";
+var DocumentPropertiesContentKey = "documentPropertiesContent";
+var ACMTaskId = "ACMTaskId";
+
+var WordVersion = new function() {}();
+WordVersion.Word97MajorVersion = "8";
+WordVersion.Word2000MajorVersion = "9";
+WordVersion.WordXPMajorVersion = "10";
+WordVersion.WordXP2003MajorVersion = "11";
+WordVersion.Word2007MajorVersion = "12";
+WordVersion.Word2010MajorVersion = "14";
+
+var ContentType = new function() {}();
+ContentType.ContentUnknownType = "ContentUnknownType";
+ContentType.ContentSectionType = "ContentSectionType";
+ContentType.ContentClauseType = "ContentClauseType";
+
+var FieldType = new function() {}();
+FieldType.FieldTypeDocProp = "FieldTypeDocProp";
+FieldType.FieldTypeRef = "FieldTypeRef";
+FieldType.FieldTypeUnknown = "FieldTypeUnknown";
+
+var WordType = new function() {}();
+WordType.WordUnknownType = "WordUnknownType";
+WordType.Word2000Type = "Word2000Type";
+WordType.WordXPType = "WordXPType";
+WordType.Word07Type = "Word07Type";
+WordType.Word10Type = "Word10Type";
+WordType.WordDocExtension = ".doc";
+WordType.Word10DocExtension = WordType.Word07DocExtension = ".docx";
+
+var VersionSeparator = ".";
+var MaxSummaryLength = 200;
+var MIE = "Method Invokation Error ";
+var DNF = "Document Not Found ";
+var NBF = "No Bookmarks Found";
+
+var WindowStatus = new function() {}();
+WindowStatus.PROCESS_INSERTS = "Processing Inserts";
+WindowStatus.PROCESS_DELETES = "Processing Deletes";
+WindowStatus.PROCESS_REVISIONS = "Processing Revisions";
+WindowStatus.UPLOAD_DOCUMENT = "Uploading document";
+WindowStatus.PROCESS_PROPERTIES = "Processing Properties";
+WindowStatus.COMPARE_WORD_DOCS = "Comparing Word Documents";
+WindowStatus.SYNC_TO_SERVER = "Synchronizing to server";
+WindowStatus.SCANNING_DOCUMENT = "Scanning Document";
+WindowStatus.APPLY_GENERATED_BOOKMARKS = "Applying Bookmarks";
+WindowStatus.BOOKMARK_DOCUMENT = "Bookmarking Document";
+WindowStatus.SCAN_SECTIONS = "Scanning Sections";
+WindowStatus.VALIDATION_ERROR = "Validation Error";
+
+var RevisionType = new function() {}();
+RevisionType.NoRev = 0;
+RevisionType.Insert = 1;
+RevisionType.Delete = 2;
+RevisionType.ParagraphNumber = 4;    // treat as a change
+RevisionType.ParagraphProperty = 10;
+
+var paraChar = String.fromCharCode(13); // carriage return
+var softReturnChar = String.fromCharCode(11); // Shift + Return
+var lineFeed = String.fromCharCode(10);
+var tabChar = String.fromCharCode(9);
+var spaceChar = String.fromCharCode(32);
+
+var noStyle = "noStyle";
+var AdHocStyle = "--------";
+var FolderSeparator = "\\";
+
+var ViewType = new function() {}();
+ViewType.ViewTypeNormal = 1;    // the constant value is used by Word, so do NOT CHANGE
+ViewType.ViewTypePrint  = 3;    // the constant value is used by Word, so do NOT CHANGE
+
+var AribaEncoderSeperator = new function() {}();
+AribaEncoderSeperator.ListItemSeparator = "__ZZARIBAITEM__";
+AribaEncoderSeperator.ListParamSeparator = "__ZZARIBAPARAM__";
+AribaEncoderSeperator.ListChildNodeSeparator = "__ZZARIBACHILD__";
+AribaEncoderSeperator.VariableSeparator = ",";
+
+var GenerateCommand = new function() {}();
+GenerateCommand.AddClauseCommand = "addClauseCommandUtil";
+GenerateCommand.AddSectionCommand = "addSectionCommandUtil";
+GenerateCommand.EditClauseCommand = "setClauseCommandUtil";
+GenerateCommand.EditSectionCommand = "setSectionCommandUtil";
+GenerateCommand.MoveSectionClauseCommand = "moveClauseSectionCommandUtil";
+GenerateCommand.RemoveClauseSectionCommand = "removeClauseSectionCommandUtil";
+GenerateCommand.AutoOpenClauseCommand = "autoOpenSyncupClause";
+GenerateCommand.CopySourceOpenCommand = "copySourceOpenCommandUtil";
+GenerateCommand.CopySourceCloseCommand = "copySourceCloseCommandUtil";
+GenerateCommand.CopyReplaceClauseCommand = "copyReplaceClauseCommandUtil";
+GenerateCommand.CopyAddClauseCommand = "copyAddClauseCommandUtil";
+
+var XmlRequestType = new function() {} ();
+XmlRequestType.SyncUpRequest = "syncUpRequest";
+XmlRequestType.LoadRequest = "loadRequest";
+
+var SERVER_EXCEPTION = "SERVER_EXCEPTION";
+var VALIDATION_ERROR = "Validation Error";
+
+var StyleContentKey = "styleContent";
+var StyleSeparator = "********";
+
+var ApplicationName = new function() {}();
+ApplicationName.Word = "Word";
+ApplicationName.Excel = "Excel";

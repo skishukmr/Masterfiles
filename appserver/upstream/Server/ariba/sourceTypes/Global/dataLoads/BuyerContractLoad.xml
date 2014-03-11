@@ -1,0 +1,909 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="BuyerContract">
+    <loadStages>
+        <aqlStage fromClause="ariba.contract.core.Contract INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING Contract.ForecastedSpend
+                              LEFT OUTER JOIN ariba.contract.core.Contract AS ParentMA INCLUDE INACTIVE USING Contract.ParentAgreement"
+                  whereClause="Contract.UniqueName IS NOT NULL AND
+                               Contract.NextVersion IS NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                      Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Contract"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ContractId">
+            <aqlMapping selectField="Contract.InitialUniqueName"
+                        sourceLookupField="InitialUniqueName"/>
+        </field>
+        <field name="ContractName">
+            <aqlMapping selectField="Contract.Name"/>
+        </field>
+        <field name="MinLimit">
+            <aqlMapping selectField="Contract.MinAmount.ApproxAmountInBaseCurrency"/>
+        </field>
+        <field name="MaxLimit">
+            <aqlMapping selectField="Contract.MaxAmount.ApproxAmountInBaseCurrency"/>
+        </field>
+        <field name="ParentContractId">
+            <aqlMapping selectField="ParentMA.InitialUniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="FieldName" value="ContractId"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ContractLevel">
+            <aqlMapping selectField="Contract.TermType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Supplier"/>
+                            <entry value="Commodity"/>
+                            <entry value="Item"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ReleaseType">
+            <aqlMapping selectField="Contract.ReleaseType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                            <entry value="1"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="No Release"/>
+                            <entry value="Release"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ContractType">
+            <aqlMapping selectField="Contract.TermType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value="Non-Contract"/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Contract"/>
+                            <entry value="Contract"/>
+                            <entry value="Contract"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SavingsPercentage">
+            <aqlMapping selectField="Contract.ForecastedSpend.SavingPercentage / 100"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerDeleteContractFact">
+    <loadStages>
+        <aqlStage fromClause="ariba.contract.core.Contract INCLUDE INACTIVE"
+                  whereClause="Contract.NextVersion IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                      Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.ContractFact"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ContractId">
+            <aqlMapping selectField="Contract.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerContractFact">
+    <loadStages>
+        <aqlStage fromClause="ariba.contract.core.Contract INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING Contract.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.user.core.User AS Contact INCLUDE INACTIVE USING Contract.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money AS UsedAmount INCLUDE INACTIVE USING Contract.AmountOrdered
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS UsedAmountCurrency INCLUDE INACTIVE USING UsedAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MinCommitAmount INCLUDE INACTIVE USING Contract.MinAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MinCommitCurrency INCLUDE INACTIVE USING MinCommitAmount.Currency
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MaxCommitAmount INCLUDE INACTIVE USING Contract.MaxAmount
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MaxCommitCurrency INCLUDE INACTIVE USING MaxCommitAmount.Currency
+                              LEFT OUTER JOIN ariba.contract.core.Contract AS ParentContract PARTITION ANY INCLUDE INACTIVE USING Contract.ParentAgreement
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Contract.ProcurementUnit"
+                  whereClause="Contract.NextVersion IS NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                      Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.ContractFact"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="DaysLeft">
+            <aqlMapping selectField="(CASE Contract.Evergreen WHEN true THEN null WHEN false THEN Contract.ExpirationDate - CurrentDate()  ELSE Contract.ExpirationDate - CurrentDate() END)"/>
+        </field>
+        <field name="AmountPercentLeft">
+            <aqlMapping selectField="(1 - ((Contract.AmountOrdered.Amount + COALESCE (Contract.TermsSubAccumulators.AmountOrdered.Amount, 0) +  COALESCE(Contract.NonTermsSubAccumulators.AmountOrdered.Amount, 0) + COALESCE(Contract.PreloadAmount.Amount, 0) + COALESCE(Contract.SubPreloadAmount.Amount, 0))  / Contract.MaxAmount.Amount)) * 100"/>
+        </field>
+
+        <field name="AmountReconciledPercentLeft">
+            <aqlMapping selectField="(1 - ((Contract.AmountReconciled.Amount + COALESCE (Contract.TermsSubAccumulators.AmountReconciled.Amount, 0) +  COALESCE(Contract.NonTermsSubAccumulators.AmountReconciled.Amount, 0) + COALESCE(Contract.PreloadAmount.Amount, 0) + COALESCE(Contract.SubPreloadAmount.Amount, 0))  / Contract.MaxAmount.Amount)) * 100"/>
+        </field>
+
+        <field name="AmountInvoicedPercentLeft">
+            <aqlMapping selectField="(1 - ((Contract.AmountInvoiced.Amount + COALESCE (Contract.TermsSubAccumulators.AmountInvoiced.Amount, 0) +  COALESCE(Contract.NonTermsSubAccumulators.AmountInvoiced.Amount, 0) + COALESCE(Contract.PreloadAmount.Amount, 0) + COALESCE(Contract.SubPreloadAmount.Amount, 0))  / Contract.MaxAmount.Amount)) * 100"/>
+        </field>
+
+        <field name="ContractId">
+            <aqlMapping selectField="Contract.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="VersionNumber">
+            <aqlMapping selectField="Contract.VersionNumber"/>
+        </field>
+        <field name="RelatedContractId">
+            <aqlMapping selectField="Contract.ExternalID"/>
+        </field>
+        <field name="Tolerance">
+            <aqlMapping selectField="Contract.MaxAmountTolerancePercent"/>
+        </field>
+        <field name="Duration">
+            <aqlMapping selectField="(Contract.ExpirationDate - Contract.EffectiveDate)/30"/>
+        </field>
+        <field name="UsedAmount.Amount">
+            <aqlMapping selectField="Contract.AmountOrdered.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="UsedAmount.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="UsedAmount.Date">
+            <aqlMapping selectField="Contract.AmountOrdered.ConversionDate"/>
+        </field>
+
+
+        <field name="AmountOrderedCumulated.Amount">
+            <aqlMapping selectField="Contract.AmountOrdered.Amount + COALESCE (Contract.TermsSubAccumulators.AmountOrdered.Amount, 0) +  COALESCE(Contract.NonTermsSubAccumulators.AmountOrdered.Amount, 0) + COALESCE(Contract.PreloadAmount.Amount, 0) + COALESCE(Contract.SubPreloadAmount.Amount, 0)"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountOrderedCumulated.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountOrderedCumulated.Date">
+            <aqlMapping selectField="Contract.AmountOrdered.ConversionDate"/>
+        </field>
+
+
+        <field name="AmountReconciled.Amount">
+            <aqlMapping selectField="Contract.AmountReconciled.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountReconciled.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountReconciled.Date">
+            <aqlMapping selectField="Contract.AmountReconciled.ConversionDate"/>
+        </field>
+
+        <field name="AmountReconciledCumulated.Amount">
+            <aqlMapping selectField="Contract.AmountReconciled.Amount + COALESCE (Contract.TermsSubAccumulators.AmountReconciled.Amount, 0) +  COALESCE(Contract.NonTermsSubAccumulators.AmountReconciled.Amount, 0) + COALESCE(Contract.PreloadAmount.Amount, 0) + COALESCE(Contract.SubPreloadAmount.Amount, 0)"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountReconciledCumulated.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountReconciledCumulated.Date">
+            <aqlMapping selectField="Contract.AmountReconciled.ConversionDate"/>
+        </field>
+
+        <field name="AmountInvoiced.Amount">
+            <aqlMapping selectField="Contract.AmountInvoiced.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountInvoiced.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountInvoiced.Date">
+            <aqlMapping selectField="Contract.AmountInvoiced.ConversionDate"/>
+        </field>
+
+        <field name="AmountInvoicedCumulated.Amount">
+            <aqlMapping selectField="Contract.AmountInvoiced.Amount + COALESCE (Contract.TermsSubAccumulators.AmountInvoiced.Amount, 0) +  COALESCE(Contract.NonTermsSubAccumulators.AmountInvoiced.Amount, 0) + COALESCE(Contract.PreloadAmount.Amount, 0) + COALESCE(Contract.SubPreloadAmount.Amount, 0)"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountInvoicedCumulated.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountInvoicedCumulated.Date">
+            <aqlMapping selectField="Contract.AmountInvoiced.ConversionDate"/>
+        </field>
+
+        <field name="AmountLeft.Amount">
+            <aqlMapping selectField="Contract.MaxAmount.Amount - (Contract.AmountOrdered.Amount + COALESCE (Contract.TermsSubAccumulators.AmountOrdered.Amount, 0) +  COALESCE(Contract.NonTermsSubAccumulators.AmountOrdered.Amount, 0) + COALESCE(Contract.PreloadAmount.Amount, 0) + COALESCE(Contract.SubPreloadAmount.Amount, 0))"/>
+            <!-- <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping> -->
+        </field>
+        <field name="AmountLeft.Currency">
+            <aqlMapping selectField="UsedAmountCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="AmountLeft.Date">
+            <aqlMapping selectField="Contract.AmountOrdered.ConversionDate"/>
+        </field>
+
+
+        <field name="MinCommitment.Amount">
+            <aqlMapping selectField="Contract.MinAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MinCommitment.Currency">
+            <aqlMapping selectField="MinCommitCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MinCommitment.Date">
+            <aqlMapping selectField="Contract.MinAmount.ConversionDate"/>
+        </field>
+        <field name="MaxCommitment.Amount">
+            <aqlMapping selectField="Contract.MaxAmount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MaxCommitment.Currency">
+            <aqlMapping selectField="MaxCommitCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="MaxCommitment.Date">
+            <aqlMapping selectField="Contract.MaxAmount.ConversionDate"/>
+        </field>
+
+        <field name="ExpirationDate">
+            <aqlMapping selectField="Contract.ExpirationDate"/>
+        </field>
+        <field name="EffectiveDate">
+            <aqlMapping selectField="Contract.EffectiveDate"/>
+        </field>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="Contract.InitialUniqueName"/>
+        </field>
+
+        <field name="ParentContract.ContractId">
+            <aqlMapping selectField="ParentContract.InitialUniqueName"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="Description">
+            <aqlMapping selectField="Contract.Description"/>
+        </field>
+        <field name="Contact.UserId">
+            <aqlMapping selectField="Contact.UniqueName"/>
+        </field>
+        <field name="Contact.PasswordAdapter">
+            <aqlMapping selectField="Contact.PasswordAdapter"/>
+        </field>
+        <field name="Status">
+            <aqlMapping selectField="Contract.StatusString"/>
+        </field>
+        <field name="Scope">
+            <aqlMapping selectField="Contract.GlobalReleaseFlag"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="true"/>
+                            <entry value="TRUE"/>
+                            <entry value="false"/>
+                            <entry value="FALSE"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Global"/>
+                            <entry value="Global"/>
+                            <entry value="Partitioned"/>
+                            <entry value="Partitioned"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ReleaseType">
+                    <aqlMapping selectField="Contract.ReleaseType"/>
+                    <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.Decode">
+                            <parameter name="DefaultValue" value=""/>
+                            <parameter name="MapKeys">
+                                <vector>
+                                    <entry value="0"/>
+                                    <entry value="1"/>
+                                </vector>
+                            </parameter>
+                            <parameter name="MapElements">
+                                <vector>
+                                    <entry value="No Release"/>
+                                    <entry value="Release"/>
+                                </vector>
+                            </parameter>
+                        </mapValue>
+                    </analysisMapping>
+        </field>
+        <field name="ContractType">
+            <aqlMapping selectField="Contract.TermType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Supplier"/>
+                            <entry value="Commodity"/>
+                            <entry value="Item"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Expiry">
+            <aqlMapping selectField="Contract.Evergreen"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="true"/>
+                            <entry value="TRUE"/>
+                            <entry value="false"/>
+                            <entry value="FALSE"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Evergreen"/>
+                            <entry value="Evergreen"/>
+                            <entry value="Expires"/>
+                            <entry value="Expires"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ProcurementUnit.UniqueName">
+            <aqlMapping selectField="ProcurementUnit.UniqueName"/>                    
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerDeleteForecastedContractSpend">
+    <loadStages>
+        <aqlStage fromClause="ariba.contract.core.Contract INCLUDE INACTIVE
+                              JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING Contract.ForecastedSpend
+                              JOIN ariba.contract.core.ForecastedSpendItem USING ForecastedSpend.Items"
+                  whereClause="Contract.NextVersion IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                      Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.ForecastedContractSpend"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ContractId">
+            <aqlMapping selectField="Contract.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="StartDate">
+            <aqlMapping selectField="ForecastedSpendItem.StartDate"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerForecastedContractSpend">
+    <loadStages>
+        <aqlStage fromClause="ariba.contract.core.Contract INCLUDE INACTIVE
+                              JOIN ariba.contract.core.ForecastedSpend INCLUDE INACTIVE USING Contract.ForecastedSpend
+                              JOIN ariba.contract.core.ForecastedSpendItem USING ForecastedSpend.Items
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING Contract.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.user.core.User AS Contact INCLUDE INACTIVE USING Contract.Requester
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING ForecastedSpendItem.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Contract.ProcurementUnit"
+                  whereClause="Contract.NextVersion IS NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                      Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.ForecastedContractSpend"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ContractId">
+            <aqlMapping selectField="Contract.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="ForecastedSpend.Amount">
+            <aqlMapping selectField="ForecastedSpendItem.Amount.Amount"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ForecastedSpend.Currency">
+            <aqlMapping selectField="Currency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ForecastedSpend.Date">
+            <aqlMapping selectField="ForecastedSpendItem.Amount.ConversionDate"/>
+        </field>
+        <field name="ForecastedSavings.Amount">
+            <aqlMapping selectField="(ForecastedSpendItem.Amount.Amount * Contract.ForecastedSpend.SavingPercentage) / 100"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="DefaultValue" value="0"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ForecastedSavings.Currency">
+            <aqlMapping selectField="Currency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ForecastedSavings.Date">
+            <aqlMapping selectField="ForecastedSpendItem.Amount.ConversionDate"/>
+        </field>
+
+        <field name="StartDate">
+            <aqlMapping selectField="ForecastedSpendItem.StartDate"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="ForecastedSpendItem.EndDate"/>
+        </field>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="Contract.InitialUniqueName"/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="Description">
+            <aqlMapping selectField="Contract.Description"/>
+        </field>
+        <field name="Contact.UserId">
+            <aqlMapping selectField="Contact.UniqueName"/>
+        </field>
+        <field name="Contact.PasswordAdapter">
+            <aqlMapping selectField="Contact.PasswordAdapter"/>
+        </field>
+        <field name="Status">
+            <aqlMapping selectField="Contract.StatusString"/>
+        </field>
+        <field name="Scope">
+            <aqlMapping selectField="Contract.GlobalReleaseFlag"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="true"/>
+                            <entry value="TRUE"/>
+                            <entry value="false"/>
+                            <entry value="FALSE"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Global"/>
+                            <entry value="Global"/>
+                            <entry value="Partitioned"/>
+                            <entry value="Partitioned"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ContractType">
+            <aqlMapping selectField="Contract.TermType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="0"/>
+                            <entry value="1"/>
+                            <entry value="2"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Supplier"/>
+                            <entry value="Commodity"/>
+                            <entry value="Item"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ProcurementUnit.UniqueName">
+            <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+    <!--
+    XXX achaudhry (Sept 8, 2006):
+    Some case statements have an extra redundant condition because of the following AQL error
+    with defect number 1-245BVN filed against Persistence
+    AQL Validation Error: ariba.base.core.aql.AQLVisitorException: At least one THEN of a CASE
+        must specify a value other than NULL
+    -->
+    <dataLoad name="BuyerContractLineItemFact">
+        <loadStages>
+            <aqlStage fromClause="ariba.contract.core.Contract INCLUDE INACTIVE
+                                  INNER JOIN ariba.contract.core.ContractLineItem INCLUDE INACTIVE USING Contract.LineItems
+                                  LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING Contract.SupplierLocation
+                                  LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                                  LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription  USING ContractLineItem.Description
+                                  LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                                  LEFT OUTER JOIN ariba.basic.core.Money AS AmountOrdered INCLUDE INACTIVE USING ContractLineItem.AmountOrdered
+                                  LEFT OUTER JOIN ariba.basic.core.Currency AS AmountOrderedCurrency INCLUDE INACTIVE USING AmountOrdered.Currency
+                                  LEFT OUTER JOIN ariba.basic.core.Money AS MaxAmount INCLUDE INACTIVE USING ContractLineItem.MaxAmount
+                                  LEFT OUTER JOIN ariba.basic.core.Currency AS MaxAmountCurrency INCLUDE INACTIVE USING MaxAmount.Currency
+                                  LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Contract.ProcurementUnit"
+                      whereClause="Contract.NextVersion IS NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                          Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ContractLineItemFact"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ContractLineNumber">
+                <aqlMapping selectField="ContractLineItem.NumberInCollection"/>
+            </field>
+            <field name="AmountOrderedPercentLeft">
+                <aqlMapping selectField="case ContractLineItem.MaxAmount.Amount when 0 then null when 1 then (1 - (ContractLineItem.AmountOrdered.Amount/ContractLineItem.MaxAmount.Amount)) * 100 else (1 - (ContractLineItem.AmountOrdered.Amount/ContractLineItem.MaxAmount.Amount)) * 100 end"/>
+            </field>
+            <field name="QuantityOrderedPercentLeft">
+                <aqlMapping selectField="case ContractLineItem.MaxQuantity when 0 then null when 1 then  (1 - (ContractLineItem.QuantityOrdered/ContractLineItem.MaxQuantity)) * 100  else (1 - (ContractLineItem.QuantityOrdered/ContractLineItem.MaxQuantity)) * 100 end"/>
+            </field>
+
+            <field name="AmountReconciledPercentLeft">
+                <aqlMapping selectField="case ContractLineItem.MaxAmount.Amount when 0 then null when 1 then (1 - (ContractLineItem.AmountReconciled.Amount/ContractLineItem.MaxAmount.Amount)) * 100 else (1 - (ContractLineItem.AmountReconciled.Amount/ContractLineItem.MaxAmount.Amount)) * 100 end"/>
+            </field>
+            <field name="QuantityReconciledPercentLeft">
+                <aqlMapping selectField="case ContractLineItem.MaxQuantity when 0 then null when 1 then  (1 - (ContractLineItem.QuantityReconciled/ContractLineItem.MaxQuantity)) * 100 else (1 - (ContractLineItem.QuantityReconciled/ContractLineItem.MaxQuantity)) * 100 end"/>
+            </field>
+            <field name="AmountReceivedPercentLeft">
+                <aqlMapping selectField="case ContractLineItem.MaxAmount.Amount when 0 then null when 1 then (1 - (ContractLineItem.AmountReceived.Amount/ContractLineItem.MaxAmount.Amount)) * 100 else  (1 - (ContractLineItem.AmountReceived.Amount/ContractLineItem.MaxAmount.Amount)) * 100 end"/>
+            </field>
+            <field name="QuantityReceivedPercentLeft">
+                <aqlMapping selectField="case ContractLineItem.MaxQuantity when 0 then null when 1 then (1 - (ContractLineItem.QuantityReceived/ContractLineItem.MaxQuantity)) * 100 else (1 - (ContractLineItem.QuantityReceived/ContractLineItem.MaxQuantity)) * 100 end"/>
+            </field>
+
+            <field name="ContractId">
+                <aqlMapping selectField="Contract.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+
+
+            <field name="AmountOrdered.Amount">
+                <aqlMapping selectField="ContractLineItem.AmountOrdered.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="AmountOrdered.Currency">
+                <aqlMapping selectField="AmountOrderedCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountOrdered.Date">
+                <aqlMapping selectField="ContractLineItem.AmountOrdered.ConversionDate"/>
+            </field>
+
+            <field name="QuantityOrdered">
+                <aqlMapping selectField="ContractLineItem.QuantityOrdered"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReconciled.Amount">
+                <aqlMapping selectField="ContractLineItem.AmountReconciled.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReconciled.Currency">
+                <aqlMapping selectField="AmountOrderedCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReconciled.Date">
+                <aqlMapping selectField="ContractLineItem.AmountReconciled.ConversionDate"/>
+            </field>
+            <field name="QuantityReconciled">
+                <aqlMapping selectField="ContractLineItem.QuantityReconciled"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReceived.Amount">
+                <aqlMapping selectField="ContractLineItem.AmountReceived.Amount"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReceived.Currency">
+                <aqlMapping selectField="AmountOrderedCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReceived.Date">
+                <aqlMapping selectField="ContractLineItem.AmountReceived.ConversionDate"/>
+            </field>
+            <field name="QuantityReceived">
+                <aqlMapping selectField="ContractLineItem.QuantityReceived"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                        <parameter name="DefaultValue" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountOrderedLeft.Amount">
+                <aqlMapping selectField="ContractLineItem.MaxAmount.Amount - ContractLineItem.AmountOrdered.Amount"/>
+            </field>
+            <field name="AmountOrderedLeft.Currency">
+                <aqlMapping selectField="AmountOrderedCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountOrderedLeft.Date">
+                <aqlMapping selectField="ContractLineItem.AmountOrdered.ConversionDate"/>
+            </field>
+            <field name="QuantityOrderedLeft">
+                <aqlMapping selectField="ContractLineItem.MaxQuantity - ContractLineItem.QuantityOrdered"/>
+            </field>
+            <field name="MaxAmount.Amount">
+                <aqlMapping selectField="ContractLineItem.MaxAmount.Amount"/>
+            </field>
+            <field name="MaxAmount.Currency">
+                <aqlMapping selectField="MaxAmountCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="MaxAmount.Date">
+                <aqlMapping selectField="ContractLineItem.MaxAmount.ConversionDate"/>
+            </field>
+            <field name="MaxQuantity">
+                <aqlMapping selectField="ContractLineItem.MaxQuantity"/>
+            </field>
+
+
+            <field name="AmountReconciledLeft.Amount">
+                <aqlMapping selectField="ContractLineItem.MaxAmount.Amount - ContractLineItem.AmountReconciled.Amount"/>
+            </field>
+            <field name="AmountReconciledLeft.Currency">
+                <aqlMapping selectField="AmountOrderedCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReconciledLeft.Date">
+                <aqlMapping selectField="ContractLineItem.AmountReconciled.ConversionDate"/>
+            </field>
+            <field name="QuantityReconciledLeft">
+                <aqlMapping selectField="ContractLineItem.MaxQuantity - ContractLineItem.QuantityReconciled"/>
+            </field>
+
+
+            <field name="AmountReceivedLeft.Amount">
+                <aqlMapping selectField="ContractLineItem.MaxAmount.Amount - ContractLineItem.AmountReceived.Amount"/>
+            </field>
+            <field name="AmountReceivedLeft.Currency">
+                <aqlMapping selectField="AmountOrderedCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountReceivedLeft.Date">
+                <aqlMapping selectField="ContractLineItem.AmountReceived.ConversionDate"/>
+            </field>
+            <field name="QuantityReceivedLeft">
+                <aqlMapping selectField="ContractLineItem.MaxQuantity - ContractLineItem.QuantityReceived"/>
+            </field>
+
+
+            <field name="EffectiveDate">
+                <aqlMapping selectField="Contract.EffectiveDate"/>
+            </field>
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="Contract.InitialUniqueName"/>
+            </field>
+            <field name="Supplier.SupplierId">
+                <aqlMapping selectField="Supplier.UniqueName"/>
+            </field>
+            <field name="Supplier.SupplierLocationId">
+                <aqlMapping selectField="SupplierLocation.UniqueName"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="LineItemProductDescription.Description"/>
+            </field>
+            <field name="SupplierPartNumber">
+                <aqlMapping selectField="LineItemProductDescription.SupplierPartNumber"/>
+            </field>
+            <field name="Commodity.CommodityId">
+                    <aqlMapping selectField="CommodityCode.UniqueName"/>
+                    <analysisMapping>
+                        <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+                    </analysisMapping>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>            
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerDeleteContractLineItemFact">
+        <loadStages>
+            <aqlStage fromClause="ariba.contract.core.Contract INCLUDE INACTIVE
+                                  INNER JOIN ariba.contract.core.ContractLineItem INCLUDE INACTIVE USING Contract.LineItems"
+                      whereClause="Contract.NextVersion IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                          Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ContractLineItemFact"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ContractId">
+                <aqlMapping selectField="Contract.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ContractLineNumber">
+                <aqlMapping selectField="ContractLineItem.NumberInCollection"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+</allDataLoads>

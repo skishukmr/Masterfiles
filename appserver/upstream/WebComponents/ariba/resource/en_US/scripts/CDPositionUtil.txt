@@ -1,0 +1,703 @@
+'// This file contains positioning related apis
+'// responsible : SaAgarwal
+
+'// ----------- Global Declaration ---------
+
+Dim paraChar
+paraChar = Chr(13)
+
+
+'// ----------- Function/Sub definitions --------
+
+Sub deleteSelection (aSelection)
+    On Error Resume Next
+    
+    logMessage " deleteSelection"
+    Dim pos
+	pos = aSelection.Delete(1, 1)
+End Sub
+
+Sub deleteChar(aSelection, count)
+    On Error Resume Next
+    
+    logMessage " deleteChar"
+    Dim pos
+	pos = aSelection.Delete(1, count)
+End Sub
+
+Sub selectPara (aSelection)
+    On Error Resume Next
+    
+    logMessage " selectPara = "
+    Dim Range
+    '// wdGoToBookmark = -1
+    Set aRange = aSelection.GoTo(-1, , , "\Para") 
+End Sub
+
+Sub selectBookmark (aSelection, bookmarkName)
+    On Error Resume Next
+    
+    logMessage " selectBookmark = " & bookmarkName
+    Dim Range
+    '// wdGoToBookmark = -1
+    Set aRange = aSelection.GoTo(-1, , , bookmarkName) 
+End Sub
+
+Sub moveToStartSelection (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToStartSelection"
+    '// Move cursor to begining of line
+    aSelection.End = aSelection.Start
+End Sub
+
+Sub moveToEndSelection(aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToEndSelection"
+    '// Move cursor to begining of line
+    aSelection.Start = aSelection.End
+End Sub
+
+Sub moveToStartDocument (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToStartDocument"
+    '// Move cursor to begining of line
+    Dim pos
+	pos = aSelection.HomeKey(6, 0) '// wdStory = 6, wdMove = 0
+End Sub
+
+Sub moveToEndDocument (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToEndDocument"
+    '// Move cursor to begining of line
+    Dim pos
+	pos = aSelection.EndKey(6, 0) '// wdStory = 6, wdMove = 0
+End Sub
+
+Sub moveToStartLine (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToStartLine"
+    '// Move cursor to begining of line
+    Dim pos
+    pos = aSelection.HomeKey(5)  '// wdLine = 5
+End Sub
+
+Sub moveToStartPara (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToStartPara"
+	'// XXX Move to end of paragraph does not work with HomeKey(4, 0)
+	selectBookmark aSelection, "\Para"
+	moveToStartSelection aSelection
+End Sub
+
+Sub moveToEndPara (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToEndPara"
+	'// Move to end of paragraph does not work with EndKey(4, 0)
+	
+    Dim pos
+	selectBookmark aSelection, "\Para"
+	moveToEndSelection aSelection
+	moveToLeft aSelection, 1
+End Sub
+
+Sub extendToEndPara (aSelection)
+    On Error Resume Next
+    
+    logMessage " extendToEndPara"
+    '// EndOf(4,1) works well, it does not extend to next para if entire para is selected.
+    
+    Dim pos
+    pos = aSelection.EndOf (4, 1) '// Unit:=wdParagraph, Extend:=wdExtend  
+End Sub
+
+Sub moveToLeft (aSelection, count)
+    On Error Resume Next
+    
+    logMessage " moveToLeft"
+    
+	Dim pos
+	pos = aSelection.MoveLeft(1, count) '//	 Unit:=wdParagraph, count:=1, Extend:=wdMove 
+End Sub
+
+Sub moveToRight (aSelection, count)
+    On Error Resume Next
+    
+    logMessage " moveToRight"
+    
+	Dim pos
+	pos = aSelection.MoveRight(1, count) '// Unit:=wdParagraph, count:=1, Extend:=wdMove 
+End Sub
+
+'// Moves the cursor to start of following paragraph
+Sub moveToDownPara (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToDownPara"
+    
+	'// Move to next paragraph
+	Dim pos
+	pos = aSelection.MoveDown(4, 1)
+    moveToStartPara aSelection	
+End Sub
+
+'// Moves the cursor to start of above paragraph
+Sub moveToUpPara (aSelection)
+    On Error Resume Next
+    
+    logMessage " moveToUpPara"
+    
+	'// Move to next paragraph
+	moveToStartPara aSelection
+	moveToLeft aSelection, 1
+	moveToStartPara aSelection
+End Sub
+
+
+'// This method create a new para after begining of given bookmark
+Sub insertAfterBookmarkTitle (agreement, aSelection, bookmarkName)
+    On Error Resume Next
+
+    logBegin "insertAfterBookmarkTitle"
+
+    '// insert a line after bookmark begining
+    Dim aRange
+    
+    '// For regular section, create a new line after first paragraph in the newSection
+    selectBookmark aSelection, bookmarkName
+
+    Dim bookmarkEnd 
+    bookmarkEnd = aSelection.End
+        
+    moveToStartSelection aSelection
+    
+    moveToEndPara aSelection
+        	
+    createNewLine agreement, aSelection
+    resetStyleOnPara agreement, aSelection
+
+    logMessage "Selection start = " & aSelection.Start
+    logMessage "Selection end   = " & aSelection.End
+        
+    Dim cursorPos
+    cursorPos = aSelection.Start    
+    
+    If(aSelection.Start >= bookmarkEnd) Then
+        logMessage "Selection outside bookmark"
+        createNewLine agreement, aSelection
+        createNewLine agreement, aSelection
+        Dim bookmark
+        Set bookmark = agreement.Bookmarks.Item(bookmarkName)
+        bookmark.End = aSelection.Start
+    End If
+    
+    moveToPosition aSelection, cursorPos
+    logEnd "insertAfterBookmarkTitle"
+End Sub
+
+
+'// Move the cursor to a specific position
+Sub moveToPosition(aSelection, position)
+    On Error Resume Next
+
+    logMessage "moveToPosition " & position
+    
+    aSelection.Start = position
+    aSelection.End = position
+End Sub
+
+Sub removeEmptyParaAfterBookmark (currentDocument, currentSelection, bookmarkName)
+
+    logMessage "removeEmptyParaAfterBookmark"
+    
+    Dim originalState
+    originalState = currentDocument.TrackRevisions
+    currentDocument.TrackRevisions = False
+    logMessage "set TrackRevisions = " & False & " (removeEmptyParaAfterBookmark)"
+    
+    '// Currently, this is done only for clause bookmarks
+    '// For sections, next paragraph can have some text, other bookmarks
+    '// Careful not to declare var as contentType since thats a function
+    Dim ctype 
+    ctype = contentType(bookmarkName)
+    If(ctype = ContentClauseType) Then
+        selectBookmark currentSelection, bookmarkName
+        moveToEndSelection currentSelection
+        moveToDownPara currentSelection
+        Dim para
+        Set para = currentSelection.Range.Paragraphs(1)
+        If(isEmptyRange(para.Range)) Then
+            deleteChar currentSelection,1
+        End If
+        fixClauseBookmark currentDocument, currentDocument.Bookmarks.Item(bookmarkName)
+    End If
+
+    currentDocument.TrackRevisions = originalState
+    logMessage "Restore TrackRevisions = " & originalState & " (removeEmptyParaAfterBookmark)"
+End Sub
+
+'// This method moves the bookmark end position to be just before the
+'// paragraph end marker. This is need to create a new paragraph after the
+'// bookmark both programatically and also useful for user to insert
+'// new paragraph after the bookmark.
+Sub goodToGreatBookmark (currentDocument, currentSelection, bookmarkName)
+    On Error Resume Next
+
+    logMessage "goodToGreatBookmark"
+    logMessage "goodToGreatBookmark : currentDocument = " & currentDocument
+    logMessage "goodToGreatBookmark : currentSelection = " & currentSelection
+    logMessage "goodToGreatBookmark : bookmarkName = " & bookmarkName
+
+    
+    '// This should be done only for clause bookmarks
+    '// Careful not to declare var as contentType since thats a function
+    Dim ctype 
+    ctype = contentType(bookmarkName)
+    logMessage "goodToGreatBookmark : ctype = " & ctype
+    If(ctype = ContentClauseType) Then
+        fixClauseBookmark currentDocument, currentDocument.Bookmarks.Item(bookmarkName)
+    End If
+End Sub
+
+'// extend the bookmarkEnd to end of para
+Sub fixBookmarkEndToPara (currentDocument, bookmarkName)
+    On Error Resume Next
+
+    Dim currentSelection
+    Set currentSelection = currentDocument.ActiveWindow.Selection
+    
+    Dim bookmarkObject
+    Set bookmarkObject = currentDocument.Bookmarks(bookmarkName)
+    
+    moveToPosition currentSelection, bookmarkObject.End
+    moveToEndPara currentSelection
+    
+    If (currentSelection.End <> bookmarkObject.End) Then
+        bookmarkObject.End = currentSelection.End
+    End If    
+End Sub
+
+'// Fix a bookmark such that if a paragraph marker is just before
+'// the end of bookmark, the bookmarkEnd is moved just before the
+'// paragraph
+Sub fixClauseBookmark (currentDocument, bookmarkObject)
+    On Error Resume Next
+    
+    Dim lastChar
+    lastChar = currentDocument.Range(bookmarkObject.End-1, bookmarkObject.End)
+    If (lastChar = paraChar) Then
+        bookmarkObject.End = bookmarkObject.End-1
+    End If
+End Sub
+
+'// Return true if next char at given position in currentDocument is a para marker.
+Function isNextCharPara (currentDocument, position)
+    On Error Resume Next
+    isNextCharPara = False
+    Dim nextChar
+    '// Assumes we are not at the very end of the doc, seems reasonable.
+    nextChar = currentDocument.Range(position, position + 1)
+    If (nextChar = paraChar) Then
+        isNextCharPara = True
+    End If
+End Function
+
+'// Fix a section bookmark such that if a paragraph marker is just
+'// after, then section bookmark is moved.
+Sub fixSectionBookmark (currentDocument, bookmarkObject)
+    On Error Resume Next
+    
+    logMessage "fixSectionBookmark " & bookmarkObject.Name
+    Dim currentSelection
+    Set currentSelection = currentDocument.ActiveWindow.Selection
+    
+    Dim lastChar
+    lastChar = currentDocument.Range(bookmarkObject.End-1, bookmarkObject.End)
+    logMessage "lastChar = " & lastChar
+    
+    Dim afterChar
+    afterChar = currentDocument.Range(bookmarkObject.End, bookmarkObject.End+1)
+    logMessage "afterChar = " & afterChar
+        
+    If (lastChar <> paraChar And afterChar = paraChar) Then
+        logMessage "Moving bookmark end by one char: " & bookmarkObject.Name
+        bookmarkObject.End = bookmarkObject.End+1
+    ElseIf (lastChar <> paraChar And afterChar <> paraChar) Then 
+        logMessage "Moving bookmark end to after para: " & bookmarkObject.Name
+        bookmarkObject.End = currentDocument.Range(bookmarkObject.End, bookmarkObject.End+1).Paragraphs(1).Range.End
+    End If
+End Sub
+
+'// If a section start at same location as sectionGlobalContract
+'// then move section down, otherwise sectionGlobalContract may
+'// be listed second in the sorted list of bookmarks.
+'// Also create extra para in the end if sectionGlobal does
+'// not contain para as last character.
+Sub fixSectionGlobalBookmark (currentDocument, currentSelection)
+    
+    Dim sectionGlobalBookmark
+    Set sectionGlobalBookmark = currentDocument.Bookmarks(GlobalContractBookmarkName)    
+
+    logMessage "fixSectionBookmark " & sectionGlobalBookmark.Name
+    
+    Dim lastChar
+    lastChar = currentDocument.Range(sectionGlobalBookmark.End-1, sectionGlobalBookmark.End)
+    logMessage "lastChar = " & lastChar
+    
+    Dim afterChar
+    afterChar = currentDocument.Range(sectionGlobalBookmark.End, sectionGlobalBookmark.End+1)
+    logMessage "afterChar = " & afterChar
+
+    Dim startPos
+    startPos = sectionGlobalBookmark.Start
+        
+    Dim startBookmarks
+    Set startBookmarks = getBookmarksStartingAt(currentSelection, startPos)
+
+    Dim startBookmark, foundStartingAt
+    foundStartingAt = False
+    For each startBookmark in startBookmarks.Items()
+        logMessage "startBookmark = " & startBookmark.Name
+        If (startBookmark.Name <> GlobalContractBookmarkName) Then
+            foundStartingAt = True
+            logMessage "foundStartingAt = " & foundStartingAt
+        End If
+    Next
+    
+    If (foundStartingAt) Then
+        newPositionClauseSection currentDocument, currentSelection, "", GlobalContractBookmarkName
+    End If
+      
+    '// check if sectionGlobal is at last location in document and lastChar for sectionGlobal is
+    '// not para char, then create an extra para
+    currentSelection.WholeStory
+    If (lastChar <> paraChar And currentSelection.End = sectionGlobalBookmark.End+1) Then
+        moveToEndSelection currentSelection
+        createNewLine currentDocument, currentSelection
+        sectionGlobalBookmark.End = sectionGlobalBookmark.End+1
+        lastChar = paraChar
+    End If        
+        
+    If (lastChar <> paraChar And afterChar = paraChar) Then
+        sectionGlobalBookmark.End = sectionGlobalBookmark.End+1
+    End If
+End Sub
+
+Function getBookmarksStartingAt(aSelection, position)
+
+	Dim bookmarks
+	Set bookmarks = CreateObject("Scripting.Dictionary")
+
+    Set getBookmarksStartingAt = bookmarks
+    
+	moveToPosition aSelection, position
+
+	Dim Range
+    Set aRange = aSelection.Range
+    
+    Dim overlapBookmarks 
+    Set overlapBookmarks = aRange.bookmarks
+    Dim overlapBookmark
+    For each overlapBookmark in overlapBookmarks
+    	If( overlapBookmark.Start = aSelection.Start) Then
+         	logMessage "overlapping bookmark = " & overlapBookmark.Name & " start = " & overlapBookmark.Start
+	        bookmarks.add overlapBookmark.Name, overlapBookmark
+    	End If
+    Next
+End Function    
+
+'// insert a paragraph just before bookmark. Note that there could
+'// be other bookmarks starting at the same pos - so first move the
+'// bookmark start pos by 1, move pointer back, insert a para, and
+'// move 1 pare up
+Sub insertBeforeBookmark (agreement, aSelection, bookmarkName)
+    On Error Resume Next
+
+    LogMessage "    insertBeforeBookmark"
+
+    '// insert a line after bookmark begining
+    selectBookmark aSelection, bookmarkName
+    
+    moveToStartSelection aSelection    
+    
+    Dim bookmark
+    Set bookmark = agreement.Bookmarks.Item(bookmarkName)
+    
+    bookmark.Start = bookmark.Start + 1
+    
+    '// Since there could be multiple bookmarks on the start location, for example,
+    '// sectionGlobal and firstSection, create additional para and move bookmark to
+    '// new para
+    aSelection.TypeParagraph    
+    
+    Dim newLocation
+    newLocation = aSelection.Start
+
+    moveToUpPara aSelection
+    resetStyleOnPara agreement, aSelection
+
+    bookmark.Start = newLocation
+End Sub
+
+'// resets style on prev para
+Sub resetStyleOnPrevPara (agreement, aSelection)
+    moveToUpPara aSelection
+    resetStyleOnPara agreement, aSelection
+    moveToDownPara aSelection
+End Sub
+
+
+'// This method create a new para after begining of given bookmark
+Sub resetStyleOnPara (agreement, aSelection)
+    On Error Resume Next
+    
+    LogMessage "    resetStyleOnPara"
+    selectPara aSelection    
+    aSelection.Style = agreement.Styles("Normal")
+    moveToStartSelection aSelection
+End Sub
+
+
+'// This method create a new para after begining of given bookmark
+Sub insertAfterBookmarkBegin (agreement, aSelection, bookmarkName)
+    On Error Resume Next
+
+    logBegin  "insertAfterBookmarkBegin"
+    selectBookmark aSelection, bookmarkName
+    moveToStartSelection aSelection
+    createNewLine agreement, aSelection
+
+    moveToUpPara aSelection
+    resetStyleOnPara agreement, aSelection
+    moveToDownPara aSelection
+    logEnd  "insertAfterBookmarkBegin"
+End Sub
+
+
+'// This method takes the current selection (cursor) to the end of the bookmark,
+'// Creates a new paragraph and positions the cursor on the new paragraph
+Sub insertAfterBookmark (aDocument, aSelection, bookmarkName)
+    On Error Resume Next
+
+    logBegin  "insertAfterBookmark"
+    Dim sectionName
+    sectionName = findSectionName(aSelection, bookmarkName)
+
+    insertAfterBookmarkUtil aDocument, aSelection, bookmarkName, sectionName
+    logEnd  "insertAfterBookmark"
+End Sub
+
+
+'// This method takes the current selection (cursor) to the end of the bookmark,
+'// Creates a new paragraph and positions the cursor on the new paragraph
+Sub insertAfterBookmarkUtil (aDocument, aSelection, bookmarkName, sectionName)
+
+    logBegin "insertAfterBookmarkUtil"
+    logMessage "Params: (" & aDocument &"," & aSelection &"," & bookmarkName &"," & sectionName & ")"
+
+    '// if bookmark is a section, then it is ignored. If its a clause and end
+    '// bookmark was after the paragraph end, then its moved to just before
+    goodToGreatBookmark aDocument, aSelection, bookmarkName
+        
+    Dim aRange
+    Dim aSectionBookmark
+    Dim aItemBookmark
+    Set aItemBookmark    = aDocument.Bookmarks.Item(bookmarkName)
+
+    selectBookmark aSelection, bookmarkName
+    extendToEndPara aSelection
+    moveToEndSelection aSelection
+
+    Dim endOfParaLoc
+    endOfParaLoc = aSelection.Start
+
+    '// All the bookmarks that start on the next para should be moved down
+	Dim nextBookmarksToMove 
+	Set nextBookmarksToMove = CreateObject("Scripting.Dictionary")
+    Set aRange = aSelection.Range
+    Dim overlapBookmarks 
+    Set overlapBookmarks = aRange.bookmarks
+    Dim overlapBookmark
+    For each overlapBookmark in overlapBookmarks
+    	logMessage "overlapping bookmark = " & overlapBookmark.Name
+    	If( overlapBookmark.Start = aSelection.Start) Then
+         	logMessage "next bookmark = " & overlapBookmark.Name & " start = " & overlapBookmark.Start
+         	If(overlapBookmark.Name <> bookmarkName) Then
+         	    logMessage "adding to nextBookmarksToMove " & overlapBookmark.Name
+	            nextBookmarksToMove.add overlapBookmark.Name, overlapBookmark
+         	End If
+    	End If
+    Next
+    
+    Dim maxPos
+    maxPos = UBound(nextBookmarksToMove.Items())
+    If(maxPos >= 0) Then
+        logMessage "maxPos " & maxPos
+        createNewLine aDocument, aSelection
+        resetStyleOnPrevPara aDocument, aSelection
+	    int i
+	    For i = 0 to maxPos
+	    	Dim nextBookmark
+	    	Set nextBookmark = nextBookmarksToMove.Items()(i)
+	    	nextBookmark.Start = aSelection.Start
+	    	logMessage "Moved = " & nextBookmark.Name
+	    Next
+	End If
+
+    selectBookmark aSelection, bookmarkName
+    extendToEndPara aSelection
+    
+    '// All the bookmarks that end on this para on or after bookmarkEnd should move 
+    '// down to next para
+	Dim bookmarksToMove 
+	Set bookmarksToMove = CreateObject("Scripting.Dictionary")
+    Set aRange = aSelection.Range
+    Set overlapBookmarks = aRange.bookmarks
+    For each overlapBookmark in overlapBookmarks
+    	logMessage "overlapping bookmark = " & overlapBookmark.Name
+    	If( overlapBookmark.End >= aItemBookmark.End And _
+            overlapBookmark.End <= aSelection.End And _
+            overlapBookmark.Start < aItemBookmark.Start ) _
+        Then
+         	logMessage "bookmark start = " & overlapBookmark.End
+         	If(overlapBookmark.Name <> bookmarkName) Then
+	         	bookmarksToMove.add overlapBookmark.Name, overlapBookmark
+         	End If
+    	End If
+    Next
+
+	moveToPosition aSelection, endOfParaLoc
+	
+    maxPos = UBound(bookmarksToMove.Items())
+    If(maxPos >= 0) Then
+        logMessage "maxPos " & maxPos
+        createNewLine aDocument, aSelection
+	    int i
+	    For i = 0 to maxPos
+	    	Dim moveBookmark
+	    	Set moveBookmark = bookmarksToMove.Items()(i)
+	    	moveBookmark.End = aSelection.Start
+	    	logMessage "Moved = " & moveBookmark.Name
+	    Next
+	End If
+	    
+	moveToPosition aSelection, endOfParaLoc	   
+	logEnd "insertAfterBookmarkUtil" 
+End Sub
+
+Sub createNewLine (currentDocument, currentSelection)
+    On Error Resume Next
+
+    logMessage "createNewLine"
+    
+    Dim originalState
+    originalState = currentDocument.TrackRevisions
+    currentDocument.TrackRevisions = False
+    logMessage "set TrackRevisions = " & False & " (createNewLine)"
+    currentSelection.TypeParagraph
+    '// We should not do this here, resets styles 
+    '// currentSelection.Style = currentDocument.Styles("Normal")
+    currentDocument.TrackRevisions = originalState
+    logMessage "Restore TrackRevisions = " & originalState & " (createNewLine)"
+End Sub
+
+Sub createASpace (currentDocument, currentSelection)
+    On Error Resume Next
+
+    Dim originalState
+    originalState = currentDocument.TrackRevisions
+    currentDocument.TrackRevisions = False
+    logMessage "set TrackRevisions = " & False & " (createASpace)"
+
+    currentSelection.TypeText " "
+
+    currentDocument.TrackRevisions = originalState
+    logMessage "Restore TrackRevisions = " & originalState & " (createASpace)"
+End Sub
+
+Sub restoreNewLine (currentDocument, currentSelection)
+    On Error Resume Next
+
+    doBackspace currentDocument, currentSelection
+End Sub
+
+Sub doBackspace (currentDocument, currentSelection)
+    On Error Resume Next
+
+    Dim originalState
+    originalState = currentDocument.TrackRevisions
+    currentDocument.TrackRevisions = False
+    logMessage "set TrackRevisions = " & False & " (doBackspace)"
+    currentSelection.TypeBackspace
+    currentDocument.TrackRevisions = originalState
+    logMessage "Restore TrackRevisions = " & originalState & " (doBackspace)"
+End Sub
+
+Sub restoreNewLineByDelete (currentDocument, currentSelection)
+    On Error Resume Next
+
+    Dim originalState
+    originalState = currentDocument.TrackRevisions
+    currentDocument.TrackRevisions = False
+    logMessage "set TrackRevisions = " & False & " (restoreNewLineByDelete)"
+    Dim pos
+    pos = currentSelection.HomeKey(5, 0) '// wdLine = 5
+    pos = currentSelection.MoveDown(5, 1, 1) '// wdLine = 5, wdExtend = 1
+    If (isEmptyRange(currentSelection.Range) = True) Then
+        pos = currentSelection.Delete(1, 1) '// wdCharacter = 1
+    End If
+    currentDocument.TrackRevisions = originalState
+	    logMessage "Restore TrackRevisions = " & originalState & " (restoreNewLineByDelete)"
+End Sub
+
+Sub newPositionClauseSection (agreement, currentSelection, previousBookmarkName, newSectionName)
+    On Error Resume Next
+    logBegin "newPositionClauseSection"
+    LogMessage "Params :("& agreement & "," & currentSelection & "," & previousBookmarkName & "," & newSectionName & ")"
+    
+    '// find the position to add the new clause. Take into consideration special cases.
+    If (previousBookmarkName = "") Then
+        LogMessage " previousBookmarkName is blank"
+        
+        If (GlobalContractBookmarkName = newSectionName) Then
+            Dim firstSectionName
+            firstSectionName = findFirstBookmarkNameInSection(agreement, currentSelection, newSectionName)
+ 
+            If(firstSectionName <> "") Then
+                '// insert a new line before first bookmark inthe newSection
+                logMessage "    firstSectionName = " & firstSectionName
+    
+                Dim firstSectionBookmark
+                Set firstSectionBookmark = agreement.Bookmarks.Item(firstSectionName)
+                Set aRange = currentSelection.GoTo(-1, , , newSectionName) '// wdGoToBookmark = -1
+                
+                If(firstSectionBookmark.Start = aRange.Start) Then
+                    LogMessage "    moveClauseSectionCommand: section & firstBookmark start overlap"
+                    '// if sub-bookmark overlaps, then insert before sub-bookmark
+                    pos = currentSelection.MoveLeft(1, 1) '// wdCharacter = 1
+                    insertBeforeBookmark agreement, currentSelection, firstSectionName
+                Else
+                    '// For section global, if first sub-bookmark is not overlapping, insert 
+                    '// para after bookmark begin
+                    insertAfterBookmarkBegin agreement, currentSelection, newSectionName
+                End If
+            Else
+                '// For section global, if no sub-bookmark, insert para after begining of bookmark
+                insertAfterBookmarkBegin agreement, currentSelection, newSectionName
+            End If            
+        Else
+            LogMessage "    insert after section title "
+            '// For regular section, insert a new line after section title
+            insertAfterBookmarkTitle agreement, currentSelection, newSectionName
+        End If
+    Else
+        insertAfterBookmarkUtil agreement, currentSelection, previousBookmarkName, newSectionName
+    End If
+    logEnd "newPositionClauseSection"
+End Sub

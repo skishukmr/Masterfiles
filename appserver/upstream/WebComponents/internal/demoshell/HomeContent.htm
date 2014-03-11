@@ -1,0 +1,90 @@
+<w:HintMessage>
+          This is a hint message
+</w:HintMessage>
+
+<h2> DemoShell Sample Application </h2>
+<div style="float:right;border:2px solid gray;background:yellow">$refreshCount</div>
+<a:SetValue errorDivId="$requestContext.nextElementId"/>
+<a:DragContainer type="cool" dragAction="$dragged" bh="DrgBub"
+                 _autoHideBubble="true" _errorContentDivId="$errorDivId" _positionRight="true">
+    This is a test! -- drag me!
+</a:DragContainer>
+<div style="display:none" id="$errorDivId">This is some text for the error bubble</div>
+
+  <p>Go to <a href="Mapper/Mapper.htm">Mapper!</a></p>
+  <p>Go to <a href="Preferences.htm">Preferences</a></p>
+<h1>Go to <a href="MetaHomePage">Meta Home Page!</a></h1>
+<h1>Go to <a href="StartPage">Sample App</a></h1>
+<h2>Go to <a href="Basic_Samples.awz">Basic Samples</a></h2>
+<h2>Go to <a href="Table_Samples.awz">Data Table Samples</a>
+      <w:CueTip>
+          A wizard full of a variety of table styles, including outlines
+          and scrolling tables.  Aren't you excited?  Good, because you're in for a
+          treat!
+      </w:CueTip>
+</h2>
+<h2>Go to <a href="PublicRFXDemo/Login.htm">Public RFX Example</a></h2>
+<h2>Go to <a href="Punchout/Dell/620rssff.htm">Dell punchout</a></h2>
+<h2>Go to <a href="SAP/1-Catalog.htm">SAP Punchout Example</a></h2>
+<h2>Go to <a href="iProcure/1-Catalog.htm">Oracle iProcure Punchout Example</a></h2>
+<a href="Table_Samples.awz/Step5-Outline_Table.htm">Skip to Outline Step</a><br/><br/>
+<a href="Blank.htm">Go to BLANK</a><br/><br/>
+Timeout: $session.timeout
+<w:CueTip>
+   This is my <b>tip</b>!  What do you think?  Pretty neat, eh?
+</w:CueTip>
+<br/>
+And a teeny tip:
+<w:CueTip>
+   Itty <i>bitty</i>!
+</w:CueTip>
+
+Count: $count<br/><br/>
+<p><a:Hyperlink action="$throwIt">Throw</a:Hyperlink> an exception</p>
+<p><a:Hyperlink action="$download">Download</a:Hyperlink> a file</p>
+
+  <p><a:Hyperlink action="$redirect">Explicit redirect</a:Hyperlink></p>
+
+  <w:HTMLActionFilter value='<b>html action</b> <a href="http://www.yahoo.com">here</a> and <a href="http://www.google.com">here</a>!!!'/>
+  <w:HTMLActionFilter value='<a href="http://cfmac:8050/Buyer/Main/ad/browseNode/ariba.htmlui.procure.portlets.CatalogPortletDirectAction?NodeID=NI.1.1146072102234&husr=WmZZdUVDcW4zS1doZHJNdDRDU3VpcjRlMUlzPQ%3D%3D&awr=&passwordadapter=PasswordAdapter1&realm=realm_1"><span class="bold"><w:ARWNLSString>Office Products</w:ARWNLSString></span></a><font color="#666699" size="0">&nbsp;(313)&nbsp;</font>'/>
+
+  <a:ClientSideScript handle="$dict.handle">top.location.href="http://www.google.com" </a:ClientSideScript>
+  <span onclick="$dict.handle">Try JS redirect</span>
+
+  <a:SetValue errorDivId="$requestContext.nextElementId"/>
+  <a:Hyperlink action="$null">NULL request</a:Hyperlink>
+\
+<server>
+  var errorDivId = null;
+  function dragged() { return null; }
+  var _rc = 0;
+  var _count = 0;
+  function count () {
+  return _count++;
+  }
+
+  function redirect () {
+  return ariba.ui.aribaweb.core.AWRedirect.getRedirect(component.requestContext(), "http://www.yahoo.com");
+  }
+  function throwIt() {
+  var bogus = null;
+  null.doSomething();
+  }
+
+  function download () {
+  var path = component.application().resourceManager().pathForResourceNamed("complex/Com-Qtr.xls");
+  var response = component.application().createResponse();
+  response.setContentFromFile(path);
+  response.setContentType(ariba.ui.aribaweb.util.AWContentType.ApplicationVndMsexcel);
+  response.setHeaderForKey("attachment;  filename=\"Template.xls\"", "Content-Disposition");
+
+  return response;
+  }
+
+  function refreshCount () {
+  // for next time...
+  // component.page().setPollInterval(3);
+  component.page().getChangeNotifier().notifyChange();
+  return _rc++;
+  }
+  </server>\

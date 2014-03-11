@@ -1,0 +1,237 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <dataLoad name="BuyerDeleteRequisitionLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.purchasing.core.Requisition  INCLUDE INACTIVE"
+                           incrementalClause="(Requisition.TimeUpdated &gt;= :IncrementalStartDate AND
+                                          Requisition.TimeUpdated &lt; :IncrementalEndDate)"/>
+                <interfaceSqlStage fromClause=":InterfaceTable JOIN FACT_REQUISITION_LINE_ITEM REQ  ON :InterfaceTable.RequisitionId = REQ.REQUISITION_ID"/>
+                <analysisStage destinationName="ariba.analytics.fact.RequisitionLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="RequisitionId">
+                <aqlMapping selectField="Requisition.UniqueName"/>
+            </field>
+            <field name="RequisitionLineNumber">
+                <interfaceSqlMapping selectColumn="REQ.REQUISITION_LINE_NUMBER"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <interfaceSqlMapping selectColumn="REQ.SPLIT_ACCOUNTING_NUMBER"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+    <dataLoad name="BuyerRequisitionLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.purchasing.core.Requisition
+                              JOIN ariba.purchasing.core.ReqLineItem USING Requisition.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING ReqLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                              LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING ReqLineItem.LineType
+                              LEFT OUTER JOIN ariba.common.core.Address AS ShipTo SUBCLASS NONE INCLUDE INACTIVE USING ReqLineItem.ShipTo
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING ReqLineItem.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.purchasing.core.PurchaseOrder INCLUDE INACTIVE USING ReqLineItem.Order
+                              LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester
+                              LEFT OUTER JOIN ariba.user.core.User AS Preparer INCLUDE INACTIVE USING Requisition.Preparer
+                              LEFT OUTER JOIN ariba.contract.core.Contract PARTITION ANY INCLUDE INACTIVE USING ReqLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING ReqLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money USING SplitAccounting.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription USING ReqLineItem.Description
+                              LEFT OUTER JOIN ariba.common.core.CommonSupplier INCLUDE INACTIVE USING LineItemProductDescription.CommonSupplier
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.UnitOfMeasure INCLUDE INACTIVE USING LineItemProductDescription.UnitOfMeasure
+                              LEFT OUTER JOIN ariba.contract.core.ContractLineItem AS ContractCoreApprovableLineItem USING ReqLineItem.MALineItem
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription AS MALineDescription USING ContractCoreApprovableLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.Money AS MALineMoney USING MALineDescription.Price
+                              LEFT OUTER JOIN ariba.basic.core.Currency AS MALineCurrency INCLUDE INACTIVE USING MALineMoney.Currency
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING Requisition.ProcurementUnit"
+                      whereClause="Requisition.NextVersion IS NULL"
+                      incrementalClause="(Requisition.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      Requisition.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.RequisitionLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="RequisitionId">
+                <aqlMapping selectField="Requisition.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="RequisitionLineNumber">
+                <aqlMapping selectField="ReqLineItem.NumberInCollection"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+
+            <field name="RequisitionDate">
+                <aqlMapping selectField="Requisition.SubmitDate"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="ReqLineItem.Description.Description"/>
+            </field>
+            <field name="Supplier.SupplierLocationId">
+                <aqlMapping selectField="SupplierLocation.UniqueName"/>
+            </field>
+            <field name="Supplier.SupplierId">
+                <aqlMapping selectField="Supplier.UniqueName"/>
+            </field>
+
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="Preparer.UserId">
+                <aqlMapping selectField="Preparer.UniqueName"/>
+            </field>
+            <field name="Preparer.PasswordAdapter">
+                <aqlMapping selectField="Preparer.PasswordAdapter"/>
+            </field>
+
+            <field name="SourceCommodityDomain">
+                <aqlMapping selectField="CommodityCode.Domain"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="Commodity.CommodityId">
+                <aqlMapping selectField="CommodityCode.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+                </analysisMapping>
+            </field>
+            <field name="ERPCommodity.CommodityId">
+                <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+            </field>
+            <field name="UnitOfMeasure.UnitOfMeasureId">
+                <aqlMapping selectField="UnitOfMeasure.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemUOM"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Quantity">
+                <aqlMapping selectField="SplitAccounting.Quantity"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+            </field>
+
+            <field name="LineType">
+                <aqlMapping selectField="CASE ReqLineItem.Description.IsInternalPartId WHEN TRUE THEN 'NonCatalog' ELSE (CASE ReqLineItem.PunchOut WHEN NULL THEN (CASE ReqLineItem.Description.CatalogItemRef WHEN NULL THEN 'NonCatalog' ELSE 'Catalog' END) ELSE 'Catalog' END) END"/>
+            </field>
+
+            <field name="CatalogType">
+                <aqlMapping selectField="CASE ReqLineItem.Description.IsInternalPartId WHEN TRUE THEN 'NonCatalog' ELSE (CASE ReqLineItem.PunchOut WHEN NULL THEN (CASE ReqLineItem.Description.CatalogItemRef WHEN NULL THEN 'NonCatalog' ELSE 'Catalog' END) ELSE 'Catalog' END) END"/>
+                <analysisMapping enabled="false"/>
+            </field>
+
+            <!-- Null out all Part related fields if this is NonCatalog line item -->
+            <field name="Part.PartKey1">
+                <aqlMapping selectField="ReqLineItem.Description.SupplierPartNumber"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey2">
+                <aqlMapping selectField="ReqLineItem.Description.SupplierPartAuxiliaryID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Part.PartKey3">
+                <aqlMapping selectField="CommonSupplier.SystemID"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ReplaceConditionally">
+                        <parameter name="FieldName"    value="LineType"/>
+                        <parameter name="FieldValue"   value="NonCatalog"/>
+                        <parameter name="ReplaceValue" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+
+            <field name="Contract.ContractId">
+                <aqlMapping selectField="Contract.InitialUniqueName"/>
+            </field>
+            <field name="StatusString">
+                <aqlMapping selectField="Requisition.StatusString"/>
+            </field>
+            <field name="TitleString">
+                <aqlMapping selectField="Requisition.Name"/>
+            </field>
+            <field name="POId">
+                <aqlMapping selectField="PurchaseOrder.UniqueName"/>
+            </field>
+            <field name="isPunchOutItem">
+                <aqlMapping selectField="CASE ReqLineItem.PunchOut WHEN NULL THEN 'False' ELSE 'True' END"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="Requisition.ApprovedDate"/>
+            </field>
+            <field name="ReqApprovedDate">
+                <aqlMapping selectField="Requisition.ApprovedDate"/>
+            </field>
+            <field name="ShipToLocation.LocationId">
+                <aqlMapping selectField="ShipTo.UniqueName"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="MigrationApprovedDateBuyerRequisitionLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.purchasing.core.Requisition
+                              JOIN ariba.purchasing.core.ReqLineItem USING Requisition.LineItems
+                              JOIN ariba.common.core.SplitAccountingCollection USING ReqLineItem.Accountings
+                              JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings"
+                      whereClause="Requisition.ApprovedDate IS NOT NULL"/>
+            <analysisStage destinationName="ariba.analytics.fact.RequisitionLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="RequisitionId">
+                <aqlMapping selectField="Requisition.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="RequisitionLineNumber">
+                <aqlMapping selectField="ReqLineItem.NumberInCollection"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+
+            <field name="ReqApprovedDate">
+                <aqlMapping selectField="Requisition.ApprovedDate"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <inDataLoad name="BuyerDeleteRequisitionLineItem" version="8.2" disableLoad="true"/>
+
+    <inDataLoad name="BuyerRequisitionLineItem" version="8.2" disableLoad="true"/>
+
+</allDataLoads>

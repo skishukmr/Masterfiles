@@ -1,0 +1,18 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+<inDataLoad name="BuyerDeleteRequestRequisition">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="JOIN ariba.purchasing.core.ReqLineItem INCLUDE INACTIVE USING Request.LineItems
+	                               JOIN ariba.common.core.SplitAccountingCollection INCLUDE INACTIVE USING ReqLineItem.Accountings
+        	                       JOIN ariba.common.core.SplitAccounting INCLUDE INACTIVE USING SplitAccountingCollection.SplitAccountings"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="RequisitionLineNumber">
+            <aqlMapping selectField="ReqLineItem.NumberInCollection"/>
+        </field>
+        <field name="SplitAccountingNumber">
+            <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+</allDataLoads>

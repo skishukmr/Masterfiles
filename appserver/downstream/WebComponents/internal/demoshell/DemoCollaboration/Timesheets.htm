@@ -1,0 +1,161 @@
+<BasicPageWrapper hasForm="$true" toc="ASNLoggedInColl.htm">
+<style>
+.inlineHelpText {
+	FONT-WEIGHT: normal; FONT-SIZE: 8pt; COLOR: #666666; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;
+}
+</style>
+<table border=0 cellspacing=0 cellpadding=0 width=100%>
+  <tr>
+    <td class="pageHead"><img border="0" width="25" title="Non-numbered step" height="25" src="resources/t00.gif" alt="Non-numbered step" align="absmiddle" hspace="0">&nbsp;Time Sheets</td>
+  </tr>
+  <tr>
+    <td>
+      <table border=0 cellpadding=0 cellspacing=0 width=100%>
+        <tr>
+          <td valign="top" width="1%"><img border="0" width="25" title="Substeps" height="20" src="resources/substepsLine.gif" alt="Substeps" vspace="2" hspace="3"></td>
+          <td style="line-height:160%;">
+        <a href="$null"><span class="wizSubstep">Purchase&nbsp;Orders</span></a> : <a href="$null"><span class="wizSubstep">Contracts</span></a>
+        : <a href="CollaborationRequests.htm"><span class="wizSubstep">Collaboration Requests</span></a>&nbsp;: <a href="$null"><span class="wizSubstep">Payments</span></a> : <span class="wizSubstepCurrent">Time Sheets</span> : <a href="$null"><span class="wizSubstep">Notifications</span></a></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><img border="0" width="1" height="3" src="resources/cleardot.gif" class="block"></td>
+  </tr>
+</table>
+<br/>
+<br/>
+<table  class="grayVeryLt" style="padding:10px 10px 3px 5px;border: 1px solid #9C9CB8;" width="100%">
+    <tr>
+        <td>
+            <table cellpadding="0" cellspacing="0">
+                
+                    <tr>
+                        <td class="inlineHelpText" colspan="4" valign="top">
+                            <div style="padding-bottom:5px">
+                                
+                                    Search documents for the last
+                                    31 days.
+                                
+                            </div>
+                        </td>
+                    </tr>
+                
+                <tr>
+                    <td class="inlineHelpText" colspan="4" valign="top">
+                        <div style="padding-bottom:5px">
+                            
+                        </div>
+                    </td>
+                </tr>
+            <tr>
+               <td>
+                   Search By: 
+                   <select size="1"  name="_1pv">
+    <option value="0">
+                       Time Sheet #
+                   </option>
+    <option value="1">
+                       Customer
+                   </option>
+    <option value="2">
+                       Contractor Name
+                   </option>
+    <option value="3">
+                       Received Date
+                   </option>
+    <option value="4">
+                       Time Sheet Status
+                   </option>
+    <option value="5">
+                       Status
+                   </option>
+    
+</select>
+               </td>
+               <td nowrap="true">
+                   <input id="_4v" type="text" value="" name="_4v" awname="value">
+               </td>
+               <td>
+                   <TextButton action="$null">Search</TextButton>
+               </td>
+                <td>
+                   
+                   <AWHyperlink action="$null">Advanced Search</AWHyperlink>
+                   
+               </td>
+            </tr>
+
+            
+            </table>
+        </td>
+    </tr>
+</table>
+
+
+<AWXDCLoadAQL value="$supplierSysId"
+              query="select SystemID from ariba.common.core.CommonSupplier where Name.PrimaryString = :supplierName"
+              supplierName="$session.dict.demoSession.supplierName"
+              scalar="$true"/>
+
+<AWXDCLoadAQL value="$po" query="select TimeSheet TheObject from ariba.workforce.core.TimeSheet where \"Order\".Supplier.CommonSupplier.Name.PrimaryString = :suppname and ApprovedState != 0 order by UniqueName desc" rowLimit="10" suppname="$session.dict.demoSession.supplierName"/>
+
+
+<AWTDataTable list="$po" batchSize="15" showOptionsMenu="$false" item="$item" title="Time Sheets" enableScrolling="$true" 
+              initialSortKey="UniqueName" initialSortDirection="descending">
+	<AWTHeadingArea>
+		<SectionHeading title="Time Sheets"/>
+	</AWTHeadingArea>
+	<AWTColumn label="Time Sheet #" key="UniqueName" action="$null"/>
+	<AWTColumn label="Contractor" key="Requester.Name.PrimaryString"/>
+    <AWTColumn label="Customer" key="Order.Requester.Organization.Name.PrimaryString"/>	
+	<AWTColumn label="Start Date" key="StartPeriodDate"  formatter="$formatters.shortDate"/>
+	<AWTColumn label="End Date" key="EndPeriodDate"  formatter="$formatters.shortDate"/>
+	<AWTColumn label="Submitted Date" key="SubmitDate"  formatter="$formatters.shortDate"/>
+	<AWTColumn label="Received Date" key="SubmitDate"  formatter="$formatters.shortDate"/>
+	<AWTColumn label="Status">Sent</AWTColumn>
+	<AWTColumn label="Time Sheet Status">
+	  <AWString value="$approvalString"/>
+	</AWTColumn>
+	
+<!--	<AWTColumn label="Customer"> -->
+	   
+</AWTDataTable>
+
+<table cellspacing=0 cellpadding=0 border=0>
+<tr>
+  <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td class="bodyText">
+            <br/>
+            <AWHyperlink action="$null">
+                
+                    Download list in csv format. For detailed report go to Reporting section.
+                
+            </AWHyperlink>
+            <br/>
+            
+                Note: This file is UTF-8 encoded.  If your application does not read UTF-8, it might not display all Asian and accented characters in the file correctly.
+            
+        </td>
+    </tr>
+</table>
+
+</BasicPageWrapper>
+
+<server>
+  var user = null;
+  var supp = null;
+  var selectedItem = { Name:"" };
+  var item = null;
+  
+  function approvalString () 
+  {
+     var st = item.getApprovedState();
+     
+     return ariba.approvable.core.Approvable.getStateName(
+       ariba.approvable.core.Approvable.StateNames,
+       st);
+     
+  }
+</server>

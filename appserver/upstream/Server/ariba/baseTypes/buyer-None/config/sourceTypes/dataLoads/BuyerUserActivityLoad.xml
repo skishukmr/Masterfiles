@@ -1,0 +1,66 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <!-- IMPORTANT
+     Do not remove the interface table stage in these loads even though
+     it appears we do not really neet it by doing the GROUP BY directly
+     in the AQL stage.
+     If the grouping happens on the SubmitDate in AQL stage, it will
+     use the whole time stamp (date part + time part) and we want to
+     group only on the date part of it.
+     However doing the grouping on the same field in the interface table
+     works fine because we truncate the time part when sending data
+     back to Analysis.
+    -->
+
+    <inDataLoad name="BuyerUserSubmitRequisition" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.purchasing.core.Requisition
+                                       JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING Requisition.Requester"
+                        replaceIncrementalClause="(Requisition.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               Requisition.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerUserSubmitExpenseReport" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                                       JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester"
+                        replaceIncrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerUserApproveExpenseReport" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.expense.core.ExpenseReport
+                                       JOIN ariba.approvable.core.SimpleRecord USING ExpenseReport.Records
+                                       JOIN ariba.user.core.User AS Approver INCLUDE INACTIVE USING SimpleRecord.User"
+                        replaceIncrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerUserApproveRequisition" version="8.2">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.purchasing.core.Requisition
+                                       JOIN ariba.approvable.core.SimpleRecord USING Requisition.Records
+                                       JOIN ariba.user.core.User AS Approver INCLUDE INACTIVE USING SimpleRecord.User"
+                        replaceIncrementalClause="(Requisition.TimeUpdated &gt;= :IncrementalStartDate AND
+                                               Requisition.TimeUpdated &lt; :IncrementalEndDate)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ProcurementUnit.UniqueName"/>
+        </fieldMappings>
+    </inDataLoad>
+
+</allDataLoads>

@@ -1,0 +1,1520 @@
+/****************************************************************************************
+                    Document Generation
+*****************************************************************************************/
+function sfcStartGenerate ()
+{
+    this.generate = function ()
+    {
+        var ec = _cdGenerate;
+        try {
+            if (!ec.bIsSimplyGeneration) {
+                genStepContactApp();
+            }
+            else {
+                sfGetApp(ec);
+                if (!ec.bIsOnlyValueUpgradeRequired) {
+                    sfProcessClause(ec);
+                }
+                sfImportValues(ec);
+                sfSyncConditionalClauses(ec);
+                sfUploadDocument(ec);
+                sfSyncHistory(ec);
+                sfFullyCleanup(ec);
+                ariba.Request.setWindowLocation(ec.urlDoneUrl);
+            }
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    };
+
+    /**
+        Highlights the current step and invokes nextStepFu
+    */
+    function genSetStep (name, nextStepFu)
+    {
+        step_contact_app.className = "inactiveStep";
+        step_import_data.className = "inactiveStep";
+        step_upload_clause.className = "inactiveStep";
+        step_upload_data.className = "inactiveStep";
+        step_syncup_data.className = "inactiveStep";
+        step_done.className = "inactiveStep";
+        document.all(name).className = "activeStep";
+
+        setTimeout(nextStepFu, 1000);
+    }
+
+    /**
+        Step set up
+    */
+    function genStepPre (msg)
+    {
+        var ec = _cdGenerate;
+        LoggerUtil.logMessage("Document Generation Step:" + msg);
+
+        ec.hideApp();
+    }
+
+    /**
+        Contact App step
+    */
+    function genStepContactApp ()
+    {
+        var ec = _cdGenerate;
+        try {
+            sfGetApp(ec);
+            genSetStep("step_import_data", genStepImportData);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    /**
+        Import Data Step
+    */
+    function genStepImportData ()
+    {
+        var ec = _cdGenerate;
+        try {
+            genStepPre("step_import_data");
+
+            if (!ec.bIsOnlyValueUpgradeRequired) {
+                sfProcessClause(ec);
+            }
+
+            sfImportValues(ec);
+            genSetStep("step_upload_clause", genStepUploadClause);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    /**
+        Upload clause step
+    */
+    function genStepUploadClause ()
+    {
+        var ec = _cdGenerate;
+        try {
+            genStepPre("step_upload_clause");
+            sfSyncConditionalClauses(ec);
+            genSetStep("step_upload_data", genStepUploadData);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    /**
+        Upload data step
+    */
+    function genStepUploadData ()
+    {
+        var ec = _cdGenerate;
+        try {
+            genStepPre("step_upload_data");
+            sfUploadDocument(ec);
+            genSetStep("step_syncup_data", genStepSyncupData);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    /**
+        Sync up data step
+    */
+    function genStepSyncupData ()
+    {
+        var ec = _cdGenerate;
+        try {
+            genStepPre("step_syncup_data");
+            sfSyncHistory(ec);
+            genSetStep("step_done", genStepDone);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    /**
+        Open document and clean up step
+    */
+    function genStepDone ()
+    {
+        var ec = _cdGenerate;
+        try {
+            genStepPre("step_done");
+            sfAutoOpenDocument(ec);
+            sfCleanup(ec);
+            _cdGenerate = null;
+            ariba.Request.setWindowLocation(ec.urlDoneUrl);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+}
+sfcStartGenerate.prototype = new sfcExecutionState;
+var _cdGenerate = null;
+
+/**
+    Generate a cd document
+*/
+function siStartGenerate (args)
+{
+    _cdGenerate = new sfcStartGenerate();
+    var ec = _cdGenerate;
+    sfInitExecutionStateBasic(ec, args);
+    sfLoggerInit(ec, "siStartGenerate", args);
+    ec.generate();
+}
+
+/**
+    Opens the document
+*/
+function sfAutoOpenDocument (ec)
+{
+    ec.wordApp.Visible = true;
+    ec.getAgreementDocument().Activate();
+    ec.wordApp.Activate();
+    if (ec.sBookmarkName != null && ec.sBookmarkName != "") {
+        var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+        sfGotoBookmarkName(currentSelection, ec.sBookmarkName);
+    }
+}
+/**
+    Doc this
+*/
+function sfSyncConditionalClauses (ec)
+{
+    LoggerUtil.logBegin("sfSyncConditionalClauses");
+
+    ec.hideApp();
+
+    ec.sTempDocumentFolder = sfGetTempFolderPath();
+    var count = ec.oConditionalClauses.Count;
+    for (var i = 1; i <= count; ++i) {
+        var clauseId = ec.oConditionalClauses.Item(i);
+        if (sfIsEmptyString(clauseId)) {
+            continue;
+        }
+        sfSyncupClauseDocumentInternal(ec, clauseId, ec.urlSyncupClauseContentActionUrl);
+    }
+
+    LoggerUtil.logEnd("sfSyncConditionalClauses");
+}
+
+/**
+    Most of the generation is happens in this routine
+*/
+function sfProcessClause (ec)
+{
+    LoggerUtil.logBegin("sfProcessClause");
+
+    sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+
+    sfAutoOpenSyncupDocument(ec.sDocumentLocation);
+
+    ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+
+    // Save the current settings such as View Type, track change
+    sfSaveWordSettings(ec, ec.getAgreementDocument());
+
+    // Set the view type to be normal, all regen will be done in this setting
+    sfSetDocumentViewType(ec.getAgreementDocument(), ViewType.ViewTypeNormal);
+
+    window.focus();
+
+    ec.getAgreementDocument().TrackRevisions = false;
+    if (ec.bIsReviseBookmarkGeneration) {
+        sfReviseBookmark(ec);
+    }
+    else{
+        if (ec.bIsIncrementalGeneration) {
+
+            if (ec.bIsTrackChangeActive && !ec.bIsIncrementalCopyProjectGeneration) {
+                ec.getAgreementDocument().TrackRevisions = true;
+            }
+
+            sfAddGlobalContractBookmark(ec.getAgreementDocument());
+
+            sfIncrementalUpgradeClause(ec);
+
+            if (ec.bIsApplyStyleRequired) {
+                sfApplyStyle(ec);
+            }
+        }
+        else {
+            sfAssembleClause(ec);
+        }
+    }
+    // Restore the settings such as View Type, track change
+    sfRestoreWordSettings(ec, ec.getAgreementDocument());
+
+    LoggerUtil.logEnd("sfProcessClause");
+}
+
+/**
+    Todo doc this
+*/
+function sfReviseBookmark (ec)
+{
+    LoggerUtil.logBegin("sfReviseBookmark");
+
+    var originalTrack = ec.getAgreementDocument().TrackRevisions;
+    ec.getAgreementDocument().TrackRevisions = false;
+
+    ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+
+    sfDoIncrementalInitialization(ec);
+
+    ec.getAgreementDocument().Revisions.AcceptAll();
+    ec.getAgreementDocument().TrackRevisions = originalTrack;
+
+    LoggerUtil.logEnd("sfReviseBookmark");
+}
+
+/**
+    Todo Doc this
+*/
+function sfAssembleClause (ec)
+{
+    window.focus();
+
+    var agreement = ec.getAgreementDocument();
+    sfResetContractContent(agreement);
+    sfAddGlobalContractBookmark(agreement);
+    agreement.Activate();
+    ec.currentSelection = agreement.ActiveWindow.Selection;
+
+    window.focus();
+
+    sfDoSectionGeneration(ec);
+
+    ec.wordApp.ActiveDocument.Saved = false;
+    ec.wordApp.ActiveDocument.Save();
+}
+
+/**
+    Invokes the incremental initialization commands
+*/
+function sfDoIncrementalInitialization(ec)
+{
+    LoggerUtil.logBegin("sfDoIncrementalInitialization");
+    var cmds = ec.oIncrementalIntializationCmds;
+    var count = cmds.Count;
+    for (var i = 1; i <= count; ++i) {
+        sfInvokeCommand(ec, cmds.Item(i));
+    }
+    LoggerUtil.logEnd("sfDoIncrementalInitialization");
+}
+
+/**
+    Invoke a set of commands issued by the server
+*/
+function sfInvokeCommand (ec, cmdStr)
+{
+    try {
+        var c = sfGetCommand(cmdStr);
+        if (c == null || c.length <= 0) {
+            return;
+        }
+
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logCommand(c);
+        }
+
+        if (c[0] == GenerateCommand.AddClauseCommand) {
+            sfAddClause(ec, c[1], c[2], c[3], c[4], c[5], sfBooleanValueForBinding(c[6]));
+        }
+        else if (c[0] == GenerateCommand.AddSectionCommand) {
+            sfAddSection(ec, c[1], c[2], c[3], c[4], c[5], sfBooleanValueForBinding(c[6]));
+        }
+        else if (c[0] == GenerateCommand.EditClauseCommand) {
+            sfSetClause(ec, c[1], c[2], c[3], c[4], c[5]);
+        }
+        else if (c[0] == GenerateCommand.EditSectionCommand) {
+            sfSetSection(ec, c[1], c[2], c[3], sfBooleanValueForBinding(c[4]));
+        }
+        else if (c[0] == GenerateCommand.MoveSectionClauseCommand) {
+            sfMoveClauseSection(ec, c[1], c[2], c[3], c[4], c[5]);
+        }
+        else if (c[0] == GenerateCommand.RemoveClauseSectionCommand) {
+            sfRemoveClauseSection(ec, c[1]);
+        }
+        else if (c[0]== GenerateCommand.AutoOpenClauseCommand) {
+            sfAutoOpenSyncupClause(ec, c[1], c[2]);
+        }
+        else if (c[0] == GenerateCommand.CopySourceOpenCommand) {
+            sfCopySourceOpen(ec, c[1]);
+        }
+        else if (c[0] == GenerateCommand.CopySourceCloseCommand) {
+            sfCopySourceClose(ec);
+        }
+        else if (c[0] == GenerateCommand.CopyReplaceClauseCommand) {
+            sfCopyReplaceClause(ec, sfBooleanValueForBinding(c[1]), c[2], c[3], c[4], c[5]);
+        }
+        else if (c[0] == GenerateCommand.CopyAddClauseCommand) {
+            sfCopyAddClause(ec, sfBooleanValueForBinding(c[1]), c[2], c[3], c[4], c[5], sfBooleanValueForBinding(c[6]));
+        }
+        else {
+            // nothing to be done here
+        }
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfInvokeCommand and Command is " + cmdStr, ex);
+        throw ex;
+    }
+}
+
+/**
+    Todo doc this
+*/
+function sfIncrementalUpgradeClause (ec)
+{
+    LoggerUtil.logBegin("sfIncrementalUpgradeClause");
+
+    try {
+        if (ec.bIsIncrementalGeneration) {
+            //app.Visible = appVisible
+            window.focus();
+            document.body.style.cursor = "wait";
+            ec.getAgreementDocument().Activate();
+
+            ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+            sfReviseMoveForwardBookmark(ec.getAgreementDocument(), ec.currentSelection, GlobalContractBookmarkName);
+            sfDoIncrementalGeneration(ec);
+        }
+    }
+    catch (ex) {
+        LoggerUtil.logError(null, MIE + "sfIncrementalUpgradeClause Ex = ", ex);
+        throw ex;
+    }
+
+    LoggerUtil.logEnd("sfIncrementalUpgradeClause");
+}
+
+/**
+    Todo doc this
+*/
+function sfApplyStyle (ec)
+{
+    ec.getAgreementDocument().Activate();
+    ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+    sfDoApplyStyle(ec);
+}
+
+/**
+    Updates the document properties and form fields
+*/
+function sfImportValues (ec)
+{
+    LoggerUtil.logBegin("sfImportValues");
+
+    if (ec.bIsOnlyValueUpgradeRequired) {
+        sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+        sfAutoOpenSyncupDocument(ec.sDocumentLocation);
+        sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+    }
+    else {
+        /* when bIsOnlyValueUpgradeRequired is false, we would have called process clause */
+        ec.getAgreementDocument().Activate();
+    }
+
+    ec.agreementDocument = ec.wordApp.ActiveDocument;
+
+    ec.bIsTrackChangeActive = ec.getAgreementDocument().TrackRevisions;
+    ec.getAgreementDocument().TrackRevisions = false;
+
+    /*
+        update form fields and document properties
+        XXX Gopal - we may want to rename these modules
+    */
+    sfDoImportValues(ec);
+
+    var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+    var pos = currentSelection.HomeKey(6, 0); // wdStory = 6, wdMove = 0
+    sfUpdateFieldInHeaderFooter(ec.getAgreementDocument());
+
+    ec.getAgreementDocument().TrackRevisions = ec.bIsTrackChangeActive;
+
+    if (ec.bIsCleanVersionRequired) {
+        sfGeneratingCleanVersion(ec, ec.getAgreementDocument());
+    }
+
+    /* save the document */
+    ec.getAgreementDocument().Saved = false;
+    ec.getAgreementDocument().Save();
+
+    /* reset track changes */
+    sfPostProcess(ec);
+
+    LoggerUtil.logEnd("sfImportValues");
+}
+
+/**
+    Setting the form field and custom properties and updates the fields
+*/
+function sfDoImportValues (ec)
+{
+    var formFields = ec.oFormFields;
+    var count = formFields.Count;
+
+    var cdp = ec.getAgreementDocument().CustomDocumentProperties;
+    var ffs = ec.getAgreementDocument().FormFields;
+
+    for (var i = 1; i <= count; ++i) {
+        var formField = formFields.Item(i);
+        var fieldName = prefixFieldName + formField.FieldName;
+        if (!formField.Editable) {
+            var fieldProperty = sfGetItemFromCollection(cdp, fieldName);
+            if (fieldProperty != null) {
+                fieldProperty.Value = formField.FieldValue;
+            }
+        }
+        else {
+            var ff = sfGetItemFromCollection(ffs, fieldName);
+            if (ff != null) {
+                ff.Result = formField.FieldValue;
+                ff.TextInput.Default = formField.FieldValue;
+            }
+         }
+    }
+}
+
+/**
+    Updates the field in header and footer
+*/
+function sfUpdateFieldInHeaderFooter (aDocument)
+{
+    aDocument.Fields.Update();
+
+    if (aDocument.Sections.Count > 0) {
+        var primarySection = aDocument.Sections(1);
+        if (primarySection.Headers.Count > 0) {
+            primarySection.Headers(1).Range.Fields.Update(); // wdHeaderFooterPrimary = 1
+        }
+        if (primarySection.Footers.Count > 0) {
+            primarySection.Footers(1).Range.Fields.Update(); // wdHeaderFooterPrimary = 1
+        }
+    }
+}
+/**
+    Todo doc this
+*/
+function sfDoApplyStyle (ec)
+{
+    LoggerUtil.logBegin("sfDoApplyStyle");
+
+    var styles = ec.oApplyStyles;
+    var count = styles.Count;
+
+    for (var i = 1; i <= count; ++i) {
+        var style = styles.Item(i); // sfcApplyStyle
+        /* XXX Gopal - don't we need to reset selection ??? */
+        sfGotoBookmarkName(ec.currentSelection, style.Name);
+        sfApplyStyleInSectionClause(ec.getAgreementDocument(),
+                style.StyleId, ec.currentSelection,  sfContentType(style.Name));
+    }
+
+    LoggerUtil.logEnd("sfDoApplyStyle");
+}
+
+/**
+    Invokes the incremental generation commands
+*/
+function sfDoIncrementalGeneration (ec)
+{
+    LoggerUtil.logBegin("sfDoIncrementalGeneration");
+
+    var cmds = ec.oIncrementalGenerationCmds;
+    var count = cmds.Count;
+
+    /* based on the cmd call the appropriate method */
+    for (var i = 1; i <= count; ++i) {
+        sfInvokeCommand(ec, cmds.Item(i));
+    }
+
+    LoggerUtil.logEnd("sfDoIncrementalGeneration");
+}
+
+/**
+    Recursively add sections and sections/clauses under the esection
+*/
+function sfAddSectionCommand (ec, sectionCmd, contextSectionBookmarkName)
+{
+    var clauseId = prefixClauseName + sectionCmd.ItemId;
+
+    if (sectionCmd.IsClause) {
+        sfSaveClauseToClient(sectionCmd.FullName, clauseId, ec.urlDocumentUrl);
+        sfAddClause(ec, sectionCmd.FullName, clauseId,
+            contextSectionBookmarkName, sectionCmd.ItemStyle, "", false);
+    }
+    else {
+        sfAddSection(sectionCmd.Name, clauseId,
+            contextSectionBookmarkName, sectionCmd.ItemStyle, "", false);
+        var children = sfGetChildren(ec.oContentTree, sectionCmd.ItemId);
+        var count = children.Count;
+        for (var i = 1; i <= count; ++i) {
+            sfAddSectionCommand(ec, sfGetNode(ec.oContentTree, children.Item(i)), clauseId);
+        }
+    }
+}
+
+/**
+    Doc this
+*/
+function sfDoSectionGeneration (ec)
+{
+    LoggerUtil.logBegin("sfDoSectionGeneration");
+
+    var cmds = ec.oGenSections;
+    var count = cmds.Count;
+
+    /* XXX This does NOT look right */
+    for (var i = 1; i <= count; ++i) {
+        sfAddSectionCommand(ec, cmds.Item(i), "sectionGlobalContract");
+    }
+
+    LoggerUtil.logEnd("sfDoSectionGeneration");
+}
+
+/**
+    Reset the track changes option
+*/
+function sfPostProcess (ec)
+{
+    var agreement = ec.getAgreementDocument();
+    agreement.Activate();
+    if (ec.bIsTrackChangeActive) {
+        agreement.TrackRevisions = true;
+        agreement.ShowRevisions = true;
+        if (!ec.wordApp.ActiveWindow.View.ShowRevisionsAndComments) {
+            ec.wordApp.WordBasic.ViewChanges();
+        }
+    }
+    else {
+        agreement.TrackRevisions = false;
+    }
+
+    agreement.Saved = false;
+    agreement.Save();
+    ec.wordApp.NormalTemplate.Saved = true;
+}
+
+
+/**
+    Todo doc this
+*/
+function sfGeneratingCleanVersion (ec, aDocument)
+{
+    var originalTrack = aDocument.TrackRevisions;
+
+    if (ec.bIsRemoveChangeRequired) {
+        aDocument.Revisions.AcceptAll();
+    }
+
+    aDocument.TrackRevisions = false;
+
+    if (ec.bIsRemoveFieldRequired) {
+        sfRemoveField(aDocument);
+    }
+
+    aDocument.TrackRevisions = originalTrack;
+}
+
+/**
+ * public api
+ */
+function siGeneratingCleanVersion (args)
+{
+    var ec = new sfcExecutionState();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siGeneratingCleanVersion", args);
+
+        /* copy the original file */
+        var tmpFileLocation = sfForwardToBackSlash(ec.sTempDocumentFolder);
+        sfCreateDirectory(tmpFileLocation);
+        tmpFileLocation = tmpFileLocation.concat("\\");
+        tmpFileLocation = tmpFileLocation.concat(sfGetFileNameFromPathName(ec.sDocumentLocation));
+
+        sfCopyFile(ec.sDocumentLocation, tmpFileLocation);
+
+        sfGetApp(ec);
+        ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp,
+                ec.wordType, tmpFileLocation, false);
+
+        sfGeneratingCleanVersion(ec, ec.agreementDocument);
+        /* save the document */
+        ec.getAgreementDocument().Saved = false;
+        ec.getAgreementDocument().Save();
+
+        sfSendDataToServer(sfGetFileBytes(tmpFileLocation), ec.urlSaveCleanVersionUrl);
+        if (!ec.bShowCleanedDoc) {
+            ec.quitApp();
+        }
+        else {
+            ec.wordApp.Visible = true;
+            ec.getAgreementDocument().Activate();
+            ec.wordApp.Activate();
+        }
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+/**
+    Doc this
+*/
+function sfRemoveField (aDocument)
+{
+    var aStartPosition = null;
+    var aValue = null;
+    var formFields = aDocument.FormFields;
+    formFields = sfCloneObjectArray(formFields);  // so that we can do in place delete
+    var count = formFields.Count;
+    for (var i = 1; i <= count; ++i) {
+        var anItemForm = formFields.Item(i);
+        aValue = anItemForm.Result;
+        aStartPosition = anItemForm.Range.Start;
+        anItemForm.Delete();
+        var currentSelection = aDocument.ActiveWindow.Selection;
+        currentSelection.Start = aStartPosition;
+        currentSelection.End = aStartPosition;
+        currentSelection.TypeText(aValue);
+    }
+
+    var aDocumentProperties = aDocument.CustomDocumentProperties;
+    var fields = aDocument.Fields;
+    fields = sfCloneObjectArray(fields); // so that we can do in place delete
+    count = fields.Count;
+    for (var i = 1; i <= count; ++i) {
+        var anItem = fields.Item(i);
+        if (sfGetTypeForDocumentProperty(anItem) == FieldType.FieldTypeDocProp) {
+            var aName = sfGetNameForDocumentProperty(anItem);
+            anItem.Select();
+            var currentSelection = aDocument.ActiveWindow.Selection;
+            var aRange = currentSelection.Range;
+            aStartPosition = aRange.Start;
+            aValue = aRange.Text;
+            anItem.Delete();
+            currentSelection.TypeText(aValue);
+
+            var aDocumentProperty = sfGetItemFromCollection(aDocumentProperties, aName);
+            if (aDocumentProperty != null) {
+                aDocumentProperty.Delete();  // this is safe
+            }
+        }
+    }
+}
+
+/**
+    Todo doc this
+*/
+function sfGetNameForDocumentProperty (aField)
+{
+    var codeString = aField.Code.Text;
+    var PrefixDocumentProperty = "DOCPROPERTY ";
+    var PrefixRefProperty = "REF ";
+
+    var index1 = codeString.indexOf(PrefixDocumentProperty);
+    if (index1 >= 0) {
+        index1 = index1 + PrefixDocumentProperty.length;
+    }
+    else {
+        index1 = codeString.indexOf(PrefixRefProperty);
+        /* XXX Not checking validity?? */
+        index1 = index1 + PrefixRefProperty.length;
+    }
+
+    var index2 = codeString.indexOf(" ", index1+1);
+    return codeString.substring(index1, index2 - index1);
+}
+
+/**
+    Returns the field proerty for field
+*/
+function sfGetTypeForDocumentProperty (aField)
+{
+    var codeString = aField.Code.Text;
+    var PrefixDocumentProperty = "DOCPROPERTY ";
+    var PrefixRefProperty = "REF ";
+
+    if (codeString.indexOf(PrefixDocumentProperty) >= 0){
+        return FieldType.FieldTypeDocProp;
+    }
+    else if (codeString.indexOf(PrefixRefProperty) >= 0) {
+        return FieldType.FieldTypeRef;
+    }
+    else {
+        return FieldType.FieldTypeUnknown;
+    }
+}
+
+/**
+    Doc this
+*/
+function sfUploadDocument (ec)
+{
+    LoggerUtil.logBegin("sfUploadDocument");
+
+    var sdata = sfGetFileBytes(ec.sDocumentLocation);
+    sfSendDataToServer(sdata, ec.urlActionUrl);
+
+    LoggerUtil.logEnd("sfUploadDocument");
+}
+
+/**
+    Doc this
+*/
+function sfSyncHistory (ec)
+{
+    var ts = sfClientFileTimestamp(ec.sDocumentLocation);
+    var actionUrl = null;
+    sfSaveSyncHistory(ts, sfFormatUrl(SmartClientScriptUtil.actionIds.saveSyncHistoryWithCommit));
+}
+
+/**
+    Doc this
+*/
+function sfFullyCleanup (ec)
+{
+    ec.quitApp();
+}
+
+/**
+    Leave the app open - this called on interactive document generation
+*/
+function sfCleanup (ec)
+{
+    if (ec.wordApp != null) {
+        ec.wordApp.NormalTemplate.Saved = true;
+    }
+}
+
+/**
+    Sets copy project source agreemnt
+*/
+function sfCopySourceOpen (ec, sourceLocation)
+{
+    var success = true;
+
+    // Remember DFS full file name for copySource
+    ec.copyProjectSourceLocation = sourceLocation;
+    ec.agreementDocument = null;
+    ec.copyProjectSourceAgreement = null;
+
+    // Download the copyProjectSource document.
+    // Pass special clauseId=copyProjectSource so server code knows to special case it.
+    success = sfSaveClauseToClient(sourceLocation, "copyProjectSource", ec.urlDocumentUrl);
+    if (success) {
+        // Must open primary document first, since for downloadable doc we do some cleanup of other docs.
+        // Open or find open the target agreement document, downloading it if needed.
+        success = sfOpenOrFindDocumentByDFSFilename(ec, ec.sDocumentLocation, true, false);
+        if (success) {
+            ec.agreementDocument = ec.wordApp.ActiveDocument;
+        }
+    }
+
+    if (success) {
+        success = sfOpenOrFindDocumentByDFSFilename(ec, sourceLocation, false, true);
+        if (success) {
+            ec.copyProjectSourceAgreement = ec.wordApp.ActiveDocument;
+            ec.currentSelection = ec.copyProjectSourceAgreement.ActiveWindow.Selection;
+        }
+    }
+}
+
+/**
+    Todo doc this
+*/
+function sfCopySourceClose (ec)
+{
+    if (ec.copyProjectSourceAgreement != null) {
+        ec.copyProjectSourceAgreement.Activate();
+        ec.wordApp.ActiveDocument.Close();
+        ec.copyProjectSourceAgreement = null;
+        sfDeleteFileAndMaybeFolder(ec.copyProjectSourceLocation, 2);
+        ec.copyProjectSourceLocation = "";
+    }
+
+    if (ec.getAgreementDocument() == null) {
+        // XXX Gopal - why do we need to open the document and close it??  Is this an error situation??
+        var success = sfOpenOrFindDocumentByDFSFilename(ec, ec.sDocumentLocation, true, false);
+        if (success) {
+            ec.agreementDocument = app.ActiveDocument;
+        }
+    }
+
+    ec.getAgreementDocument().Activate();
+    // Turn change tracking back on and save the agreement
+    sfPostProcess(ec);
+    ec.wordApp.ActiveDocument.Close();
+    ec.agreementDocument = null;
+}
+
+/****************************************************************************************
+    Review Ok Generation - this gets called after new bookmarks got generated in the server
+*****************************************************************************************/
+function sfcReviewOkGenerate ()
+{
+    this.reviewOkGenerate = function ()
+    {
+        rogStepContactAppStep();
+    }
+
+    function rogStepContactAppStep ()
+    {
+        var ec = _reviewOkGenerate;
+        try {
+            sfGetApp(ec);
+            rogSetStep("step_build_clause", rogStepBuildClause);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function rogStepBuildClause ()
+    {
+        var ec = _reviewOkGenerate;
+        try {
+            applyBookmarks();
+            rogSetStep("step_done", rogStepDone);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function rogStepDone ()
+    {
+        var ec = _reviewOkGenerate;
+        try {
+            ec.quitApp();
+            var fileBytes = sfGetFileBytes(ec.sDocumentLocation);
+            var responseText = sfSendDataToServer(fileBytes, ec.urlUploadDocumentUrl);
+
+            LoggerUtil.logMessage(responseText);
+            var ts = sfClientFileTimestamp(ec.sDocumentLocation);
+            if (ts == null || ts == "") {
+                LoggerUtil.logError(null, "CDReviewOkgenerate: Invalid timestamp = " + ts, null);
+            }
+
+            sfSaveSyncHistory(ts, ec.urlSaveSyncHistoryUrl);
+            _reviewOkGenerate = null;
+            ariba.Request.setWindowLocation(ec.urlDoneUrl);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function rogSetStep (name, nextStepFu)
+    {
+        step_contact_app.className = "inactiveStep";
+        step_build_clause.className = "inactiveStep"
+        step_done.className = "inactiveStep";
+        document.all(name).className = "activeStep";
+        setTimeout(nextStepFu, 1000);
+    }
+
+    function applyBookmarks ()
+    {
+        LoggerUtil.logBegin("sfcReviewOkGenerate:applyBookmarks");
+
+        var ec = _reviewOkGenerate;
+
+        ec.hideApp();
+
+        sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+        ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+
+        sfSaveWordSettings(ec, ec.getAgreementDocument());
+        sfSetDocumentViewType(ec.getAgreementDocument(), ViewType.ViewTypeNormal);
+
+        ec.hideApp();
+
+        ec.syncUpApplyXmlString = sfSendDataToServer(
+                "DownloadSyncupXmlUrl", ec.urlDownloadSyncupXmlUrl);
+        sfApplyBookmarksUtil(ec, ec.syncUpApplyXmlString);
+
+        sfRestoreWordSettings(ec, ec.getAgreementDocument());
+
+        ec.getAgreementDocument().Saved = false;
+        ec.getAgreementDocument().Save();
+
+        LoggerUtil.logEnd("sfcReviewOkGenerate:applyBookmarks");
+    }
+}
+sfcReviewOkGenerate.prototype = new sfcExecutionState;
+
+var _reviewOkGenerate = null;
+
+function siReviewOkGenerate (args)
+{
+    _reviewOkGenerate = new sfcReviewOkGenerate();
+    var ec = _reviewOkGenerate;
+    sfInitExecutionStateBasic(ec, args);
+    sfLoggerInit(ec, "siReviewOkGenerate", args);
+    ec.reviewOkGenerate();
+}
+
+/****************************************************************************************
+                    Generate Clause Tree
+*****************************************************************************************/
+function sfcGenerateClauseTree ()
+{
+    this.generateClauseTree = function ()
+    {
+       gctStepContactAppStep();
+    }
+
+    /* TODO Gopal - why are we closing and opening and closing document between steps */
+    function gctStepContactAppStep ()
+    {
+        var ec = _generateClauseTree;
+        try {
+            sfGetApp(ec);
+            gctSetStep("step_build_clause", gctStepBuildClause);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function gctStepBuildClause ()
+    {
+        var ec = _generateClauseTree;
+        try {
+            gctBuildClauseTree();
+            gctSetStep("step_done", gctstepDone);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    function gctstepDone ()
+    {
+        var ec = _generateClauseTree;
+        try {
+            if (!ec.bServerExceptionOnLoad) {
+                var resourceData = sfGetFileBytes(ec.sDocumentLocation);
+                var responseText = sfSendDataToServer(resourceData, ec.urlUploadDocumentUrl);
+            }
+            ec.quitApp();
+            _generateClauseTree = null;
+            ariba.Request.setWindowLocation(ec.urlDoneUrl);
+        }
+        catch (ex) {
+            ec.onErrorExit();
+        }
+    }
+
+    /**
+        Todo doc this
+    */
+    function gctSetStep (name, nextStepFu)
+    {
+        step_contact_app.className = "inactiveStep";
+        step_build_clause.className = "inactiveStep"
+        step_done.className = "inactiveStep";
+        document.all(name).className = "activeStep";
+        setTimeout(nextStepFu, 1000);
+    }
+
+    /**
+        Todo doc this
+    */
+    function gctBuildClauseTree ()
+    {
+        var ec = _generateClauseTree;
+
+        ec.xmlDOM = XMLUtil.plainRequestDOM();
+
+        LoggerUtil.logBeginBlock("sfcGenerateClauseTree:gctBuildClauseTree");
+
+        if (!SmartClientScriptUtil.saveFileToClient(ec.sDocumentLocation)) {
+            LoggerUtil.logError(null, "GenerateClauseTree:buildClause - cannot save file", null);
+            return;
+        }
+
+        ec.wordApp.Visible = false;
+        document.body.style.cursor = "wait";
+
+        sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+        ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+        ec.hideApp();
+
+        /*
+            We do not handle track changes during load, which means that deleted track changed
+            text will be treated as normal text.
+        */
+        ec.getAgreementDocument().Revisions.AcceptAll();
+
+        var isSectionGlobalProvided = ec.getAgreementDocument().Bookmarks.Exists(GlobalContractBookmarkName);
+        if (!isSectionGlobalProvided) {
+            sfAddGlobalContractBookmarkInDocument(ec.getAgreementDocument());
+        }
+
+        sfSyncupContentInAgreement(ec, true, ec.bIsTemplate);
+
+        LoggerUtil.logEndBlock("sfcGenerateClauseTree:gctBuildClauseTree");
+    }
+}
+sfcGenerateClauseTree.prototype = new sfcExecutionState;
+var _generateClauseTree = null;
+/**
+    Generate clause tree is invoked when we load a word document for the first time.
+*/
+function siGenerateClauseTree (args)
+{
+    _generateClauseTree = new sfcGenerateClauseTree();
+    var ec = _generateClauseTree;
+    sfInitExecutionStateBasic(ec, args);
+    sfLoggerInit(ec, "siGenerateClauseTree", args);
+    ec.generateClauseTree();
+}
+
+/****************************************************************************************
+          Class encapsulating the logic to promote a clause into a section
+*****************************************************************************************/
+function sfcPromoteClauseToSection ()
+{
+    this.promoteClauseToSection = function ()
+    {
+        this.pcsPromote();
+    }
+
+    /**
+        Doc this
+    */
+    this.pcsPromote = function ()
+    {
+        var ec = this;
+        sfGetApp(ec);
+
+        ec.agreementDocument = sfContactDocument(ec, ec.sDocumentLocation, false, true);
+        ec.getAgreementDocument().Activate();
+
+        ec.currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+
+        var sectionRange = sfGotoBookmarkName(ec.currentSelection, ec.sClauseId);
+
+        var sectionContent = sfTrim(sfGetRangeContent(ec.currentSelection.Paragraphs(1).Range));
+
+        var paragraphIndex = sectionContent.indexOf(softReturnChar);
+        if (paragraphIndex >= 0) {
+            sectionContent = sectionContent.substring(0, paragraphIndex);
+        }
+
+        var promotedSectionBookmarkName = this.pcsUploadSection(sectionContent, ec.sClauseId);
+
+        sfApplyStyleInSectionClause(ec.getAgreementDocument(), ec.sSectionStyleId, ec.currentSelection,
+                sfContentType(promotedSectionBookmarkName));
+
+        ec.getAgreementDocument().Saved = false;
+        ec.getAgreementDocument().Save();
+
+        var documentValue = sfGetFileBytes(ec.sDocumentLocation);
+
+        var responseData = sfSendDataToServer(documentValue, ec.urlUploadDocumentUrl);
+
+        var ts = sfClientFileTimestamp(ec.sDocumentLocation);
+        if (ts == "") {
+            return;
+        }
+
+        var saveResult = sfSaveSyncHistory(ts, ec.urlSaveSyncHistoryUrl);
+
+        ec.quitApp();
+
+        ariba.Request.setWindowLocation(ec.urlDoneUrl);
+    }
+
+    /**
+        Doc this
+    */
+    this.pcsUploadSection = function (sectionContent, clauseId)
+    {
+        var ec = this;
+        var strUrl = ec.urlPromoteUrl;
+
+        var xmlhttp = sfGetHttp();
+        if (ec.sClauseId != "") {
+            strUrl = strUrl.concat("&");
+            strUrl = strUrl.concat(ClauseIdKey);
+            strUrl = strUrl.concat("=");
+            strUrl = strUrl.concat(ec.sClauseId);
+        }
+
+        xmlhttp.Open("POST", strUrl, false);
+        xmlhttp.Send(sectionContent);
+        var responseData = xmlhttp.responseText;
+
+        if (responseData != "" && ec.sClauseId != "" && ec.getAgreementDocument().Bookmarks.Exists(ec.sClauseId)) {
+            var aRange = ec.getAgreementDocument().Bookmarks.Item(ec.sClauseId).Range;
+            var aBookmark = ec.getAgreementDocument().Bookmarks.Add(responseData, aRange);
+            var pos = ec.getAgreementDocument().Bookmarks.Item(ec.sClauseId).Delete();
+            return responseData;
+        }
+        else {
+            return clauseId;
+        }
+    }
+}
+sfcPromoteClauseToSection.prototype = new sfcExecutionState;
+
+/**
+    Interface for promoting the section
+*/
+function siPromoteClauseToSecton (args)
+{
+    var ec = new sfcPromoteClauseToSection();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siPromoteClauseToSecton", args);
+        ec.promoteClauseToSection();
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+/****************************************************************************************
+          Achieve style
+*****************************************************************************************/
+function sfcAchieveStyle ()
+{
+    this.retrieveStyle = function ()
+    {
+
+        LoggerUtil.logBegin("retrieveStyle");
+
+        var ec = this;
+
+        sfGetApp(ec);
+
+        ec.agreementDocument = sfContactDocument(ec, ec.sDocumentLocation, true, false);
+        var styleContent = "";
+        var styles = ec.getAgreementDocument().styles;
+        var count = styles.Count;
+        for (var i = 1; i <= count && i <= 1000; ++i) {
+            var style = styles.Item(i);
+            styleContent = styleContent.concat(StyleSeparator);
+            styleContent = styleContent.concat(style.NameLocal);
+        }
+
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage("Style String is " + styleContent);
+        }
+
+        var xmlhttp = sfGetHttp();
+        if (styleContent != "") {
+            var strUrl = ec.urlActionUrl;
+            strUrl = strUrl.concat("&");
+            strUrl = strUrl.concat(StyleContentKey);
+            strUrl = strUrl.concat("=yes");
+            xmlhttp.Open("POST", strUrl, false);
+            xmlhttp.Send(styleContent);
+        }
+
+        ec.quitApp();
+
+        LoggerUtil.logEnd("retrieveStyle");
+
+        ariba.Request.setWindowLocation(ec.urlDoneUrl);
+    }
+}
+sfcAchieveStyle.prototype = new sfcExecutionState;
+function siAchieveStyle (args)
+{
+    var ec = new sfcAchieveStyle();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siAchieveStyle", args);
+        ec.retrieveStyle();
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+/****************************************************************************************
+          Set up property
+*****************************************************************************************/
+function sfcSetUpDocumentProperty ()
+{
+    /**
+        Open docuument and initialze custom properties and form fields
+    */
+    this.initializeProperty  = function ()
+    {
+        var ec = this;
+
+        sfGetApp(ec);
+
+        ec.hideApp();
+        try {
+            sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+            ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+        }
+        catch (ex) {
+            /* sync up and then open */
+            sfSaveOpenDocument(ec.wordApp, ec.sDocumentLocation);
+            SmartClientScriptUtil.saveFileToClient(ec.sDocumentLocation);
+            ec.agreementDocument = sfOpenDocumentInWord(ec.wordApp, ec.wordType, ec.sDocumentLocation, false);
+        }
+        ec.documentProperties = ec.getAgreementDocument().CustomDocumentProperties;
+        ec.formFields = ec.getAgreementDocument().FormFields;
+
+        ec.hideApp();
+    };
+
+    /**
+        Retrieve form fields and document fields and send back to server
+    */
+    this.retrieveProperty = function ()
+    {
+        var ec = this;
+        this.initializeProperty();
+
+        var documentPropertiesContent = "";
+        var count = ec.documentProperties.Count;
+        for (var i = 1; i <= count; ++i) {
+            var aDocumentProperty = ec.documentProperties.Item(i);
+            var aName = aDocumentProperty.Name;
+            if (aName.indexOf(prefixFieldName) >= 0) {
+                documentPropertiesContent = documentPropertiesContent.concat(objectSeparator);
+                documentPropertiesContent = documentPropertiesContent.concat(aName);
+            }
+        }
+
+        count = ec.formFields.Count;
+        for (var i = 1; i <= count; ++i) {
+            var formField = ec.formFields.Item(i);
+            var aName = formField.Name;
+            if (aName.indexOf(prefixFieldName) >= 0) {
+                documentPropertiesContent = documentPropertiesContent.concat(objectSeparator);
+                documentPropertiesContent = documentPropertiesContent.concat(defaultFormPropertyPrefix);
+                documentPropertiesContent = documentPropertiesContent.concat(aName);
+            }
+        }
+
+        ec.hideApp();
+
+        // TODO Gopal - we do not need to send the content to the server
+        var strUrl = ec.urlActionUrl;
+        if (documentPropertiesContent != "") {
+            strUrl = strUrl.concat("&");
+            strUrl = strUrl.concat(DocumentPropertiesContentKey);
+            strUrl = strUrl.concat("=yes");
+            sfSendDataToServer(documentPropertiesContent, strUrl);
+        }
+        else {
+            strUrl = strUrl.concat("&");
+            strUrl = strUrl.concat(DocumentPropertiesContentKey);
+            strUrl = strUrl.concat("=no");
+            sfSendDataToServer("a", strUrl);
+        }
+
+        ec.hideApp();
+        ec.quitApp();
+    };
+
+    /**
+        Sets the property and sync back the document
+    */
+    this.setUpProperty = function ()
+    {
+        this.initializeProperty();
+
+        var ec = this;
+
+        /* Add all the properties that are in the input string */
+        var modified = false;
+        if (ec.sDocumentPropertiesContent != "") {
+            var list = ec.sDocumentPropertiesContent.split(objectSeparator);
+            for (var i = 0; i < list.length; ++i) {
+                if (this.addAProperty(list[i])) {
+                    modified = true;
+                }
+            }
+        }
+
+        ec.hideApp();
+
+
+        ec.sDocumentPropertiesContent = ec.sDocumentPropertiesContent.concat(objectSeparator);
+
+        /* delete all the document properties that is not in the input string  */
+        var count = ec.documentProperties.Count;
+
+        var deletedObjects = new Array ();
+        var deletedObjectCount = 0;
+
+        for (var i = 1; i <= count; ++i) {
+            var docProperty = ec.documentProperties.Item(i);
+            var aName = docProperty.Name;
+            if (aName.indexOf(prefixFieldName) >= 0 &&
+                ec.sDocumentPropertiesContent.indexOf(aName) < 0) {
+                deletedObjects[deletedObjectCount++] = docProperty;
+                modified = true;
+            }
+        }
+
+        /* delete all the form fields that is not in the input string  */
+        count = ec.formFields.Count;
+        for (var i = 1; i <= count; ++i) {
+            var formField = ec.formFields.Item(i);
+            var aName = formField.Name;
+            if (aName.indexOf(prefixFieldName) >= 0) {
+                aName = defaultFormPropertyPrefix.concat(aName);
+                if (ec.sDocumentPropertiesContent.indexOf(aName) < 0) {
+                    deletedObjects[deletedObjectCount++] = formField;
+                    modified = true;
+                }
+            }
+        }
+
+        for (var i = 0; i < deletedObjectCount; ++i) {
+            deletedObjects[i].Delete();
+        }
+
+        ec.hideApp();
+
+        if (modified) {
+            ec.getAgreementDocument().Fields.Update();
+            ec.getAgreementDocument().Saved = false;
+            ec.getAgreementDocument().Save();
+            ec.getAgreementDocument().Close();
+
+            ec.hideApp();
+
+            var sData = sfGetFileBytes(ec.sDocumentLocation);
+            sfSendDataToServer(sData, ec.urlActionUrl);
+
+            sfSyncHistory(ec);
+        }
+
+        ec.quitApp();
+    };
+
+    /**
+        Adds a form field or document property
+    */
+    this.addAProperty = function (aPropertyName)
+    {
+        var ec = this;
+        var aIndex = aPropertyName.indexOf(defaultFormPropertyPrefix);
+        if (aIndex == 0) {
+            aPropertyName = aPropertyName.substring(1, aPropertyName.length);
+            return sfAddAFormProperty(ec, aPropertyName, ec.formFields);
+        }
+        else {
+            return sfAddADocumentProperty(aPropertyName, ec.documentProperties)
+        }
+    };
+
+    /**
+        Add a form property if it does not exist (just below the global bookmark)
+        Note: This does hide the app; it is the callers responsibility
+        XXX: We seem to be adding properties in the reverse order
+    */
+    function sfAddAFormProperty (ec, aPropertyName, aFormProperties)
+    {
+        try {
+            var aProperty = aFormProperties.Item(aPropertyName);
+            if (aProperty != null) {
+                return false;
+            }
+        }
+        catch (ex) {
+            // property does not exist; go ahead and add
+        }
+
+        ec.getAgreementDocument().Activate();
+        var currentSelection = ec.getAgreementDocument().ActiveWindow.Selection;
+
+        if (ec.getAgreementDocument().Bookmarks.Exists(GlobalContractBookmarkName)) {
+            var aRange = sfGotoBookmarkName(currentSelection, GlobalContractBookmarkName); // wdGoToBookmark = -1
+            var pos = currentSelection.MoveRight(1, 1); // wdCharacter = 1
+        }
+        else {
+            var pos = currentSelection.EndKey(6, 0); // wdStory = 6, wdMove = 0
+        }
+
+        currentSelection.TypeParagraph();
+        var aFormProperty = aFormProperties.Add(currentSelection.Range, 70); // wdFieldFormTextInput = 70
+        aFormProperty.Name = aPropertyName;
+        aFormProperty.Result = defaultPropertyValue;
+        return true;
+    }
+}
+
+sfcSetUpDocumentProperty.prototype = new sfcExecutionState;
+
+function siSetUpDocumentProperty (args)
+{
+    var ec = new sfcSetUpDocumentProperty();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siSetUpDocumentProperty", args);
+        ec.setUpProperty();
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+function siRetrieveDocumentProperty (args)
+{
+    var ec = new sfcSetUpDocumentProperty();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siRetrieveDocumentProperty", args);
+        ec.retrieveProperty();
+    }
+    catch (ex) {
+        ec.onErrorExit();
+    }
+}
+
+/**
+ * returns true if the document is ready to be generated
+ */
+function sfIsDocumentReadyToGenerate (documentLocation, serverTimeStamp)
+{
+    return sfIsClientChanged(documentLocation, serverTimeStamp);
+}
+
+/**
+ *  public api
+ */
+function siIsDocumentReadyToGenerate (args)
+{
+    return sfIsDocumentReadyToGenerate(
+            args[Params.sDocumentLocation], args[Params.dServerTimestamp]);
+}
+/****************************************************************************************
+                    Handlers
+*****************************************************************************************/
+sfExportFunctions(
+    new Array(
+        "siStartGenerate", siStartGenerate,
+        "siGenerateClauseTree", siGenerateClauseTree,
+        "siIsDocumentReadyToGenerate", siIsDocumentReadyToGenerate,
+        "siGeneratingCleanVersion", siGeneratingCleanVersion,
+        "siPromoteClauseToSecton", siPromoteClauseToSecton,
+        "siAchieveStyle", siAchieveStyle,
+        "siSetUpDocumentProperty", siSetUpDocumentProperty,
+        "siRetrieveDocumentProperty", siRetrieveDocumentProperty,
+        "siReviewOkGenerate", siReviewOkGenerate
+    )
+);

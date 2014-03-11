@@ -1,0 +1,5 @@
+<a:If ifTrue="$env.isEditing">\
+    <a:TextField value="$^value" formatter="$^formatter"/>\
+<a:Else/>\
+    <a:String value="$^value" formatter="$^formatter"/>\
+</a:If>\

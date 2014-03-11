@@ -1,0 +1,55 @@
+<!--#include virtual="/DreamWeaver_Templates/MainHeader.htm" -->
+<w:BasicPageWrapper commands="Commands.htm" toc="Toc.htm" hasForm="$false">
+  <a:Content name="loginForm">
+      <Include name="LoginForm.htm" container="$false"/>
+  </a:Content>
+  <a:Content name="body">
+      <h1>JavaScript Test</h1>
+
+
+Script bindings:<br/>
+a=$a<br/>
+b=$b<br/>
+c=$c<br/>
+this = $thisFunc<br/>
+component = $compFunc<br/>
+obj.x = $obj.x
+<a:Form action="$doIt">
+a:<a:TextField value="$a"/>
+<a:SubmitButton type="submit" isRefresh="$true" action="$doIt"/>
+</a:Form>
+
+<br/><br/>
+List: $list<br/>
+<a:For list="$list" item="$current" index="$index">
+Item $index : $current<br/>
+</a:For>
+
+
+
+  </a:Content>
+</w:BasicPageWrapper>
+
+
+<server>
+var a = "hello", b = 3;
+var list = [1, 2, "three", 4, "five"];
+var index=0, current="";
+var obj = { x:34, y:56 };
+
+function c() { return a+"--" + b*2 + component.session().request().formValues(); } //
+function thisFunc() { return FieldValue.getFieldValue(component, "session"); }
+function compFunc() { return component; }
+function doIt() {
+        Log.demoshell.debug("a = '%s' (%s)", a, (a=="go"));
+        set(this, "b", b+1);  // FieldValue!
+        if (a == "go") {
+            var p = page("Home.htm");  // pageWithPath!
+            set(p, "userName", "Craig!");
+            return p;
+        }
+        return null;
+}
+</server>
+
+<!--#include virtual="/DreamWeaver_Templates/MainFooter.htm" -->

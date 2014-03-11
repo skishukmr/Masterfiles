@@ -1,0 +1,99 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <derivedDataLoad name="Tmp_1_BuyerDeletePOLineItem" extendsLoad="BuyerDeletePOLineItem">
+    				<inLoadStages>
+    				    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= PurchaseOrder.TimeUpdated AND
+    				                                          PurchaseOrder.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"
+    		                                      />
+    				</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="Tmp_2_BuyerDeletePOLineItem" extendsLoad="BuyerDeletePOLineItem">
+    				<inLoadStages>
+    				    <inAqlStage replaceIncrementalClause="(Date('2012-12-10 12:06:32 CDT') &lt;= PurchaseOrder.TimeUpdated AND
+    				                                          PurchaseOrder.TimeUpdated &lt; Date('2012-12-18 12:06:32 CDT'))"
+    		                                      />
+    				</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="Tmp_3_BuyerDeletePOLineItem" extendsLoad="BuyerDeletePOLineItem">
+    				<inLoadStages>
+    				    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= PurchaseOrder.TimeUpdated AND
+    				                                          PurchaseOrder.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"
+    		                                      />
+    				</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="Tmp_4_BuyerDeletePOLineItem" extendsLoad="BuyerDeletePOLineItem">
+    				<inLoadStages>
+    				    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate &lt;= PurchaseOrder.TimeUpdated AND
+    				                                          PurchaseOrder.TimeUpdated &lt; :IncrementalEndDate)"
+    		                                      />
+    				</inLoadStages>
+	</derivedDataLoad>
+	
+
+<derivedDataLoad name="Tmp_1_BuyerDeleteInvoiceLineItem" extendsLoad="BuyerDeleteInvoiceLineItem">
+				<inLoadStages>
+				    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+				                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"
+		                                      />
+				</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="Tmp_2_BuyerDeleteInvoiceLineItem" extendsLoad="BuyerDeleteInvoiceLineItem">
+				<inLoadStages>
+				    <inAqlStage replaceIncrementalClause="(Date('2012-12-10 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+				                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-18 12:06:32 CDT'))"
+		                                      />
+				</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="Tmp_3_BuyerDeleteInvoiceLineItem" extendsLoad="BuyerDeleteInvoiceLineItem">
+				<inLoadStages>
+				    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+				                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"
+		                                      />
+				</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="Tmp_4_BuyerDeleteInvoiceLineItem" extendsLoad="BuyerDeleteInvoiceLineItem">
+				<inLoadStages>
+				    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate &lt;= InvoiceReconciliation.TimeUpdated AND
+				                                          InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+		                                      />
+				</inLoadStages>
+	</derivedDataLoad>
+	
+	
+	
+<derivedDataLoad name="Tmp_1_BuyerDeleteRequestRequisition" extendsLoad="BuyerDeleteRequestRequisition">
+			<inLoadStages>
+			    <inAqlStage replaceIncrementalClause="(Date('2012-12-02 12:06:32 CDT') &lt;= Request.TimeUpdated AND
+			                                          Request.TimeUpdated &lt; Date('2012-12-10 12:06:32 CDT'))"
+	                                      />
+			</inLoadStages>
+	</derivedDataLoad>
+<derivedDataLoad name="Tmp_2_BuyerDeleteRequestRequisition" extendsLoad="BuyerDeleteRequestRequisition">
+			<inLoadStages>
+			    <inAqlStage replaceIncrementalClause="(Date('2012-12-10 12:06:32 CDT') &lt;= Request.TimeUpdated AND
+			                                          Request.TimeUpdated &lt; Date('2012-12-18 12:06:32 CDT'))"
+	                                      />
+			</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_3_BuyerDeleteRequestRequisition" extendsLoad="BuyerDeleteRequestRequisition">
+			<inLoadStages>
+			    <inAqlStage replaceIncrementalClause="(Date('2012-12-18 12:06:32 CDT') &lt;= Request.TimeUpdated AND
+			                                          Request.TimeUpdated &lt; Date('2012-12-26 12:06:32 CDT'))"
+	                                      />
+			</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_4_BuyerDeleteRequestRequisition" extendsLoad="BuyerDeleteRequestRequisition">
+			<inLoadStages>
+			    <inAqlStage replaceIncrementalClause="(:IncrementalStartDate &lt;= Request.TimeUpdated AND
+			                                          Request.TimeUpdated &lt; :IncrementalEndDate)"
+	                                      />
+			</inLoadStages>
+	</derivedDataLoad>
+	
+</allDataLoads>

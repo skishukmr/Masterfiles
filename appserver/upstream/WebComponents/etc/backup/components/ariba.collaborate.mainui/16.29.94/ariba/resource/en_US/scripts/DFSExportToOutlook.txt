@@ -1,0 +1,193 @@
+Dim olFolderTasks 
+Dim olTaskItem
+Dim olText
+Dim ACMTaskId
+
+
+olFolderTasks = 13
+olTaskItem = 3
+olText = 1
+ACMTaskId = "ACMTaskId"
+
+Dim oApp, oNameSpace, oTasksFolder, oTaskItems, oTaskItem, oTasksDict, oNewTasksDict
+
+Dim keepTasks, useFilter, lastSyncDateTime
+
+Sub startExportToOutlookHandler (keyValues)
+    On Error Resume Next
+
+    keepTasks = booleanValue(awxsGetValue(keyValues, "keepTasks"))
+    useFilter = booleanValue(awxsGetValue(keyValues, "useFilter"))
+
+    lastSyncDateTime = awxsGetValue(keyValues, "lastSyncDateTime")
+
+    document.body.style.cursor = "wait"
+    If buildOutlookTasksDictionary() = -1 Then
+        Exit Sub
+    End If
+    updateOutlookTasks
+    If (keepTasks = False) Then
+        deleteOldOutlookTasks
+    End If
+    createNewTasksInOutlook
+    document.body.style.cursor = "auto"
+    cleanup
+End Sub
+
+Sub createNewTasksInOutlook ()
+    On Error Resume Next
+
+    doCreateNewTasksInOutlook
+End Sub
+
+Sub createTaskItemHandler (keyValues)
+    On Error Resume Next
+
+    Dim userp
+    Dim startDate, dueDate
+
+    Dim serverTaskId
+    serverTaskId = awxsGetValue(keyValues, "serverTaskId")
+
+    If oNewTasksDict.Exists(serverTaskId) Then
+        Set oTaskItem = oApp.CreateItem(olTaskItem)
+        Set userp = oTaskItem.UserProperties.Add(ACMTaskId, olText)
+        userp.Value = serverTaskId
+        oTaskItem.Subject = awxsGetValue(keyValues, "subject")
+        oTaskItem.DateCompleted = awxsGetValue(keyValues, "doneDate")
+        oTaskItem.Status = awxsGetValue(keyValues, "status")
+        startDate = awxsGetValue(keyValues, "startDate")
+        dueDate = awxsGetValue(keyValues, "dueDate")
+
+        ' to not set start date if due date is not set
+        If ((startDate <> "") And (dueDate = "")) Then
+            startDate = ""
+        End If
+        oTaskItem.StartDate = startDate
+        oTaskItem.DueDate = dueDate
+        oTaskItem.Body = "Project: " & awxsGetValue(keyValues, "title") _
+                          & Chr(10) & Chr(10) & awxsGetValue(keyValues, "description") _
+                          & Chr(10) & Chr(10) & awxsGetValue(keyValues, "webJumper")
+
+        oTaskItem.Save
+    End If
+End Sub
+
+Sub deleteOldOutlookTasks ()
+    On Error Resume Next
+    dim indexItems
+    indexItems = oTasksDict.Items
+    i = oTasksDict.Count - 1
+    Do While i >= 0
+        oTaskItems.Remove indexItems(i)
+        i = i - 1
+    loop
+End Sub
+
+Sub updateOutlookTasks ()
+    On Error Resume Next
+
+    Set oNewTasksDict = CreateObject("Scripting.Dictionary")
+
+    doUpdateOutlookTasks
+End Sub
+
+Sub updateTaskHandler (keyValues)
+    On Error Resume Next
+    Dim serverTaskId
+    serverTaskId = awxsGetValue(keyValues, "serverTaskId")
+
+    Dim startDate, dueDate
+    If oTasksDict.Exists(serverTaskId) Then
+        taskIndex = oTasksDict.Item(serverTaskId)
+        Set oTaskItem = oTaskItems.Item(taskIndex)
+        oTaskItem.Subject = awxsGetValue(keyValues, "subject")
+        oTaskItem.DateCompleted = awxsGetValue(keyValues, "doneDate")
+        oTaskItem.Status = awxsGetValue(keyValues, "status")
+        startDate = awxsGetValue(keyValues, "startDate")
+        dueDate = awxsGetValue(keyValues, "dueDate")
+
+        ' to not set start date if due date is not set
+        If ((startDate <> "") And (dueDate = "")) Then
+            startDate = ""
+        End If
+        oTaskItem.StartDate = startDate
+        oTaskItem.DueDate = dueDate
+        oTaskItem.Save
+        oTasksDict.Remove(serverTaskId)
+    Else
+        oNewTasksDict.Add serverTaskId, serverTaskId
+    End If
+End Sub
+
+Function buildOutlookTasksDictionary ()
+    On Error Resume Next
+    Set oTasksDict = CreateObject("Scripting.Dictionary")
+    If logError(message1) Then
+        buildOutlookTasksDictionary = -1
+        Exit Function
+    End If
+
+    Set oApp = CreateObject("Outlook.Application")
+    If logError(message2) Then
+        buildOutlookTasksDictionary = -1
+        Exit Function
+    End If
+
+    Set oNameSpace = oApp.GetNameSpace("MAPI")
+    Set oTasksFolder = oNameSpace.GetDefaultFolder(olFolderTasks)
+    If (useFilter = True) Then
+        Set oTaskItems = oTasksFolder.Items.Restrict("[LastModificationTime] >= '" & lastSyncDateTime & "'")
+    Else
+        Set oTaskItems = oTasksFolder.Items
+    End If
+
+    For tIndex = 1 to oTaskItems.Count
+        Set oTaskItem = oTaskItems.Item(tIndex)
+        ' only add those with ACMTaskId set to dictionary
+        sl = 0
+        sl = Len(oTaskItem.UserProperties.Find(ACMTaskId).Value)
+        If (sl > 0) Then
+            tId = oTaskItem.UserProperties.Find(ACMTaskId).Value
+            oTasksDict.Add tId, tIndex
+        End If
+    Next
+
+    buildOutlookTasksDictionary = 0
+End Function
+
+Sub cleanup ()
+    set oTasksDict = Nothing
+    set oTaskItem = Nothing
+    set oTaskItems = Nothing
+    set oTasksFolder = Nothing
+    set oNameSpace = Nothing
+    set oApp = Nothing
+End Sub
+
+Function logError (message)
+    logError = false
+    If Err.number <> 0 Then
+        SmartClientScriptError.innerHTML = message
+        document.body.style.cursor = "auto"
+        cleanup
+        logError = true
+    End If
+End Function
+
+
+Dim eventStartExportToOutlook
+Set eventStartExportToOutlook = awxsCreateEvent("startExportToOutlook", GetRef("startExportToOutlookHandler"))
+awxsRegisterEvent "startExportToOutlook", eventStartExportToOutlook
+
+
+Dim eventCreateTaskItemInOutlook
+Set eventCreateTaskItemInOutlook = awxsCreateEvent("createTaskItemInOutlook", GetRef("createTaskItemHandler"))
+awxsRegisterEvent "createTaskItemInOutlook", eventCreateTaskItemInOutlook
+
+
+Dim eventUpdateTaskInOutlook
+Set eventUpdateTaskInOutlook = awxsCreateEvent("updateTaskInOutlook", GetRef("updateTaskHandler"))
+awxsRegisterEvent "updateTaskInOutlook", eventUpdateTaskInOutlook
+
+

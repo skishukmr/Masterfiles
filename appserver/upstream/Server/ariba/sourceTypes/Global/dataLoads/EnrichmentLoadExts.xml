@@ -1,0 +1,29 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="InvoiceDE">
+    <fieldMappings>
+        <field name="FlexDimension1.FieldId">
+            <csvMapping selectField="FlexDim1Id"/>
+        </field>
+        <field name="FlexDimension1.SourceSystem">
+            <csvMapping selectField="FlexDim1SS"/>
+        </field>
+
+        <field name="FlexDimension2.FieldId">
+            <csvMapping selectField="FlexDim2Id"/>
+        </field>
+        <field name="FlexDimension2.SourceSystem">
+            <csvMapping selectField="FlexDim2SS"/>
+        </field>
+
+        <field name="FlexDimension3.FieldId">
+            <csvMapping selectField="FlexDim3Id"/>
+        </field>
+        <field name="FlexDimension3.SourceSystem">
+            <csvMapping selectField="FlexDim3SS"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

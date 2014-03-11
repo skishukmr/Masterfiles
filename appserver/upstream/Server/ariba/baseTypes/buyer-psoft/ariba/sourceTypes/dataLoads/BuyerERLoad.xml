@@ -1,0 +1,298 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerERHeader">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.GLBusinessUnit INCLUDE INACTIVE USING ExpenseReport.GLBusinessUnit"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="AccountingCompany.CompanyId">
+            <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+        </field>
+        <field name="AccountingCompany.BusinessUnitId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerERCharge">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.GLBusinessUnit INCLUDE INACTIVE USING ExpenseReport.GLBusinessUnit"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="AccountingCompany.CompanyId">
+            <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+        </field>
+        <field name="AccountingCompany.BusinessUnitId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+    <inDataLoad name="BuyerERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.Department INCLUDE INACTIVE USING SplitAccounting.Department
+                                  LEFT OUTER JOIN ariba.core.SetId AS DepSetId INCLUDE INACTIVE USING Department.SetId
+                                  LEFT OUTER JOIN ariba.core.Account AS SplitAccount INCLUDE INACTIVE USING SplitAccounting.Account
+                                  LEFT OUTER JOIN ariba.core.SetId AS AccSetId INCLUDE INACTIVE USING SplitAccount.SetId
+                                  LEFT OUTER JOIN ariba.core.GLBusinessUnit AS GLBusinessUnit INCLUDE INACTIVE USING SplitAccounting.GLBusinessUnit
+                                  LEFT OUTER JOIN ariba.core.Product AS Product INCLUDE INACTIVE USING SplitAccounting.Product
+                                  LEFT OUTER JOIN ariba.core.Project AS Project INCLUDE INACTIVE USING SplitAccounting.Project
+                                  LEFT OUTER JOIN ariba.core.StatisticsCode AS StatisticsCode INCLUDE INACTIVE USING SplitAccounting.StatisticsCode
+                                  LEFT OUTER JOIN ariba.common.core.Address AS AccountingRegion SUBCLASS NONE INCLUDE INACTIVE USING SplitAccounting.Location
+                                  LEFT OUTER JOIN ariba.core.GLBusinessUnit AS HeaderGLBusinessUnit INCLUDE INACTIVE USING ExpenseReport.GLBusinessUnit"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitAccount.AccountId"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="AccSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="Department.DepartmentId"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="DepSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="HeaderAccountingCompany.CompanyId">
+                <aqlMapping selectField="HeaderGLBusinessUnit.UniqueName"/>
+            </field>
+            <field name="HeaderAccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProjectId">
+                <aqlMapping selectField="Project.ProjectId"/>
+            </field>
+            <field name="Product.ProductId">
+                <aqlMapping selectField="Product.UniqueName"/>
+            </field>
+            <field name="AccountingProject.ProjectId">
+                <aqlMapping selectField="Project.UniqueName"/>
+            </field>
+            <field name="StatisticsCode.StatisticsCodeId">
+                <aqlMapping selectField="StatisticsCode.UniqueName"/>
+            </field>
+            <field name="Asset.AssetId">
+                <aqlMapping selectField="SplitAccounting.BusinessUnitAM"/>
+            </field>
+            <field name="AccountingRegion.RegionId">
+                <aqlMapping selectField="AccountingRegion.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.Department INCLUDE INACTIVE USING SplitAccounting.Department
+                                            LEFT OUTER JOIN ariba.core.SetId AS DepSetId INCLUDE INACTIVE USING Department.SetId
+                                            LEFT OUTER JOIN ariba.core.Account AS SplitAccount INCLUDE INACTIVE USING SplitAccounting.Account
+                                            LEFT OUTER JOIN ariba.core.SetId AS AccSetId INCLUDE INACTIVE USING SplitAccount.SetId
+                                            LEFT OUTER JOIN ariba.core.Product AS Product INCLUDE INACTIVE USING SplitAccounting.Product
+                                            LEFT OUTER JOIN ariba.core.Project AS Project INCLUDE INACTIVE USING SplitAccounting.Project
+                                            LEFT OUTER JOIN ariba.core.StatisticsCode AS StatisticsCode INCLUDE INACTIVE USING SplitAccounting.StatisticsCode
+                                            LEFT OUTER JOIN ariba.common.core.Address AS AccountingRegion INCLUDE INACTIVE USING SplitAccounting.Location
+                                            LEFT OUTER JOIN ariba.core.GLBusinessUnit AS GLBusinessUnit INCLUDE INACTIVE USING SplitAccounting.GLBusinessUnit"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitAccount.AccountId"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="AccSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="Department.DepartmentId"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="DepSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProjectId">
+                <aqlMapping selectField="Project.ProjectId"/>
+            </field>
+            <field name="Product.ProductId">
+                <aqlMapping selectField="Product.UniqueName"/>
+            </field>
+            <field name="AccountingProject.ProjectId">
+                <aqlMapping selectField="Project.UniqueName"/>
+            </field>
+            <field name="StatisticsCode.StatisticsCodeId">
+                <aqlMapping selectField="StatisticsCode.UniqueName"/>
+            </field>
+            <field name="Asset.AssetId">
+                <aqlMapping selectField="SplitAccounting.BusinessUnitAM"/>
+            </field>
+            <field name="AccountingRegion.RegionId">
+                <aqlMapping selectField="AccountingRegion.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerERLineViolation">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.Account AS SplitAccount INCLUDE INACTIVE USING SplitAccounting.Account
+                                  LEFT OUTER JOIN ariba.core.SetId AS AccSetId INCLUDE INACTIVE USING SplitAccount.SetId
+                                  LEFT OUTER JOIN ariba.core.Department AS Department INCLUDE INACTIVE USING SplitAccounting.Department
+                                  LEFT OUTER JOIN ariba.core.SetId AS DepSetId INCLUDE INACTIVE USING Department.SetId
+                                  LEFT OUTER JOIN ariba.core.GLBusinessUnit AS GLBusinessUnit INCLUDE INACTIVE USING SplitAccounting.GLBusinessUnit
+                                  LEFT OUTER JOIN ariba.core.Project INCLUDE INACTIVE USING SplitAccounting.Project"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitAccount.AccountId"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="AccSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="Department.DepartmentId"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="DepSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProjectId">
+                <aqlMapping selectField="Project.ProjectId"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <!-- Expense Report Itemized Line Violation -->
+
+    <inDataLoad name="BuyerERItemizedLineViolation">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.Department INCLUDE INACTIVE USING SplitAccounting.Department
+                                  LEFT OUTER JOIN ariba.core.SetId AS DepSetId INCLUDE INACTIVE USING Department.SetId
+                                  LEFT OUTER JOIN ariba.core.Account AS SplitAccount INCLUDE INACTIVE USING SplitAccounting.Account
+                                  LEFT OUTER JOIN ariba.core.SetId AS AccSetId INCLUDE INACTIVE USING SplitAccount.SetId
+                                  LEFT OUTER JOIN ariba.core.GLBusinessUnit AS GLBusinessUnit INCLUDE INACTIVE USING SplitAccounting.GLBusinessUnit
+                                  LEFT OUTER JOIN ariba.core.Project INCLUDE INACTIVE USING SplitAccounting.Project"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitAccount.AccountId"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="AccSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="Department.DepartmentId"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="DepSetId.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="AccountingCompany.CompanyId">
+                <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProjectId">
+                <aqlMapping selectField="Project.ProjectId"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+    <inDataLoad name="BuyerAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.GLBusinessUnit INCLUDE INACTIVE USING ExpenseReport.GLBusinessUnit"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="AccountingCompany.CompanyId">
+                <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+    <inDataLoad name="BuyerAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.GLBusinessUnit INCLUDE INACTIVE USING ExpenseReport.GLBusinessUnit"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="AccountingCompany.CompanyId">
+                <aqlMapping selectField="GLBusinessUnit.UniqueName"/>
+            </field>
+            <field name="AccountingCompany.BusinessUnitId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+</allDataLoads>

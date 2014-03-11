@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/Catalog.dtd">
+<TypeDefinition>
+<TypeProvider name="System">
+    <OrganizationID>
+      <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+    </OrganizationID>
+</TypeProvider>
+
+<Comments>Ariba internal ItemMaster type definition 1.0</Comments>
+<!--
+    Catalog Type Definition for an ItemMaster.
+    Note that the Buyer Part ID is stored in CatalogItemInternal
+-->
+<Type name="itemmaster" extends="System:CatalogItem">
+   <Name xml:lang="en-US">Buyer Part</Name>
+   <Description xml:lang="en-US">Buyer Part</Description>
+   <TypeAttribute name="Facility"
+                  type="Name"
+                  isRequired="yes"
+                  isSearchable="yes"
+                  isRefinable="yes">
+      <Name xml:lang="en-US">Facility Name</Name>
+   </TypeAttribute>
+   <TypeAttribute name="ItemMasterClusterRoot"
+                  type="ClusterRoot"
+                  isHidden="yes"
+                  isRequired="yes">
+      <Name xml:lang="en-US">Buyer Part</Name>
+   </TypeAttribute>
+</Type>
+</TypeDefinition>

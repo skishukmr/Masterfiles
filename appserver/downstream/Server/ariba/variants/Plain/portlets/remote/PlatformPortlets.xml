@@ -1,0 +1,24 @@
+<PortletProviders>
+    <PortletProvider stringFile="&lt;ProviderURL&gt;/ad/stringFile/PortletProviderActions?stringFile=ariba.platform.portlets">
+        <UniqueName>Platform2</UniqueName>
+        <DisplayName>$[a001]General</DisplayName>
+        <Description>$[a002]General</Description>
+        <BusinessKey></BusinessKey>
+        <HttpURL>&HttpURL;</HttpURL>
+        <ServerURL>&ServerURL;</ServerURL>
+        <Permissions></Permissions>
+        <Portlets>
+            <Portlet>
+                <UniqueName>DashboardTabSet</UniqueName>
+                <Controller>&lt;ProviderURL&gt;/ad/&lt;action&gt;/DashboardTabsetPortletController</Controller>
+                <ContentType>AggregationSource</ContentType>
+                <AggregationDataType>DashboardTabset</AggregationDataType>
+                <IsSingleton>true</IsSingleton>
+                <IsEditable>false</IsEditable>
+                <SetupRequired>false</SetupRequired>
+                <Permissions>
+                </Permissions>
+            </Portlet>
+        </Portlets>
+    </PortletProvider>
+</PortletProviders>

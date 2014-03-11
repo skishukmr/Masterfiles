@@ -1,0 +1,1586 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE extension SYSTEM "../../../../ariba/base/meta/core/extensions.dtd">
+<extension name="config.variants.vcsv3.extensions.CatEZORequisitionExt">
+<!-- *****************************************************************************************
+Change# Change By       Change Date     Description
+==============================================================================================
+1       D.Shelat        09-21-2006      Initial Field Declarations
+2       D.Shelat        09-29-2006      Group Declarations
+3       D.Shelat        10-02-2006      Trigger Definitions
+4       D.Shelat        10-17-2006      Made modification based on input from Ruth and Eric
+                                        Modifications made are commented as -
+                                        "R & E MODS 10/17"
+5       D.Shelat        10-29-2006      Added Visibility for the Emergency Buy field based
+                                        on the Requisition total amount.
+                                        Added Contract Number to the Header Editable Group.
+                                        Added Supplier Quote Included checkbox
+6       D.Shelat        10-30-2006      Added Payment Terms to the line items page display
+7       D.Shelat        11-06-2006      Additions & Modifications for eRFQ Implementation
+8       D.Shelat        11-29-2006      Improved the visibility of ContractReferenceNumber
+9       D.Shelat        11-30-2006      Removed the Supplier Quote Reference Logic per Ruth
+                                        Modifications made are commented as -
+                                        "R & E MODS 11/30"
+10.     Madhavan Chari- 07-01-2008  Issue 724 Renaming the Emergency buy to Critical Asset Down and hiding the EemrgencyReason and EmergencyMessage,commenting all the visibility and validity.
+11.     01/13/2014      IBM Jayashree B S     SpringRelease_RSD 140 (FDD_140_4.2 / TDD_140_2.0)   Supplier Filter on Search Screen
+	
+****************************************************************************************** -->
+    <import extension="config.variants.vcsv3.extensions.CatEZOProcureExt"/>
+    <inModule name="ariba.common.meta.Requisition">
+        <!-- ================================================================== -->
+        <!-- inClass: ariba.purchasing.core.Requisition                         -->
+        <!-- ================================================================== -->
+        <inClass name="ariba.purchasing.core.Requisition">
+            <inClassVariant name="vcsv3">
+                <field name="ContractReferenceNumber">
+                    <type class="java.lang.String"/>
+                    <properties charWidth="10" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="@aml.cat.ui3/LabelContractReferenceNumber"/>
+                </field>
+                <field name="EmergencyMessage" noPersist="true">
+                    <type class="java.lang.String" length="128"/>
+                    <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextBlock" hidden="true" hideLabel="true" textBlock="@aml.cat.ui3/MessageEmergencyBuy" textBlockStyle="Caption" valueStyle="catRedTextSm"/>
+                </field>
+                <!-- R & E MODS 10/17 - Added a different error message for     -->
+                <!-- Emergency Comment (Different from Emergency Reason)        -->
+                <field name="EmergencyComment">
+                    <type class="java.lang.String"/>
+                   <!-- <validity>
+                        <orCondition>
+                            <condition
+                                implementation="config.java.condition.CatBooleanFieldEqualTo"
+                                testField="this" nullHandling="passThrough">
+                                <parameter name="TestField"
+                                    value="EmergencyBuy"/>
+                                <parameter name="TestValue" value="false"/>
+                            </condition>
+
+                            <andCondition>
+                                <condition implementation="ariba.common.core.condition.LongStringLength">
+                                    <parameter name="Min" value="0"/>
+                                    <parameter name="Max" value="256"/>
+                                </condition>
+
+                            <condition implementation="ariba.base.core.condition.NonEmptyField">
+                                <parameter name="AllowWhitespace" value="false"/>
+                                <parameter name="Message" value="@aml.cat.ui3/MessageInvalidEmergencyComment"/>
+                            </condition>
+
+                            </andCondition>
+
+                        </orCondition>
+                    </validity> -->
+                    <properties charHeight="3" charWidth="50" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextArea" hidden="true" label="@aml.cat.ui3/LabelEmergencyComment"/>
+                </field>
+                <!--
+                <inField name="EmergencyBuy">
+                    <validity>
+                        <condition implementation="config.java.condition.vcsv3.CatEZOAllowEmergencyBuy">
+                            <parameter name="Requisition" inputField="this"/>
+                        </condition>
+                    </validity>
+                </inField>
+                <inField name="EmergencyReason">
+                    <validity>
+                        <orCondition>
+                            <condition
+                                implementation="config.java.condition.CatBooleanFieldEqualTo"
+                                testField="this">
+                                <parameter name="TestField"
+                                    value="EmergencyBuy"/>
+                                <parameter name="TestValue" value="false"/>
+                            </condition>
+                            <condition
+                                implementation="ariba.base.fields.condition.NotEqualTo"
+                                testField="EmergencyReason">
+                                <parameter name="TargetValue"
+                                    value="(no value)"/>
+                                <parameter name="Message"
+                                    value="@aml.cat.ui3/MessageInvalidEmergencyReason"/>
+                            </condition>
+                        </orCondition>
+                    </validity>
+                </inField>
+                -->
+                <!-- Fields required for eRFQ implementation -->
+                <field name="ISeRFQ">
+                    <type class="boolean"/>
+                    <editability>
+                        <notCondition>
+                            <condition implementation="ariba.base.core.condition.NonEmptyField" testField="PreviousVersion">
+                            </condition>
+                        </notCondition>
+                    </editability>
+                    <properties forceRefresh="true" label="@aml.cat.ui3/LabeleRFQ"/>
+                </field>
+                <field name="ISeRFQRequisition">
+                    <type class="boolean"/>
+                    <properties hidden="true" label="@aml.cat.ui3/LabeleRFQRequisition"/>
+                </field>
+                <field name="eRFQBuyer">
+                    <type class="ariba.user.core.User"/>
+                    <properties hidden="true" skipInitialChooserLoad="true"/>
+                </field>
+                <field name="RespondByDate" nullAllowed="true">
+                    <type class="ariba.util.core.Date"/>
+                    <validity>
+                        <condition implementation="ariba.base.fields.condition.BoundedDate">
+                            <parameter name="FutureDate" value="true"/>
+                            <parameter name="IgnoreTime" value="false"/>
+                            <parameter name="CalendarDateFuzzyLogic" value="true"/>
+                            <parameter name="Message" value="@aml.cat.ui3/MessageHasToBeFutureDate"/>
+                        </condition>
+                    </validity>
+                    <properties forceRefresh="true" label="@aml.cat.ui3/LabelRespondByDate" prototypeValue="Mon, 31 Jan, 1999"/>
+                </field>
+                <field name="LognetSuppliers">
+                    <type class="ariba.common.core.SupplierLocation" vector="true"/>
+                    <validity>
+                        <condition implementation="config.java.condition.vcsv3.CatEZOCheckForRFQSuppliers">
+                            <parameter inputField="this" name="Requisition"/>
+                        </condition>
+                    </validity>
+                    <properties alignmentInTable="Center" charWidth="50%" chooserField="UniqueName" chooserGroup="CatChooserTable" controller="ariba.htmlui.baseui.fields.ARFVectorField" label="@aml.cat.ui3/LabelLognetSupplier" titleField="UniqueName" titleFormat="%s (%s, %s)" titleGroup="CatChooserTable"/>
+                </field>
+                <field name="WriteInSuppliers">
+                    <type class="cat.core.ERFQSupplierDetails" vector="true"/>
+                    <validity>
+                        <condition implementation="config.java.condition.vcsv3.CatEZOCheckForRFQSuppliers">
+                            <parameter inputField="this" name="Requisition"/>
+                        </condition>
+                    </validity>
+                    <properties controller="ariba.htmlui.baseui.fields.ARFTableButton" label="@aml.cat.ui3/LabelWriteInSupplier"/>
+                </field>
+                <!-- not to allow edit of HoldTillDate for change orders -->
+                <inField name="HoldTillDate">
+                    <editability>
+                        <notCondition>
+                            <condition implementation="ariba.base.fields.condition.NonNullObject" testField="PreviousVersion"/>
+                        </notCondition>
+                    </editability>
+                </inField>
+                <!-- Fields used to allow purchasing to turn off Requisition escalations       -->
+                <!-- HoldEscalation defined in PLAIN in CatCSVProcureExt.aml and extended here -->
+                <inField name="HoldEscalation">
+                    <properties forceRefresh="true" label="@aml.cat.ui3/LabelHoldEscalation"/>
+                </inField>
+                <!-- This field holds the Name or UniqueName of the person marking the HoldBox -->
+                <!--
+                <field name="HoldEscalationOwner">
+                    <type class="java.lang.String" length="65"/>
+                    <properties label="@aml.cat.ui3/LabelHoldEscalationOwner"
+                        controller =
+                        "ariba.htmlui.fieldsui.fields.ARFTextField"
+                        editable="false"/>
+                </field>
+                -->
+                <inField name="ClassProperties">
+                    <properties approveHook="config.java.hook.vcsv3.CatEZORequisitionApproveHook" checkinHook="config.java.hook.vcsv3.CatEZORequisitionCheckinHook" printHook="config.java.print.vcsv3.CatEZOApprovablePrintHook" submitHook="config.java.hook.vcsv3.CatEZORequisitionSubmitHook" withdrawHook="config.java.hook.vcsv3.CatEZORequisitionWithdrawHook"/>
+                </inField>
+<!-- Trigger to set the Requisition Title -->
+                <trigger event="Copy" name="ChangeReqTitleForCopiedRequisition">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetTitleOnCopy"/>
+                </trigger>
+                <trigger event="FieldChangeByUser" field="EmergencyBuy" name="SetReqTitleForEmergencyBuy">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetTitleForEmergencyBuy"/>
+                </trigger>
+<!-- Trigger to set NeedBy Date on Default Line-->
+                <trigger event="Create" name="SetDefaultNeedByDateOnCreate">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetNeedByDate"/>
+                </trigger>
+<!-- Trigger to populate the HoldEscalationOwner -->
+                <!--
+                <trigger name ="SetHoldEscalationOwnerOnChange"
+                        event="FieldChangeByUser"
+                        field="HoldEscalation">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetHoldEscalationOwner"/>
+                </trigger>
+                -->
+<!-- Trigger to set BuyerCode for the Req Line Items -->
+                <trigger event="FieldChangeByUser" field="Requester" name="SetBuyerCodeOnRequesterChange" respectUserData="false">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetBuyerCode"/>
+                </trigger>
+<!-- Trigger to set Emergency Buy to False -->
+                <trigger event="Create" name="DefaultEmergencyBuyToFalse">
+                    <action implementation="ariba.base.fields.action.SetField">
+                        <parameter name="Target" outputField="EmergencyBuy"/>
+                        <parameter name="Value" value="false"/>
+                    </action>
+                </trigger>
+<!-- Trigger to set ISeRFQ to False -->
+                <trigger event="Create" name="DefaultISeRFQToFalse">
+                    <action implementation="ariba.base.fields.action.SetField">
+                        <parameter name="Target" outputField="ISeRFQ"/>
+                        <parameter name="Value" value="false"/>
+                    </action>
+                </trigger>
+<!-- Trigger to set ISeRFQRequisition to False -->
+                <trigger event="Create" name="DefaultISeRFQRequisitionToFalse">
+                    <action implementation="ariba.base.fields.action.SetField">
+                        <parameter name="Target" outputField="ISeRFQRequisition"/>
+                        <parameter name="Value" value="false"/>
+                    </action>
+                </trigger>
+                <trigger event="FieldChange" field="ISeRFQ" name="ClearSupplierDataFromAdHocLinesOneRFQ">
+                    <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                        <parameter name="TestField" value="ISeRFQ"/>
+                        <parameter name="TestValue" value="true"/>
+                    </condition>
+                    <action implementation="config.java.action.vcsv3.CatEZOWipeLineItemSupplierData"/>
+                </trigger>
+                <trigger event="FieldChange" field="ISeRFQ" name="DefaultRespondBy">
+                    <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                        <parameter name="TestField" value="ISeRFQ"/>
+                        <parameter name="TestValue" value="true"/>
+                    </condition>
+                    <action implementation="config.java.action.vcsv3.CatEZODefaultRespondByDate"/>
+                </trigger>
+            </inClassVariant>
+        </inClass>
+        <!-- ================================================================== -->
+        <!-- inClass: ariba.purchasing.core.ReqLineItem                         -->
+        <!-- ================================================================== -->
+        <inClass name="ariba.purchasing.core.ReqLineItem">
+            <inClassVariant name="vcsv3">
+                <field name="DerivedAccountDistribution">
+                    <type class="java.lang.String" length="55"/>
+                    <properties editable="false" fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField" label="@aml.cat.ui3/LabelDerivedAccountDistribution"/>
+                </field>
+                <!-- Added to store NotToExceedPrice * Quantity -->
+                <field name="NTEAmount">
+                    <type class="ariba.basic.core.Money"/>
+                </field>
+                <field name="PaymentTerms" respectable="true">
+                    <type class="ariba.payment.core.PaymentTerms"/>
+                    <validity>
+                        <orCondition>
+                            <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                            <notCondition>
+                                <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                    <parameter name="PermissionName" value="CatPurchasing"/>
+                                </condition>
+                            </notCondition>
+                        </orCondition>
+                    </validity>
+                    <properties label="@aml.cat.ui3/LabelPaymentTerms"/>
+                </field>
+                <!--
+                <field name="CapitalAssetLink" noPersist="true">
+                    <type class="java.lang.String" length="128"/>
+                    <properties hideLabel="true"
+                        controller="ariba.htmlui.fieldsui.fields.ARFTextLink"
+                        title="@aml.cat.ui3/MessageCapitalAssetLinkTitle"
+                        url="@aml.cat.ui3/MessageCapitalAssetURL"
+                        editable="false"/>
+                </field>
+                -->
+                <!-- R4 add used for tracking line items on revision POs -->
+                <field name="RelatedPO">
+                    <type class="java.lang.String" length="25"/>
+                </field>
+                <!-- R & E MODS 11/30 - Removed from the Requisition & PO Obj   -->
+                <!--
+                <field name="SupplierQuoteAttached">
+                    <type class="boolean"/>
+                    <properties label="@aml.cat.ui3/LabelSupplierQuoteRefIncl"
+                        controller="ariba.htmlui.fieldsui.fields.ARFBoolean"
+                        forceRefresh="true"/>
+                </field>
+                <field name="SupplierQuoteReference">
+                    <type class="java.lang.String" length="55"/>
+                    <properties label="@aml.cat.ui3/LabelSupplierQuoteReference"
+                                controller = "ariba.htmlui.fieldsui.fields.ARFTextField"/>
+                </field>
+                -->
+                <!-- Will be validated at submit time, a little different -->
+                <!-- validation than the OOB validation                   -->
+                <inField name="NeedBy">
+                    <properties validate="false"/>
+                </inField>
+                <field name="LineAttachmentIndicator">
+                    <type class="java.lang.Boolean"/>
+                    <properties editable="false" label="@aml.cat.ui3/LabelLineAttachmentIndicator"/>
+                </field>
+                <inField name="Supplier">
+                    <validity>
+                        <orCondition>
+                            <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                            <notCondition>
+                                <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                    <parameter name="PermissionName" value="CatPurchasing"/>
+                                </condition>
+                            </notCondition>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" nullHandling="passThrough" testField="this">
+                                <parameter name="TestField" value="ISeRFQ"/>
+                                <parameter name="TestValue" value="true"/>
+                            </condition>
+                        </orCondition>
+                    </validity>
+                    <properties skipInitialChooserLoad="true"/>
+                </inField>
+                <inField name="SupplierLocation">
+                    <validity>
+                        <orCondition>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.SupplierLocationPresentIfRequired" nullHandling="passThrough" testField="SupplierLocation">
+                                    <parameter inputField="this" name="PLI" nullHandling="passThrough"/>
+                                </condition>
+                                <condition implementation="ariba.common.core.condition.ActiveClusterRoot" nullHandling="passThrough" testField="SupplierLocation"/>
+                            </andCondition>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" nullHandling="passThrough" testField="this">
+                                <parameter name="TestField" value="ISeRFQ"/>
+                                <parameter name="TestValue" value="true"/>
+                            </condition>
+                        </orCondition>
+                    </validity>
+                </inField>
+<!-- Trigger to set PaymentTerm on Req Lineitem on Create -->
+                <trigger event="Create" name="SetPaymentTermsOnCreate">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetRLIPaymentTerms"/>
+                </trigger>
+<!-- Trigger to set Default Bill To Req Lineitem on Create -->
+                <trigger event="Create" name="DefaultBillingAddressForRequesterFacility">
+                    <action implementation="config.java.action.vcsv3.CatEZODefaultBillToForOBOFacility"/>
+                </trigger>
+<!-- Trigger to Validate Accounting on Req Line -->
+                <trigger event="FieldChange" field="ValidateAccounting" name="ValidateAccountingAndSetValidationMessage">
+                    <action implementation="config.java.action.vcsv3.CatEZOValidateAccountingString"/>
+                </trigger>
+<!-- Buyer Code -->
+                <trigger event="Create" name="SetBuyerCodeOnPCCChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetBuyerCode"/>
+                </trigger>
+<!-- AccountType -->
+                <trigger event="FieldChange" field="CommodityExportMapEntry" name="SetAccountTypeOnCEMEChange" respectUserData="true">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetAccountTypeFromCEME">
+                    </action>
+                </trigger>
+                <!--
+                <trigger name ="SetAccountTypeOnCEMEChange"
+                        event="FieldChange"
+                        field="CommodityExportMapEntry"
+                        respectUserData="true">
+                    <action implementation="ariba.base.fields.action.SetField">
+                        <parameter name="Target" outputField="AccountType"/>
+                        <parameter name="Value"  inputField="CommodityExportMapEntry.AccountType"/>
+                    </action>
+                </trigger>
+                -->
+<!-- ReasonCode -->
+                <trigger event="DefaultFromMALineItem" name="DefaultReasonCodeFromMALineItemDescription">
+                    <condition implementation="ariba.contract.core.condition.ContractTermTypeEqualTo">
+                        <parameter inputField="MALineItem.MasterAgreementCoreApprovable" name="MACA"/>
+                        <parameter name="TargetValue" value="2"/>
+                    </condition>
+                    <action implementation="ariba.common.core.action.CopyFields">
+                        <parameter name="SourceField" value="MALineItem.Description.ReasonCode"/>
+                        <parameter name="TargetField" value="Description.ReasonCode"/>
+                        <parameter name="Defaulting" value="false"/>
+                    </action>
+                </trigger>
+<!-- FOB Point -->
+                <trigger event="FieldChange" field="SupplierLocation" name="SetFOBPointOnSupplierLocChange" respectUserData="false">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetFOBShippingPoint"/>
+                </trigger>
+<!-- NTEAmount (update Not-To-Exceed Amount on Quantity Change -->
+                <trigger event="FieldChange" field="Quantity" name="UpdateNTEAmountOnQuantityChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetNotToExceedAmount"/>
+                </trigger>
+<!-- SupplierLocation -->
+                <trigger event="FieldChange" field="Supplier" name="SetSupplierLocationWhenApplicable">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetSupplierLocation">
+                        <parameter name="Target" outputField="SupplierLocation"/>
+                        <parameter inputField="Supplier" name="Source"/>
+                    </action>
+                </trigger>
+<!-- Accounting Fields -->
+                <trigger event="FieldChange" field="AccountType" name="SetAccountingOnAccountTypeChange" respectUserData="false">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetAccountingForAccountType"/>
+                </trigger>
+<!-- Trigger to set Supplier Quote Attached to True -->
+                <!-- R & E MODS 11/30 - Removed from the Requisition & PO Obj   -->
+                <!--
+                <trigger name="DefaultSupplierQuoteAttachedToTrue"
+                        event="Create">
+                    <action implementation="ariba.base.fields.action.SetField">
+                        <parameter name="Target" outputField="SupplierQuoteAttached"/>
+                        <parameter name="Value"  value="true"/>
+                    </action>
+                </trigger>
+                -->
+<!-- Deleted Triggers -->
+                <deleteTrigger name="DefaultAccountingFromRequester"/>
+                <deleteTrigger name="DefaultAccountingFromMALineItem"/>
+                <deleteTrigger name="SetSupplierLocationOnSupplierChange"/>
+                <!--
+                <deleteTrigger name="AutoSelectMALIForReqLineItem"/>
+                <deleteTrigger name="AutoSelectMALIOnSupplierChange"/>
+                <deleteTrigger name="AutoSelectMALIOnAdHocCommodityCodeChange"/>
+                <deleteTrigger name="AutoSelectMALIOnQuantityChange"/>
+                -->
+                <!--deleteTrigger name="DefaultFromNonCatalogMATerm"/-->
+            </inClassVariant>
+        </inClass>
+        <!-- ================================================================== -->
+        <!-- inClass: ariba.common.core.SplitAccounting                         -->
+        <!-- ================================================================== -->
+        <inClass name="ariba.common.core.SplitAccounting">
+            <inClassVariant name="vcsv3">
+<!-- Trigger to Accounting Facility onto other Splits -->
+                <!-- Trigger to copy the Accounting Facility from first split   -->
+                <!-- to any consecutive splits on a Req Line (UI Control)       -->
+                <trigger event="FieldChange" field="AccountingFacility" name="DefaultAccountingFacilityToOtherSplits">
+                    <condition implementation="config.java.condition.vcsv3.CatEZOIsFirstSplitAccntng">
+                        <parameter inputField="this" name="Accounting"/>
+                    </condition>
+                    <action implementation="config.java.action.vcsv3.CatEZOSetAcctFacOnSplitChange">
+                        <parameter inputField="this" name="Accounting"/>
+                    </action>
+                </trigger>
+<!-- Trigger to set BillingAddress on Req Line & MAR Line -->
+                <trigger event="FieldChange" field="AccountingFacility" name="DefaultBillingAddressForAccountingFacility">
+                    <condition implementation="config.java.condition.vcsv3.CatEZOIsFirstSplitAccntng">
+                        <parameter inputField="this" name="Accounting"/>
+                    </condition>
+                    <action implementation="config.java.action.vcsv3.CatEZODefaultBillToForAccntngFacility">
+                        <parameter inputField="this" name="Accounting"/>
+                    </action>
+                </trigger>
+<!-- Trigger to set the Derived Account Distribution on Req LineItem -->
+                <trigger event="FieldChange" field="AccountingFacility" name="SetDerivedAccountDistrOnFacilityChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetDerivedAccountDistribution"/>
+                </trigger>
+                <trigger event="FieldChange" field="Department" name="SetDerivedAccountDistrOnDepartmentChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetDerivedAccountDistribution"/>
+                </trigger>
+                <trigger event="FieldChange" field="Division" name="SetDerivedAccountDistrOnDivisionChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetDerivedAccountDistribution"/>
+                </trigger>
+                <trigger event="FieldChange" field="Section" name="SetDerivedAccountDistrOnSectionChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetDerivedAccountDistribution"/>
+                </trigger>
+                <trigger event="FieldChange" field="ExpenseAccount" name="SetDerivedAccountDistrOnExpenseAcctChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetDerivedAccountDistribution"/>
+                </trigger>
+                <trigger event="FieldChange" field="Order" name="SetDerivedAccountDistrOnOrderChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetDerivedAccountDistribution"/>
+                </trigger>
+                <trigger event="FieldChange" field="Misc" name="SetDerivedAccountDistrOnMiscChange">
+                    <action implementation="config.java.action.vcsv3.CatEZOSetDerivedAccountDistribution"/>
+                </trigger>
+
+            </inClassVariant>
+        </inClass>
+
+        <!-- ================================================================== -->
+        <!-- inGroup: HeaderDetailsEditable                                     -->
+        <!-- ================================================================== -->
+        <inGroup name="HeaderDetailsEditable">
+            <inGroupClass name="ariba.procure.core.ProcureLineItemCollection">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="Name">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                    <parameter inputField="this" name="ProcureLineItemCollection"/>
+                                </condition>
+                                <!-- Added to lock down edit of Title if Emergency Buy text added -->
+                                <notCondition>
+                                    <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                        <parameter name="TestField" value="EmergencyBuy"/>
+                                        <parameter name="TestValue" value="true"/>
+                                    </condition>
+                                </notCondition>
+                            </andCondition>
+                        </editability>
+                    </groupField>
+                    <groupField name="HoldTillDate">
+                        <editability>
+                            <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                <parameter inputField="this" name="ProcureLineItemCollection"/>
+                            </condition>
+                        </editability>
+                    </groupField>
+                    <groupField name="EmergencyBuy">
+                        <editability>
+                            <notCondition>
+                                <condition implementation="ariba.base.core.condition.NonEmptyField" testField="PreviousVersion">
+                                </condition>
+                            </notCondition>
+                        </editability>
+                        <visibility>
+                            <orCondition>
+                                <andCondition>
+                                    <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                        <parameter name="PermissionName" value="CatPurchasing"/>
+                                    </condition>
+                                   <!-- <condition implementation="config.java.condition.vcsv3.CatEZOAllowEmergencyBuy">
+                                        <parameter name="Requisition" inputField="this"/>
+                                    </condition> -->
+                                    <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                        <parameter name="TestField" value="ISeRFQ"/>
+                                        <parameter name="TestValue" value="false"/>
+                                    </condition>
+                                </andCondition>
+                                <andCondition>
+                                    <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                        <parameter name="TestField" value="EmergencyBuy"/>
+                                        <parameter name="TestValue" value="true"/>
+                                    </condition>
+                                    <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                        <parameter name="PermissionName" value="CatPurchasing"/>
+                                    </condition>
+                                </andCondition>
+                            </orCondition>
+                        </visibility>
+                        <properties forceRefresh="true" rank="290"/>
+                    </groupField>
+                    <groupField name="EmergencyReason">
+                      <!--  <visibility>
+                            <andCondition>
+                                <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                    <parameter name="PermissionName" value="CatPurchasing"/>
+                                </condition>
+                                <condition implementation="config.java.condition.CatBooleanFieldEqualTo"
+                                        testField="this">
+                                        <parameter name="TestField" value="EmergencyBuy"/>
+                                        <parameter name="TestValue" value="true"/>
+                                </condition>
+                            </andCondition>
+                        </visibility> -->
+                        <properties forceRefresh="true" rank="295"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+
+            <inGroupClass name="ariba.purchasing.core.Requisition">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="ContractReferenceNumber">
+                        <properties label="@aml.cat.ui3/LabelContractReferenceNumber" rank="240">
+                        </properties>
+                        <visibility>
+                            <orCondition>
+                                <andCondition>
+                                    <notCondition>
+                                        <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                            <parameter name="PermissionName" value="CatPurchasing"/>
+                                        </condition>
+                                    </notCondition>
+                                    <condition implementation="ariba.base.core.condition.NonEmptyField" testField="ContractReferenceNumber">
+                                    </condition>
+                                </andCondition>
+                                <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                    <parameter name="PermissionName" value="CatPurchasing"/>
+                                </condition>
+                            </orCondition>
+                        </visibility>
+                        <editability>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </editability>
+                    </groupField>
+                    <groupField name="HoldEscalation">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties rank="280"/>
+                    </groupField>
+                    <!--
+                    <groupField name="HoldEscalationOwner">
+                        <visibility>
+                            <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                        </visibility>
+                        <properties rank="285"/>
+                    </groupField>
+                    -->
+                    <groupField name="EmergencyComment">
+                     <!--   <visibility>
+                            <andCondition>
+                                <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                    <parameter name="PermissionName" value="CatPurchasing"/>
+                                </condition>
+                                <condition implementation="config.java.condition.CatBooleanFieldEqualTo"
+                                        testField="this">
+                                        <parameter name="TestField" value="EmergencyBuy"/>
+                                        <parameter name="TestValue" value="true"/>
+                                </condition>
+                            </andCondition>
+                        </visibility> -->
+                        <properties forceRefresh="true" rank="299"/>
+                    </groupField>
+                    <!-- R & E MODS 10/17 - No more need for this message       -->
+                    <groupField name="EmergencyMessage">
+                        <visibility>
+                            <andCondition>
+                                <notCondition>
+                                    <condition implementation="ariba.base.fields.condition.AlwaysTrue"/>
+                                </notCondition>
+                                <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                        <parameter name="TestField" value="EmergencyBuy"/>
+                                        <parameter name="TestValue" value="true"/>
+                                </condition>
+                            </andCondition>
+                        </visibility>
+                        <properties editable="false" forceRefresh="true" rank="300"/>
+                    </groupField>
+                    <groupField name="ISeRFQ">
+                        <visibility>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                    <parameter name="TestField" value="EmergencyBuy"/>
+                                    <parameter name="TestValue" value="false"/>
+                            </condition>
+                        </visibility>
+                        <properties forceRefresh="true" rank="300"/>
+                    </groupField>
+                    <groupField name="RespondByDate">
+                        <visibility>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                <parameter name="TestField" value="ISeRFQ"/>
+                                <parameter name="TestValue" value="true"/>
+                            </condition>
+                        </visibility>
+                        <properties rank="305"/>
+                    </groupField>
+                    <groupField name="LognetSuppliers">
+                        <visibility>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                <parameter name="TestField" value="ISeRFQ"/>
+                                <parameter name="TestValue" value="true"/>
+                            </condition>
+                        </visibility>
+                        <properties rank="310"/>
+                    </groupField>
+                    <groupField name="WriteInSuppliers">
+                        <visibility>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                <parameter name="TestField" value="ISeRFQ"/>
+                                <parameter name="TestValue" value="true"/>
+                            </condition>
+                        </visibility>
+                        <properties rank="320"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+            <groupClass name="cat.core.ERFQSupplierDetails">
+                <groupClassVariant name="vcsv3">
+                    <groupField name="SupplierName"/>
+                    <groupField name="SupplierContact"/>
+                    <groupField name="SupplierEMail"/>
+                    <groupField name="SupplierFax"/>
+                    <!--
+                    <groupField name="Language"/>
+                    -->
+                    <groupField name="LocaleID"/>
+
+                </groupClassVariant>
+            </groupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: HeaderDetailsNoneditable                                  -->
+        <!-- ================================================================== -->
+        <inGroup name="HeaderDetailsNoneditable">
+            <inGroupClass name="ariba.purchasing.core.Requisition">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="HoldEscalation">
+                        <visibility>
+                            <andCondition>
+                                <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                    <parameter name="PermissionName" value="CatPurchasing"/>
+                                </condition>
+                                <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                    <parameter name="TestField" value="HoldEscalation"/>
+                                    <parameter name="TestValue" value="true"/>
+                                </condition>
+                            </andCondition>
+                        </visibility>
+                        <properties rank="310"/>
+                    </groupField>
+                    <!--
+                    <groupField name="HoldEscalationOwner">
+                        <visibility>
+                            <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                        </visibility>
+                        <properties rank="315"/>
+                    </groupField>
+                    -->
+                    <groupField name="EmergencyBuy">
+                        <visibility>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                    <parameter name="TestField" value="EmergencyBuy"/>
+                                    <parameter name="TestValue" value="true"/>
+                            </condition>
+                        </visibility>
+                        <properties rank="320"/>
+                    </groupField>
+                    <groupField name="ISeRFQ">
+                        <visibility>
+                            <condition implementation="config.java.condition.CatBooleanFieldEqualTo" testField="this">
+                                    <parameter name="TestField" value="EmergencyBuy"/>
+                                    <parameter name="TestValue" value="true"/>
+                            </condition>
+                        </visibility>
+                        <properties rank="330"/>
+                    </groupField>
+               </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: LineItemGeneralFields                                     -->
+        <!-- ================================================================== -->
+        <inGroup name="LineItemGeneralFields">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="CommodityCode">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <groupField name="Quantity">
+                        <properties required="true"/>
+                    </groupField>
+                    <groupField name="Supplier">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.CatalogItemEditable">
+                                    <parameter inputField="this" name="LineItem"/>
+                                    <parameter name="FieldName" value="Supplier"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.LineItemHasValidOrder">
+                                    <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <notCondition>
+                                    <condition implementation="ariba.contract.core.condition.IsPowerUserAdded">
+                                            <parameter inputField="this" name="ProcureLineItem"/>
+                                    </condition>
+                                </notCondition>
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                    <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <orCondition>
+                                    <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                                    <condition implementation="ariba.common.core.condition.RoleEqualTo">
+                                        <parameter name="TargetValue" value="Data Maintainer"/>
+                                    </condition>
+                                </orCondition>
+                            </andCondition>
+                        </editability>
+                        <properties chooserField="Name" chooserGroup="CatChooserTable" chooserSortByField="Name" chooserSortDirection="1" required="false"/>
+                    </groupField>
+                    <groupField name="SupplierLocation">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.SupplierLocationEditable">
+                                    <parameter inputField="this" name="LineItem"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                        <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <orCondition>
+                                    <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                                    <condition implementation="ariba.common.core.condition.RoleEqualTo">
+                                        <parameter name="TargetValue" value="Data Maintainer"/>
+                                    </condition>
+                                </orCondition>
+                            </andCondition>
+                        </editability>
+                        <properties chooserField="UniqueName" chooserGroup="CatSupplierLocationTable" label="@aml.cat.ui3/LabelSupplierLocation" required="false" titleField="UniqueName"/>
+                    </groupField>
+                    <groupField name="Description.CommonCommodityCode">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.CommodityCodeEditable">
+                                    <parameter inputField="this" name="LineItem"/>
+                                    <parameter name="AlwaysEditableWhenInvalid" value="true"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                    <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                    <parameter inputField="LineItemCollection" name="ProcureLineItemCollection"/>
+                                </condition>
+                                <orCondition>
+                                    <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                                    <condition implementation="ariba.common.core.condition.RoleEqualTo">
+                                        <parameter name="TargetValue" value="Data Maintainer"/>
+                                    </condition>
+                                    <andCondition>
+                                        <condition implementation="ariba.procure.core.condition.NonMappedCommonCommodityCode" testField="Description"/>
+                                        <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                            <parameter name="PermissionName" value="CatPurchasing"/>
+                                        </condition>
+                                    </andCondition>
+                                </orCondition>
+                            </andCondition>
+                        </editability>
+                        <properties label="@aml.cat.ui3/LabelCommodityCodeName"/>
+                    </groupField>
+                    <groupField name="Description.SupplierPartAuxiliaryID">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <groupField name="Description.Description">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.CatalogItemEditable">
+                                    <parameter inputField="this" name="LineItem"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                    <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <orCondition>
+                                    <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                                    <condition implementation="ariba.common.core.condition.RoleEqualTo">
+                                        <parameter name="TargetValue" value="Data Maintainer"/>
+                                    </condition>
+                                </orCondition>
+                            </andCondition>
+                        </editability>
+                        <properties required="true"/>
+                    </groupField>
+                    <groupField name="Description.SupplierPartNumber">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.CatalogItemEditable">
+                                    <parameter inputField="this" name="LineItem"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                    <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <orCondition>
+                                    <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                                    <condition implementation="ariba.common.core.condition.RoleEqualTo">
+                                        <parameter name="TargetValue" value="Data Maintainer"/>
+                                    </condition>
+                                </orCondition>
+                            </andCondition>
+                        </editability>
+                    </groupField>
+                    <groupField name="Description.ManPartNumber">
+                        <!--
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.CatalogItemEditable">
+                                    <parameter name="LineItem" inputField="this"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                    <parameter name="ProcureLineItem" inputField="this"/>
+                                </condition>
+                                <orCondition>
+                                    <condition implementation="ariba.procure.core.condition.AdHocLineItem"
+                                            testField="this"/>
+                                    <condition implementation="ariba.common.core.condition.RoleEqualTo">
+                                        <parameter name="TargetValue" value="Data Maintainer"/>
+                                    </condition>
+                                </orCondition>
+                            </andCondition>
+                        </editability>
+                        -->
+                        <properties hidden="true" rank="23"/>
+                    </groupField>
+                    <groupField name="Description.UnitOfMeasure">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.CatalogItemEditable">
+                                    <parameter inputField="this" name="LineItem"/>
+                                </condition>
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                    <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <orCondition>
+                                    <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                                    <condition implementation="ariba.common.core.condition.RoleEqualTo">
+                                        <parameter name="TargetValue" value="Data Maintainer"/>
+                                    </condition>
+                                </orCondition>
+                            </andCondition>
+                        </editability>
+                        <properties required="true"/>
+                    </groupField>
+                    <groupField name="Description.Price">
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.CatalogItemEditable">
+                                    <parameter inputField="this" name="LineItem"/>
+                                </condition>
+                                <notCondition>
+                                    <condition implementation="ariba.contract.core.condition.ContractItemPrice">
+                                        <parameter inputField="this" name="ProcureLineItem"/>
+                                    </condition>
+                                </notCondition>
+                                <notCondition>
+                                    <condition implementation="ariba.contract.core.condition.NonCatalogMarkDownInEffect" testField="this"/>
+                                </notCondition>
+                                <!--
+                                <condition implementation="ariba.purchasing.core.condition.AllowChangeOrderStates">
+                                    <parameter name="ProcureLineItem" inputField="this"/>
+                                </condition>
+                                -->
+                                <!-- Override AllowChangeOrderStates condition to check if prize is zero for ReasonCode2 -->
+                                <condition implementation="config.java.condition.vcsv3.CatEZOAllowChangeOrderStates">
+                                    <parameter inputField="this" name="ProcureLineItem"/>
+                                </condition>
+                                <!-- To prevent Price Edit if NTE Reason Code -->
+                                <!-- Switched to new condition (since ReasonCode could be null -->
+                                <condition implementation="config.java.condition.CatStringFieldNotEqualTo" testField="this">
+                                    <parameter name="TestField" value="Description.ReasonCode"/>
+                                    <parameter name="TestValue" value="Price not to exceed"/>
+                                </condition>
+                            </andCondition>
+                        </editability>
+                        <properties forceRefresh="true" precision="6" required="true"/>
+                    </groupField>
+                    <!-- *** CAT-extrinsic fields start here *** -->
+                    <!-- ***                                 *** -->
+                    <groupField name="Description.ReasonCode">
+                        <visibility>
+                            <notCondition>
+                                <condition implementation="ariba.common.core.condition.NonZeroMoney" testField="Description.Price"/>
+                            </notCondition>
+                        </visibility>
+                        <editability>
+                            <orCondition>
+                                <notCondition>
+                                    <condition implementation="config.java.condition.CatFieldMatchingMALineItem" testField="this">
+                                        <parameter name="FieldName" value="Description.ReasonCode"/>
+                                    </condition>
+                                </notCondition>
+                                <condition implementation="config.java.condition.CatStringFieldEqualTo" testField="this">
+                                    <parameter name="TestField" value="ReasonCode"/>
+                                    <parameter name="TestValue" value="(no value)"/>
+                                </condition>
+                            </orCondition>
+                        </editability>
+                        <properties forceRefresh="true" rank="52" required="true"/>
+                    </groupField>
+                    <!-- ** ADDED for R4 Price Not-To-Exceed functionality ** -->
+                    <groupField name="Description.NotToExceedPrice">
+                        <visibility>
+                            <andCondition>
+                                <condition implementation="config.java.condition.CatStringFieldEqualTo" testField="this">
+                                    <parameter name="TestField" value="Description.ReasonCode"/>
+                                    <parameter name="TestValue" value="@cat.aml.picklistvalues3/ReasonCode2"/>
+                                </condition>
+                                <notCondition>
+                                    <condition implementation="ariba.common.core.condition.NonZeroMoney" testField="Description.Price"/>
+                                </notCondition>
+                            </andCondition>
+                        </visibility>
+                        <properties forceRefresh="true" rank="53"/>
+                    </groupField>
+                    <groupField name="Description.LeadTime">
+                        <visibility>
+                            <condition implementation="ariba.base.fields.condition.AlwaysTrue" testField="this"/>
+                        </visibility>
+                        <editability>
+                            <andCondition>
+                                <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="Description.LineItem"/>
+                                <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                    <parameter inputField="LineItemCollection" name="ProcureLineItemCollection"/>
+                                </condition>
+                            </andCondition>
+                        </editability>
+                        <properties forceRefresh="true" rank="54"/>
+                    </groupField>
+                    <groupField name="BuyerCode">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <!--
+                        <editability>
+                            <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                <parameter name="ProcureLineItemCollection" inputField="LineItemCollection"/>
+                            </condition>
+                        </editability>
+                        -->
+                        <properties forceRefresh="true" rank="11" required="true"/>
+                    </groupField>
+                    <!--
+                    <groupField name="MSDSNumber">
+                        <visibility>
+                            <notCondition>
+                                <condition implementation="config.java.condition.vcsv1.CatAdditionalChargeLineItem"
+                                        testField="this"/>
+                            </notCondition>
+                        </visibility>
+                        <editability>
+                            <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                <parameter name="ProcureLineItemCollection" inputField="LineItemCollection"/>
+                            </condition>
+                        </editability>
+                        <properties rank="85"/>
+                    </groupField>
+                    -->
+                    <groupField name="Form">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <groupField name="MasterAgreement.UniqueName">
+                        <visibility>
+                            <andCondition>
+                                <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                                <notCondition>
+                                    <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                        <parameter name="PermissionName" value="CatPurchasing"/>
+                                    </condition>
+                                </notCondition>
+                            </andCondition>
+                        </visibility>
+						<!-- S Dey : Ariba, Inc - Changed the fieldEditorClass and made the behavior of this field as per viking-->
+						<properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APETextField"/>
+                    </groupField>
+                    <groupField name="MasterAgreement">
+                        <visibility>
+                            <andCondition>
+                                <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                                <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                    <parameter name="PermissionName" value="CatPurchasing"/>
+                                </condition>
+                            </andCondition>
+                        </visibility>
+                        <properties controller="ariba.htmlui.approvableui.fields.ARFApprovableLink" editable="false" label="@aml.cat.ui3/LabelMasterAgreementLink" rank="350"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: LineItemSimpleGeneralFields                               -->
+        <!-- ================================================================== -->
+        <inGroup name="LineItemSimpleGeneralFields">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="SupplierLocation">
+                        <properties chooserField="UniqueName" label="@aml.cat.ui3/LabelSupplierLocation" titleField="UniqueName"/>
+                    </groupField>
+                    <groupField name="Description.CommonCommodityCode">
+                        <properties label="@aml.cat.ui/LabelCommodityCodeName"/>
+                    </groupField>
+                    <!-- ** AccountType now displayed as part of DerviedAccountDistr string ** -->
+                    <!--
+                    <groupField name="AccountType">
+                        <properties rank="36" editable="false"/>
+                    </groupField>
+                    -->
+                    <groupField name="DerivedAccountDistribution">
+                        <visibility>
+                            <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                        </visibility>
+                        <properties editable="false" rank="37"/>
+                    </groupField>
+                    <groupField name="BuyerCode">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties editable="false" rank="39"/>
+                    </groupField>
+                    <!-- R & E MODS 10/17 - titleGroup changed to display UN    -->
+                    <groupField name="ShipTo">
+                        <properties editable="false" rank="42" titleFormat="%s  (%s, %s)" titleGroup="CatShipToAddressSelection"/>
+                    </groupField>
+                    <groupField name="DeliverToMailStop">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatTransactionCtr"/>
+                            </condition>
+                        </visibility>
+                        <properties editable="false" rank="44"/>
+                    </groupField>
+                    <groupField name="NeedBy">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatTransactionCtr"/>
+                            </condition>
+                        </visibility>
+                        <properties editable="false" rank="46"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+
+        <!-- ================================================================== -->
+        <!-- inGroup: RequisitionUnorderedDetails                               -->
+        <!-- ================================================================== -->
+        <inGroup name="RequisitionUnorderedDetails">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="Description.SupplierPartNumber">
+                        <properties alignmentInTable="Left" editable="false" label="@aml.cat.ui3/LabelSupplierPartNumShort" rank="32"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+
+        <!-- ================================================================== -->
+        <!-- inGroup: RequisitionUnorderedNonCatalogDetails                     -->
+        <!-- ================================================================== -->
+        <inGroup name="RequisitionUnorderedNonCatalogDetails">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="Supplier">
+                        <visibility>
+                            <notCondition>
+                                <condition implementation="config.java.condition.CatBooleanFieldEqualTo" nullHandling="passThrough" testField="this">
+                                    <parameter name="TestField" value="ISeRFQ"/>
+                                    <parameter name="TestValue" value="true"/>
+                                </condition>
+                            </notCondition>
+                        </visibility>
+                        <properties chooserField="Name" chooserGroup="CatChooserTable" chooserSortByField="Name" chooserSortDirection="1" required="false"/>
+                    </groupField>
+                    <groupField name="SupplierLocation">
+                        <visibility>
+                            <notCondition>
+                                <condition implementation="config.java.condition.CatBooleanFieldEqualTo" nullHandling="passThrough" testField="this">
+                                    <parameter name="TestField" value="ISeRFQ"/>
+                                    <parameter name="TestValue" value="true"/>
+                                </condition>
+                            </notCondition>
+                        </visibility>
+                        <properties chooserField="UniqueName" chooserGroup="CatSupplierLocationTable" label="@aml.cat.ui3/LabelSupplierLocation" titleField="UniqueName"/>
+                    </groupField>
+                    <groupField name="Quantity">
+                        <properties required="true"/>
+                    </groupField>
+                    <groupField name="Description.UnitOfMeasure">
+                        <properties required="true"/>
+                    </groupField>
+                    <groupField name="Description.Price">
+                        <!-- To prevent Price Edit if NTE Reason Code -->
+                        <editability>
+                            <condition implementation="config.java.condition.CatStringFieldNotEqualTo" testField="this">
+                                <parameter name="TestField" value="Description.ReasonCode"/>
+                                <parameter name="TestValue" value="Price not to exceed"/>
+                            </condition>
+                        </editability>
+                        <properties forceRefresh="true" required="true"/>
+                    </groupField>
+                    <groupField name="Description.Description">
+                        <properties required="true"/>
+                    </groupField>
+                    <groupField name="Description.SupplierPartAuxiliaryID">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <!-- Additional Left Zone fields (added to bottom) -->
+                    <!--
+                    <groupField name="Description.ManPartNumber">
+                        <properties rank="46"
+                                    zone="Left"/>
+                    </groupField>
+                    -->
+                    <!--
+                    <groupField name="MSDSNumber">
+                        <properties rank="47"
+                                    zone="Left"/>
+                    </groupField>
+                    -->
+                    <groupField name="Description.LeadTime">
+                        <properties rank="48" zone="Left"/>
+                    </groupField>
+                    <!-- Additional Right Zone fields (added to bottom) -->
+                    <groupField name="Description.ReasonCode">
+                        <visibility>
+                            <notCondition>
+                                <condition implementation="ariba.common.core.condition.NonZeroMoney" testField="Description.Price"/>
+                            </notCondition>
+                        </visibility>
+                        <!-- added validity here to ensure enforced on non-catalog screen -->
+                        <validity>
+                            <orCondition>
+                                <notCondition>
+                                    <condition implementation="config.java.condition.CatStringFieldEqualTo" testField="this">
+                                        <parameter name="TestField" value="Description.ReasonCode"/>
+                                        <parameter name="TestValue" value="(no value)"/>
+                                    </condition>
+                                </notCondition>
+                                <condition implementation="config.java.condition.CatNonZeroMoney" testField="Description.Price">
+                                    <parameter name="Message" value="@aml.cat.ui3/MessageReasonCodeInvalid"/>
+                                </condition>
+                                <condition implementation="config.java.condition.CatBooleanFieldEqualTo" nullHandling="passThrough" testField="this">
+                                    <parameter name="TestField" value="ISeRFQ"/>
+                                    <parameter name="TestValue" value="true"/>
+                                </condition>
+                            </orCondition>
+                        </validity>
+                        <properties forceRefresh="true" rank="81" zone="Right"/>
+                    </groupField>
+                    <groupField name="Description.NotToExceedPrice">
+                        <visibility>
+                            <andCondition>
+                                <condition implementation="config.java.condition.CatStringFieldEqualTo" testField="this">
+                                    <parameter name="TestField" value="Description.ReasonCode"/>
+                                    <parameter name="TestValue" value="@cat.aml.picklistvalues3/ReasonCode2"/>
+                                </condition>
+                                <notCondition>
+                                    <condition implementation="ariba.common.core.condition.NonZeroMoney" testField="Description.Price"/>
+                                </notCondition>
+                            </andCondition>
+                        </visibility>
+                        <!-- added validity here to ensure enforced on non-catalog screen -->
+                        <!--
+                        <validity>
+                            <orCondition>
+                                <condition implementation="ariba.common.core.condition.NonZeroMoney"
+                                        testField="Description.Price"/>
+                                <notCondition>
+                                    <condition implementation="config.java.condition.CatStringFieldEqualTo"
+                                                testField="this">
+                                            <parameter name="TestField" value="Description.ReasonCode"/>
+                                            <parameter name="TestValue" value="Price not to exceed"/>
+                                    </condition>
+                                </notCondition>
+                                <condition implementation="config.java.condition.CatNonZeroMoney"
+                                                testField="Description.NotToExceedPrice">
+                                    <parameter name="Message" value="@aml.cat.ui1/MessageNotToExceedPriceInvalid"/>
+                                </condition>
+                            </orCondition>
+                        </validity>
+                        -->
+                        <properties rank="82" zone="Right"/>
+                    </groupField>
+                    <groupField name="Description.CommonCommodityCode">
+                        <validity>
+                            <andCondition>
+                                <condition implementation="ariba.contract.core.condition.ValidCommonCommodityCodeForContract" testField="this"/>
+                                <orCondition>
+                                    <condition implementation="ariba.base.core.condition.NonEmptyField"/>
+                                    <condition implementation="ariba.contract.core.condition.IsContractSourcingRequest">
+                                        <parameter inputField="this" name="PLI"/>
+                                    </condition>
+                                </orCondition>
+                                <condition implementation="config.java.condition.CatLowLevelCommodityCode" testField="this"/>
+                            </andCondition>
+                        </validity>
+                        <properties label="@aml.cat.ui3/LabelCommodityCodeName" required="true"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: AccountingUnsplittableFields                              -->
+        <!-- ================================================================== -->
+        <inGroup name="AccountingUnsplittableFields">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                <!-- R & E MODS 11/30 - Removed from the Requisition & PO Obj   -->
+                    <!--
+                    <groupField name="SupplierQuoteAttached">
+                        <visibility>
+                            <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                        </visibility>
+                        <properties rank="11"/>
+                    </groupField>
+                    <groupField name="SupplierQuoteReference">
+                        <visibility>
+                            <condition implementation="ariba.procure.core.condition.AdHocLineItem" testField="this"/>
+                        </visibility>
+                        <properties rank="12"/>
+                    </groupField>
+                    -->
+                    <groupField name="CommodityExportMapEntry">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <groupField name="PaymentTerms">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties allowCustomValue="false" chooserField="Description" controller="ariba.htmlui.approvableui.fields.ARFNamedObject" detailsGroup="PaymentTermsDetail" label="@aml.cat.ui3/LabelPaymentTerms" rank="30" titleField="Description"/>
+                    </groupField>
+                    <groupField name="BillingAddress">
+                        <properties editable="false" rank="20"/>
+                    </groupField>
+                    <groupField name="AccountType">
+                        <properties rank="40" required="true"/>
+                    </groupField>
+                    <groupField name="ProjectNumber">
+                        <properties rank="50"/>
+                    </groupField>
+                    <groupField name="ValidateAccounting">
+                        <properties rank="60"/>
+                    </groupField>
+                    <!--
+                    <groupField name="CapitalAssetLink">
+                        <properties rank="55"/>
+                    </groupField>
+                    -->
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: ShippingFields                                            -->
+        <!-- ================================================================== -->
+        <inGroup name="ShippingFields">
+            <groupClass name="ariba.purchasing.core.ReqLineItem">
+                <groupClassVariant name="vcsv3">
+                    <!-- R & E MODS 10/17 - titleGroup changed to display UN    -->
+                    <groupField name="ShipTo">
+                        <editability>
+                            <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                <parameter inputField="LineItemCollection" name="ProcureLineItemCollection"/>
+                            </condition>
+                        </editability>
+                        <properties allowCustomValue="true" chooserField="UniqueName" chooserGroup="CatChooserTable" groupViewClass="ARWColumnGroupView" includesUserObjects="true" nameTableClass="config.java.nametable.vcsv3.CatEZOShipToNameTable" required="true" titleFormat="%s  (%s, %s)" titleGroup="CatShipToAddressSelection"/>
+                    </groupField>
+                    <groupField name="FOBPoint">
+                        <visibility>
+                            <notCondition>
+                                <condition implementation="ariba.common.core.condition.HeaderLevelField">
+                                    <parameter inputField="this" name="LineItem"/>
+                                </condition>
+                            </notCondition>
+                        </visibility>
+                        <properties editable="false" groupViewClass="ARWColumnGroupView" rank="15"/>
+                    </groupField>
+                    <groupField name="DeliverTo">
+                        <properties charWidth="30" rank="20" required="true" textLength="25"/>
+                    </groupField>
+                    <groupField name="DeliverToMailStop">
+                        <properties rank="22"/>
+                    </groupField>
+                    <groupField name="DeliverToPhone">
+                        <properties rank="24" required="true"/>
+                    </groupField>
+                    <groupField name="NeedBy">
+                        <visibility>
+                            <orCondition>
+                                <notCondition>
+                                    <condition implementation="ariba.common.core.condition.HeaderLevelField">
+                                        <parameter inputField="this" name="LineItem"/>
+                                    </condition>
+                                </notCondition>
+                                <condition implementation="ariba.purchasing.core.condition.RequisitionHasValidOrders">
+                                    <parameter inputField="LineItemCollection" name="ProcureLineItemCollection"/>
+                                </condition>
+                            </orCondition>
+                        </visibility>
+                    </groupField>
+                </groupClassVariant>
+            </groupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: PurchaseOrderInternalVersion                              -->
+        <!-- ================================================================== -->
+        <!--inGroup name="PurchaseOrderInternalVersion">
+                <inGroupClass name="ariba.purchasing.core.Requisition">
+                    <inGroupClassVariant name="vcsv1">
+                        <groupField name="Requester"/>
+                    </inGroupClassVariant>
+            </inGroupClass>
+            <groupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv1">
+                    <groupField name="TaxUse"/>
+                    <groupField name="TaxQualifier"/>
+                    <groupField name="AccountType"/>
+                    <groupField name="ProjectNumber"/>
+                    <groupField name="DeliverToPhone"/>
+                </inGroupClassVariant>
+            </groupClass>
+            <groupClass name="ariba.procure.core.ProcureLineItem">
+                <inGroupClassVariant name="vcsv1">
+                    <groupField name="TaxApprovalCode"/>
+                    <groupField name="TaxApprovalMessage"/>
+                    <groupField name="TaxCodeOverride"/>
+                    <groupField name="TaxAllFieldsOverride"/>
+                    <groupField name="BuyerCode"/>
+                </inGroupClassVariant>
+            </groupClass>
+            <groupClass name="ariba.procure.core.ProcureLineItemCollection">
+                <inGroupClassVariant name="vcsv1">
+                    <groupField name="TaxOverrideFlag"/>
+                </inGroupClassVariant>
+            </groupClass>
+        </inGroup-->
+
+        <!-- ================================================================== -->
+        <!-- inGroup: LineItemPrintTextDetails                                  -->
+        <!-- ================================================================== -->
+        <inGroup name="LineItemPrintTextDetails">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="Form">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <groupField name="BuyerCode.UniqueName">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties forceRefresh="true" label="@aml.cat.ui/LabelBuyerCode" rank="130"/>
+                    </groupField>
+                    <groupField name="BuyerCode.AnalystContact">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties label="@aml.cat.ui3/LabelDeskCode" rank="135"/>
+                    </groupField>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: RequisitionPrintHTML / RequisitionPrintText               -->
+        <!-- ================================================================== -->
+        <group name="RequisitionPrintHTML">
+            <groupClass name="ariba.purchasing.core.Requisition">
+                <groupClassVariant name="vcsv3">
+                    <groupField name="EmergencyBuy">
+                        <visibility>
+                            <condition implementation="ariba.base.fields.condition.TrueBoolean"/>
+                        </visibility>
+                        <properties rank="150"/>
+                    </groupField>
+                </groupClassVariant>
+            </groupClass>
+        </group>
+        <!-- ================================================================== -->
+        <!-- inGroup: LineItemPrint                                             -->
+        <!-- ================================================================== -->
+        <inGroup name="LineItemPrint">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="Form">
+                        <properties hidden="true"/>
+                    </groupField>
+                    <groupField name="DeliverToPhone">
+                        <properties rank="120"/>
+                    </groupField>
+                    <groupField name="DeliverToMailStop">
+                        <properties rank="140"/>
+                    </groupField>
+                    <groupField name="Description.ReasonCode">
+                        <properties label="@aml.cat.ui/LabelReasonCode" rank="150"/>
+                    </groupField>
+                    <groupField name="Description.NotToExceedPrice">
+                        <visibility>
+                            <notCondition>
+                                <condition implementation="ariba.common.core.condition.NonZeroMoney" testField="Description.Price"/>
+                            </notCondition>
+                        </visibility>
+                        <properties label="@aml.cat.ui1/LabelNotToExceedPrice" rank="155"/>
+                    </groupField>
+                    <groupField name="FOBPoint.Name">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties label="@aml.cat.ui/LabelFOBPoint" rank="165"/>
+                    </groupField>
+                    <groupField name="BuyerCode.UniqueName">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties label="@aml.cat.ui/LabelBuyerCode" rank="210"/>
+                    </groupField>
+                    <groupField name="BuyerCode.UserID.UniqueName">
+                        <visibility>
+                            <condition implementation="ariba.common.core.condition.UserHasPermission">
+                                <parameter name="PermissionName" value="CatPurchasing"/>
+                            </condition>
+                        </visibility>
+                        <properties label="@aml.cat.ui1/LabelBuyerContact" rank="210"/>
+                    </groupField>
+                 </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: AvailableSearchFields                                     -->
+        <!-- ================================================================== -->
+        <inGroup name="AvailableSearchFields">
+            <inGroupClass name="ariba.purchasing.core.Requisition">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="UniqueName">
+                        <properties showByDefaultForSearch="true"/>
+                    </groupField>
+                    <groupField name="Requester">
+                        <properties chooserGroup="CatChooserTable" chooserSearchGroup="CatUserSearch"/>
+                    </groupField>
+                    <groupField name="EmergencyBuy">
+                        <properties editable="true" rank="200" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="EmergencyReason">
+                        <properties allowNoChoice="true" editable="true" rank="210" showByDefaultForSearch="false">
+                                <property name="validChoices">
+                                    <vector>
+                                        <entry value="@cat.aml.picklistvalues3/EmergencyReason1"/>
+                                        <entry value="@cat.aml.picklistvalues3/EmergencyReason2"/>
+                                    </vector>
+                                </property>
+                        </properties>
+                    </groupField>
+                    <groupField name="LineItems.Supplier">
+                        <properties chooserField="Name" chooserGroup="CatChooserTable" showByDefaultForSearch="true"/>
+                    </groupField>
+                    <groupField name="LineItems.AccountType">
+                        <properties editable="true" nameTableClass="config.java.nametable.CatAccountTypeSearchNameTable" rank="220" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.DerivedAccountDistribution">
+                        <properties editable="true" rank="230" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.BuyerCode">
+                        <properties editable="true" rank="270" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.ShipTo">
+                        <properties chooserField="UniqueName" chooserGroup="CatChooserTable" editable="true" includesUserObjects="true" nameTableClass="config.java.nametable.vcsv3.CatEZOShipToSearchNameTable" rank="275" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.FOBPoint">
+                        <properties editable="true" rank="280" showByDefaultForSearch="false"/>
+                    </groupField>
+                    <groupField name="LineItems.ProjectNumber">
+                        <properties editable="true" rank="285" showByDefaultForSearch="false"/>
+                    </groupField>              
+                    <groupField name="LineItems.Description.CommonSupplier">
+                        <properties showByDefaultForSearch="false"/>
+                    </groupField>
+               <!-- Start: SpringRelease_RSD 140 (FDD_140_4.2 / TDD_140_2.0) -->
+			   <remove>
+				<groupField name="LineItems.Description.CommonSupplier"/>
+			   </remove>
+              <!-- End: SpringRelease_RSD 140 (FDD_140_4.2 / TDD_140_2.0) -->
+
+                </inGroupClassVariant>
+            </inGroupClass>
+
+            <inGroupClass name="ariba.common.core.SupplierLocation">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="UniqueName"/>
+                    <groupField name="Name"/>
+                    <groupField name="Phone"/>
+                    <groupField name="PreferredOrderingMethod"/>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: ObjectDuplicate                                           -->
+        <!-- ================================================================== -->
+          <inGroup name="ObjectDuplicate">
+            <inGroupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="AccountType"/>
+                    <groupField name="ProjectNumber"/>
+                    <groupField name="BuyerCode"/>
+                    <groupField name="FOBPoint"/>
+                    <groupField name="DeliverToMailStop"/>
+                    <groupField name="DeliverToPhone"/>
+                    <groupField name="DerivedAccountDistribution"/>
+                    <groupField name="PaymentTerms"/>
+                </inGroupClassVariant>
+            </inGroupClass>
+        </inGroup>
+        <!-- ================================================================== -->
+        <!-- inGroup: ObjectDefaulting                                          -->
+        <!-- ================================================================== -->
+        <inGroup name="ObjectDefaulting">
+            <groupClass name="ariba.purchasing.core.ReqLineItem">
+                <inGroupClassVariant name="vcsv3">
+                    <groupField name="DeliverToPhone"/>
+                    <groupField name="DeliverToMailStop"/>
+                </inGroupClassVariant>
+            </groupClass>
+        </inGroup>
+    </inModule>
+</extension>

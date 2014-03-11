@@ -1,0 +1,50 @@
+<style type="text/css">
+<!--
+    #header {
+        background-color:#D6D6E5;
+        background-position: right top;
+        background-repeat:no-repeat;
+        border-top:1px solid #B3B3CC;
+        border-bottom:1px solid #B3B3CC;
+        margin:0px; padding-left:20px; padding-right:12px; padding-top:8px; padding-bottom:8px
+    }
+
+    #content {
+        background-color:#FFFFFF;
+        padding:25px 50px 35px 50px;
+    }
+
+    #webjumper {
+        background-color:#E5E5EE;
+        padding:6px 12px 8px 50px;
+        margin:0px;
+    }
+
+    .subject {
+        color:#000000;
+        font:bold 8pt Verdana,Arial, Helvetica,sans-serif;
+    }
+
+    .subhead {
+        background-color:#E5E5EE;
+        padding:2px 3px 2px 3px;
+        margin-bottom:10px;
+    }
+-->
+</style>
+<div id="header">
+    <span class="subject">Event has been published.</span>
+</div>
+
+<div id="content">
+    <span class="subhead"><b>Title</b></span>
+    <EmailFormField name="Title"/>
+    <br>
+    <span class="subhead"><b>Description</b></span>
+    <br>
+    <EmailFormField name="Description"/>
+</div>
+
+<div id="webjumper">
+    <EmailFormField name="@Webjumper" label="View Details"/>
+</div>

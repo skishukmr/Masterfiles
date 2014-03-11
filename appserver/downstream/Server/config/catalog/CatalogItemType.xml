@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TypeDefinition SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/Catalog.dtd">
+<TypeDefinition>
+<TypeProvider name="System">
+    <OrganizationID>
+      <Credential domain="NETWORKID"><Identity>2</Identity></Credential>
+    </OrganizationID>
+</TypeProvider>
+
+<Comments>Ariba CatalogItem type definition 1.0, void where prohibited</Comments>
+
+
+<Type name="CatalogItem" extends="System:CatalogItemInternal">
+   <Name xml:lang="en-US">Catalog Item</Name>
+   <Name xml:lang="fr">Article de Catalogue</Name>
+   <Name xml:lang="de">Katalogeinzelteil</Name>
+   <Description xml:lang="en-US">Type describing Supplemental attributes of any catalog item data</Description>
+
+    <TypeAttribute name="HazardousMaterials"
+                   type="Id">
+        <Name xml:lang="en-US">Hazardous Materials</Name>
+    </TypeAttribute>
+</Type>
+</TypeDefinition>

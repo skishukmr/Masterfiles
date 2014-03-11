@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Index SYSTEM "@@getSystemID@@">
+<Index>
+    <!-- try -->
+    <!-- for SupplierPartIds -->
+    <SupplierID domain="@@getSupplierIDDomain@@">@@getSupplierID@@</SupplierID>
+    <!-- end for -->
+    <!-- end try -->
+    <Comments>Catalog coming through programmatic Load API</Comments>
+    <!-- try -->
+    <!-- for CatalogItems -->
+    <IndexItem>
+    <!-- if isPunchout -->
+    <IndexItemPunchout>
+      <PunchoutDetail>
+        <!-- if !hasShortName -->
+        <Description xml:lang="@@getLocale@@">@@getDescription@@</Description>
+        <!-- end if -->
+        <!-- if hasShortName -->
+        <Description xml:lang="@@getLocale@@"><ShortName>@@getShortName@@</ShortName>@@getDescription@@</Description>
+        <!-- end if -->
+        <!-- if hasURL --> 
+        <URL>@@getURL@@</URL>
+        <!-- end if -->
+        <!-- try -->
+        <!-- for ClassificationCodes -->
+          <Classification domain="@@getClassificationCodeDomain@@">@@getClassificationCodeValue@@</Classification>
+        <!-- end for -->
+        <!-- end try -->
+      </PunchoutDetail>
+    </IndexItemPunchout>
+    <!-- end if -->
+    <!-- if isDelete -->
+    <IndexItemDelete>
+      <ItemID>
+        <!-- try -->
+        <SupplierPartID>@@getSupplierPartId@@</SupplierPartID>
+        <!-- end try -->
+        <!-- if hasSupplierAuxID -->
+        <SupplierPartAuxiliaryID>@@getSupplierPartAuxiliaryId@@</SupplierPartAuxiliaryID>
+        <!-- end if -->
+      </ItemID>
+    </IndexItemDelete>
+    <!-- end if -->
+    <!-- if !isPunchout -->
+    <IndexItemAdd>
+      <ItemID>
+        <!-- try -->
+        <SupplierPartID>@@getSupplierPartId@@</SupplierPartID>
+        <!-- end try -->
+        <!-- if hasSupplierAuxID -->
+        <SupplierPartAuxiliaryID>@@getSupplierPartAuxiliaryId@@</SupplierPartAuxiliaryID>
+        <!-- end if -->
+      </ItemID>
+      <ItemDetail>
+        <!-- if hasPrice --> 
+        <!-- try -->
+        <UnitPrice>
+          <Money currency="@@getCurrencyDomain@@">@@getCurrencyValue@@</Money>
+        </UnitPrice>
+        <!-- end try -->
+        <!-- end if -->
+        <!-- if !hasPrice --> 
+        <UnitPrice>
+          <Money currency=""></Money>
+        </UnitPrice>
+        <!-- end if -->
+        <!-- if !hasShortName -->
+        <Description xml:lang="@@getLocale@@">@@getDescription@@</Description>
+        <!-- end if -->
+        <!-- if hasShortName -->
+        <Description xml:lang="@@getLocale@@"><ShortName>@@getShortName@@</ShortName>@@getDescription@@</Description>
+        <!-- end if -->
+        <!-- NB: Domain is UN/CEFACT -->
+        <UnitOfMeasure>
+        <!-- try -->
+            @@getUnitOfMeasure@@
+        <!-- end try -->
+        </UnitOfMeasure>
+        <!-- try -->
+        <!-- for ClassificationCodes -->
+        <Classification domain="@@getClassificationCodeDomain@@">@@getClassificationCodeValue@@</Classification>
+        <!-- end for -->
+        <!-- end try -->
+        <!-- if hasManufacturerPartID --> 
+        <ManufacturerPartID>@@getManufacturerPartID@@</ManufacturerPartID>
+        <!-- end if -->
+        <!-- if hasManufacturerName --> 
+        <ManufacturerName>@@getManufacturerName@@</ManufacturerName>
+        <!-- end if -->
+        <!-- if hasURL --> 
+        <URL>@@getURL@@</URL>
+        <!-- end if -->
+        <!-- if hasExtrinsics --> 
+        <!-- for Extrinsics -->
+          <Extrinsic name="@@getExtrinsicName@@">@@getExtrinsicValue@@</Extrinsic>
+        <!-- end for -->
+        <!-- end if -->
+      </ItemDetail>
+      <IndexItemDetail>
+        <LeadTime>
+        <!-- try -->
+            @@getLeadTime@@
+        <!-- end try -->
+        </LeadTime>
+        <!-- if hasExpirationDate -->
+        <ExpirationDate>@@getExpirationDate@@</ExpirationDate>
+        <!-- end if -->
+        <!-- if hasEffectiveDate -->
+        <EffectiveDate>@@getEffectiveDate@@</EffectiveDate>
+        <!-- end if -->
+        <!-- if isParametric -->
+        <SearchGroupData>
+         <Name xml:lang="en">@@getParametricTypeName@@</Name>
+        <!-- end if -->
+        <!-- if hasParametrics -->
+        <!-- for Parametrics -->        
+            <SearchDataElement name="@@getParametricName@@" value="@@getParametricValue@@"></SearchDataElement>
+        <!-- end for -->
+        <!-- end if -->
+        <!-- if isParametric -->
+        </SearchGroupData>
+        <!-- end if -->
+        <!-- if hasTerritories -->
+        <!-- for Territories -->
+        <TerritoryAvailable>@@getTerritory@@</TerritoryAvailable>
+        <!-- end for -->
+        <!-- end if -->
+      </IndexItemDetail>
+    </IndexItemAdd>
+    <!-- end if -->
+    </IndexItem>
+
+    <!-- end for -->
+    <!-- end try -->
+</Index>

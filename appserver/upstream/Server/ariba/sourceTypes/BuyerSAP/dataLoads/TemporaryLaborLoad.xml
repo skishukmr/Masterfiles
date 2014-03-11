@@ -1,0 +1,62 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerBaseTemporaryLaborPO">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING GeneralLedger.CompanyCode"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <aqlMapping selectField="GeneralLedger.UniqueName"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerTemporaryLaborPO">
+    <inLoadStages>
+        <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING GeneralLedger.CompanyCode"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="CostCenter.CostCenterId">
+            <aqlMapping selectField="CostCenter.UniqueName"/>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <aqlMapping selectField="GeneralLedger.UniqueName"/>
+        </field>
+        <field name="Account.CompanyCode">
+            <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+</allDataLoads>

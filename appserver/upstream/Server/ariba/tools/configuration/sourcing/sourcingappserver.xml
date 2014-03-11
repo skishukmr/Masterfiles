@@ -1,0 +1,40 @@
+<config>
+    <manager name="appserver" class="ariba.config.appserver.AppserverConfigManager">
+        <agent name="sourcingappserver" class="ariba.config.appserver.AppserverAgent" id="0">
+            <field name="ariba.product.name">
+                <value>sourcing</value>
+                <properties rank="10" charWidth="20" label="@ariba.configui.sourcing/Sourcing"/>
+                <inGroup name="SelectProductsGroup"/>
+            </field>
+            <field name="application.name">
+                <value>Sourcing</value>
+            </field>
+            <field name="server1.name">
+                <value>sourcingserver1</value>
+                <properties rank="10" charWidth="20" label="@ariba.configui.sourcing/Server1"  zone="Left"/>
+                <inGroup name="ManagedServerGroup"/>
+            </field>
+            <field name="server1.host"/>
+            <field name="server1.node">
+            </field>                
+            <field name="server1.port">
+                <value>8150</value>
+                <validity>
+                    <condition implementation="ariba.base.fields.condition.BoundedInteger">
+                        <parameter name="Min" value="1"/>
+                        <parameter name="Max" value="65536"/>
+                    </condition>
+                </validity>
+                <properties rank="20" charWidth="20" label="@ariba.configui.sourcing/Port1" zone="Right"/>
+                <inGroup name="ManagedServerGroup"/>
+            </field>
+            <field name="server1.initialheap">
+                <value>64</value>
+            </field>
+            <field name="server1.maxheap">
+                <value>128</value>
+            </field>
+        </agent>
+    </manager>
+</config>
+

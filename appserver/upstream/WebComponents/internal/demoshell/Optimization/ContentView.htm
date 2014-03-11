@@ -1,0 +1,17 @@
+<w:ModalPageWrapper title="Select Items" hasForm="$true">
+
+    <w:HintMessage showTopLine="$true">
+        Use the left panel to define item groups and constraints
+    </w:HintMessage>
+
+    <t:DataTable csvPath="Content.csv" item="$item" children="$item.children"
+                  enableScrolling="$true" multiSelect="$true" expandAll="$true"
+                  title="Select Content">
+        <t:Column key="Title">\
+            <w:OutlineControl title="$item.Title"/>
+        </t:Column>
+
+        <t:Column key="Amount"/>
+
+    </t:DataTable>
+</w:ModalPageWrapper>

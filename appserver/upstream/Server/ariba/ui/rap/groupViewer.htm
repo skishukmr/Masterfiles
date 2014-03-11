@@ -1,0 +1,57 @@
+<html>
+<head>
+<title>Playback Viewer</title>
+<script language="javascript">
+    function setLog ()
+    {
+    	var p = document.getElementById('writeroot')
+        var xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        xmlHttp.open('GET', './log.txt', false);
+        xmlHttp.send(null);
+        var text = xmlHttp.responseText;
+        if (text.indexOf('*End*') == -1) {
+            p.innerHTML = text;
+            if (text.indexOf('Summary') == -1) {
+                setTimeout("setLog()",  1000);
+            }
+        }
+        else {
+            setTimeout("setLog()",  1000);
+        }
+    }
+
+    function go (name)
+    {
+        var internal = 'internal';
+        var url = document.URL.substring(0, document.URL.indexOf(internal));
+        url +=  name + '/playback/viewer.htm';
+        w = window.open(url, 'viewer2', 'top=60,left=60,height=600,width=800,resizable=yes,status=no,toolbar=no,menubar=no,location=no');
+        w.focus();
+    }
+</script>
+<head>
+<body  style="background-color:#CCCCDD">
+   <style>
+        .passed {
+            font:bold 11px Verdana, Arial, Helvetica, sans-serif;
+            color:green;
+        }
+        .failed {
+            font:bold 11px Verdana, Arial, Helvetica, sans-serif;
+        }
+        A:link, A:visited {
+            font:normal 11px Verdana, Arial, Helvetica, sans-serif;
+            color:#333366;
+        }
+        .text {
+            font:normal 11px Verdana, Arial, Helvetica, sans-serif;
+            color:#333366;
+        }
+    </style>
+<P ID="writeroot">
+</P>
+<script>
+    setLog();
+</script>
+</body>
+</html>

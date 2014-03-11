@@ -1,0 +1,25 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <inDataLoad name="BuyerPOLineItem" version="8.2">
+        <fieldMappings>
+            <deleteField name="CostCenter.CostCenterId"/>
+            <deleteField name="CostCenter.CompanyCode"/>
+            <deleteField name="Account.AccountId"/>
+            <deleteField name="Account.CompanyCode"/>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="GeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+</allDataLoads>

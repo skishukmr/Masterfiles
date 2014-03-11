@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "@@getSystemParameter(System.Procure.AribaNetwork.ANDTDLocator)@@/Private.dtd">
+<cXML payloadID="@@getPayloadID@@" timestamp="@@getFormattedDate@@" xml:lang="@@getLocale@@">
+    <Response>
+        <Status code="@@getResponseCode@@" text="@@getResponseText@@">
+        <!-- try -->
+        @@getResponseMessage@@
+        <!-- end try -->
+        </Status>
+    </Response>
+</cXML>

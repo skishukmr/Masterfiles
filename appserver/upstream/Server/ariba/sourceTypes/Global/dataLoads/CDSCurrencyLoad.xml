@@ -1,0 +1,98 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="CDSCurrencyConversionRate">
+    <loadStages>
+        <aqlStage fromClause="ariba.basic.core.CurrencyConversionRate INCLUDE INACTIVE
+                              JOIN ariba.basic.core.Currency as FromCurrency INCLUDE INACTIVE USING CurrencyConversionRate.FromCurrency
+                              JOIN ariba.basic.core.Currency as ToCurrency INCLUDE INACTIVE USING CurrencyConversionRate.ToCurrency"
+                  orderByClause="CurrencyConversionRate.Active"/>
+        <analysisStage destinationName="ariba.basic.core.CurrencyConversionRate"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="Rate">
+            <aqlMapping selectField="Rate"/>
+        </field>
+        <field name="FromCurrency.UniqueName">
+            <aqlMapping selectField="FromCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ToCurrency.UniqueName">
+            <aqlMapping selectField="ToCurrency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Date">
+            <aqlMapping selectField="&quot;Date&quot;"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- Old class names used in Buyer 8.0 and 7.1 -->
+<inDataLoad name="CDSCurrencyConversionRate" version="7.1,8.0">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.common.core.CurrencyConversionRate INCLUDE INACTIVE
+                                       JOIN ariba.common.core.Currency as FromCurrency INCLUDE INACTIVE USING CurrencyConversionRate.FromCurrency
+                                       JOIN ariba.common.core.Currency as ToCurrency INCLUDE INACTIVE USING CurrencyConversionRate.ToCurrency"/>
+    </inLoadStages>
+</inDataLoad>
+
+<!-- This load is provided as a sample, but should be used carefully.
+     We prefer that currencies be loaded based on the standard CSV file
+     that we ship with Analysis (which is the same as in Buyer/ACM).
+     But if customer has chosen a different currency coding system, they
+     should provide the currency mappings (especially if they are going to
+     pull in data from multiple Buyer/ACM systems).
+     Othewise, they can choose to directly load the currencies from Buyer/ACM
+     using this data load. -->
+<dataLoad name="CDSCurrency">
+    <loadStages>
+        <aqlStage fromClause="ariba.basic.core.Currency INCLUDE INACTIVE
+                              LEFT OUTER JOIN ariba.basic.core.CurrencyGroup INCLUDE INACTIVE USING Currency.Group"
+                  orderByClause="Currency.Active"/>
+        <analysisStage destinationName="ariba.basic.core.Currency"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="UniqueName">
+            <aqlMapping selectField="Currency.UniqueName"/>
+        </field>
+        <field name="Name">
+            <aqlMapping selectField="Currency.Name"/>
+        </field>
+        <field name="PrecisionString">
+            <aqlMapping selectField="Currency.PrecisionString"/>
+        </field>
+        <field name="Prefix">
+            <aqlMapping selectField="Currency.Prefix"/>
+        </field>
+        <field name="Suffix">
+            <aqlMapping selectField="Currency.Suffix"/>
+        </field>
+        <field name="Group">
+            <aqlMapping selectField="CurrencyGroup.UniqueName"/>
+        </field>
+        <field name="EndDate">
+            <aqlMapping selectField="Currency.EndDate"/>
+        </field>
+        <field name="GroupEntryDate">
+            <aqlMapping selectField="Currency.GroupEntryDate"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- Old class names used in Buyer 8.0 and 7.1 -->
+<inDataLoad name="CDSCurrency" version="7.1,8.0">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.common.core.Currency INCLUDE INACTIVE
+                                       LEFT OUTER JOIN ariba.common.core.CurrencyGroup INCLUDE INACTIVE USING Currency.Group"/>
+    </inLoadStages>
+</inDataLoad>
+
+</allDataLoads>

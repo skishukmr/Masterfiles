@@ -1,0 +1,1315 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+    <dataLoad name="ScorecardTotalKPILoad">
+        <loadStages>
+            <csvStage/>
+            <analysisStage destinationName="ariba.analytics.dimension.ScorecardKPI"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="KPIId">
+                <csvMapping selectField="Id"/><!-- KI_000000 -->
+            </field>
+            <field name="KPIName">
+                <csvMapping selectField="Name"/><!-- Totals -->
+            </field>
+            <field name="KPIDescription">
+                <csvMapping selectField="Name"/><!-- Totals -->
+            </field>
+            <field name="SectionId">
+                <csvMapping selectField="Id"/><!-- KI_000000 -->
+            </field>
+            <field name="LevelId">
+                <csvMapping selectField="Level"/><!-- 1 -->
+            </field>
+            <field name="OrderingNumber">
+                <csvMapping selectField="Ordering"/><!-- 0 -->
+            </field>
+            <field name="SectionName">
+                <csvMapping selectField="Name"/><!-- Totals -->
+            </field>
+            <field name="SectionDescription">
+                <csvMapping selectField="Name"/><!-- Totals -->
+            </field>
+            <field name="TotalSectionName">
+                <csvMapping selectField="Name"/><!-- Totals -->
+            </field>
+            <field name="TotalSectionId"><!-- KI_000000 -->
+                <csvMapping selectField="Id"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <dataLoad name="ScorecardKPILoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.RFXItem AS KPI SUBCLASS NONE,
+                                  ariba.sourcing.content.RFXItem AS KPISection SUBCLASS NONE,
+                                  ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  JOIN ariba.sourcing.content.SPMProject AS SPM USING Scorecard.ParentWorkspace"
+               whereClause="(KPI.ItemType = 7
+                             OR (KPI.ItemType = 2
+                              AND KPI.ItemSubType = 26))
+                            AND KPISection.ItemId = KPI.ParentItemId
+                            AND KPI.NextVersion IS NULL
+                            AND KPISection.NextVersion IS NULL
+                            AND KPI.ExternalSystemCorrelationId NOT LIKE '%_v%'
+                            AND KPISection.ExternalSystemCorrelationId NOT LIKE '%_v%'
+                            AND KPI.RootItemId = Scorecard.Content.ItemId
+                            AND Scorecard.NextVersion IS NULL"
+                incrementalClause="KPI.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   KPI.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   KPISection.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   KPISection.TimeUpdated &lt;= :IncrementalEndDate"
+                orderByClause="9 DESC"
+                distinctFlag="true"/>
+            <!-- There are two bugs filed in order to solve the above issue with the index orderByClause above
+                 1. a bug against cindy to change the order by clause above to the interface stage below
+                 2. a bug against platform to make the above orderby work with the KPIPriority field alias -->
+<!--            <interfaceSqlStage fromClause=":InterfaceTable"
+                           orderByClause=":InterfaceTable.KPIPriority DESC"/>-->
+            <analysisStage destinationName="ariba.analytics.dimension.ScorecardKPI"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="KPIId">
+                <aqlMapping selectField="KPI.ExternalSystemCorrelationId"/>
+            </field>
+            <field name="TempKPIName">
+                <aqlMapping selectField="KPI.Title"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="KPIDescription">
+                <aqlMapping selectField="KPI.Description"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.FilterHtmlTag"/>
+                </analysisMapping>
+            </field>
+            <field name="SectionId">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN KPI.ExternalSystemCorrelationId ELSE KPISection.ExternalSystemCorrelationId END"/>
+            </field>
+            <field name="KPIName">
+                 <analysisMapping>
+                     <mapValue implementation="ariba.analytics.mapValue.FieldConcat">
+                         <parameter name="Separator" value="_"/>
+                         <parameter name="Fields">
+                             <vector>
+                                 <entry value="TempKPIName"/>
+                                 <entry value="KPIId"/>
+                             </vector>
+                         </parameter>
+                     </mapValue>
+                 </analysisMapping>
+            </field>
+            <field name="LevelId">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN 2 ELSE 3 END"/>
+            </field>
+            <field name="OrderingNumber">
+                <aqlMapping selectField="KPI.Numbering"/>
+            </field>
+            <field name="TempSectionName">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN KPI.Title ELSE KPISection.Title END"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="SectionName">
+                <analysisMapping>
+                     <mapValue implementation="ariba.analytics.mapValue.FieldConcat">
+                         <parameter name="Separator" value="_"/>
+                         <parameter name="Fields">
+                             <vector>
+                                 <entry value="TempSectionName"/>
+                                 <entry value="SectionId"/>
+                             </vector>
+                         </parameter>
+                     </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SectionDescription">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN KPI.Description ELSE KPISection.Description END"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.FilterHtmlTag"/>
+                </analysisMapping>
+            </field>
+            <field name="KPIPriority">
+                <!-- templates projects have a higher priority than normal projects -->
+                <aqlMapping selectField="CASE SPM.ProjectAddin.TemplateProjectAddin WHEN NULL THEN 2 ELSE 1 END AS KPIPriority"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="TotalSectionName">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Totals"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TotalSectionId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="KI_000000"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <!-- This load is being unioned with the ScorecardKPILoad so they run at the same time -->
+    <dataLoad name="LibraryKPILoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.RFXItem AS KPI SUBCLASS NONE,
+                                  ariba.sourcing.content.RFXItem AS KPISection SUBCLASS NONE,
+                                  ariba.sourcing.rfx.RFXContentDocument AS Document"
+               whereClause="(KPI.ItemType = 7
+                            OR (KPI.ItemType = 2
+                              AND KPI.ItemSubType = 26))
+                            AND KPISection.ItemId = KPI.ParentItemId
+                            AND KPI.NextVersion IS NULL
+                            AND KPISection.NextVersion IS NULL
+                            AND KPI.ExternalSystemCorrelationId NOT LIKE '%_v%'
+                            AND KPISection.ExternalSystemCorrelationId NOT LIKE '%_v%'
+                            AND KPI.RootItemId = Document.Content.ItemId
+                            AND Document.NextVersion IS NULL"
+                incrementalClause="KPI.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   KPI.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   KPISection.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   KPISection.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.ScorecardKPI"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="KPIId">
+                <aqlMapping selectField="KPI.ExternalSystemCorrelationId"/>
+            </field>
+            <field name="TempKPIName">
+                <aqlMapping selectField="KPI.Title"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="KPIName">
+                <analysisMapping>
+                     <mapValue implementation="ariba.analytics.mapValue.FieldConcat">
+                         <parameter name="Separator" value="_"/>
+                         <parameter name="Fields">
+                             <vector>
+                                 <entry value="TempKPIName"/>
+                                 <entry value="KPIId"/>
+                             </vector>
+                         </parameter>
+                     </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="KPIDescription">
+                <aqlMapping selectField="KPI.Description"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.FilterHtmlTag"/>
+                </analysisMapping>
+            </field>
+            <field name="SectionId">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN KPI.ExternalSystemCorrelationId ELSE KPISection.ExternalSystemCorrelationId END"/>
+            </field>
+            <field name="LevelId">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN 2 ELSE 3 END"/>
+            </field>
+            <field name="OrderingNumber">
+                <aqlMapping selectField="KPI.Numbering"/>
+            </field>
+            <field name="TempSectionName">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN KPI.Title ELSE KPISection.Title END"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="SectionName">
+                <analysisMapping>
+                     <mapValue implementation="ariba.analytics.mapValue.FieldConcat">
+                         <parameter name="Separator" value="_"/>
+                         <parameter name="Fields">
+                             <vector>
+                                 <entry value="TempSectionName"/>
+                                 <entry value="SectionId"/>
+                             </vector>
+                         </parameter>
+                     </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SectionDescription">
+                <aqlMapping selectField="CASE KPISection.ItemType WHEN 1 THEN KPI.Description ELSE KPISection.Description END"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.FilterHtmlTag"/>
+                </analysisMapping>
+            </field>
+            <field name="KPIPriority">
+                <!-- the library has the highest priority -->
+                <aqlMapping selectField="0 AS KPIPriority"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="TotalSectionName">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="Totals"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TotalSectionId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="KI_000000"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <dataLoad name="ScorecardDimLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  LEFT OUTER JOIN ariba.sourcing.content.scorecard.Scorecard AS Stationary using Scorecard.ScheduledFrom
+                                  LEFT OUTER JOIN ariba.sourcing.content.scorecard.Scorecard AS Template using Scorecard.TemplateObject"
+               whereClause="Scorecard.Status='Complete'
+                            AND Scorecard.NextVersion IS NULL
+                            AND Scorecard.ParentWorkspace.ProjectAddin.TemplateProjectAddin IS NULL
+                            AND Stationary.NextVersion IS NULL
+                            AND Template.NextVersion IS NULL"
+                incrementalClause="Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Stationary.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Stationary.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Template.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Template.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Scorecard"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ScorecardId">
+                <aqlMapping selectField="Scorecard.InternalId"/>
+            </field>
+            <field name="VersionNumber">
+                <aqlMapping selectField="Scorecard.DocumentVersion"/>
+            </field>
+            <field name="ScorecardName">
+                <aqlMapping selectField="Scorecard.Title"/>
+            </field>
+            <field name="ScorecardDescription">
+                <aqlMapping selectField="Scorecard.Description"/>
+            </field>
+            <field name="ScorecardStationaryId">
+                <aqlMapping selectField="Stationary.InternalId"/>
+            </field>
+            <field name="StationaryName">
+                <aqlMapping selectField="Stationary.Title"/>
+            </field>
+            <field name="StationaryDescription">
+                <aqlMapping selectField="Stationary.Description"/>
+            </field>
+            <field name="ScorecardTemplateId">
+                <aqlMapping selectField="Template.InternalId"/>
+            </field>
+            <field name="TemplateName">
+                <aqlMapping selectField="Template.Title"/>
+            </field>
+            <field name="TemplateDescription">
+                <aqlMapping selectField="Template.Description"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    <dataLoad name="ScorecardVersionUpdate">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.scorecard.Scorecard AS CurrScorecard INCLUDE INACTIVE,
+                                  ariba.sourcing.content.scorecard.Scorecard AS OldScorecard INCLUDE INACTIVE"
+               whereClause="CurrScorecard.Status='Complete'
+                            AND OldScorecard.Status != 'Draft'
+                            AND CurrScorecard.NextVersion IS NULL
+                            AND CurrScorecard.ParentWorkspace.ProjectAddin.TemplateProjectAddin IS NULL
+                            AND CurrScorecard.DocumentId = OldScorecard.DocumentId"
+                incrementalClause="CurrScorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   CurrScorecard.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Scorecard"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ScorecardId">
+                <aqlMapping selectField="CurrScorecard.InternalId"/>
+            </field>
+            <field name="VersionNumber">
+                <aqlMapping selectField="OldScorecard.DocumentVersion"/>
+            </field>
+            <field name="IsLastVersion">
+                <aqlMapping selectField="CASE OldScorecard.NextVersion WHEN NULL THEN CurrScorecard.Active ELSE FALSE END"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    
+    <dataLoad name="ScorecardFactLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  JOIN ariba.sourcing.content.SPMProject AS SPM USING Scorecard.ParentWorkspace
+                                  JOIN ariba.user.core.User AS Owner INCLUDE INACTIVE USING SPM.Owner
+                                   JOIN ariba.user.core.Organization AS Supplier INCLUDE INACTIVE USING SPM.Supplier,
+                                  ariba.sourcing.content.RFXItem AS KPI SUBCLASS NONE,
+                                  ariba.sourcing.content.RFXItemValue AS KPIValue SUBCLASS NONE,
+                                  ariba.sourcing.content.Alternative AS Slice SUBCLASS NONE,
+                                  ariba.sourcing.content.RFXItemValue AS RespKPIValue SUBCLASS NONE,
+                                  ariba.sourcing.content.Alternative AS RespSlice SUBCLASS NONE
+                                  LEFT OUTER JOIN ariba.user.core.User AS Resp INCLUDE INACTIVE USING RespSlice.SubmitFor
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Department AS RespDept INCLUDE INACTIVE USING Resp.Department
+                                  LEFT OUTER JOIN ariba.user.core.Organization AS RespOrg INCLUDE INACTIVE USING Resp.Organization"
+                whereClause="((KPI.ItemType = 7 OR (KPI.ItemType = 2 AND KPI.ItemSubType = 26))
+                            OR KPI.ItemType = 1)
+                            AND KPI.NextVersion IS NULL
+                            AND KPI.RootItemId = Scorecard.Content.ItemId
+                            AND Scorecard.NextVersion IS NULL
+                            AND Scorecard.Status = 'Complete'
+                            AND SPM.WorkspaceType != 'Template'
+                            AND Slice.SliceType = 0
+                            AND Slice.ContentDocumentReference.DocumentId = Scorecard.DocumentId
+                            AND Slice.ContentDocumentReference.DocumentVersion = Scorecard.DocumentVersion
+                            AND Slice.ContentDocumentReference.DocumentMinorVersion = Scorecard.DocumentMinorVersion
+                            AND KPIValue.NextVersion IS NULL
+                            AND KPIValue.ItemId = KPI.ItemId
+                            AND KPIValue.SliceId = Slice.SliceId
+                            AND KPIValue.SliceIncarnationVersion &lt;= Slice.VersionId
+                            AND KPIValue.SliceExtinctionVersion &gt;= Slice.VersionId
+                            AND (RespSlice.SliceType = 6 OR (RespSlice.SliceType = 0 AND Scorecard.MaxAliasId = 0))
+                            AND RespSlice.ContentDocumentReference.DocumentId = Scorecard.DocumentId
+                            AND RespSlice.ContentDocumentReference.DocumentVersion = Scorecard.DocumentVersion
+                            AND RespSlice.ContentDocumentReference.DocumentMinorVersion = Scorecard.DocumentMinorVersion
+                            AND RespKPIValue.NextVersion IS NULL
+                            AND RespKPIValue.ItemId = KPI.ItemId
+                            AND RespKPIValue.SliceId = RespSlice.SliceId
+                            AND RespKPIValue.SliceIncarnationVersion &lt;= RespSlice.VersionId
+                            AND RespKPIValue.SliceExtinctionVersion &gt;= RespSlice.VersionId"
+                incrementalClause="Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   SPM.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   SPM.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <interfaceSqlStage fromClause=":InterfaceTable"
+                           orderByClause="UPPER(:InterfaceTable.Scorecard_ScorecardId),UPPER(:InterfaceTable.KPI_KPIId)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Scorecard"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Scorecard.ScorecardId">
+                <aqlMapping selectField="Scorecard.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Scorecard.VersionNumber">
+                <aqlMapping selectField="Scorecard.DocumentVersion"/>
+                 <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+            <field name="KPI.KPIId">
+                <aqlMapping selectField="CASE KPI.ItemType WHEN 1 THEN 'KI_000000' ELSE KPI.ExternalSystemCorrelationId END"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.SubString">
+                        <parameter name="EndString" value="_v"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="KPIOrderNumber">
+                <aqlMapping selectField="KPI.Numbering"/>
+            </field>
+            <field name="Status">
+                <aqlMapping selectField="Scorecard.Status"/>
+            </field>
+            <field name="PeriodFrom">
+                <aqlMapping selectField="Scorecard.FromDate"/>
+            </field>
+            <field name="PeriodTo">
+                <aqlMapping selectField="Scorecard.ToDate"/>
+            </field>
+            <field name="Project.ProjectId">
+                <aqlMapping selectField="SPM.InternalId"/>
+            </field>
+            <field name="Supplier.SupplierId">
+                <aqlMapping selectField="Supplier.SystemID"/>
+            </field>
+            <field name="Supplier.SupplierLocationId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Owner.UserId">
+                <aqlMapping selectField="Owner.UniqueName"/>
+            </field>
+            <field name="Owner.PasswordAdapter">
+                <aqlMapping selectField="Owner.PasswordAdapter"/>
+            </field>
+            <field name="Weight">
+                <aqlMapping selectField="KPI.Weight"/>
+            </field>
+            <field name="Target">
+                <aqlMapping selectField="KPI.TargetScore"/>
+            </field>
+            <field name="Value">
+                <aqlMapping selectField="CASE KPIValue.RQABIGDEC WHEN NULL THEN
+                                           CASE KPIValue.RQAMONEY WHEN NULL THEN
+                                             CASE KPIValue.RQAINTEGER WHEN NULL THEN
+                                               KPIValue.RQAQTY.Amount
+                                             ELSE KPIValue.RQAINTEGER END
+                                           ELSE KPIValue.RQAMONEY.Amount END
+                                         ELSE KPIValue.RQABIGDEC END"/>
+            </field>
+            <field name="Grade">
+                <aqlMapping selectField="KPIValue.ScoreValue"/>
+            </field>
+            <field name="GradeCount">
+                <aqlMapping selectField="CASE KPIValue.ScoreValue WHEN NULL THEN 0 ELSE 1 END"/>
+            </field>
+            <field name="SystemGrade">
+                <aqlMapping selectField="KPIValue.SystemScoreValue"/>
+            </field>
+            <field name="RespondentUser.UserId">
+                <aqlMapping selectField="CASE RespSlice.SliceType WHEN 6 THEN Resp.UniqueName ELSE Owner.UniqueName END"/>
+            </field>
+            <field name="RespondentUser.PasswordAdapter">
+                <aqlMapping selectField="CASE RespSlice.SliceType WHEN 6 THEN Resp.PasswordAdapter ELSE Owner.PasswordAdapter END"/>
+            </field>
+            <field name="IsInternalRespondent">
+                <aqlMapping selectField="CASE RespSlice.SliceType WHEN 6 THEN
+                                           CASE (
+                                             CASE RespOrg.IsSupplier WHEN true
+                                             THEN 1 ELSE 0 END +
+                                             CASE RespOrg.IsCustomer WHEN true
+                                             THEN 1 ELSE 0 END) WHEN 0
+                                           THEN true ELSE false END
+                                         ELSE true END"/>
+            </field>
+            <field name="RespondentDepartment">
+                <aqlMapping selectField="CASE RespSlice.SliceType WHEN 6 THEN RespDept.DepartmentID ELSE NULL END"/>
+            </field>
+            <field name="RespondentValue">
+                <aqlMapping selectField="CASE RespKPIValue.RQABIGDEC WHEN NULL THEN
+                                           CASE RespKPIValue.RQAMONEY WHEN NULL THEN
+                                             CASE RespKPIValue.RQAINTEGER WHEN NULL THEN
+                                               RespKPIValue.RQAQTY.Amount
+                                             ELSE RespKPIValue.RQAINTEGER END
+                                           ELSE RespKPIValue.RQAMONEY.Amount END
+                                         ELSE RespKPIValue.RQABIGDEC END"/>
+            </field>
+            <field name="RespondentGrade">
+                <aqlMapping selectField="RespKPIValue.ScoreValue"/>
+            </field>
+            <field name="RespGradeCount">
+                <aqlMapping selectField="CASE RespKPIValue.ScoreValue WHEN NULL THEN 0 ELSE 1 END"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="ScorecardCommodityLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  JOIN ariba.sourcing.content.SPMProject AS SPM USING Scorecard.ParentWorkspace
+                                  LEFT OUTER JOIN ariba.basic.core.CommodityCode AS CCode USING Scorecard.Commodity"
+               whereClause="Scorecard.NextVersion IS NULL
+                            AND Scorecard.Status = 'Complete'
+                            AND SPM.WorkspaceType != 'Template'"
+                incrementalClause="Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   SPM.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   SPM.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <interfaceSqlStage
+                fromClause=":InterfaceTable JOIN DIM_SCORECARD DS ON :InterfaceTable.Scorecard_ScorecardId = DS.SCORECARD_ID
+                                                 AND :InterfaceTable.Scorecard_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SCORECARD FSC ON FSC.SCORECARD = DS.ROOTID
+                                            JOIN DIM_SCORECARD_KPI DSK ON FSC.KPI = DSK.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSC.RESPONDENT_USER = DUD.ROOTID"
+                           orderByClause="UPPER(:InterfaceTable.Scorecard_ScorecardId),UPPER(DSK.KPI_ID)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Scorecard"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Scorecard.ScorecardId">
+                <aqlMapping selectField="Scorecard.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Scorecard.VersionNumber">
+                <aqlMapping selectField="Scorecard.DocumentVersion"/>
+                <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+            <field name="KPI.KPIId">
+                <interfaceSqlMapping selectColumn="DSK.KPI_ID"/>
+            </field>
+            <field name="RespondentUser.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="RespondentUser.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+             <field name="Commodity.CommodityId">
+                <aqlMapping selectField="CCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="ScorecardDepartmentLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  JOIN ariba.sourcing.content.SPMProject AS SPM USING Scorecard.ParentWorkspace
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Department AS Dept USING SPM.Client"
+               whereClause="Scorecard.NextVersion IS NULL
+                            AND Scorecard.Status = 'Complete'
+                            AND SPM.WorkspaceType != 'Template'"
+                incrementalClause="Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   SPM.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   SPM.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <interfaceSqlStage
+                fromClause=":InterfaceTable JOIN DIM_SCORECARD DS ON :InterfaceTable.Scorecard_ScorecardId = DS.SCORECARD_ID
+                                                 AND :InterfaceTable.Scorecard_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SCORECARD FSC ON FSC.SCORECARD = DS.ROOTID
+                                            JOIN DIM_SCORECARD_KPI DSK ON FSC.KPI = DSK.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSC.RESPONDENT_USER = DUD.ROOTID"
+                           orderByClause="UPPER(:InterfaceTable.Scorecard_ScorecardId),UPPER(DSK.KPI_ID)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Scorecard"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Scorecard.ScorecardId">
+                <aqlMapping selectField="Scorecard.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Scorecard.VersionNumber">
+                <aqlMapping selectField="Scorecard.DocumentVersion"/>
+                <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+            <field name="KPI.KPIId">
+                <interfaceSqlMapping selectColumn="DSK.KPI_ID"/>
+            </field>
+            <field name="RespondentUser.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="RespondentUser.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+            <field name="Department.OrganizationId">
+                <aqlMapping selectField="Dept.DepartmentID"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="ScorecardRegionLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  JOIN ariba.sourcing.content.SPMProject AS SPM USING Scorecard.ParentWorkspace
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Region AS Region USING SPM.Region"
+               whereClause="Scorecard.NextVersion IS NULL
+                            AND Scorecard.Status = 'Complete'
+                            AND SPM.WorkspaceType != 'Template'"
+                incrementalClause="Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   SPM.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   SPM.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <interfaceSqlStage fromClause=":InterfaceTable JOIN DIM_SCORECARD DS ON :InterfaceTable.Scorecard_ScorecardId = DS.SCORECARD_ID
+                                                 AND :InterfaceTable.Scorecard_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SCORECARD FSC ON FSC.SCORECARD = DS.ROOTID
+                                            JOIN DIM_SCORECARD_KPI DSK ON FSC.KPI = DSK.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSC.RESPONDENT_USER = DUD.ROOTID"
+                           orderByClause="UPPER(:InterfaceTable.Scorecard_ScorecardId),UPPER(DSK.KPI_ID)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Scorecard"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Scorecard.ScorecardId">
+                <aqlMapping selectField="Scorecard.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Scorecard.VersionNumber">
+                <aqlMapping selectField="Scorecard.DocumentVersion"/>
+                <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+            <field name="KPI.KPIId">
+                <interfaceSqlMapping selectColumn="DSK.KPI_ID"/>
+            </field>
+            <field name="RespondentUser.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="RespondentUser.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+            <field name="Region.RegionId">
+                <aqlMapping selectField="Region.Region"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    
+    <dataLoad name="SurveyDimLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey
+                                  LEFT OUTER JOIN ariba.sourcing.rfx.RFXDocument AS Stationary using Survey.ScheduledFrom
+                                  LEFT OUTER JOIN ariba.sourcing.rfx.RFXDocument AS Template using Survey.TemplateObject"
+               whereClause="Survey.EventType = '5'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.ParentWorkspace.ProjectAddin.TemplateProjectAddin IS NULL
+                            AND Stationary.NextVersion IS NULL
+                            AND Template.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Stationary.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Stationary.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Template.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Template.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Survey"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="SurveyId">
+                <aqlMapping selectField="Survey.InternalId"/>
+            </field>
+            <field name="VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+            </field>
+            <field name="SurveyName">
+                <aqlMapping selectField="Survey.Title"/>
+            </field>
+            <field name="SurveyDescription">
+                <aqlMapping selectField="Survey.Description"/>
+            </field>
+            <field name="SurveyStationaryId">
+                <aqlMapping selectField="Stationary.InternalId"/>
+            </field>
+            <field name="StationaryName">
+                <aqlMapping selectField="Stationary.Title"/>
+            </field>
+            <field name="StationaryDescription">
+                <aqlMapping selectField="Stationary.Description"/>
+            </field>
+            <field name="SurveyTemplateId">
+                <aqlMapping selectField="Template.InternalId"/>
+            </field>
+            <field name="TemplateName">
+                <aqlMapping selectField="Template.Title"/>
+            </field>
+            <field name="TemplateDescription">
+                <aqlMapping selectField="Template.Description"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="SurveyVersionUpdate">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS OldSurvey INCLUDE INACTIVE,
+                                  ariba.sourcing.rfx.RFXDocument AS CurrSurvey INCLUDE INACTIVE"
+               whereClause="CurrSurvey.EventType = '5'
+                            AND CurrSurvey.IsAvailableForAnalysis = true
+                            AND OldSurvey.Status != 'Draft'
+                            AND CurrSurvey.NextVersion IS NULL
+                            AND CurrSurvey.ParentWorkspace.ProjectAddin.TemplateProjectAddin IS NULL
+                            AND CurrSurvey.DocumentId = OldSurvey.DocumentId
+                            AND CurrSurvey.Status = 'Complete'"
+                incrementalClause="CurrSurvey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   CurrSurvey.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.Survey"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="SurveyId">
+                <aqlMapping selectField="CurrSurvey.InternalId"
+                        sourceLookupField="InternalId"/>
+            </field>
+            <field name="VersionNumber">
+                <aqlMapping selectField="OldSurvey.DocumentVersion"/>
+            </field>
+            <field name="IsLastVersion">
+                <aqlMapping selectField="CASE OldSurvey.NextVersion WHEN NULL THEN CurrSurvey.Active ELSE FALSE END"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="SurveyQuestionLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE
+                                  JOIN ariba.collaborate.core.Workspace AS WS USING Survey.ParentWorkspace,
+                                  ariba.sourcing.content.RFXItem AS Question SUBCLASS NONE
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXItemDefinition AS QuestionType USING Question.Definition
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXAttributeDefinition AS QuestionDef USING QuestionType.Attributes[0],
+                                  ariba.sourcing.content.RFXItem AS Sect SUBCLASS NONE"
+               whereClause="((Question.ItemType = 3 AND (QuestionDef.Properties = 0 OR (QuestionDef.Properties &amp; 16777216 > 0))) OR Question.ItemType = 2)
+                            AND Question.NextVersion IS NULL
+                            AND Sect.NextVersion IS NULL
+                            AND Sect.ItemId = Question.ParentItemId
+                            AND Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Content.ItemId = Question.RootItemId
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND WS.WorkspaceType != 'Template'
+                            AND Survey.Status = 'Complete'"
+                incrementalClause="Question.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Question.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Sect.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Sect.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.dimension.SurveyQuestion"/>
+        </loadStages>
+        <fieldMappings>
+            <!-- TODO heath/bhaskar compute unique section id for questions in template? -->
+            <field name="QuestionId">
+                <aqlMapping selectField="Question.ItemId"/>
+            </field>
+            <field name="TempQuestionName">
+                <aqlMapping selectField="CASE Question.ItemType WHEN 3 THEN QuestionDef.Name ELSE Question.Title END"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="QuestionName">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.FieldConcat">
+                        <parameter name="Separator" value="_KI_"/>
+                        <parameter name="Fields">
+                            <vector>
+                                <entry value="TempQuestionName"/>
+                                <entry value="QuestionId"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="QuestionDescription">
+                <aqlMapping selectField="CASE Question.ItemType WHEN 3 THEN '' ELSE Question.Description END"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.FilterHtmlTag"/>
+                </analysisMapping>
+            </field>
+            <field name="ParentSectionId">
+                <aqlMapping selectField="CASE Sect.ItemType WHEN 1 THEN Question.ItemId ELSE Sect.ItemId END"/>
+            </field>
+            <field name="LevelId">
+                <aqlMapping selectField="CASE Question.ItemType WHEN 3 Then 3 ELSE CASE Sect.ItemType WHEN 1 THEN 1 ELSE 2 END END"/>
+            </field>
+            <field name="OrderingNumber">
+                <aqlMapping selectField="Question.Numbering"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="SurveySourcingFactLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE
+                                  JOIN ariba.collaborate.core.Workspace AS ParentProject USING Survey.ParentWorkspace
+                                  JOIN ariba.user.core.User AS Owner INCLUDE INACTIVE USING ParentProject.Owner
+                                  JOIN ariba.sourcing.rfx.RFXRuntimeData AS SurveyRuntimeData USING Survey.RuntimeData,
+                                  ariba.sourcing.content.RFXItem AS Question SUBCLASS NONE
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXItemDefinition AS QuestionType USING Question.Definition
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXAttributeDefinition AS QuestionDef USING QuestionType.Attributes[0]
+                                  LEFT OUTER JOIN ariba.sourcing.basic.AttributeValidValues AS ValidValues USING QuestionDef.ValidValues,
+                                  ariba.sourcing.content.RFXItemValue AS QuestionValue SUBCLASS NONE,
+                                  ariba.sourcing.rfx.RFXBid AS TheBid SUBCLASS NONE
+                                  JOIN ariba.user.core.User AS Respondent USING TheBid.SubmitFor
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Department AS Dept USING Respondent.Department"
+               whereClause="((Question.ItemType = 3 AND (QuestionDef.Properties = 0 OR (QuestionDef.Properties &amp; 16777216 > 0))) OR Question.ItemType = 2)
+                            AND Question.NextVersion IS NULL
+                            AND Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND ParentProject.WorkspaceType != 'Template'
+                            AND Question.RootItemId = Survey.Content.ItemId
+                            AND QuestionValue.NextVersion IS NULL
+                            AND QuestionValue.ItemId = Question.ItemId
+                            AND TheBid.AlternativeStatus = 3
+                            AND TheBid.ContentDocumentReference.DocumentId = Survey.DocumentId
+                            AND TheBid.ContentDocumentReference.DocumentVersion = Survey.DocumentVersion
+                            AND TheBid.ContentDocumentReference.DocumentMinorVersion = Survey.DocumentMinorVersion
+                            AND QuestionValue.SliceId = TheBid.SliceId
+                            AND QuestionValue.SliceIncarnationVersion &lt;= TheBid.VersionId
+                            AND QuestionValue.SliceExtinctionVersion &gt;= TheBid.VersionId"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   SurveyRuntimeData.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   SurveyRuntimeData.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   ParentProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   ParentProject.TimeUpdated &lt;= :IncrementalEndDate"
+                orderByClause="Survey.InternalId, Question.ItemId, Respondent.UniqueName"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+            </field>
+            <field name="Question.QuestionId">
+                <aqlMapping selectField="Question.ItemId"/>
+            </field>
+            <field name="QuestionOrderNumber">
+                <aqlMapping selectField="Question.Numbering"/>
+            </field>
+            <field name="Respondent.UserId">
+                <aqlMapping selectField="Respondent.UniqueName"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <aqlMapping selectField="Respondent.PasswordAdapter"/>
+            </field>
+            <field name="IsInternalRespondent">
+                <aqlMapping selectField="CASE (CASE Respondent.Organization.IsSupplier
+                                               WHEN true THEN 1 ELSE 0 END +
+                                               CASE Respondent.Organization.IsCustomer
+                                               WHEN true THEN 1 ELSE 0 END)
+                                         WHEN 0 THEN true ELSE false END"/>
+            </field>
+            <field name="RespondentDepartment.OrganizationId">
+                <aqlMapping selectField="Dept.DepartmentID"/>
+            </field>
+            <field name="SurveyStartDate">
+                <aqlMapping selectField="CASE Survey.TimingRule.RFXInputTimingRule.PlannedPreviewBeginDate
+                                         WHEN NULL THEN SurveyRuntimeData.RFXDerivedTimingRule.RFXLineTimingRules.BiddingStartTime
+                                         ELSE Survey.TimingRule.RFXInputTimingRule.PlannedPreviewBeginDate END"/>
+            </field>
+            <field name="SurveyEndDate">
+                <aqlMapping selectField="SurveyRuntimeData.RFXDerivedTimingRule.RFXLineTimingRules.BiddingEndTime"/>
+            </field>
+            <field name="ReviewEndDate">
+                <aqlMapping selectField="SurveyRuntimeData.RFXDerivedTimingRule.RFXLineTimingRules.BiddingEndTime"/>
+            </field>
+            <field name="Project.ProjectId">
+                <aqlMapping selectField="ParentProject.InternalId"/>
+            </field>
+            <field name="Owner.UserId">
+                <aqlMapping selectField="Owner.UniqueName"/>
+            </field>
+            <field name="Owner.PasswordAdapter">
+                <aqlMapping selectField="Owner.PasswordAdapter"/>
+            </field>
+            <field name="Weight">
+                <aqlMapping selectField="Question.Weight"/>
+            </field>
+            <field name="Target">
+                <aqlMapping selectField="Question.TargetScore"/>
+            </field>
+            <field name="IsQuantitative">
+                <!--
+                    MultiValues are always false, otherwise check the value type to see
+                    if it is an Integer (3), a Whole Number (4), a Money (6), a Percentage (9)
+                    or a Quantity (10).
+                -->
+                <aqlMapping selectField="CASE ValidValues.IsMultiValue WHEN true THEN false
+                                           ELSE CASE ValidValues.SingletonValueType WHEN 3 THEN true
+                                             ELSE CASE ValidValues.SingletonValueType WHEN 4 THEN true
+                                               ELSE CASE ValidValues.SingletonValueType WHEN 6 THEN true
+                                                 ELSE CASE ValidValues.SingletonValueType WHEN 9 THEN true
+                                                   ELSE CASE ValidValues.SingletonValueType WHEN 10 THEN true
+                                                     ELSE false END
+                                                   END
+                                                 END
+                                               END
+                                             END
+                                           END"/>
+            </field>
+            <field name="QuantitativeCount">
+                <!--
+                    MultiValues are always false, otherwise check the value type to see
+                    if it is an Integer (3), a Whole Number (4), a Money (6), a Percentage (9)
+                    or a Quantity (10).
+                -->
+                <aqlMapping selectField="CASE ValidValues.IsMultiValue WHEN true THEN 0
+                                           ELSE CASE ValidValues.SingletonValueType WHEN 3 THEN 1
+                                             ELSE CASE ValidValues.SingletonValueType WHEN 4 THEN 1
+                                               ELSE CASE ValidValues.SingletonValueType WHEN 6 THEN 1
+                                                 ELSE CASE ValidValues.SingletonValueType WHEN 9 THEN 1
+                                                   ELSE CASE ValidValues.SingletonValueType WHEN 10 THEN 1
+                                                     ELSE 0 END
+                                                   END
+                                                 END
+                                               END
+                                             END
+                                           END"/>
+            </field>
+            <field name="Value">
+                <!--
+                    MultiValues are always NULL, otherwise read from the singleton fields.
+                    NOTE if AQS did not specify a value, it will be stored as a zero
+                -->
+                <aqlMapping selectField="CASE ValidValues.IsMultiValue WHEN false THEN
+                                           CASE QuestionValue.RQABIGDEC WHEN NULL THEN
+                                             CASE QuestionValue.RQAMONEY WHEN NULL THEN
+                                               CASE QuestionValue.RQAINTEGER WHEN NULL THEN
+                                                 QuestionValue.RQAQTY.Amount
+                                               ELSE QuestionValue.RQAINTEGER END
+                                             ELSE QuestionValue.RQAMONEY.Amount END
+                                           ELSE QuestionValue.RQABIGDEC END
+                                         ELSE NULL END"/>
+            </field>
+            <field name="Grade">
+                <aqlMapping selectField="QuestionValue.ScoreValue"/>
+            </field>
+            <field name="SystemGrade">
+                <aqlMapping selectField="QuestionValue.SystemScoreValue"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    
+    <dataLoad name="SurveySourcingCommodityLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE
+                                  JOIN ariba.sourcing.rfx.RFXRuntimeData AS SurveyRuntimeData USING Survey.RuntimeData
+                                  LEFT OUTER JOIN ariba.basic.core.CommodityCode AS CCode USING Survey.Commodity"
+               whereClause="Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.IsAvailableForAnalysis = true"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   SurveyRuntimeData.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   SurveyRuntimeData.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <interfaceSqlStage
+                fromClause=":InterfaceTable JOIN DIM_SURVEY DS ON :InterfaceTable.Survey_SurveyId = DS.SURVEY_ID
+                                                 AND :InterfaceTable.Survey_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SURVEY_RESPONSE FSR ON FSR.SURVEY = DS.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSR.Respondent = DUD.ROOTID
+                                            JOIN DIM_SURVEY_QUESTION DSQ ON FSR.QUESTION = DSQ.ROOTID"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+                <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+            <field name="Question.QuestionId">
+                <interfaceSqlMapping selectColumn="DSQ.QUESTION_ID"/>
+            </field>
+            <field name="Respondent.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+             <field name="Commodity.CommodityId">
+                <aqlMapping selectField="CCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    
+    <dataLoad name="SurveySPMLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE
+                                  JOIN ariba.sourcing.content.SPMProject AS ParentProject USING Survey.ParentWorkspace
+                                  JOIN ariba.user.core.Organization AS Supplier INCLUDE INACTIVE USING ParentProject.Supplier,
+                                  ariba.sourcing.content.scorecard.Scorecard AS Scorecard,
+                                  ariba.sourcing.content.RFXItem AS Question SUBCLASS NONE
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXItemDefinition AS QuestionType USING Question.Definition
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXAttributeDefinition AS QuestionDef USING QuestionType.Attributes[0],
+                                  ariba.sourcing.rfx.RFXBid AS TheBid SUBCLASS NONE
+                                  JOIN ariba.user.core.User AS Respondent USING TheBid.SubmitFor"
+               whereClause="((Question.ItemType = 3 AND (QuestionDef.Properties = 0 OR (QuestionDef.Properties &amp; 16777216 > 0))) OR Question.ItemType = 2)
+                            AND Question.NextVersion IS NULL
+                            AND Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND ParentProject.WorkspaceType != 'Template'
+                            AND Question.RootItemId = Survey.Content.ItemId
+                            AND TheBid.AlternativeStatus = 3
+                            AND TheBid.ContentDocumentReference.DocumentId = Survey.DocumentId
+                            AND TheBid.ContentDocumentReference.DocumentVersion = Survey.DocumentVersion
+                            AND TheBid.ContentDocumentReference.DocumentMinorVersion = Survey.DocumentMinorVersion
+                            AND Survey.DestinationDocumentReference.DocumentId = Scorecard.DocumentId
+                            AND Scorecard.NextVersion IS NULL"
+               incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                  Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                  ParentProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                  ParentProject.TimeUpdated &lt;= :IncrementalEndDate OR
+                                  Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                  Scorecard.TimeUpdated &lt;= :IncrementalEndDate"
+               distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+            </field>
+            <field name="Question.QuestionId">
+                <aqlMapping selectField="Question.ItemId"/>
+            </field>
+            <field name="Respondent.UserId">
+                <aqlMapping selectField="Respondent.UniqueName"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <aqlMapping selectField="Respondent.PasswordAdapter"/>
+            </field>
+            <field name="Supplier.SupplierId">
+                <aqlMapping selectField="Supplier.SystemID"/>
+            </field>
+            <field name="Supplier.SupplierLocationId">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value=""/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Scorecard.ScorecardId">
+                <aqlMapping selectField="Scorecard.InternalId"/>
+            </field>
+            <field name="Scorecard.VersionNumber">
+                <aqlMapping selectField="Scorecard.DocumentVersion"/>
+            </field>
+            <field name="ReviewEndDate">
+                <aqlMapping selectField="Scorecard.ToDate"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="SurveyKPILoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE
+                                  JOIN ariba.sourcing.content.SPMProject AS SPM USING Survey.ParentWorkspace,
+                                  ariba.sourcing.content.scorecard.Scorecard AS Scorecard,
+                                  ariba.sourcing.content.RFXItem AS KPI SUBCLASS NONE,
+                                  ariba.sourcing.content.RFXItem AS Question SUBCLASS NONE
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXItemDefinition AS QuestionType USING Question.Definition
+                                  LEFT OUTER JOIN ariba.sourcing.content.RFXAttributeDefinition AS QuestionDef USING QuestionType.Attributes[0],
+                                  ariba.sourcing.rfx.RFXBid AS TheBid SUBCLASS NONE
+                                  JOIN ariba.user.core.User AS Respondent USING TheBid.SubmitFor"
+               whereClause="((Question.ItemType = 3 AND (QuestionDef.Properties = 0 OR (QuestionDef.Properties &amp; 16777216 > 0))) OR Question.ItemType = 2)
+                            AND Question.NextVersion IS NULL
+                            AND Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND SPM.WorkspaceType != 'Template'
+                            AND Question.RootItemId = Survey.Content.ItemId
+                            AND Survey.DestinationDocumentReference.DocumentId = Scorecard.DocumentId
+                            AND Scorecard.NextVersion IS NULL
+                            AND KPI.ExternalSystemCorrelationId = SUBSTRING(Question.ExternalSystemCorrelationId, 1, LENGTH(KPI.ExternalSystemCorrelationId))
+                            AND KPI.ItemType = 7
+                            AND KPI.NextVersion IS NULL
+                            AND KPI.RootItemId = Scorecard.Content.ItemId
+                            AND TheBid.AlternativeStatus = 3
+                            AND TheBid.ContentDocumentReference.DocumentId = Survey.DocumentId
+                            AND TheBid.ContentDocumentReference.DocumentVersion = Survey.DocumentVersion
+                            AND TheBid.ContentDocumentReference.DocumentMinorVersion = Survey.DocumentMinorVersion"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   SPM.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   SPM.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate"
+                distinctFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+            </field>
+            <field name="Question.QuestionId">
+                <aqlMapping selectField="Question.ItemId"/>
+            </field>
+            <field name="Respondent.UserId">
+                <aqlMapping selectField="Respondent.UniqueName"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <aqlMapping selectField="Respondent.PasswordAdapter"/>
+            </field>
+            <field name="KPI.KPIId">
+                <aqlMapping selectField="CASE KPI.ItemType WHEN 1 THEN 'KI_000000' ELSE KPI.ExternalSystemCorrelationId END"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.SubString">
+                        <parameter name="EndString" value="_v"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="SurveySourcingDepartmentLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE
+                                  JOIN ariba.collaborate.core.Workspace AS ParentProject USING Survey.ParentWorkspace
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Department AS Dept USING ParentProject.Client"
+               whereClause="Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.EventType = '5'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND Survey.DestinationDocumentReference IS NULL"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   ParentProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   ParentProject.TimeUpdated &lt;= :IncrementalEndDate"
+                orderByClause="Survey.InternalId"
+                distinctFlag="true"/>
+            <interfaceSqlStage
+                fromClause=":InterfaceTable JOIN DIM_SURVEY DS ON :InterfaceTable.Survey_SurveyId = DS.SURVEY_ID
+                                                 AND :InterfaceTable.Survey_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SURVEY_RESPONSE FSR ON FSR.SURVEY = DS.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSR.Respondent = DUD.ROOTID
+                                            JOIN DIM_SURVEY_QUESTION DSQ ON FSR.QUESTION = DSQ.ROOTID"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+                 <interfaceSqlMapping columnType="INTEGER"/>               
+            </field>
+             <field name="Question.QuestionId">
+                <interfaceSqlMapping selectColumn="DSQ.QUESTION_ID"/>
+            </field>
+            <field name="Respondent.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+            <field name="Department.OrganizationId">
+                <aqlMapping selectField="Dept.DepartmentID"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    
+    <dataLoad name="SurveySPMDepartmentLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE,
+                                  ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  JOIN ariba.collaborate.core.Workspace AS ParentProject USING Scorecard.ParentWorkspace
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Department AS Dept USING ParentProject.Client"
+               whereClause="Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND Survey.DestinationDocumentReference.DocumentId = Scorecard.DocumentId
+                            AND Scorecard.NextVersion IS NULL
+                            AND ParentProject.WorkspaceType != 'Template'"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   ParentProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   ParentProject.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate"
+
+                orderByClause="Survey.InternalId"
+                distinctFlag="true"/>
+            <interfaceSqlStage
+                fromClause=":InterfaceTable JOIN DIM_SURVEY DS ON :InterfaceTable.Survey_SurveyId = DS.SURVEY_ID
+                                                 AND :InterfaceTable.Survey_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SURVEY_RESPONSE FSR ON FSR.SURVEY = DS.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSR.Respondent = DUD.ROOTID
+                                            JOIN DIM_SURVEY_QUESTION DSQ ON FSR.QUESTION = DSQ.ROOTID"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+                <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+             <field name="Question.QuestionId">
+                <interfaceSqlMapping selectColumn="DSQ.QUESTION_ID"/>
+            </field>
+            <field name="Respondent.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+            <field name="Department.OrganizationId">
+                <aqlMapping selectField="Dept.DepartmentID"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+    
+    <dataLoad name="SurveySourcingRegionLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE
+                                  JOIN ariba.collaborate.core.Workspace AS ParentProject USING Survey.ParentWorkspace
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Region AS Region USING ParentProject.Region"
+               whereClause="Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND Survey.DestinationDocumentReference IS NULL
+                            AND ParentProject.WorkspaceType != 'Template'"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   ParentProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   ParentProject.TimeUpdated &lt;= :IncrementalEndDate"
+                orderByClause="Survey.InternalId"
+                distinctFlag="true"/>
+            <interfaceSqlStage
+                fromClause=":InterfaceTable JOIN DIM_SURVEY DS ON :InterfaceTable.Survey_SurveyId = DS.SURVEY_ID
+                                                 AND :InterfaceTable.Survey_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SURVEY_RESPONSE FSR ON FSR.SURVEY = DS.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSR.Respondent = DUD.ROOTID
+                                            JOIN DIM_SURVEY_QUESTION DSQ ON FSR.QUESTION = DSQ.ROOTID"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+                <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+            <field name="Question.QuestionId">
+                <interfaceSqlMapping selectColumn="DSQ.QUESTION_ID"/>
+            </field>
+            <field name="Respondent.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+            <field name="Region.RegionId">
+                <aqlMapping selectField="Region.Region"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="SurveySPMRegionLoad">
+        <loadStages>
+            <aqlStage fromClause="ariba.sourcing.rfx.RFXDocument AS Survey SUBCLASS NONE,
+                                  ariba.sourcing.content.scorecard.Scorecard AS Scorecard
+                                  JOIN ariba.collaborate.core.Workspace AS ParentProject USING Scorecard.ParentWorkspace
+                                  LEFT OUTER JOIN ariba.collaborate.basic.Region AS Region USING ParentProject.Region"
+               whereClause="Survey.EventType = '5'
+                            AND Survey.NextVersion IS NULL
+                            AND Survey.Status = 'Complete'
+                            AND Survey.IsAvailableForAnalysis = true
+                            AND Survey.DestinationDocumentReference.DocumentId = Scorecard.DocumentId
+                            AND Scorecard.NextVersion IS NULL
+                            AND ParentProject.WorkspaceType != 'Template'"
+                incrementalClause="Survey.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Survey.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   ParentProject.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   ParentProject.TimeUpdated &lt;= :IncrementalEndDate OR
+                                   Scorecard.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   Scorecard.TimeUpdated &lt;= :IncrementalEndDate"
+
+                orderByClause="Survey.InternalId"
+                distinctFlag="true"/>
+            <interfaceSqlStage
+                fromClause=":InterfaceTable JOIN DIM_SURVEY DS ON :InterfaceTable.Survey_SurveyId = DS.SURVEY_ID
+                                                 AND :InterfaceTable.Survey_VersionNumber = DS.VERSION_NUMBER
+                                            JOIN FACT_SURVEY_RESPONSE FSR ON FSR.SURVEY = DS.ROOTID
+                                            JOIN DIM_USER_DATA DUD ON FSR.Respondent = DUD.ROOTID
+                                            JOIN DIM_SURVEY_QUESTION DSQ ON FSR.QUESTION = DSQ.ROOTID"/>
+            <analysisStage destinationName="ariba.analytics.fact.SurveyResponse"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="Survey.SurveyId">
+                <aqlMapping selectField="Survey.InternalId" sourceLookupField="InternalId"/>
+            </field>
+            <field name="Survey.VersionNumber">
+                <aqlMapping selectField="Survey.DocumentVersion"/>
+                <interfaceSqlMapping columnType="INTEGER"/>
+            </field>
+             <field name="Question.QuestionId">
+                <interfaceSqlMapping selectColumn="DSQ.QUESTION_ID"/>
+            </field>
+            <field name="Respondent.UserId">
+                <interfaceSqlMapping selectColumn="DUD.USER_ID"/>
+            </field>
+            <field name="Respondent.PasswordAdapter">
+                <interfaceSqlMapping selectColumn="DUD.PASSWORD_ADAPTER"/>
+            </field>
+            <field name="Region.RegionId">
+                <aqlMapping selectField="Region.Region"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+</allDataLoads>

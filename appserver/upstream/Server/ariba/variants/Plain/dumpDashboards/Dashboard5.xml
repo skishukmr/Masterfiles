@@ -1,0 +1,132 @@
+<soap:Envelope soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://ariba/objectEncoding">
+<soap:Header>
+</soap:Header>
+<soap:Body>
+
+<tns:Dashboard>
+    <IsTemplate>1</IsTemplate>
+    <Pages>
+        <DashboardPage>
+            <Zones>
+                <DashboardPageZone>
+                    <PortletGroups>
+                        <PortletGroup>
+                            <Portlets>
+                                <PortletInstance>
+                                    <IsMinimized>false</IsMinimized>
+                                    <ProviderName>AribaAnalysis</ProviderName>
+                                    <Title>Analysis</Title>
+                                    <PortletName>ReportTOC</PortletName>
+                                    <ContentType>TOC</ContentType>
+                                    <UniqueName>Portlet60</UniqueName>
+                                </PortletInstance>
+                                <PortletInstance>
+                                    <ContentType>TOC</ContentType>
+                                    <Title>Sourcing</Title>
+                                    <PortletName>AQSMainToc</PortletName>
+                                    <ProviderName>AQS</ProviderName>
+                                    <IsMinimized>false</IsMinimized>
+                                    <UniqueName>Portlet66</UniqueName>
+                                </PortletInstance>
+                                <PortletInstance>
+				    <ContentType>TOC</ContentType>
+				    <Title>Common Actions</Title>
+				    <PortletName>MainToc</PortletName>
+				    <ProviderName>ACM</ProviderName>
+				    <IsMinimized>false</IsMinimized>
+				    <UniqueName>Portlet65</UniqueName>
+                                </PortletInstance>
+                                <PortletInstance>
+                                    <ContentType>TOC</ContentType>
+                                    <Title>ACM Recent Projects</Title>
+                                    <PortletName>RecentlyViewedToc</PortletName>
+                                    <ProviderName>ACM</ProviderName>
+                                    <IsMinimized>false</IsMinimized>
+                                    <UniqueName>Portlet67</UniqueName>
+                                </PortletInstance>
+                                <PortletInstance>
+                                    <IsMinimized>false</IsMinimized>
+                                    <ProviderName>Platform</ProviderName>
+                                    <Title>Common Actions</Title>
+                                    <PortletName>CommonActions</PortletName>
+                                    <ContentType>Aggregator</ContentType>
+                                    <UniqueName>Portlet68</UniqueName>
+                                </PortletInstance>
+                                <PortletInstance>
+                                    <IsMinimized>false</IsMinimized>
+                                    <ProviderName>Platform</ProviderName>
+                                    <Title>Recently Viewed</Title>
+                                    <PortletName>RecentlyViewedActions</PortletName>
+                                    <ContentType>Aggregator</ContentType>
+                                    <UniqueName>Portlet69</UniqueName>
+                                </PortletInstance>
+                            </Portlets>
+                        </PortletGroup>
+                    </PortletGroups>
+                    <Layout>1</Layout>
+                </DashboardPageZone>
+                <DashboardPageZone>
+                    <OrderIndex>1</OrderIndex>
+                    <PortletGroups>
+                        <PortletGroup>
+                            <Portlets>
+                                <PortletInstance>
+                                    <IsMinimized>false</IsMinimized>
+                                    <ProviderName>AribaAnalysis</ProviderName>
+                                    <Title>Commodity Analysis</Title>
+                                    <PortletName>FolderView</PortletName>
+                                    <ContentType>DataTable</ContentType>
+                                    <UniqueName>Portlet61</UniqueName>
+                                </PortletInstance>
+                                <PortletInstance>
+                                    <IsMinimized>false</IsMinimized>
+                                    <ProviderName>AribaAnalysis</ProviderName>
+                                    <Title>Organization Analysis</Title>
+                                    <PortletName>FolderView</PortletName>
+                                    <ContentType>DataTable</ContentType>
+                                    <UniqueName>Portlet63</UniqueName>
+                                </PortletInstance>
+                            </Portlets>
+                        </PortletGroup>
+                        <PortletGroup>
+                            <OrderIndex>1</OrderIndex>
+                            <Portlets>
+                                <PortletInstance>
+                                    <IsMinimized>false</IsMinimized>
+                                    <ProviderName>AribaAnalysis</ProviderName>
+                                    <Title>Spend Overview Reports</Title>
+                                    <PortletName>FolderView</PortletName>
+                                    <ContentType>DataTable</ContentType>
+                                    <UniqueName>Portlet62</UniqueName>
+                                </PortletInstance>
+                                <PortletInstance>
+                                    <IsMinimized>false</IsMinimized>
+                                    <ProviderName>AribaAnalysis</ProviderName>
+                                    <Title>Supplier Analysis</Title>
+                                    <PortletName>FolderView</PortletName>
+                                    <ContentType>DataTable</ContentType>
+                                    <UniqueName>Portlet64</UniqueName>
+                                </PortletInstance>
+                            </Portlets>
+                        </PortletGroup>
+                    </PortletGroups>
+                    <Layout>2</Layout>
+                </DashboardPageZone>
+            </Zones>
+            <Title>Home</Title>
+            <DisplayedDocTypes></DisplayedDocTypes>
+            <OwnedDocTypes><String>FilterMode</String></OwnedDocTypes>
+        </DashboardPage>
+    </Pages>
+    <Owner>
+        <PasswordAdapter>PasswordAdapter1</PasswordAdapter>
+        <UniqueName>aribasystem</UniqueName>
+    </Owner>
+    <Title>SV Senior Analyst Template &#40;Obsolete&#41;</Title>
+    <TemplateUniqueName>SV Senior Analyst Template</TemplateUniqueName>
+    <IsOutOfTheBoxTemplate>1</IsOutOfTheBoxTemplate>
+    <Rank>999</Rank>
+</tns:Dashboard>
+
+</soap:Body>
+</soap:Envelope>

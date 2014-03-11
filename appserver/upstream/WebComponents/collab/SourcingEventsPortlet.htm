@@ -1,0 +1,45 @@
+<!--- Title section --->
+<PortletTitle dashboardItem="$^dashboardItem"
+              title="Sourcing Events">\
+    <!--- Body section --->
+    <AWLoadXML filename=^data value="$notifications"/>
+    <div align="left">
+    <AWTDataTable multiSelect="$false" singleSelect="$false"
+                    list="$notifications.Notification[]"
+                    item="$item"
+                    batchSize="5" valign="left">
+        <AWTColumn key="time.text" label="Time"/>
+        <AWTColumn key="sender.text" label="Event">
+        <AWHyperlink target="new" action=$rfxClicked>
+            $item.sender.text
+        </AWHyperlink>
+        </AWTColumn>
+        <AWTColumn key="message.text" label="Message"/>
+    </AWTDataTable>
+    </div>
+</PortletTitle>\
+
+<server>
+   var item=null;
+
+   function rfxClicked () {
+     var type = ariba.util.fieldvalue.FieldValue.getFieldValue(item, "type.text");
+     var redirect = page("AWRedirect");
+     var url = null;
+     if (type.equals("Winner")) {
+        url = "http://nt1.demo.ariba.com:6111/en/jsp/login/Login.jsp?userName=sourcemgr1&password=sourcemgr1&attemptLogin=true&marketId=2022&winnerProposals=true";
+     }
+     else if (type.equals("Market")) {
+        url = "http://nt1.demo.ariba.com:6111/en/jsp/login/Login.jsp?userName=sourcemgr1&password=sourcemgr1&attemptLogin=true&marketId=2021";
+     }
+     else if (type.equals("Draft")) {
+        url = "http://nt1.demo.ariba.com:6111/en/jsp/login/Login.jsp?userName=sourcemgr1&password=sourcemgr1&attemptLogin=true&draftId=3025"
+     }
+     else {
+        url = "http://www.ariba.com"
+     }
+     redirect.setUrl(url);
+     return redirect;
+   }
+
+</server>

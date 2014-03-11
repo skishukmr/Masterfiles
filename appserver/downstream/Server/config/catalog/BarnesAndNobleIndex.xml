@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Index SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.012/cXML.dtd">
+
+<Index>
+  <SupplierID domain="duns">186716668</SupplierID>
+  <Comments xml:lang="en-US">
+    Sample cXML/Index
+  </Comments>
+  <IndexItem>
+    <IndexItemPunchout>
+      <ItemID>
+        <SupplierPartID>po654321</SupplierPartID>
+      </ItemID>
+      <PunchoutDetail>
+        <Description xml:lang="en-US">Barnes and Noble</Description>
+        <URL>http://psoft3.ariba.com:5555/invoke/Ariba.Punchout.PunchoutManager/RegisterSetup</URL>
+        <Classification domain="UNSPSC">55101511</Classification>
+      </PunchoutDetail>
+    </IndexItemPunchout>
+  </IndexItem>
+</Index>

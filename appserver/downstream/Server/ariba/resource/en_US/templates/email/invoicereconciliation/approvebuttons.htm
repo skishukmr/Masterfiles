@@ -1,0 +1,52 @@
+<!--Approve, Deny and Open buttons -->
+<table margin="0" border="0" cellspacing="0" cellpadding="0" style="background:#E5E5EE;" width="100%">
+  <tr>
+    <td align="left" width="1%" nowrap border="0" style="background:#E5E5EE; padding:7px 10px 7px 50px;">
+      <table border="0" margin="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td nowrap style="color:#336; font:normal 8pt Verdana, Arial, Helvetica; float:left;">@@@ariba.htmlemail/Actions@@:</td>
+        </tr>
+      </table>
+    </td>
+    @@ifdef=canApprove@@
+    <td align="left" width="1%" nowrap border="0" style="background:#E5E5EE; padding:7px 2px 7px 2px;">
+      <table margin="0" cellspacing="0" cellpadding="0" style="border-top:1px solid #FFF; border-right:1px solid #793; border-bottom:1px solid #793; border-left:1px solid #FFF; background:#AC8;">
+        <tr>
+          <td nowrap align="center" style="padding:1px 5px 1px 5px; font:normal 8pt Verdana, Arial, Helvetica; text-decoration:none; cursor:pointer; cursor:hand;" ><a href="@@FCN.getEmailApprovalApprove()@@" style="text-decoration:none; color:#336;">@@@ariba.htmlemail/Approve@@</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    @@endifdef@@
+    @@ifdef=canReject@@
+    <td align="left" width="1%" nowrap border="0" style="background:#E5E5EE; padding:7px 2px 7px 2px;">
+      <table margin="0" cellspacing="0" cellpadding="0" style="border-top:1px solid #FFF; border-right:1px solid #B44; border-bottom:1px solid #B44; border-left:1px solid #FFF; background:#D99;">
+        <tr>
+          <td nowrap align="center" style="padding:1px 5px 1px 5px; font:normal 8pt Verdana, Arial, Helvetica; text-decoration:none; cursor:pointer; cursor:hand;"><a href="@@FCN.getEmailApprovalReject()@@" style="text-decoration:none; color:#336;">@@@ariba.htmlemail/Reject@@</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    @@endifdef@@
+    @@ifdef=canApproveReject@@
+    <td align="left" width="1%" nowrap border="0" style="background:#E5E5EE; padding:7px 2px 7px 2px;">
+      <table margin="0" cellspacing="0" cellpadding="0" style="border-top:1px solid #FFF; border-right:1px solid #793; border-bottom:1px solid #793; border-left:1px solid #FFF; background:#AC8;">
+        <tr>
+          <td nowrap align="center" style="padding:1px 5px 1px 5px; font:normal 8pt Verdana, Arial, Helvetica; text-decoration:none; cursor:pointer; cursor:hand;" ><a href="@@FCN.getEmailApprovalApproveReject()@@" style="text-decoration:none; color:#336;">@@@ariba.htmlemail/ApproveReject@@</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    @@endifdef@@
+    <td width="1%" nowrap border="0" style="background:#E5E5EE; padding:7px 2px 7px 2px;">
+      <table cellspacing=0 cellpadding="0" style="border:1px solid #000000; border-top:1px solid #FFF; border-right:1px solid #336; border-bottom:1px solid #336; border-left:1px solid #FFF; background:#aaabd4;">
+        <tr>
+          <td nowrap align="center" style="padding:1px 5px 1px 5px; font:normal 8pt Verdana, Arial, Helvetica; text-decoration:none; cursor:pointer; cursor:hand;"><a href="@@FCN.getWebJumperURL()@@" style="text-decoration:none; color:#336;">@@@ariba.htmlemail/Open@@</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td align="left" width="96%">&nbsp</td>
+    <td align="left" width="300">&nbsp</td>
+  </tr>
+</table>

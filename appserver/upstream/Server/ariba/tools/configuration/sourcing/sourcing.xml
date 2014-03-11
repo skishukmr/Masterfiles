@@ -1,0 +1,569 @@
+<config>
+    <manager name="sourcing" class="ariba.sourcing.config.SourcingConfigManager" id="30" hint="@ariba.configui.sourcing/SourcingManagerHint">
+        <agent name="createconfig" class="ariba.sourcing.config.CreateConfigAgent" id="0">
+            <field name="configureTemplate">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidFieldValueChoice"
+                               testField="configureTemplate"/>
+                </validity>
+                <value>CD-basic</value>
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            pickListStyle="RadioButtons"
+                            rank="10"
+                            label="@ariba.configui.sourcing/ConfigType">
+                    <property name="validChoices">
+                        <table>
+                            <entry key="@ariba.configui.sourcing/BasicConfig"
+                                   value="CD-basic"/>
+                            <entry key="@ariba.configui.sourcing/DemoConfig"
+                                   value="CD-demo"/>
+                        </table>
+                    </property>
+                    <property name="validChoicesOrder">
+                        <vector>
+                            <entry value="CD-basic"/>
+                            <entry value="CD-demo"/>
+                        </vector>
+                    </property>
+                </properties>
+                <inGroup name="ConfigTypeGroup"/>
+            </field>
+        </agent>
+        <agent name="database" class="ariba.config.database.AribaDatabaseAgent" id="1">
+            <field name="schema">
+                <value>Schema1</value>
+            </field>
+            <field name="isDefaultSchema">
+                <value>true</value>
+            </field>
+            <field name="type">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidFieldValueChoice"
+                               testField="type"/>
+                </validity>
+                <value>oracle</value>
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            pickListStyle="RadioButtons"
+                            rank="10"
+                            label="@ariba.configui.sourcing/SourcingDBType"
+                            forceRefresh="true">
+                    <property name="validChoices">
+                        <table>
+                            <entry key="@ariba.configui.sourcing/SourcingDBOracle"
+                                   value="oracle"/>
+                            <entry key="@ariba.configui.sourcing/SourcingDBDB2"
+                                   value="db2"/>
+                            <entry key="@ariba.configui.sourcing/SourcingDBSql"
+                                   value="mssql"/>
+                        </table>
+                    </property>
+                    <property name="validChoicesOrder">
+                        <vector>
+                            <entry value="oracle"/>
+                            <entry value="db2"/>
+                            <entry value="mssql"/>
+                        </vector>
+                    </property>
+                </properties>
+                <inGroup name="DBTypeGroup"/>
+            </field>
+            <field name="jdbcDriverType"/>
+            <field name="hostname">
+                <properties charWidth="40" label="@ariba.configui.sourcing/DBHostName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="20" label="@ariba.configui.sourcing/OracleDBHostName"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="20" label="@ariba.configui.sourcing/MssqlHostName"/>
+                </inGroup>
+            </field>
+            <field name="server">
+                <properties charWidth="40" label="@ariba.configui.sourcing/DBName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="30" label="@ariba.configui.sourcing/OracleDBSID"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="30" label="@ariba.configui.sourcing/DB2Alias"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="30" label="@ariba.configui.sourcing/MssqlDatabaseName"/>
+                </inGroup>
+            </field>
+            <field name="server">
+                <properties charWidth="40" label="@ariba.configui.sourcing/DBName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="30" label="@ariba.configui.sourcing/OracleDBSID"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="30" label="@ariba.configui.sourcing/DB2Alias"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="30" label="@ariba.configui.sourcing/MssqlDatabaseName"/>
+                </inGroup>
+            </field>
+            <field name="port">
+                <validity>
+                    <condition implementation="ariba.config.condition.BoundedInteger">
+                        <parameter name="Min" value="1"/>
+                        <parameter name="Max" value="65536"/>
+                    </condition>
+                </validity>
+                <properties charWidth="10"  label="@ariba.configui.sourcing/DBPortNumber"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="40" label="@ariba.configui.sourcing/OracleDBPortNumber"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="40" label="@ariba.configui.sourcing/DB2PortNumber"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="40" label="@ariba.configui.sourcing/MssqlPortNumber"/>
+                </inGroup>
+            </field>
+            <field name="username">
+                <properties charWidth="40" label="@ariba.configui.sourcing/DBUserName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="50" label="@ariba.configui.sourcing/OracleDBUserName"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="50" label="@ariba.configui.sourcing/DB2UserID"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="50" label="@ariba.configui.sourcing/MssqlLoginName"/>
+                </inGroup>
+            </field>
+            <field name="password">
+                <validity>
+                    <condition implementation="ariba.config.condition.SameFieldValue"
+                               testField="reenterPassword"/>
+                </validity>
+                <properties charWidth="40"
+                            label="@ariba.configui.sourcing/DBPassword"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="60" label="@ariba.configui.sourcing/OracleDBPassword"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="60" label="@ariba.configui.sourcing/DB2Password"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="60" label="@ariba.configui.sourcing/MssqlPassword"/>
+                </inGroup>
+            </field>
+            <field name="reenterPassword">
+                <validity>
+                    <condition implementation="ariba.config.condition.SameFieldValue"
+                               testField="password"/>
+                </validity>
+                <properties rank="80"
+                            charWidth="40"
+                            label="@ariba.configui.sourcing/ReenterPassword"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="OracleGroup"/>
+                <inGroup name="DB2Group"/>
+                <inGroup name="MssqlGroup"/>
+            </field>
+            <field name="charset">
+                <value>UTF8</value>
+            </field>
+            <field name="validate" required="false">
+                <value>false</value>
+            </field>
+            <field name="AutoCommit">
+                <value>false</value>
+            </field>
+            <field name="LargeIndexDataFile">
+                <value></value>
+            </field>
+            <field name="LargeTableDataFile">
+                <value></value>
+            </field>
+            <field name="LobDataFile">
+                <value></value>
+            </field>
+            <field name="MediumIndexDataFile">
+                <value></value>
+            </field>
+            <field name="MediumTableDataFile">
+                <value></value>
+            </field>
+            <field name="ReadUncommitted">
+                <value>false</value>
+            </field>
+            <field name="SQLStatementTimeoutInSeconds">
+                <value>0</value>
+            </field>
+            <field name="SmallIndexDataFile">
+                <value></value>
+            </field>
+            <field name="SmallTableDataFile">
+                <value></value>
+            </field>
+            <field name="SupportIndexDataFile">
+                <value></value>
+            </field>
+            <field name="SupportTableDataFile">
+                <value></value>
+            </field>
+            <field name="OpenStatements">
+                <value>5</value>
+            </field>
+            <field name="DatabaseConnections">
+                <value>10</value>
+            </field>
+        </agent>
+        <agent name="analysisdb" class="ariba.sourcing.config.AnalysisDatabaseAgent" id="2">
+            <field name="schema">
+                <value>Schema2</value>
+            </field>
+            <field name="isDefaultSchema">
+                <value>false</value>
+            </field>
+            <field name="type">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidFieldValueChoice"
+                               testField="type"/>
+                </validity>
+                <value>oracle</value>
+                <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                            pickListStyle="RadioButtons"
+                            rank="10"
+                            label="@ariba.configui.sourcing/AnalysisDBType"
+                            forceRefresh="true">
+                    <property name="validChoices">
+                        <table>
+                            <entry key="@ariba.configui.sourcing/AnalysisDBOracle"
+                                   value="oracle"/>
+                            <entry key="@ariba.configui.sourcing/AnalysisDBDB2"
+                                   value="db2"/>
+                            <entry key="@ariba.configui.sourcing/AnalysisDBSql"
+                                   value="mssql"/>
+                        </table>
+                    </property>
+                    <property name="validChoicesOrder">
+                        <vector>
+                            <entry value="oracle"/>
+                            <entry value="db2"/>
+                            <entry value="mssql"/>
+                        </vector>
+                    </property>
+                </properties>
+                <inGroup name="DBTypeGroup"/>
+            </field>
+            <field name="jdbcDriverType"/>
+            <field name="hostname">
+                <properties charWidth="40" label="@ariba.configui.sourcing/DBHostName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="20" label="@ariba.configui.sourcing/OracleDBHostName"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="20" label="@ariba.configui.sourcing/MssqlHostName"/>
+                </inGroup>
+            </field>
+            <field name="server">
+                <properties charWidth="40" label="@ariba.configui.sourcing/DBName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="30" label="@ariba.configui.sourcing/OracleDBSID"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="30" label="@ariba.configui.sourcing/DB2Alias"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="30" label="@ariba.configui.sourcing/MssqlDatabaseName"/>
+                </inGroup>
+            </field>
+            <field name="port">
+                <validity>
+                    <condition implementation="ariba.config.condition.BoundedInteger">
+                        <parameter name="Min" value="1"/>
+                        <parameter name="Max" value="65536"/>
+                    </condition>
+                </validity>
+                <properties charWidth="10"  label="@ariba.configui.sourcing/DBPortNumber"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="40" label="@ariba.configui.sourcing/OracleDBPortNumber"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="40" label="@ariba.configui.sourcing/DB2PortNumber"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="40" label="@ariba.configui.sourcing/MssqlPortNumber"/>
+                </inGroup>
+            </field>
+            <field name="username">
+                <properties charWidth="40" label="@ariba.configui.sourcing/DBUserName"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="50" label="@ariba.configui.sourcing/OracleDBUserName"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="50" label="@ariba.configui.sourcing/DB2UserID"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="50" label="@ariba.configui.sourcing/MssqlLoginName"/>
+                </inGroup>
+            </field>
+            <field name="password">
+                <validity>
+                    <condition implementation="ariba.config.condition.SameFieldValue"
+                               testField="reenterPassword"/>
+                </validity>
+                <properties charWidth="40"
+                            label="@ariba.configui.sourcing/DBPassword"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="OracleGroup">
+                    <properties rank="60" label="@ariba.configui.sourcing/OracleDBPassword"/>
+                </inGroup>
+                <inGroup name="DB2Group">
+                    <properties rank="60" label="@ariba.configui.sourcing/DB2Password"/>
+                </inGroup>
+                <inGroup name="MssqlGroup">
+                    <properties rank="60" label="@ariba.configui.sourcing/MssqlPassword"/>
+                </inGroup>
+            </field>
+            <field name="reenterPassword">
+                <validity>
+                    <condition implementation="ariba.config.condition.SameFieldValue"
+                               testField="password"/>
+                </validity>
+                <properties rank="80"
+                            charWidth="40"
+                            label="@ariba.configui.sourcing/ReenterPassword"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="OracleGroup"/>
+                <inGroup name="DB2Group"/>
+                <inGroup name="MssqlGroup"/>
+            </field>
+            <field name="charset">
+                <value>UTF8</value>
+            </field>
+            <field name="validate" required="false">
+                <value>false</value>
+            </field>
+            <field name="AutoCommit">
+                <value>false</value>
+            </field>
+            <field name="LargeIndexDataFile">
+                <value></value>
+            </field>
+            <field name="LargeTableDataFile">
+                <value></value>
+            </field>
+            <field name="LobDataFile">
+                <value></value>
+            </field>
+            <field name="MediumIndexDataFile">
+                <value></value>
+            </field>
+            <field name="MediumTableDataFile">
+                <value></value>
+            </field>
+            <field name="ReadUncommitted">
+                <value>false</value>
+            </field>
+            <field name="SQLStatementTimeoutInSeconds">
+                <value>0</value>
+            </field>
+            <field name="SmallIndexDataFile">
+                <value></value>
+            </field>
+            <field name="SmallTableDataFile">
+                <value></value>
+            </field>
+            <field name="SupportIndexDataFile">
+                <value></value>
+            </field>
+            <field name="SupportTableDataFile">
+                <value></value>
+            </field>
+            <field name="OpenStatements">
+                <value>5</value>
+            </field>
+            <field name="DatabaseConnections">
+                <value>10</value>
+            </field>
+        </agent>
+        <agent name="sourcetypes" class="ariba.sourcing.config.analysis.SourceTypeCollectionAgent" id="3">
+            <templates>
+                <agent name="sourcetype" class="ariba.sourcing.config.analysis.SourceSystemCollectionAgent">
+                    <field name="tname">
+                        <validity>
+                            <condition implementation="ariba.config.condition.UniqueFieldValue"
+                                       testField="tname">
+                                <parameter name="Collection" value="sourcetypes"/>
+                                <parameter name="MessageTable" value="ariba.sourcing.config.condition"/>
+                                <parameter name="MessageKey" value="SourceTypeNameMustBeUnique"/>
+                            </condition>
+                        </validity>
+                        <properties rank="20" charWidth="40" label="@ariba.configui.sourcing/SourceTypeName"/>
+                        <inGroup name="SourceTypeGroup"/>
+                        <inGroup name="SourceTypeTableGroup">
+                            <properties rank="10"/>
+                        </inGroup>
+                    </field>
+                    <field name="type">
+                        <validity>
+                            <condition implementation="ariba.config.condition.ValidFieldValueChoice"
+                                       testField="type"/>
+                        </validity>
+                        <properties fieldEditorClass="ariba.htmlui.fieldsui.fields.APEPickList"
+                                    pickListStyle="Popup"
+                                    rank="10"
+                                    charWidth="20"
+                                    label="@ariba.configui.sourcing/SourceType">
+                            <property name="validChoices">
+                                <table>
+                                    <entry key="ACM"
+                                           value="ACM"/>
+                                    <entry key="buyer-None"
+                                           value="buyer-None"/>
+                                    <entry key="buyer-csv"
+                                           value="buyer-csv"/>
+                                    <entry key="buyer-sap"
+                                           value="buyer-sap"/>
+                                    <entry key="buyer-psoft"
+                                           value="buyer-psoft"/>
+                                    <entry key="buyer-oracle"
+                                           value="buyer-oracle"/>
+                                    <entry key="sourcing"
+                                           value="sourcing"/>
+                                    <entry key="sv-csv"
+                                           value="sv-csv"/>
+                                </table>
+                            </property>
+                            <property name="validChoicesOrder">
+                                <vector>
+                                    <entry value="ACM"/>
+                                    <entry value="buyer-None"/>
+                                    <entry value="buyer-csv"/>
+                                    <entry value="buyer-sap"/>
+                                    <entry value="buyer-psoft"/>
+                                    <entry value="buyer-oracle"/>
+                                    <entry value="sourcing"/>
+                                    <entry value="sv-csv"/>
+                                </vector>
+                            </property>
+                        </properties>
+                        <inGroup name="SourceTypeGroup"/>
+                        <inGroup name="SourceTypeTableGroup">
+                            <properties rank="20"/>
+                        </inGroup>
+                    </field>
+                    <field name="sourceSystemList" required="false">
+                        <properties rank="30" charWidth="60" label="@ariba.configui.sourcing/SourceSystemList"/>
+                        <inGroup name="SourceTypeTableGroup"/>
+                    </field>
+                    <templates>
+                        <agent name="sourcesystem" class="ariba.sourcing.config.analysis.SourceSystemAgent">
+                            <field name="sname">
+                                <validity>
+                                    <condition implementation="ariba.config.condition.UniqueFieldValue"
+                                               testField="sname">
+                                        <parameter name="Collection" value="sourcetypes"/>
+                                        <parameter name="MessageTable" value="ariba.sourcing.config.condition"/>
+                                        <parameter name="MessageKey" value="SourceSystemNameMustBeUnique"/>
+                                    </condition>
+                                </validity>
+                                <properties required="true"
+                                            rank="10"
+                                            charWidth="40"
+                                            label="@ariba.configui.sourcing/SourceSystemName"/>
+                                <inGroup name="SourceSystemGroup"/>
+                                <inGroup name="SourceSystemDisplayGroup"/>
+                            </field>
+                            <field name="connection">
+                                <validity>
+                                    <condition implementation="ariba.sourcing.config.analysis.ValidSourceSystemField"
+                                               testField="connection"/>
+                                </validity>
+                                <properties required="true"
+                                            rank="20"
+                                            charWidth="40"
+                                            label="@ariba.configui.sourcing/SourceSystemConnectionKey"/>
+                                <inGroup name="SourceSystemGroup"/>
+                                <inGroup name="SourceSystemDisplayGroup"/>
+                            </field>
+                            <field name="partition">
+                                <validity>
+                                    <condition implementation="ariba.sourcing.config.analysis.ValidSourceSystemField"
+                                               testField="partition"/>
+                                </validity>
+                                <properties required="true"
+                                            rank="30"
+                                            charWidth="40"
+                                            label="@ariba.configui.sourcing/SourceSystemPartitionName"/>
+                                <inGroup name="SourceSystemGroup"/>
+                                <inGroup name="SourceSystemDisplayGroup"/>
+                            </field>
+                            <field name="description" required="false">
+                                <properties rank="40"
+                                            charWidth="40"
+                                            label="@ariba.configui.sourcing/SourceSystemDescription"/>
+                                <inGroup name="SourceSystemGroup"/>
+                                <inGroup name="SourceSystemDisplayGroup"/>
+                            </field>
+                        </agent>
+                    </templates>
+                </agent>
+            </templates>
+        </agent>
+        <agent name="customparams" class="ariba.sourcing.config.CustomizableParametersAgent" id="4">
+            <field name="resourceURL">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidURL">
+                        <parameter name="ProtocolToUse" value="http,https"/>
+                    </condition>
+                </validity>
+                <properties rank="10" charWidth="40" label="@ariba.configui.sourcing/CustomParamResourceURL"/>
+                <inGroup name="CustomParamGroup"/>
+            </field>
+        </agent>
+        <agent name="appinfo" class="ariba.config.asm.AppInfoUpdateAgent" id="5">
+            <field name="networkAccountIdentity" required="false">
+                <properties rank="10" charWidth="40" label="@ariba.configui.sourcing/AribaNetworkID"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+            <field name="networkSharedSecret" required="false">
+                <properties rank="20"
+                            charWidth="40"
+                            label="@ariba.configui.sourcing/AribaNetworkSharedSecret"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+            <field name="suiteSharedSecret">
+                <properties required="true"
+                            rank="30"
+                            charWidth="40"
+                            label="@ariba.configui.sourcing/SuiteSharedSecret"
+                            encrypt="true"
+                            fieldEditorClass="ariba.htmlui.config.fields.AGEPasswordField"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+            <field name="sharedLocation">
+                <validity>
+                    <condition implementation="ariba.config.condition.ValidASMSharedLocation"/>
+                </validity>
+                <properties required="true"
+                            rank="40"
+                            charWidth="40"
+                            label="@ariba.configui.sourcing/SuiteSharedLocation"
+                            fieldEditorClass="ariba.htmlui.fieldsui.fields.APEFile"
+                            directoriesOnly="true"/>
+                <inGroup name="AppinfoGroup"/>
+            </field>
+        </agent>
+        <agent name="instanceupdate" class="ariba.sourcing.config.SourcingInstanceUpdateAgent" id="6">
+            <field name="instanceName">
+                <value>spendmanagement</value>
+            </field>
+        </agent>
+        <agent name="updatej2ee" class="ariba.config.appserver.UpdateJ2eeAgent" id="7">
+            <field name="nodeClassname">
+                <value>ariba.base.server.Node</value>
+            </field>
+        </agent>
+    </manager>
+</config>

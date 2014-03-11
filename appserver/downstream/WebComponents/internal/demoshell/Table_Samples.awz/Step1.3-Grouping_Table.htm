@@ -1,0 +1,57 @@
+<a:InitializeValue displayGroup="$null"/>
+<style>
+    .oTableWrapper tr.tableGroupBy {
+        background-color:#FFFFFF;
+    }
+</style>
+<t:DataTable class="scrollTableWrapper" enableScrolling="$true" batchSize="30" csvPath="SampleSpend.csv"
+    displayGroup="$displayGroup" minHeight="400" useRefresh="$true"
+    groupByColumn="Department" showGroupCounts="$false" expandAll="$true" initialSortKey="Amount"
+    width="100%">  <!--- explicit width: nice test... -->
+
+    <t:HeadingArea>
+        <w:SectionHeading title="Critical Information">
+            <div style="float:right">
+                <div style="float:left">
+                    <a:Hyperlink action="$toggleDetails">\
+                        <a:If ifTrue="$showDetails">Hide Details<a:Else/>Show Details</a:If>
+                    </a:Hyperlink>
+                </div>
+                <t:OptionsMenuButton/>\
+            </div>
+        </w:SectionHeading>
+    </t:HeadingArea>
+
+    <t:Column key="Department"/>
+
+    <t:Column key="Category"/>
+
+    <t:Column key="Year" formatter="$formatters.shortDate" align="right"/>
+
+    <t:Column key="Amount" formatter="$formatters.money" align="right"/>
+
+    <t:Column align="right">
+        <div style="float:right">
+            <w:TextButton action="$null">Inspect</w:TextButton>
+        </div>
+    </t:Column>
+
+    <t:RowDetail isVisible="$showDetails">
+        This is a test of the emergency broadcasting...
+    </t:RowDetail>
+
+    <t:ButtonArea>\
+        <w:TextButton action="$null">Delete</w:TextButton>\
+        <w:TextButton action="$null">Edit</w:TextButton>\
+    </t:ButtonArea>
+
+</t:DataTable>
+
+<server>
+    var showDetails = false;
+
+    function toggleDetails () {
+        showDetails = !showDetails;
+        return null;
+    }
+</server>

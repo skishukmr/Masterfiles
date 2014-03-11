@@ -1,0 +1,675 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="ACMWorkspaceFolder">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.core.WSFolder INCLUDE INACTIVE
+                              JOIN ariba.collaborate.core.WSFolder AS ParentFolder INCLUDE INACTIVE USING WSFolder.ParentDocument
+                              JOIN ariba.acm.core.CategoryKnowledgeProject INCLUDE INACTIVE USING WSFolder.ParentWorkspace"
+                  incrementalClause="((:IncrementalStartDate &lt;= WSFolder.TimeUpdated AND
+                                      WSFolder.TimeUpdated &lt; :IncrementalEndDate) OR
+                                    (:IncrementalStartDate &lt;= CategoryKnowledgeProject.TimeUpdated AND
+                                       CategoryKnowledgeProject.TimeUpdated &lt; :IncrementalEndDate))"/>
+        <analysisStage destinationName="ariba.analytics.dimension.WorkspaceFolder"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="FolderId">
+            <aqlMapping selectField="WSFolder.InternalId"
+                        sourceLookupField="InternalId"/>
+        </field>
+        <field name="FolderName">
+            <aqlMapping selectField="WSFolder.Title"/>
+        </field>
+        <field name="ParentFolderId">
+            <aqlMapping selectField="ParentFolder.InternalId"/>
+        </field>
+        <field name="LibraryId">
+            <aqlMapping selectField="CategoryKnowledgeProject.InternalId"/>
+        </field>
+        <field name="LibraryName">
+            <aqlMapping selectField="CategoryKnowledgeProject.Title"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMWorkspaceFolder" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMWorkspaceTopFolder" extendsLoad="ACMWorkspaceFolder">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.core.WSFolder INCLUDE INACTIVE
+                                       JOIN ariba.acm.core.CategoryKnowledgeProject AS CKL INCLUDE INACTIVE USING WSFolder.ParentDocument
+                                       JOIN ariba.acm.core.CategoryKnowledgeProject INCLUDE INACTIVE USING WSFolder.ParentWorkspace"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="ParentFolderId"/>
+        <field name="ParentFolderId">
+            <aqlMapping selectField="WSFolder.InternalId"/>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<inDataLoad name="ACMWorkspaceTopFolder" version="1.0,1.1" disableLoad="true"/>
+
+<dataLoad name="ACMContractClause">
+    <loadStages>
+        <!-- ritani - removed the LEFT OUTER JOIN to the DocumentVersionReference since we want to only show clauses
+                    that came from the ClauseLibrary. No Ad hoc clauses will be shown in reports.
+        -->
+        <aqlStage fromClause="ariba.collaborate.contracts.ContractClause INCLUDE INACTIVE
+                              JOIN ariba.collaborate.contracts.AbstractContractWorkspace INCLUDE INACTIVE USING ContractClause.ParentWorkspace
+                              JOIN ariba.collaborate.core.DocumentVersionReference INCLUDE INACTIVE USING ContractClause.LibraryClause
+                              JOIN ariba.collaborate.contracts.ContractClause AS LibraryClause INCLUDE INACTIVE ON (DocumentVersionReference.DocumentId = LibraryClause.DocumentId),
+                              ariba.collaborate.contracts.ClauseLibrary,
+                            ariba.collaborate.core.WSFolder"
+                  whereClause="LibraryClause.ParentDocument IN (ClauseLibrary, WSFolder) AND
+                            AbstractContractWorkspace.WorkspaceType = '' AND
+                               AbstractContractWorkspace.NextVersion IS NULL AND
+                               ContractClause.NextVersion IS NULL AND
+                            LibraryClause.DocumentVersion = DocumentVersionReference.DocumentVersion AND
+                            LibraryClause.DocumentMinorVersion = DocumentVersionReference.DocumentMinorVersion"
+                  incrementalClause="(:IncrementalStartDate &lt;= ContractClause.TimeUpdated AND
+                                      ContractClause.TimeUpdated &lt; :IncrementalEndDate)"
+                distinctFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.ContractClause"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ClauseId">
+            <aqlMapping selectField="ContractClause.InternalId"
+                        sourceLookupField="InternalId"/>
+        </field>
+        <field name="Project.ProjectId">
+            <aqlMapping selectField="AbstractContractWorkspace.InternalId"/>
+        </field>
+        <field name="LCTitle">
+            <aqlMapping selectField="LibraryClause.Title"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="DVRDocumentVersion">
+            <aqlMapping selectField="DocumentVersionReference.DocumentVersion"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="Title">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.FieldConcat">
+                    <parameter name="Separator" value=" v"/>
+                    <parameter name="Fields">
+                        <vector>
+                            <entry value="LCTitle"/>
+                            <entry value="DVRDocumentVersion"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Type">
+            <aqlMapping selectField="ContractClause.ClauseType"/>
+        </field>
+        <field name="Folder.FolderId">
+            <aqlMapping selectField="LibraryClause.ParentDocument.InternalId"/>
+        </field>
+        <field name="Modified">
+            <aqlMapping selectField="ContractClause.EditType"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="DefaultValue" value=""/>
+                    <parameter name="NullValue" value="Unchanged"/>
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="Edited"/>
+                            <entry value="Substituted"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Edited"/>
+                            <entry value="Substituted"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="CreatedDate.Day">
+            <aqlMapping selectField="ContractClause.CreateDate"/>
+        </field>
+        <!--
+        <field name="Supplier.CommonSupplierId">
+            <aqlMapping selectField="Supplier.SystemID"/>
+        </field>
+        -->
+    </fieldMappings>
+</dataLoad>
+
+<inDataLoad name="ACMContractClause" version="1.0,1.1" disableLoad="true"/>
+
+    <dataLoad name="ACMContractClauseDelete">
+        <loadStages>
+            <aqlStage fromClause="ariba.collaborate.contracts.ContractClause INCLUDE INACTIVE
+                                    JOIN ariba.collaborate.contracts.AbstractContractWorkspace INCLUDE INACTIVE USING ContractClause.ParentWorkspace"
+                whereClause="AbstractContractWorkspace.WorkspaceType = '' AND
+                             ContractClause.NextVersion IS NULL AND
+                             ContractClause.Active = false"
+                incrementalClause="(:IncrementalStartDate &lt;= ContractClause.TimeUpdated AND
+                                    ContractClause.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ContractClause"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ClauseId">
+                <aqlMapping selectField="ContractClause.InternalId"
+                    sourceLookupField="InternalId"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <inDataLoad name="ACMContractClauseDelete" version="1.0,1.1" disableLoad="true"/>
+
+<dataLoad name="ACMGeneralContractWorkspaceDimension">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.contracts.AbstractContractWorkspace AS Contract
+                                       LEFT OUTER JOIN ariba.collaborate.contracts.AbstractContractWorkspace AS ParentContract INCLUDE INACTIVE USING ParentAgreement"
+                  whereClause="Contract.WorkspaceType = ''
+                               AND Contract.Status != 'Not Created'
+                               AND Contract.NextVersion IS NULL
+                               AND Contract.ProjectTemplate IS NOT NULL"
+                  incrementalClause="(:IncrementalStartDate &lt;= Contract.TimeUpdated AND
+                                      Contract.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.Contract"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ContractName">
+            <aqlMapping selectField="Contract.Title"/>
+        </field>
+        <field name="ContractId">
+            <aqlMapping selectField="Contract.ContractId"
+                        sourceLookupField="ContractId"/>
+        </field>
+        <field name="RelatedId">
+            <aqlMapping selectField="Contract.RelatedId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="FieldName" value="ContractId"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="EffectiveDate">
+            <aqlMapping selectField="Contract.EffectiveDate"/>
+        </field>
+        <field name="ExpirationDate">
+            <aqlMapping selectField="Contract.ExpirationDate"/>
+        </field>
+        <field name="IsEvergreen">
+            <aqlMapping selectField="Contract.IsEvergreen"/>
+        </field>
+        <field name="Amount">
+            <aqlMapping selectField="Contract.Amount.ApproxAmountInBaseCurrency"/>
+        </field>
+        <field name="ParentContractId">
+            <aqlMapping selectField="ParentContract.ContractId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+                    <parameter name="FieldName" value="ContractId"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ContractType">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="Contract"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+
+</dataLoad>
+
+<!-- following dataloads are duplicated to populate ContractWorkspace
+    and SalesContractWorkspace fact tables, dataloads are not defined
+    for AbstractContractWorkspace fact table because none of the reports
+    use this fact table, we may need to add them in the future if a report is defined
+    to use it. (currently AbstractContractWorkspace fact table will have 0 records).
+-->
+
+<!--
+replacewhereclause may be empty here since it's the same whereclause than the the load ACMProject
+
+NOTE: There is another load ("ACMContractWorkspaceStorageExt" in file ContractWorkbenchStorageExtLoad)
+      that updates rows loaded here with storage fields.  When you update this query condition,
+      make sure to also update this extented load to avoid unncessary scanning.
+-->
+<derivedDataLoad name="ACMContractWorkspace" extendsLoad="ACMProject">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.ContractWorkspace AS Project SUBCLASS NONE
+                                       JOIN ariba.user.core.User AS ProjectOwner USING Project.Owner
+                                       JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin USING Project.ProjectAddin
+                                       LEFT OUTER JOIN ariba.collaborate.core.Workspace AS DependsOnProject USING ProjectAddin.FollowOnFrom
+                                       LEFT OUTER JOIN ariba.user.core.Organization AS Supplier USING Project.Supplier
+                                       LEFT OUTER JOIN ariba.collaborate.contracts.ContractWorkspace AS ParentProject INCLUDE INACTIVE USING ParentAgreement"
+                    replaceWhereClause="Project.WorkspaceType = ''
+                                        AND Project.Status != 'Not Created'
+                                        AND Project.NextVersion IS NULL
+                                        AND Project.ProjectTemplate IS NOT NULL"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="ContractId">
+            <aqlMapping selectField="Project.ContractId"/>
+        </field>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="Project.ContractId"/>
+        </field>
+        <field name="HierarchyType">
+            <aqlMapping selectField="Project.HierarchicalType"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.SystemID"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="ParentAgreement.ProjectId">
+            <aqlMapping selectField="ParentProject.InternalId"/>
+        </field>
+        <field name="Amount">
+            <aqlMapping selectField="Project.Amount.ApproxAmountInBaseCurrency"/>
+        </field>
+        <field name="ContractStatus">
+            <aqlMapping selectField="Project.ContractStatus"/>
+        </field>
+        <field name="EffectiveDate.Day">
+            <aqlMapping selectField="Project.EffectiveDate"/>
+        </field>
+        <field name="ExpirationDate.Day">
+            <aqlMapping selectField="Project.ExpirationDate"/>
+        </field>
+        <field name="IsEvergreen">
+            <aqlMapping selectField="Project.IsEvergreen"/>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<inDataLoad name="ACMContractWorkspace" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMGeneralContractWorkspace" extendsLoad="ACMProject">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.AbstractContractWorkspace AS Project
+                                       JOIN ariba.user.core.User AS ProjectOwner USING Project.Owner
+                                       JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin USING Project.ProjectAddin
+                                       LEFT OUTER JOIN ariba.collaborate.core.Workspace AS DependsOnProject USING ProjectAddin.FollowOnFrom
+                                       LEFT OUTER JOIN ariba.user.core.Organization AS Supplier USING Project.Supplier
+                                       LEFT OUTER JOIN ariba.collaborate.contracts.AbstractContractWorkspace AS ParentProject INCLUDE INACTIVE USING ParentAgreement"
+                    replaceWhereClause="Project.WorkspaceType = ''
+                                        AND Project.Status != 'Not Created'
+                                        AND Project.NextVersion IS NULL
+                                        AND Project.ProjectTemplate IS NOT NULL"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.GeneralContractWorkspace"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="ContractId">
+            <aqlMapping selectField="Project.ContractId"/>
+        </field>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="Project.ContractId"/>
+        </field>
+        <field name="HierarchyType">
+            <aqlMapping selectField="Project.HierarchicalType"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.SystemID"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="ParentAgreement.ProjectId">
+            <aqlMapping selectField="ParentProject.InternalId"/>
+        </field>
+        <field name="Amount">
+            <aqlMapping selectField="Project.Amount.ApproxAmountInBaseCurrency"/>
+        </field>
+        <field name="ContractStatus">
+            <aqlMapping selectField="Project.ContractStatus"/>
+        </field>
+        <field name="EffectiveDate.Day">
+            <aqlMapping selectField="Project.EffectiveDate"/>
+        </field>
+        <field name="ExpirationDate.Day">
+            <aqlMapping selectField="Project.ExpirationDate"/>
+        </field>
+        <field name="IsEvergreen">
+            <aqlMapping selectField="Project.IsEvergreen"/>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<inDataLoad name="ACMGeneralContractWorkspace" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMSalesContractWorkspace" extendsLoad="ACMProject">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project SUBCLASS NONE
+                                       JOIN ariba.user.core.User AS ProjectOwner USING Project.Owner
+                                       JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin USING Project.ProjectAddin
+                                       LEFT OUTER JOIN ariba.collaborate.core.Workspace AS DependsOnProject USING ProjectAddin.FollowOnFrom
+                                       LEFT OUTER JOIN ariba.user.core.Organization AS Supplier USING Project.Supplier
+                                       LEFT OUTER JOIN ariba.collaborate.contracts.SalesContractWorkspace AS ParentProject INCLUDE INACTIVE USING ParentAgreement"
+                    replaceWhereClause="Project.WorkspaceType = ''
+                                        AND Project.Status != 'Not Created'
+                                        AND Project.NextVersion IS NULL
+                                        AND Project.ProjectTemplate IS NOT NULL"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+    </inLoadStages>
+    <fieldMappings>
+        <field name="ContractId">
+            <aqlMapping selectField="Project.ContractId"/>
+        </field>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="Project.ContractId"/>
+        </field>
+        <field name="HierarchyType">
+            <aqlMapping selectField="Project.HierarchicalType"/>
+        </field>
+<!-- customer is same than supplier -->
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.SystemID"/>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ParentAgreement.ProjectId">
+            <aqlMapping selectField="ParentProject.InternalId"/>
+        </field>
+        <field name="Amount">
+            <aqlMapping selectField="Project.Amount.ApproxAmountInBaseCurrency"/>
+        </field>
+        <field name="ContractStatus">
+            <aqlMapping selectField="Project.ContractStatus"/>
+        </field>
+        <field name="EffectiveDate.Day">
+            <aqlMapping selectField="Project.EffectiveDate"/>
+        </field>
+        <field name="ExpirationDate.Day">
+            <aqlMapping selectField="Project.ExpirationDate"/>
+        </field>
+        <field name="IsEvergreen">
+            <aqlMapping selectField="Project.IsEvergreen"/>
+        </field>
+    </fieldMappings>
+</derivedDataLoad>
+
+<inDataLoad name="ACMSalesContractWorkspace" version="1.0,1.1" disableLoad="true"/>
+
+    <derivedDataLoad name="ACMSalesContractRequest" extendsLoad="ACMSalesContractWorkspace">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractRequest AS Project
+                                           JOIN ariba.user.core.User AS ProjectOwner USING Project.Owner
+                                           JOIN ariba.collaborate.core.ProjectAddin AS ProjectAddin USING Project.ProjectAddin
+                                           LEFT OUTER JOIN ariba.collaborate.core.Workspace AS DependsOnProject USING ProjectAddin.FollowOnFrom
+                                           LEFT OUTER JOIN ariba.user.core.Organization AS Supplier USING Project.Supplier
+                                        LEFT OUTER JOIN ariba.collaborate.contracts.SalesContractRequest AS ParentProject INCLUDE INACTIVE USING ParentAgreement"
+                        replaceWhereClause="Project.WorkspaceType = ''
+                                            AND Project.Status != 'Not Created'
+                                            AND Project.NextVersion IS NULL
+                                            AND Project.ProjectTemplate IS NOT NULL"/>
+            <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractRequest"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="DealStage">
+                <aqlMapping selectField="Project.DealStage"/>
+            </field>
+
+            <field name="EstimatedDealSize">
+                <aqlMapping selectField="Project.EstimatedDealSize.ApproxAmountInBaseCurrency"/>
+            </field>
+
+            <field name="EstimatedCloseDate.Day">
+                <aqlMapping selectField="Project.EstimatedCloseDate"/>
+            </field>
+
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="ACMContractWorkspaceDelete" extendsLoad="ACMProjectDelete">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.collaborate.contracts.ContractWorkspace AS Project INCLUDE INACTIVE EXCLUDE ACTIVE SUBCLASS NONE"
+                replaceWhereClause="Project.WorkspaceType = ''
+                                    AND Project.Status != 'Not Created'
+                                    AND Project.ProjectTemplate IS NOT NULL
+                                    AND Project.NextVersion IS NULL"
+                distinctFlag="false"/>
+             <inAnalysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <inDataLoad name="ACMContractWorkspaceDelete" version="1.0,1.1" disableLoad="true"/>
+
+    <derivedDataLoad name="ACMSalesContractWorkspaceDelete" extendsLoad="ACMProjectDelete">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project INCLUDE INACTIVE EXCLUDE ACTIVE SUBCLASS NONE"
+                replaceWhereClause="Project.WorkspaceType = ''
+                                    AND Project.Status != 'Not Created'
+                                    AND Project.ProjectTemplate IS NOT NULL
+                                    AND Project.NextVersion IS NULL"
+                distinctFlag="false"/>
+             <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="ACMGeneralContractWorkspaceDelete" extendsLoad="ACMProjectDelete">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.collaborate.contracts.AbstractContractWorkspace AS Project INCLUDE INACTIVE EXCLUDE ACTIVE"
+                replaceWhereClause="Project.WorkspaceType = ''
+                                    AND Project.Status != 'Not Created'
+                                    AND Project.ProjectTemplate IS NOT NULL
+                                    AND Project.NextVersion IS NULL"
+                distinctFlag="false"/>
+             <inAnalysisStage destinationName="ariba.analytics.fact.GeneralContractWorkspace"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="ACMSalesContractRequestDelete" extendsLoad="ACMProjectDelete">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractRequest AS Project INCLUDE INACTIVE EXCLUDE ACTIVE"
+                replaceWhereClause="Project.WorkspaceType = ''
+                                    AND Project.Status != 'Not Created'
+                                    AND Project.ProjectTemplate IS NOT NULL
+                                    AND Project.NextVersion IS NULL"
+                distinctFlag="false"/>
+             <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractRequest"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="ACMGeneralContractWorkspaceCommodity" extendsLoad="ACMProjectCommodity">
+        <inLoadStages>
+            <inAqlStage replaceFromClause="ariba.collaborate.contracts.AbstractContractWorkspace AS Project
+                                           LEFT OUTER JOIN ariba.basic.core.CommodityCode USING Project.Commodity"/>
+            <inAnalysisStage destinationName="ariba.analytics.fact.GeneralContractWorkspace"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <inDataLoad name="ACMGeneralContractWorkspaceCommodity" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMContractWorkspaceCommodity" extendsLoad="ACMProjectCommodity">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.ContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.basic.core.CommodityCode USING Project.Commodity"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMContractWorkspaceCommodity" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMSalesContractWorkspaceCommodity" extendsLoad="ACMProjectCommodity">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.basic.core.CommodityCode USING Project.Commodity"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMSalesContractWorkspaceCommodity" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMSalesContractRequestCommodity" extendsLoad="ACMProjectCommodity">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractRequest AS Project
+                                       LEFT OUTER JOIN ariba.basic.core.CommodityCode USING Project.Commodity"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractRequest"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMSalesContractRequestCommodity" version="1.0,1.1" disableLoad="true"/>
+
+<!--
+    This query provides basic Id, Name info for Products.
+    What else do we need ?
+-->
+<dataLoad name="ACMSalesContractWorkspaceProduct">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Product USING Project.Product"
+                  incrementalClause="(:IncrementalStartDate &lt;= Product.TimeUpdated AND
+                                      Product.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.ACMProduct"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProductId">
+            <aqlMapping selectField="Product.UniqueName"/>
+        </field>
+        <field name="ProductName">
+            <aqlMapping selectField="Product.Name"/>
+        </field>
+        <field name="ProductDescription">
+            <aqlMapping selectField="Product.Description"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<derivedDataLoad name="ACMGeneralContractWorkspaceRegion" extendsLoad="ACMProjectRegion">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.AbstractContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Region USING Project.Region"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.GeneralContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMGeneralContractWorkspaceRegion" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMContractWorkspaceRegion" extendsLoad="ACMProjectRegion">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.ContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Region USING Project.Region"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMContractWorkspaceRegion" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMSalesContractWorkspaceRegion" extendsLoad="ACMProjectRegion">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Region USING Project.Region"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMSalesContractWorkspaceRegion" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMSalesContractRequestRegion" extendsLoad="ACMProjectRegion">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractRequest AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Region USING Project.Region"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractRequest"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMSalesContractRequestRegion" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMGeneralContractWorkspaceOrganization" extendsLoad="ACMProjectOrganization">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.AbstractContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Department USING Project.Client"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.GeneralContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMGeneralContractWorkspaceOrganization" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMContractWorkspaceOrganization" extendsLoad="ACMProjectOrganization">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.ContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Department USING Project.Client"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMContractWorkspaceOrganization" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMSalesContractWorkspaceOrganization" extendsLoad="ACMProjectOrganization">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Department USING Project.Client"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMSalesContractWorkspaceOrganization" version="1.0,1.1" disableLoad="true"/>
+
+<derivedDataLoad name="ACMSalesContractRequestOrganization" extendsLoad="ACMProjectOrganization">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.collaborate.contracts.SalesContractRequest AS Project
+                                       LEFT OUTER JOIN ariba.collaborate.basic.Department USING Project.Client"/>
+        <inAnalysisStage destinationName="ariba.analytics.fact.SalesContractRequest"/>
+    </inLoadStages>
+</derivedDataLoad>
+
+<inDataLoad name="ACMSalesContractRequestOrganization" version="1.0,1.1" disableLoad="true"/>
+
+<dataLoad name="ACMMigrationContractWorkspaceLoad">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.contracts.ContractWorkspace AS Project"
+                    whereClause="Project.WorkspaceType = ''
+                                        AND Project.Status != 'Not Created'
+                                        AND Project.NextVersion IS NULL
+                                        AND Project.ProjectTemplate IS NOT NULL"/>
+        <analysisStage destinationName="ariba.analytics.fact.ContractWorkspace"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="ProcessStatus">
+            <aqlMapping selectField="Project.ProcessStatus"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="ACMMigrationSalesContractWorkspaceLoad">
+    <loadStages>
+        <aqlStage fromClause="ariba.collaborate.contracts.SalesContractWorkspace AS Project"
+                    whereClause="Project.WorkspaceType = ''
+                                        AND Project.Status != 'Not Created'
+                                        AND Project.NextVersion IS NULL
+                                        AND Project.ProjectTemplate IS NOT NULL"/>
+        <analysisStage destinationName="ariba.analytics.fact.SalesContractWorkspace"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ProjectId">
+            <aqlMapping selectField="Project.InternalId"/>
+        </field>
+        <field name="ProcessStatus">
+            <aqlMapping selectField="Project.ProcessStatus"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

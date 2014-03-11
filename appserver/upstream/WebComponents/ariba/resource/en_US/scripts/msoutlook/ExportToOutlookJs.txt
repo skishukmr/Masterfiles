@@ -1,0 +1,229 @@
+/**
+ * Task management
+ */
+function sfcExportTasks ()
+{
+    this.outlookTasks = null;
+    this.activeOutlookTasks = null;
+    this.newACMTasks = null;
+    this.outlookApp = null;
+
+    this.exportTasks = function ()
+    {
+        var ec = this;
+
+        document.body.style.cursor = "wait";
+
+        this.setUp();
+
+        this.buildOutlookTasksDictionary();
+
+        this.updateOutlookTasksByAcmTask();
+
+        this.deleteOldOutlookTasks();
+
+        this.createNewOutlookTasks();
+
+        this.tearDown();
+    }
+
+    this.setUp = function ()
+    {
+        LoggerUtil.logMessage("Step setUp");
+
+        var ec = this;
+        ec.newACMTasks = new sfObjectArray();
+        ec.outlookTasks = new sfObjectArray();
+        ec.activeOutlookTasks = new sfObjectArray();
+
+        /* XXX Should I get the existing application or new application?? */
+        ec.outlookApp = new ActiveXObject("Outlook.Application");
+    }
+
+    this.tearDown = function ()
+    {
+        document.body.style.cursor = "auto";
+        /* shouldn't we quit outlook application?? */
+    }
+
+    /**
+     * Go through outlook tasks and populate the outlookTasks array
+     */
+    this.buildOutlookTasksDictionary = function ()
+    {
+        LoggerUtil.logMessage("Step buildOutlookTasksDictionary");
+
+        var ec = this;
+        var nameSpace = ec.outlookApp.GetNameSpace("MAPI");
+        var tasksFolder = nameSpace.GetDefaultFolder(13); // Tasks folder
+        var taskItems;
+        if (ec.bUseFilter) {
+            taskItems = tasksFolder.Items.Restrict(
+                    "[LastModificationTime] >= '" + ec.dLastSyncTimestamp + "'")
+        }
+        else {
+            taskItems = tasksFolder.Items;
+        }
+
+        var taskItemCount = taskItems.Count;
+        for (var i = 1; i <= taskItemCount; ++i) {
+            var taskItem = taskItems.Item(i);
+            var prop = taskItem.UserProperties.Find(ACMTaskId);
+            var taskId = this.getOutlookTaskId(taskItem);
+            if (taskId != null) {
+                ec.outlookTasks.AddItemByName(taskId, taskItem);
+            }
+        }
+    }
+
+    this.getOutlookTaskId = function (outlookTask)
+    {
+        try {
+            var prop = outlookTask.UserProperties.Find(ACMTaskId);
+            if (prop != null && prop.Value != null && prop.Value.length > 0) {
+                return prop.Value();
+            }
+            else {
+                return null;
+            }
+        }
+        catch (ex) {
+            return null;
+        }
+
+    }
+
+    this.copyACMTask2OutlookTask = function (acmTask, outlookTask, isCreate)
+    {
+        if (LoggerUtil.enableLogging) {
+            LoggerUtil.logMessage(sfPrintTask(acmTask));
+        }
+
+        outlookTask.Subject = acmTask.Title;
+        outlookTask.DateCompleted = acmTask.TaskCompletionDate;
+        outlookTask.Status = acmTask.Status;
+        
+        var startDate = acmTask.TaskStartDate != null ? acmTask.TaskStartDate : "";
+        var dueDate = acmTask.TaskDueDate != null ? acmTask.TaskDueDate : "";
+
+        // to not set start date if due date is not set
+        if (acmTask.TaskStartDate != "" && acmTask.TaskDueDate == "") {
+            startDate = "";
+        }
+
+        if (startDate != "") {
+            outlookTask.StartDate = startDate;
+        }
+        if (dueDate != "") {
+            outlookTask.DueDate = dueDate;
+        }
+        
+        /* shouldn't we do this in the update case either??? */
+        if (isCreate) {
+            var bodyText = "";
+            bodyText = bodyText.concat("Project: ");
+            bodyText = bodyText.concat(acmTask.ParenteWorkspaceTitle);
+            bodyText = bodyText.concat(lineFeed);
+            bodyText = bodyText.concat(lineFeed);
+            bodyText = bodyText.concat(acmTask.Description);
+            bodyText = bodyText.concat(acmTask.WebJumper);
+            outlookTask.Body = bodyText;
+        }
+        
+        outlookTask.Save();
+    }
+
+    /**
+     *  1) go through the acm tasks and update the corresponing outlook tasks if exist
+     *  2) removes the updated tasks from the outlookTasks array
+     *  3) it is not found it will be moved into the new tasks
+     */
+    this.updateOutlookTasksByAcmTask = function ()
+    {
+        LoggerUtil.logMessage("Step updateOutlookTasksByAcmTask");
+
+        var ec = this;
+        var tasks = ec.oACMTasks;
+
+        for (var i = 1; i <= tasks.Count; ++i) {
+            var acmTask = tasks.Item(i);
+            if (ec.outlookTasks.Contains(acmTask.InternalId)) {
+                var outlookTask = ec.outlookTasks.ItemByName(acmTask.InternalId);
+                this.copyACMTask2OutlookTask(acmTask, outlookTask, false);
+                ec.activeOutlookTasks.AddItemByName(
+                        acmTask.InternalId, acmTask.InternalId);
+            }
+            else {
+                /* new ack task has been found */
+                ec.newACMTasks.AddItemByName(acmTask.InternalId, acmTask.InternalId);
+            }
+        }
+    }
+
+    /**
+     *   delete the inactive outlook tasks
+     */
+    this.deleteOldOutlookTasks = function ()
+    {
+        LoggerUtil.logMessage("Step deleteOldOutlookTasks");
+
+        var ec = this;
+
+        if (ec.bKeepTasks) {
+            return;
+        }
+
+        var toBeDeleted = new sfObjectArray();
+        var outlookTasks = ec.outlookTasks;
+        var count = outlookTasks.Count;
+
+        for (var i = 1; i <= count; ++i) {
+            var outlookTask = outlookTasks.Item(i);
+            var taskId = this.getOutlookTaskId(outlookTask);
+            if (taskId != null && !ec.activeOutlookTasks.Contains(taskId)) {
+                toBeDeleted.AddItem(outlookTask);
+            }
+        }
+
+        /* the old vbscript logic seems to remove the task from the folder */
+        toBeDeleted.DeleteAll();
+    }
+
+    /**
+     *  go through acm tasks and creates new outlook tasks
+     */
+    this.createNewOutlookTasks = function ()
+    {
+        LoggerUtil.logMessage("Step createNewOutlookTasks");
+
+        var ec = this;
+        var tasks = ec.oACMTasks;
+        for (var i = 1; i <= tasks.Count; ++i) {
+            var acmTask = tasks.Item(i);
+            if (ec.newACMTasks.Contains(acmTask.InternalId)) {
+                var outlookTask = ec.outlookApp.CreateItem(3);
+                var prop = outlookTask.UserProperties.Add(ACMTaskId, 1); // Text
+                prop.Value = acmTask.InternalId;
+                this.copyACMTask2OutlookTask(acmTask, outlookTask, true);
+            }
+        }
+    }
+}
+sfcExportTasks.prototype = new sfcExecutionState;
+
+function siExportTasks (args)
+{
+    var ec = new sfcExportTasks();
+    try {
+        sfInitExecutionStateBasic(ec, args);
+        sfLoggerInit(ec, "siExportTasks", args);
+        ec.exportTasks();
+    }
+    catch (ex) {
+        LoggerUtil.logErrorOnExit();
+    }
+}
+
+sfExportFunctions(new Array(
+    "siExportTasks", siExportTasks
+));

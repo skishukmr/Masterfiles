@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Profiles SYSTEM "../../etc/dtds/ProfileMap.dtd">
+<Profiles>
+    <Source>
+        <Map businessKey="SpendManagement">
+            <Profile effectiveDate="2002-01-01T05:24:29-08:00">
+                <Option name="SpendManagement.SSOAuthenticator.URL">
+                    @IncomingHttpServerURL@/@ContextRoot@/Main/ad/loginPage/SSOActions
+                </Option>
+                <Option name="SpendManagement.Dashboard.URL">
+                    @IncomingHttpServerURL@/@ContextRoot@/Main
+                </Option>
+                <Option name="PortletProviderInfo.URL">
+                    @InternalURL@/@ContextRoot@/Main/ad/providerInfo/PortletProviderActions
+                </Option>
+                <Option name="AttachmentServlet">
+                    @InternalURL@/@ContextRoot@/Main/ad/internalGetDocument
+                </Option>
+                <Option name="RFXNextStage">
+                    @InternalURL@/@ContextRoot@/Main/ad/rfxNextStage
+                </Option>
+                <Transaction requestName="AQLDataPull">
+                    <URL>@InternalURL@/@ContextRoot@/aqlpull</URL>
+                </Transaction>
+                <Transaction requestName="ExploreProjects">
+                    <URL>@InternalURL@/@ContextRoot@/Main/ad/exploreProjects/ExploreProjectsDirectAction</URL>
+                </Transaction>
+                <Transaction requestName="FlexFieldSync">
+                    <URL>@InternalURL@/@ContextRoot@/Main/ad/syncFlexField/ariba.app.integrate.flexfield.FlexFieldRetrieveDirectAction</URL>
+                </Transaction>
+                <Transaction requestName="AttachmentServlet">
+                    <URL>@InternalURL@/@ContextRoot@/Main/ad/internalGetDocument</URL>
+                </Transaction>
+            </Profile>
+        </Map>
+    </Source>
+
+    <Destination>
+    </Destination>
+</Profiles>

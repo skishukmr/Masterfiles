@@ -1,0 +1,81 @@
+<style type="text/css">
+<!--
+    #header {
+        background-color:#D6D6E5;
+        background-position: right top;
+        background-repeat:no-repeat;
+        border-top:1px solid #B3B3CC;
+        border-bottom:1px solid #B3B3CC;
+        margin:0px; padding-left:20px; padding-right:12px; padding-top:8px; padding-bottom:8px
+    }
+
+    #content {
+        background-color:#FFFFFF;
+        padding:25px 50px 35px 50px;
+    }
+
+    #webjumper {
+        background-color:#E5E5EE;
+        padding:6px 12px 8px 50px;
+        margin:0px;
+    }
+
+    .subject {
+        color:#000000;
+        font:bold 8pt Verdana,Arial, Helvetica,sans-serif;
+    }
+
+    .subhead {
+        background-color:#E5E5EE;
+        padding:2px 3px 2px 3px;
+        margin-bottom:10px;
+    }
+-->
+</style>
+<div id="header">
+    <table cellSpacing=0 cellPadding=2 width="98%" border=0>
+        <tr>
+            <td width="1%" valign="absmiddle">
+                <PaddedImage filename="images/html/icon/icn_tkApproval.gif" minWidth="$^minWidth">
+                    <AWImage filename="images/html/icon/icn_tkApproval.gif" fullUrl="$true"/>
+                </PaddedImage>
+            </td>
+            <td class="subject"><EmailFormField name="@Subject"/></td>
+        </tr>
+    </table>
+</div>
+
+<div id="content">
+  <table cellpadding="10" border="0" cellspacing="0">
+  <tr>
+    <td nowrap valign="top">
+      <span class="subhead">
+       <b><AWString value="@email.collaborate.TaskFullyApproved/e001">Task title : </AWString></b>
+      </span>
+    </td>
+    <td>
+       <EmailFormField name="Title"/>
+    </td>
+  </tr>
+  <tr>
+    <td nowrap valign="top">
+      <span class="subhead">
+        <b><AWString value="@email.collaborate.TaskFullyApproved/e002">Task description : </AWString></b>
+      </span>
+    </td>
+    <td>
+      <EmailFormField name="Description"/>
+    </td>
+   </tr>
+   </table>
+
+</div>
+
+
+<div id="webjumper">
+     <AWString value="@email.collaborate.TaskAddApprover/e002">
+       This notification is being sent to any users added as an approver or reviewer on a task. This email is sent to both the person being added to the task and the task owner.
+     </AWString>
+     <br/>
+    <EmailFormField name="@Webjumper" label="@email.collaborate.TaskAddApprover/e003">Click here to view the project</EmailFormField>
+</div>

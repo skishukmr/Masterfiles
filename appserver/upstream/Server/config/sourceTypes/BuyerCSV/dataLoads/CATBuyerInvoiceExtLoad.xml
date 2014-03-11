@@ -1,0 +1,293 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+	<inDataLoad name="BuyerInvoiceLineItem">
+	    <inLoadStages>
+		<inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.purchasing.core.Requisition INCLUDE INACTIVE USING POLineItem.Requisition
+						LEFT OUTER JOIN cat.core.BuyerCode AS BuyerCodePO INCLUDE INACTIVE USING POLineItem.BuyerCode
+						LEFT OUTER JOIN cat.core.BuyerCode AS BuyerCodeINV INCLUDE INACTIVE USING InvoiceReconciliationLineItem.BuyerCode
+						LEFT OUTER JOIN ariba.user.core.User AS Preparer INCLUDE INACTIVE USING InvoiceReconciliation.Preparer
+						LEFT OUTER JOIN ariba.basic.core.Money AS AmountAccepted INCLUDE INACTIVE USING POLineItem.AmountAccepted
+						LEFT OUTER JOIN ariba.basic.core.Currency AS AmountAcceptedCurrency INCLUDE INACTIVE USING AmountAccepted.Currency"/>
+	    </inLoadStages>
+	    <fieldMappings>
+		<!-- 
+	   	     Changed by : Arasan Rajendren
+		     Changed on : 04/28/2011
+		     Changes    : Added deleteField for Amount, Currency & Date Field
+	        -->
+		<deleteField name="AmountAccepted.Amount"/>
+		<deleteField name="AmountAccepted.Currency"/>
+		<deleteField name="AmountAccepted.Date"/>
+		
+		<field name="CapitalProjectNumber">
+		    <aqlMapping selectField="InvoiceReconciliationLineItem.ProjectNumber"/>
+		</field>
+		<!--<field name="ControlId">
+		    <aqlMapping selectField="PurchaseOrder.ControlIdentifier"/>
+		</field>-->
+		<field name="FOBPoint">
+		    <aqlMapping selectField="Requisition.FOBPoint"/>
+		</field>
+		<!--<field name="FDFARAttachmentIndicator">
+		    <aqlMapping selectField="Requisition.FDFARAttachmentIndicator"/>
+		</field>
+		<field name="FDFARAttachment">
+		    <aqlMapping selectField="Requisition.FDFARAttachment"/>
+		</field>
+		<field name="OIOAgreement">
+		    <aqlMapping selectField="Requisition.OIOAgreement"/>
+		</field>-->
+		<field name="POstatus">
+		    <aqlMapping selectField="PurchaseOrder.StatusString"/>
+		</field>
+		<field name="OrderMethod">
+		    <aqlMapping selectField="POLineItem.OrderMethodCategory"/>
+		</field>
+		<field name="InvoiceReconciliationStatus">
+		    <aqlMapping selectField="InvoiceReconciliation.StatusString"/>
+		</field>
+		<field name="InvoiceTypeLoadedFrom">
+		    <aqlMapping selectField="Invoice.LoadedFrom"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.Decode">
+				<parameter name="DefaultValue" value=" "/>
+				<parameter name="MapKeys">
+					<vector>
+						<entry value="1"/>
+						<entry value="2"/>
+						<entry value="3"/>
+						<entry value="4"/>
+					</vector>
+				</parameter>
+				<parameter name="MapElements">
+					<vector>
+						<entry value="ASN"/>
+						<entry value="Ariba Provided Invoice Form"/>
+						<entry value="Invoice EForm"/>
+						<entry value="Invoice Against Contracts"/>
+					</vector>
+				</parameter>
+			</mapValue>
+		   </analysisMapping>
+		</field>
+		<!-- <field name="Facility">
+		    <aqlMapping selectField="SplitAccounting.AccountingFacility"/>
+		</field>-->
+		<field name="Department">
+		    <aqlMapping selectField="SplitAccounting.Department"/>
+		</field>
+		<field name="Division">
+		    <aqlMapping selectField="SplitAccounting.Division"/>
+		</field>
+		<field name="Section">
+		    <aqlMapping selectField="SplitAccounting.Section"/>
+		</field>
+		<field name="ExpenseAccount">
+		    <aqlMapping selectField="SplitAccounting.ExpenseAccount"/>
+		</field>
+		<field name="CatOrder">
+		    <aqlMapping selectField="SplitAccounting.Order"/>
+		</field>
+		<field name="Misc">
+		    <aqlMapping selectField="SplitAccounting.Misc"/>
+		</field>
+		<!--<field name="BuyerCode">
+		    <aqlMapping selectField="BuyerCode.UniqueName"/>
+		</field>-->
+		<field name="BuyerCode">
+		    <aqlMapping selectField="CASE BuyerCodePO.UniqueName WHEN NULL THEN BuyerCodeINV.UniqueName ELSE BuyerCodePO.UniqueName END"/>
+		</field>
+		<!--<field name="SiteFacility">
+		    <aqlMapping selectField="Facility.UniqueName"/>
+		</field>-->
+		<field name="Preparer.UserId">
+		    <aqlMapping selectField="Preparer.UniqueName"/>
+		</field>
+		<field name="Preparer.PasswordAdapter">
+		    <aqlMapping selectField="Preparer.PasswordAdapter"/>
+		</field>
+		<field name="POOrderedDate">
+		    <aqlMapping selectField="POLineItem.OrderedDate"/>
+		</field>
+		<field name="ContractCreateDate">
+		    <aqlMapping selectField="ContractCoreApprovableLineItem.StartDate"/>
+		</field>
+		<field name="BookingDate">
+		    <aqlMapping selectField="InvoiceReconciliation.SubmitDate"/>
+		</field>
+		<field name="AmountAccepted.Amount">
+		    <aqlMapping selectField="AmountAccepted.Amount"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ReplaceNull">
+			    <parameter name="DefaultValue" value="0"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AmountAccepted.Currency">
+		    <aqlMapping selectField="AmountAcceptedCurrency.UniqueName"/>
+		    <analysisMapping>
+			<mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+			    <parameter name="MapType" value="SourceSystemCurrency"/>
+			</mapValue>
+		    </analysisMapping>
+		</field>
+		<field name="AmountAccepted.Date">
+		    <aqlMapping selectField="AmountAccepted.ConversionDate"/>
+		</field>
+		<field name="DaysOutstanding">
+		    <aqlMapping selectField="InvoiceReconciliation.PaidDate - Invoice.InvoiceDate"/>
+		</field>
+		<field name="PCDUSD">
+		    <aqlMapping selectField="SplitAccountAmount.ApproxAmountInBaseCurrency"/>
+		</field>
+	    </fieldMappings>
+	</inDataLoad>
+	<derivedDataLoad name="CATUSBuyerInvoiceLineItem" extendsLoad="BuyerInvoiceLineItem">
+		<inLoadStages>
+			<inAqlStage appendToFromClause="LEFT OUTER JOIN cat.core.SettlementCode INCLUDE INACTIVE USING POLineItem.SettlementCode
+							LEFT OUTER JOIN cat.core.Facility INCLUDE INACTIVE USING SplitAccounting.Facility"/>
+		</inLoadStages>
+		<fieldMappings>
+			<deleteField name="POAmount.Amount"/>
+			<deleteField name="AmountInvoiced.Amount"/>
+			<deleteField name="AmountDisputed.Amount"/>
+			<!--Sandeep Added the Facility code as per partitions-->
+			<field name="Facility">
+            		   <aqlMapping selectField="SplitAccounting.AccountingFacility"/>
+        		</field>
+			<field name="SettlementCode">
+            		   <aqlMapping selectField="SettlementCode.UniqueName"/>
+        		</field>
+        		<field name="FDFARAttachmentIndicator">
+            		   <aqlMapping selectField="Requisition.FDFARAttachmentIndicator"/>
+        		</field>
+        		<field name="FDFARAttachment">
+            		   <aqlMapping selectField="Requisition.FDFARAttachment"/>
+        		</field>
+        		<field name="OIOAgreement">
+            		   <aqlMapping selectField="Requisition.OIOAgreement"/>
+        		</field>
+        		<field name="SiteFacility">
+            		   <aqlMapping selectField="Facility.UniqueName"/>
+        		</field>
+        		<field name="ControlId">
+            		   <aqlMapping selectField="PurchaseOrder.ControlIdentifier"/>
+        		</field>
+			<!-- 
+				Changed by : Arasan Rajendren
+				Changed on : 04/22/2011
+				Changes	   : Added MULTIPLY_ALT function to multiply huge numbers.
+	     		-->
+	     		<field name="POAmount.Amount">
+                	   <aqlMapping selectField="round(MULTIPLY_ALT(CASE POLineItem WHEN NULL THEN MALineDescription.Price.Amount ELSE POLineItem.Description.Price.Amount END, SplitAccounting.Quantity), 5)"/>
+            		</field>
+            		<field name="AmountInvoiced.Amount">
+			    <aqlMapping selectField="CASE SplitAccounting.Type.UniqueName WHEN '_Quantity'
+			    		THEN (CASE InvoiceReconciliationLineItem.Quantity WHEN 0 THEN 0 
+			    			ELSE InvLIAmount.Amount * SplitAccounting.Quantity / InvoiceReconciliationLineItem.Quantity END)
+			    		ELSE MULTIPLY_ALT(InvLIAmount.Amount, SplitAccounting.Percentage) / 100.0 END"/>
+            		</field>
+            		<field name="AmountDisputed.Amount">
+			    <aqlMapping selectField="CASE SplitAccounting.Type.UniqueName WHEN '_Quantity'
+					THEN (CASE InvoiceReconciliationLineItem.Quantity WHEN 0 THEN 0
+						ELSE (InvLIAmount.Amount - IRLIAmount.Amount) * SplitAccounting.Quantity / InvoiceReconciliationLineItem.Quantity END)
+					ELSE MULTIPLY_ALT((InvLIAmount.Amount - IRLIAmount.Amount), SplitAccounting.Percentage) / 100.0 END"/>
+            		</field>            		
+		</fieldMappings>
+	</derivedDataLoad>
+	<derivedDataLoad name="CATUKBuyerInvoiceLineItem" extendsLoad="BuyerInvoiceLineItem">
+		<inLoadStages>
+			<inAqlStage appendToFromClause="LEFT OUTER JOIN cat.core.SettlementCode INCLUDE INACTIVE USING POLineItem.SettlementCode
+							LEFT OUTER JOIN cat.core.VATClass INCLUDE INACTIVE USING InvoiceReconciliationLineItem.VATClass
+							LEFT OUTER JOIN cat.core.Facility INCLUDE INACTIVE USING SplitAccounting.Facility"/>
+		</inLoadStages>
+		<fieldMappings>
+			<!--Sandeep Added the Facility code as per partitions-->
+			<field name="Facility">
+            		   <aqlMapping selectField="Facility.UniqueName"/>
+       			</field>
+			<field name="SettlementCode">
+            		   <aqlMapping selectField="SettlementCode.UniqueName"/>
+        		</field>
+			<field name="VATClass">
+		  	   <aqlMapping selectField="VATClass.UniqueName"/>
+			</field>
+			<field name="SiteFacility">
+            		   <aqlMapping selectField="Facility.UniqueName"/>
+        		</field>
+        		<field name="ControlId">
+            		   <aqlMapping selectField="PurchaseOrder.ControlIdentifier"/>
+        		</field>
+		</fieldMappings>
+	</derivedDataLoad>
+	<derivedDataLoad name="CATGENBuyerInvoiceLineItem" extendsLoad="BuyerInvoiceLineItem">
+		<fieldMappings>
+			<field name="CatInvoiceNumber">
+            		   <aqlMapping selectField="InvoiceReconciliation.CatInvoiceNumber"/>
+        		</field>
+		</fieldMappings>
+	</derivedDataLoad>
+	
+	<!-- 
+		Arasan Rajendren 
+		Created Temp Loads to bypass Timeout Issues		
+	-->
+	
+	<derivedDataLoad name="Tmp1CATUSBuyerInvoiceLineItem" extendsLoad="CATUSBuyerInvoiceLineItem">
+		<inLoadStages>
+		    <inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &lt;= DATE('2007-01-01 00:00:00 CDT')"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+	<derivedDataLoad name="Tmp2CATUSBuyerInvoiceLineItem" extendsLoad="CATUSBuyerInvoiceLineItem">
+		<inLoadStages>
+		    <inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate BETWEEN DATE('2007-01-01 00:00:00 CDT') AND DATE('2008-01-01 00:00:00 CDT')"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+	<derivedDataLoad name="Tmp3CATUSBuyerInvoiceLineItem" extendsLoad="CATUSBuyerInvoiceLineItem">
+		<inLoadStages>
+		    <inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate BETWEEN DATE('2008-01-01 00:00:00 CDT') AND DATE('2009-01-01 00:00:00 CDT')"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+	<derivedDataLoad name="Tmp4CATUSBuyerInvoiceLineItem" extendsLoad="CATUSBuyerInvoiceLineItem">
+		<inLoadStages>
+		    <inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate BETWEEN DATE('2009-01-01 00:00:00 CDT') AND DATE('2010-01-01 00:00:00 CDT')"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+	<derivedDataLoad name="Tmp5CATUSBuyerInvoiceLineItem" extendsLoad="CATUSBuyerInvoiceLineItem">
+		<inLoadStages>
+		    <inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &gt;= DATE('2010-01-01 00:00:00 CDT')"/>
+		</inLoadStages>
+	</derivedDataLoad>
+	
+	
+	<!--added by rupesh for test-->
+	
+	<derivedDataLoad name="Tmp_CATUSBuyerInvoiceLineItem" extendsLoad="CATUSBuyerInvoiceLineItem">
+			<inLoadStages>
+			    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+			                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+	                                      />
+			</inLoadStages>
+	</derivedDataLoad>
+	
+	<derivedDataLoad name="Tmp_CATUKBuyerInvoiceLineItem" extendsLoad="CATUKBuyerInvoiceLineItem">
+				<inLoadStages>
+				    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+				                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+		                                      />
+				</inLoadStages>
+	</derivedDataLoad>
+	
+	<derivedDataLoad name="Tmp_CATGENBuyerInvoiceLineItem" extendsLoad="CATGENBuyerInvoiceLineItem">
+				<inLoadStages>
+				    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+				                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+		                                      />
+				</inLoadStages>
+	</derivedDataLoad>
+	
+</allDataLoads>

@@ -1,0 +1,481 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<!-- INVOICE EXCEPTIONS -->
+
+<dataLoad name="BuyerInvoiceExceptionType">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceExceptionType"
+                  incrementalClause="(InvoiceExceptionType.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceExceptionType.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.dimension.InvoiceExceptionType"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="ExceptionType">
+            <aqlMapping selectField="InvoiceExceptionType.Name"/>
+        </field>
+        <field name="ExceptionTypeId">
+            <aqlMapping selectField="InvoiceExceptionType.UniqueName"/>
+        </field>
+        <field name="ExceptionLevel">
+            <aqlMapping selectField="InvoiceExceptionType.HeaderOnly"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Decode">
+                    <parameter name="MapKeys">
+                        <vector>
+                            <entry value="true"/>
+                            <entry value="TRUE"/>
+                            <entry value="false"/>
+                            <entry value="FALSE"/>
+                        </vector>
+                    </parameter>
+                    <parameter name="MapElements">
+                        <vector>
+                            <entry value="Header Level"/>
+                            <entry value="Header Level"/>
+                            <entry value="Line Item Level"/>
+                            <entry value="Line Item Level"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Exception">
+            <aqlMapping selectField="InvoiceExceptionType.HeaderOnly"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="Has Exception"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- HEADER EXCEPTIONS -->
+
+<dataLoad name="BuyerDeleteInvoiceHeaderException">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation INCLUDE INACTIVE"
+                  whereClause="InvoiceReconciliation.NextVersion IS NOT NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceHeaderException">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING InvoiceReconciliation.ProcurementUnit"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceNumber">
+            <aqlMapping selectField="Invoice.InvoiceNumber"/>
+        </field>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+
+        <field name="InvoiceDate">
+            <aqlMapping selectField="Invoice.InvoiceDate"/>
+        </field>
+        <field name="AccountingDate">
+            <aqlMapping selectField="InvoiceReconciliation.CreateDate"/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+        <field name="ProcurementUnit.UniqueName">
+            <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceHeaderExceptionCountLineItem">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                  groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="LineItemCount">
+            <aqlMapping selectField="count(*)" groupBy=""/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- Do not remove the interface table.  It is used to group data from two
+     different queries with are unioned -->
+
+<dataLoad name="BuyerInvoiceHeaderExceptionCountExceptions">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliation.Exceptions"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="ExceptionCount">
+            <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+        </field>
+        <field name="InvoiceWithExceptionCount">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="1"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- Do not remove the interface table.  It is used to group data from two
+     different queries with are unioned -->
+
+<dataLoad name="BuyerInvoiceHeaderExceptionCountExceptionsOnLines">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliationLineItem.Exceptions"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="ExceptionCount">
+            <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+        </field>
+        <field name="InvoiceWithExceptionCount">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="1"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- Do not remove the interface table.  It is used to group data from two
+     different queries with are unioned -->
+
+<dataLoad name="BuyerInvoiceHeaderExceptionCountAutoRecExceptions">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliation.Exceptions"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL AND
+                               InvoiceException.ReconciledBy IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="AutoReconciledExceptionCount">
+            <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- Do not remove the interface table.  It is used to group data from two
+     different queries with are unioned -->
+
+<dataLoad name="BuyerInvoiceHeaderExceptionCountAutoRecExceptionsOnLines">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliationLineItem.Exceptions"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL AND
+                               InvoiceException.ReconciledBy IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                        sourceLookupField="UniqueName"/>
+        </field>
+        <field name="AutoReconciledExceptionCount">
+            <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceHeaderExceptionType">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliation.Exceptions
+                              LEFT OUTER JOIN ariba.invoicing.core.InvoiceExceptionType USING InvoiceException.Type"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage orderByClause="InvoiceId"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                sourceLookupField="UniqueName"/>
+        </field>
+        <field name="ExceptionType">
+            <aqlMapping selectField="InvoiceExceptionType.UniqueName AS ExceptionType"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceHeaderExceptionTypeOnLines">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliationLineItem.Exceptions
+                              LEFT OUTER JOIN ariba.invoicing.core.InvoiceExceptionType USING InvoiceException.Type"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <interfaceSqlStage orderByClause="InvoiceId"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceHeaderException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                sourceLookupField="UniqueName"/>
+        </field>
+        <field name="ExceptionType">
+            <aqlMapping selectField="InvoiceExceptionType.UniqueName AS ExceptionType"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<!-- LINE ITEM EXCEPTIONS -->
+
+<dataLoad name="BuyerDeleteInvoiceLineItemException">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation INCLUDE INACTIVE
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems"
+                  whereClause="InvoiceReconciliation.NextVersion IS NOT NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvLineException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"/>
+        </field>
+        <field name="InvoiceLineNumber">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceLineItemException">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING InvoiceReconciliationLineItem.LineType
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.contract.core.Contract PARTITION ANY INCLUDE INACTIVE USING InvoiceReconciliationLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING InvoiceReconciliationLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode
+                              LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING InvoiceReconciliation.ProcurementUnit"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvLineException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceNumber">
+            <aqlMapping selectField="Invoice.InvoiceNumber"/>
+        </field>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                sourceLookupField="UniqueName"/>
+        </field>
+        <field name="InvoiceLineNumber">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+        </field>
+        <field name="InvoiceDate">
+            <aqlMapping selectField="Invoice.InvoiceDate"/>
+        </field>
+        <field name="AccountingDate">
+            <aqlMapping selectField="InvoiceReconciliation.CreateDate"/>
+        </field>
+
+        <field name="Supplier.SupplierLocationId">
+            <aqlMapping selectField="SupplierLocation.UniqueName"/>
+        </field>
+        <field name="Supplier.SupplierId">
+            <aqlMapping selectField="Supplier.UniqueName"/>
+        </field>
+
+        <field name="SourceCommodityDomain">
+            <aqlMapping selectField="CommodityCode.Domain"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <field name="Commodity.CommodityId">
+            <aqlMapping selectField="CommodityCode.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.CommodityMap"/>
+            </analysisMapping>
+        </field>
+        <field name="ERPCommodity.CommodityId">
+            <aqlMapping selectField="PartitionedCommodityCode.UniqueName"/>
+        </field>
+        <field name="Amount.Amount">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.Amount.Amount"/>
+        </field>
+        <field name="Amount.Currency">
+            <aqlMapping selectField="Currency.UniqueName"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.Amount.ConversionDate"/>
+        </field>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="Contract.InitialUniqueName"/>
+        </field>
+        <field name="LineType">
+            <aqlMapping selectField="ProcureLineType.UniqueName"/>
+        </field>
+        <field name="ProcurementUnit.UniqueName">
+            <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+        </field>                
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceLineItemExceptionCountExceptions">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliationLineItem.Exceptions"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                  groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvLineException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                sourceLookupField="UniqueName"/>
+        </field>
+        <field name="InvoiceLineNumber">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+        </field>
+        <field name="ExceptionCount">
+            <aqlMapping selectField="count(*)" groupBy=""/>
+        </field>
+        <field name="LineItemWithExceptionCount">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value="1"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerInvoiceLineItemExceptionCountAutoRecExceptions">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliationLineItem.Exceptions"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL AND
+                               InvoiceException.ReconciledBy IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                  groupByFlag="true"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvLineException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                sourceLookupField="UniqueName"/>
+        </field>
+        <field name="InvoiceLineNumber">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+        </field>
+        <field name="AutoReconciledExceptionCount">
+            <aqlMapping selectField="count(*)" groupBy=""/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="BuyerLineItemHeaderExceptionType">
+    <loadStages>
+        <aqlStage fromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              JOIN ariba.invoicing.core.InvoiceException USING InvoiceReconciliationLineItem.Exceptions
+                              LEFT OUTER JOIN ariba.invoicing.core.InvoiceExceptionType USING InvoiceException.Type"
+                  whereClause="InvoiceReconciliation.NextVersion IS NULL"
+                  incrementalClause="(InvoiceReconciliation.TimeUpdated &gt;= :IncrementalStartDate AND
+                                      InvoiceReconciliation.TimeUpdated &lt; :IncrementalEndDate)"
+                  orderByClause="InvoiceReconciliation.UniqueName,InvoiceReconciliationLineItem.NumberInCollection"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvLineException"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <aqlMapping selectField="InvoiceReconciliation.UniqueName"
+                sourceLookupField="UniqueName"/>
+        </field>
+        <field name="InvoiceLineNumber">
+            <aqlMapping selectField="InvoiceReconciliationLineItem.NumberInCollection"/>
+        </field>
+        <field name="ExceptionType">
+            <aqlMapping selectField="InvoiceExceptionType.UniqueName"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+</allDataLoads>

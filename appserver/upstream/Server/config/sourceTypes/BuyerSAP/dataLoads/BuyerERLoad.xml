@@ -1,0 +1,150 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <!-- replace with on load once Lokesh modify inLoad using BuyerERLineItem -->
+
+    <inDataLoad name="BuyerOtherERLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitGeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerHotelERLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode
+                                        LEFT OUTER JOIN ariba.expense.core.HotelExpense USING ExpenseItem.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitGeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerCarRentalERLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode
+                                        LEFT OUTER JOIN ariba.expense.core.CarRentalExpense USING ExpenseItem.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitGeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <!-- replace with on load once Lokesh modify inLoad using BuyerERItemizedLineItem -->
+
+    <inDataLoad name="BuyerOtherERItemizedLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitGeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerHotelERItemizedLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode
+                                        LEFT OUTER JOIN ariba.expense.core.HotelExpense USING ExpenseItem.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitGeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="BuyerCarRentalERItemizedLineItem" version="8.2">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="LEFT OUTER JOIN ariba.core.CostCenter INCLUDE INACTIVE USING SplitAccounting.CostCenter
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as CCCompanyCode INCLUDE INACTIVE USING CostCenter.CompanyCode
+                                        LEFT OUTER JOIN ariba.core.GeneralLedger AS SplitGeneralLedger INCLUDE INACTIVE USING SplitAccounting.GeneralLedger
+                                        LEFT OUTER JOIN ariba.core.CompanyCode as GLCompanyCode INCLUDE INACTIVE USING SplitGeneralLedger.CompanyCode
+                                        LEFT OUTER JOIN ariba.expense.core.CarRentalExpense USING ExpenseItem.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="CostCenter.CostCenterId">
+                <aqlMapping selectField="CostCenter.UniqueName"/>
+            </field>
+            <field name="CostCenter.CompanyCode">
+                <aqlMapping selectField="CCCompanyCode.UniqueName"/>
+            </field>
+            <field name="Account.AccountId">
+                <aqlMapping selectField="SplitGeneralLedger.UniqueName"/>
+            </field>
+            <field name="Account.CompanyCode">
+                <aqlMapping selectField="GLCompanyCode.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+</allDataLoads>

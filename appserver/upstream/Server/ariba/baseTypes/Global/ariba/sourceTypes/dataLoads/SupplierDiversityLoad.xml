@@ -1,0 +1,56 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+	<dataLoad name="SupplierDiversityCSV">
+        <loadStages>
+	        <csvStage/>
+	        <analysisStage destinationName="ariba.analytics.fact.SupplierDiversity"/>
+	    </loadStages>
+	    <fieldMappings>
+	    	<field name="DESupplierId">
+	            <csvMapping selectField="SupplierId"/>
+	        </field>
+	        <field name="Source">
+	            <csvMapping selectField="Source"/>
+	        </field>
+	        <field name="Type">
+	        	<csvMapping selectField="Type"/>
+	        </field>
+	        <field name="Certifier">
+	        	<csvMapping selectField="Certifier"/>
+	        </field>
+	        <field name="CertificateNumber">
+	        	<csvMapping selectField="CertificateNumber"/>
+	        </field>
+	        <field name="IssuedDate">
+	        	<csvMapping selectField="CertificateIssuedDate"/>
+	        </field>
+	        <field name="RenewedDate">
+	        	<csvMapping selectField="CertificateRenewedDate"/>
+	        </field>
+	        <field name="ExpiredDate">
+	        	<csvMapping selectField="CertificateExpirationDate"/>
+	        </field>
+	    </fieldMappings>
+	</dataLoad>
+	
+	<dataLoad name="SupplierDiversityDeleteCSV">
+		<loadStages>
+	        <csvStage/>
+	        <analysisStage destinationName="ariba.analytics.fact.SupplierDiversity"/>
+	    </loadStages>
+	    <fieldMappings>
+	    	<field name="DESupplierId">
+	            <csvMapping selectField="SupplierId"/>
+	        </field>
+	        <field name="Source">
+	            <csvMapping selectField="Source"/>
+	        </field>
+	        <field name="CertificateNumber">
+	        	<csvMapping selectField="CertificateNumber"/>
+	        </field>
+	        <field name="Certifier">
+	        	<csvMapping selectField="Certifier"/>
+	        </field>
+	    </fieldMappings>
+	</dataLoad>
+</allDataLoads>

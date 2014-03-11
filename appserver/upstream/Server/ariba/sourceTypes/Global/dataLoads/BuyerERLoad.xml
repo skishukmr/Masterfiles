@@ -1,0 +1,2235 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+    <dataLoad name="BuyerExpenseType">
+        <loadStages>
+            <aqlStage fromClause="ariba.l2charge.core.ExpenseType INCLUDE INACTIVE"
+                      whereClause="ExpenseType.UniqueName IS NOT NULL"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseType.TimeUpdated AND
+                    ExpenseType.TimeUpdated &lt; :IncrementalEndDate)"
+                      orderByClause="ExpenseType.UniqueName,ExpenseType.Active"/>
+            <analysisStage destinationName="ariba.analytics.dimension.ExpenseType"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ExpenseTypeId">
+                <aqlMapping selectField="UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="Name"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerDeleteERLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport INCLUDE INACTIVE
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  JOIN ariba.common.core.SplitAccountingCollection USING ExpenseItem.Accountings
+                                  JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                                   ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage fromClause=":InterfaceTable JOIN FACT_ER_LINE_ITEM E ON :InterfaceTable.ERId = E.ER_ID"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ERLineNumber">
+                <interfaceSqlMapping selectColumn="E.ER_LINE_NUMBER"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <interfaceSqlMapping selectColumn="E.SPLIT_ACCOUNTING_NUMBER"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeader">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                                  LEFT OUTER JOIN ariba.basic.core.Money AS TotalExpenses USING ExpenseReport.TotalExpenses
+                                  LEFT OUTER JOIN ariba.basic.core.Currency AS TotalExpensesCurr USING TotalExpenses.Currency
+                                  LEFT OUTER JOIN ariba.basic.core.Money AS ExpAmountDue USING ExpenseReport.AmountDue
+                                  LEFT OUTER JOIN ariba.basic.core.Currency AS ExpAmountDueCurr USING ExpAmountDue.Currency
+                                  LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                                   ExpenseReport.StatusString IN ('Submitted', 'Approved', 'Processing', 'Processed', 'Waiting_For_Receipts', 'Composing', 'Denied')"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                                          ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeader"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="ExpenseReport.Name"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="SubmitDate">
+                <aqlMapping selectField="ExpenseReport.SubmitDate"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="ExpenseReport.ApprovedDate"/>
+            </field>
+            <field name="Status">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="TotalExpense.Amount">
+                <aqlMapping selectField="TotalExpenses.Amount"/>
+            </field>
+            <field name="TotalExpense.Currency">
+                <aqlMapping selectField="TotalExpensesCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="OrigTotalExpenses">
+                <aqlMapping selectField="TotalExpenses.Amount"/>
+            </field>
+            <!--- Currency in expenses are the same as for amount due-->
+            <field name="OrigCurrency">
+                <aqlMapping selectField="TotalExpensesCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountDue.Amount">
+                <aqlMapping selectField="ExpAmountDue.Amount"/>
+            </field>
+            <field name="AmountDue.Currency">
+                <aqlMapping selectField="ExpAmountDueCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="OrigAmountDue">
+                <aqlMapping selectField="ExpAmountDue.Amount"/>
+            </field>
+            <field name="BaseTotalExpense.Amount">
+                <aqlMapping selectField="TotalExpenses.Amount"/>
+            </field>
+            <field name="BaseTotalExpense.Currency">
+                <aqlMapping selectField="TotalExpensesCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TotalExpensesInBaseCurrency">
+                <aqlMapping selectField="TotalExpenses.ApproxAmountInBaseCurrency"/>
+            </field>
+
+            <field name="BaseAmountDue.Amount">
+                <aqlMapping selectField="ExpAmountDue.Amount"/>
+            </field>
+            <field name="BaseAmountDue.Currency">
+                <aqlMapping selectField="ExpAmountDueCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="AmountDueInBaseCurrency">
+                <aqlMapping selectField="ExpAmountDue.ApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="ReceiptsReceived">
+                <aqlMapping selectField="ExpenseReport.ReceiptsReceived"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="received"/>
+                                <entry value="received"/>
+                                <entry value="notreceived"/>
+                                <entry value="notreceived"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  JOIN ariba.common.core.SplitAccountingCollection USING ExpenseItem.Accountings
+                                  JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                                  LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                                  LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                                  LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING SplitAccounting.Amount
+                                  LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                                  LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Submitted','Approved', 'Processing', 'Processed', 'Waiting_For_Receipts', 'Composing', 'Denied')"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ERName">
+                <aqlMapping selectField="ExpenseReport.Name"/>
+            </field>
+            <field name="ERStatus">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="ERDate">
+                <aqlMapping selectField="ExpenseReport.SubmitDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TransactionDate">
+                <aqlMapping selectField="ExpenseItem.Date"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+            <field name="City">
+                <aqlMapping selectField="ExpenseItem.City"/>
+            </field>
+            <field name="Vendor">
+                <aqlMapping selectField="ExpenseItem.Vendor"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="ExpenseReport.ApprovedDate"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="ExpenseItem.Description"/>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="ExpenseType.UniqueName"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+            </field>
+            <field name="OrigAmount">
+                <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+            </field>
+            <field name="OrigCurrencyCode">
+                <aqlMapping selectField="Currency.UniqueName"/>
+            </field>
+            <field name="NumberAttendees">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="NumberDays">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Billable">
+                <aqlMapping selectField="ExpenseItem.Billable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="TaxReceipt">
+                <aqlMapping selectField="ExpenseItem.TaxReceipt"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="tax"/>
+                                <entry value="tax"/>
+                                <entry value="notax"/>
+                                <entry value="notax"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field  name="Justification">
+                <aqlMapping selectField="ExpenseItem.Justification"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+
+        </fieldMappings>
+
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerOtherERLineItem" extendsLoad="BuyerERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ExpenseType.UniqueName NOT IN ('Itemized', 'Hotel', 'CarRental', 'PerDiem')"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerPerDiemERLineItem" extendsLoad="BuyerERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ExpenseType.UniqueName = 'PerDiem'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.PerDiemExpense USING ExpenseItem.Details
+                                            LEFT OUTER JOIN ariba.basic.core.Money AS tfAmount USING PerDiemExpense.TaxFreeAmount
+                                            LEFT OUTER JOIN ariba.basic.core.Currency AS cur INCLUDE INACTIVE USING Money.Currency
+                                            LEFT OUTER JOIN ariba.basic.core.Money AS adjAmount USING ExpenseItem.AdjustedAmount"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="PerDiemLocation">
+                <aqlMapping selectField="PerDiemExpense.Location.Name"/>
+            </field>
+            <field name="PerDiemStartDate">
+                <aqlMapping selectField="PerDiemExpense.StartDate"/>
+            </field>
+            <field name="PerDiemEndDate">
+                <aqlMapping selectField="PerDiemExpense.EndDate"/>
+            </field>
+            <field name="PerDiemTaxableIncome.Amount">
+                <aqlMapping selectField="adjAmount.Amount-tfAmount.Amount"/>
+            </field>
+            <field name="PerDiemTaxableIncome.Currency">
+                <aqlMapping selectField="cur.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerVATERLineItem" extendsLoad="BuyerERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.basic.core.Currency As baseCurrency USING ExpenseReport.ReportingCurrency
+                                            LEFT OUTER JOIN ariba.basic.core.Money AS taxAmount USING ExpenseItem.TaxAmount
+                                            LEFT OUTER JOIN ariba.basic.core.Currency AS taxCurrency INCLUDE INACTIVE USING taxAmount.Currency
+                                            LEFT OUTER JOIN ariba.basic.core.Money AS netAmount USING ExpenseItem.NetAmount
+                                            LEFT OUTER JOIN ariba.basic.core.Currency AS netCurrency INCLUDE INACTIVE USING netAmount.Currency
+                                            LEFT OUTER JOIN ariba.basic.core.Money AS grossAmount USING ExpenseItem.AdjustedAmount
+                                            LEFT OUTER JOIN ariba.basic.core.Currency AS grossCurrency INCLUDE INACTIVE USING grossAmount.Currency
+                                            LEFT OUTER JOIN ariba.basic.core.Country AS taxCountry INCLUDE INACTIVE USING ExpenseItem.TaxCountry"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="VATRate">
+                <aqlMapping selectField="ExpenseItem.VATRate"/>
+            </field>
+            <field name="TaxCountry">
+                <aqlMapping selectField="taxCountry.Name"/>
+            </field>
+            <field name="VATAmount.Amount">
+                <aqlMapping selectField="taxAmount.Amount"/>
+            </field>
+            <field name="VATAmount.Currency">
+                <aqlMapping selectField="taxCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="NetAmount.Amount">
+                <aqlMapping selectField="netAmount.Amount"/>
+            </field>
+            <field name="NetAmount.Currency">
+                <aqlMapping selectField="netCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="GrossAmount.Amount">
+                <aqlMapping selectField="grossAmount.Amount"/>
+            </field>
+            <field name="GrossAmount.Currency">
+                <aqlMapping selectField="grossCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseVATAmount.Amount">
+                <aqlMapping selectField="taxAmount.ApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="BaseVATAmount.Currency">
+                <aqlMapping selectField="baseCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseNetAmount.Amount">
+                <aqlMapping selectField="netAmount.ApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="BaseNetAmount.Currency">
+                <aqlMapping selectField="baseCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="BaseGrossAmount.Amount">
+                <aqlMapping selectField="grossAmount.ApproxAmountInBaseCurrency"/>
+            </field>
+            <field name="BaseGrossAmount.Currency">
+                <aqlMapping selectField="baseCurrency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerCarRentalERLineItem" extendsLoad="BuyerERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ExpenseType.UniqueName = 'CarRental'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.CarRentalExpense USING ExpenseItem.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="NumberDays"/>
+            <field name="NumberDays">
+                <aqlMapping selectField="CarRentalExpense.Days"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="NullValue" value="1"/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value=""/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="1"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerHotelERLineItem" extendsLoad="BuyerERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ExpenseType.UniqueName = 'Hotel'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.HotelExpense USING ExpenseItem.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="NumberDays"/>
+            <field name="NumberDays">
+                <aqlMapping selectField="HotelExpense.Days"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="NullValue" value="1"/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value=""/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="1"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <dataLoad name="BuyerCountAttendeesERLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.common.core.SplitAccountingCollection USING ExpenseItem.Accountings
+            JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+            LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Submitted', 'Approved', 'Processing', 'Processed', 'Waiting_For_Receipts', 'Composing', 'Denied')"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"
+                      groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ERName">
+                <aqlMapping selectField="ExpenseReport.Name"/>
+            </field>
+            <field name="ERStatus">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="ERDate">
+                <aqlMapping selectField="ExpenseReport.SubmitDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+            <field name="NumberAttendees">
+                <aqlMapping selectField="count(*)" groupBy=""/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerDinnerERLineItem" extendsLoad="BuyerCountAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ExpenseType.UniqueName = 'Dinner'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.DinnerExpense USING ExpenseItem.Details
+                LEFT OUTER JOIN ariba.expense.core.Attendee USING DinnerExpense.Attendees"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerBreakfastERLineItem" extendsLoad="BuyerCountAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ExpenseType.UniqueName = 'Breakfast'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.BreakfastExpense USING ExpenseItem.Details
+                LEFT OUTER JOIN ariba.expense.core.Attendee USING BreakfastExpense.Attendees"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerLunchERLineItem" extendsLoad="BuyerCountAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ExpenseType.UniqueName = 'Lunch'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.LunchExpense USING ExpenseItem.Details
+                LEFT OUTER JOIN ariba.expense.core.Attendee USING LunchExpense.Attendees"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <!-- itemized Expense Report -->
+
+    <dataLoad name="BuyerDeleteERItemizedLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport INCLUDE INACTIVE
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+            JOIN ariba.common.core.SplitAccountingCollection USING Itemized.Accountings
+            JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings"
+                      whereClause="ExpenseItem.ExpenseType.UniqueName = 'Itemized'"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage fromClause=":InterfaceTable JOIN FACT_ER_LINE_ITEM E ON :InterfaceTable.ERId = E.ER_ID"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"/>
+            </field>
+            <field name="ERLineNumber">
+                <interfaceSqlMapping selectColumn="E.ER_LINE_NUMBER"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <interfaceSqlMapping selectColumn="E.ER_ITEMIZED_LINE_NUMBER"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <interfaceSqlMapping selectColumn="E.SPLIT_ACCOUNTING_NUMBER"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERItemizedLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+            JOIN ariba.common.core.SplitAccountingCollection USING Itemized.Accountings
+            JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+            LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType AS ItemizedType INCLUDE INACTIVE USING Itemized.ExpenseType
+            LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING SplitAccounting.Amount
+            LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+            LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Submitted', 'Approved', 'Processing', 'Processed', 'Waiting_For_Receipts', 'Composing', 'Denied') AND
+                ExpenseType.UniqueName = 'Itemized'"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"/>
+            </field>
+            <field name="ERName">
+                <aqlMapping selectField="ExpenseReport.Name"/>
+            </field>
+            <field name="ERStatus">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="ERDate">
+                <aqlMapping selectField="ExpenseReport.SubmitDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="OrigAmount">
+                <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+            </field>
+            <field name="OrigCurrencyCode">
+                <aqlMapping selectField="Currency.UniqueName"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <aqlMapping selectField="Itemized.NumberInCollection"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+            <field name="City">
+                <aqlMapping selectField="Itemized.City"/>
+            </field>
+            <field name="Vendor">
+                <aqlMapping selectField="Itemized.Vendor"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="ExpenseReport.ApprovedDate"/>
+            </field>
+            <field name="Description">
+                <aqlMapping selectField="Itemized.Description"/>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="ItemizedType.UniqueName"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="SplitAccounting.Amount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="SplitAccounting.Amount.ConversionDate"/>
+            </field>
+            <field name="NumberAttendees">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="NumberDays">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Billable">
+                <aqlMapping selectField="Itemized.Billable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field  name="Justification">
+                <aqlMapping selectField="ExpenseItem.Justification"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerOtherERItemizedLineItem" extendsLoad="BuyerERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ItemizedType.UniqueName NOT IN ('Hotel', 'CarRental')"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerHotelERItemizedLineItem" extendsLoad="BuyerERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ItemizedType.UniqueName = 'Hotel'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.HotelExpense USING Itemized.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="NumberDays"/>
+            <field name="NumberDays">
+                <aqlMapping selectField="HotelExpense.Days"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="NullValue" value="1"/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value=""/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="1"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerCarRentalERItemizedLineItem" extendsLoad="BuyerERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ItemizedType.UniqueName = 'CarRental'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.CarRentalExpense USING Itemized.Details"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="NumberDays"/>
+            <field name="NumberDays">
+                <aqlMapping selectField="CarRentalExpense.Days"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="NullValue" value="1"/>
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value=""/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="1"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <dataLoad name="BuyerCountAttendeesERItemizedLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+            JOIN ariba.common.core.SplitAccountingCollection USING Itemized.Accountings
+            JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType AS ItemizedType INCLUDE INACTIVE USING Itemized.ExpenseType
+            LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Submitted', 'Approved', 'Processing', 'Processed', 'Waiting_For_Receipts', 'Composing', 'Denied') AND
+                ExpenseType.UniqueName = 'Itemized'"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"
+                      groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineItem"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"/>
+            </field>
+            <field name="ERName">
+                <aqlMapping selectField="ExpenseReport.Name"/>
+            </field>
+            <field name="ERStatus">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="ERDate">
+                <aqlMapping selectField="ExpenseReport.SubmitDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <aqlMapping selectField="Itemized.NumberInCollection"/>
+            </field>
+            <field name="SplitAccountingNumber">
+                <aqlMapping selectField="SplitAccounting.NumberInCollection"/>
+            </field>
+            <field name="NumberAttendees">
+                <aqlMapping selectField="count(*)" groupBy=""/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerDinnerERItemizedLineItem" extendsLoad="BuyerCountAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ItemizedType.UniqueName = 'Dinner'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.DinnerExpense USING Itemized.Details
+                LEFT OUTER JOIN ariba.expense.core.Attendee USING DinnerExpense.Attendees"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerBreakfastERItemizedLineItem" extendsLoad="BuyerCountAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ItemizedType.UniqueName = 'Breakfast'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.BreakfastExpense USING Itemized.Details
+                LEFT OUTER JOIN ariba.expense.core.Attendee USING BreakfastExpense.Attendees"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerLunchERItemizedLineItem" extendsLoad="BuyerCountAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToWhereClause="AND ItemizedType.UniqueName = 'Lunch'"
+                        appendToFromClause="LEFT OUTER JOIN ariba.expense.core.LunchExpense USING Itemized.Details
+                LEFT OUTER JOIN ariba.expense.core.Attendee USING LunchExpense.Attendees"/>
+        </inLoadStages>
+    </derivedDataLoad>
+
+    <!-- Expense Report Header Violation -->
+
+    <dataLoad name="BuyerDeleteERHeaderViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport INCLUDE INACTIVE"
+                      whereClause="ExpenseReport.NextVersion IS NOT NULL OR
+                ExpenseReport.StatusString NOT IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')"
+                      incrementalClause="ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+            LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ApprovedDate.Day">
+                <aqlMapping selectField="ExpenseReport.ApprovedDate"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+
+    <dataLoad name="BuyerERHeaderViolationCountLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                             ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                             ExpenseType.UniqueName &lt;&gt; 'Itemized'"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="LineItemCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolationCountItemizedItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                ExpenseType.UniqueName = 'Itemized'"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="LineItemCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolationCountViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.Violation USING ExpenseReport.Violations"
+                whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')"
+                incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                    sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ViolationCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolationCountLineViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.Violation USING ExpenseItem.Violations
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                ExpenseType.UniqueName &lt;&gt; 'Itemized'"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ViolationCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolationCountItemizedViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+            JOIN ariba.expense.core.Violation USING Itemized.Violations
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                ExpenseType.UniqueName = 'Itemized'"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ViolationCount">
+                <interfaceSqlMapping selectColumn="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolationType">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.Violation AS Viol USING ExpenseReport.Violations"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage orderByClause="ERId"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <aqlMapping selectField="Viol.PolicyType.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolationTypeLine">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.Violation AS Viol USING ExpenseItem.Violations
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                ExpenseType.UniqueName &lt;&gt; 'Itemized'"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage orderByClause="ERId"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <aqlMapping selectField="Viol.PolicyType.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERHeaderViolationTypeItemized">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+            JOIN ariba.expense.core.Violation AS Viol USING Itemized.Violations
+            LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                ExpenseType.UniqueName = 'Itemized'"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage orderByClause="ERId"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERHeaderViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <aqlMapping selectField="Viol.PolicyType.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <!-- Expense Report Line Violation -->
+
+    <dataLoad name="BuyerDeleteERLineViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport INCLUDE INACTIVE
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems"
+                      whereClause="(ExpenseReport.NextVersion IS NOT NULL OR
+                ExpenseReport.StatusString NOT IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')) AND
+                ExpenseType.UniqueName &lt;&gt; 'Itemized' AND
+                ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERLineViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                                  LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                                  LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING ExpenseItem.Amount
+                                  LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                                  JOIN ariba.common.core.SplitAccountingCollection USING ExpenseItem.Accountings
+                                  JOIN ariba.common.core.SplitAccounting AS SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                                  LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                             ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                             ExpenseType.UniqueName &lt;&gt; 'Itemized' AND
+                             ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="ExpenseItem.Amount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="ExpenseItem.Amount.ConversionDate"/>
+            </field>
+            <field name="Billable">
+                <aqlMapping selectField="ExpenseItem.Billable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="ExpenseType.UniqueName"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="ExpenseReport.ApprovedDate"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERLineViolationCountViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                              JOIN ariba.expense.core.Violation AS Viol USING ExpenseItem.Violations"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                ExpenseType.UniqueName &lt;&gt; 'Itemized' AND
+                ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"
+                      groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationDetails.Description">
+                <aqlMapping selectField="Viol.Description"/>
+            </field>
+            <field name="ViolationCount">
+                <aqlMapping selectField="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERLineViolationType">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  JOIN ariba.expense.core.Violation AS Viol USING ExpenseItem.Violations"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                             ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                             ExpenseType.UniqueName &lt;&gt; 'Itemized' AND
+                             ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"
+                      orderByClause="ExpenseReport.UniqueName,ExpenseItem.NumberInCollection"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <aqlMapping selectField="Viol.PolicyType.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <!-- Expense Report Itemized Line Violation -->
+
+    <dataLoad name="BuyerDeleteERItemizedLineViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport INCLUDE INACTIVE
+            JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+            JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems"
+                      whereClause="(ExpenseReport.NextVersion IS NOT NULL AND
+                ExpenseReport.StatusString NOT IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts')) OR
+                ExpenseItem.ExpenseType.UniqueName = 'Itemized' AND
+                ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <aqlMapping selectField="Itemized.NumberInCollection"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERItemizedLineViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                                  JOIN ariba.common.core.SplitAccountingCollection USING Itemized.Accountings
+                                  JOIN ariba.common.core.SplitAccounting USING SplitAccountingCollection.SplitAccountings
+                                  LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                                  LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING Itemized.ExpenseType
+                                  LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING Itemized.Amount
+                                  LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                                  LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                ExpenseItem.ExpenseType.UniqueName = 'Itemized' AND
+                             ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                    ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <aqlMapping selectField="Itemized.NumberInCollection"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="Itemized.Amount.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="Currency.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="Amount.Date">
+                <aqlMapping selectField="Itemized.Amount.ConversionDate"/>
+            </field>
+            <field name="Billable">
+                <aqlMapping selectField="Itemized.Billable"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="true"/>
+                                <entry value="TRUE"/>
+                                <entry value="false"/>
+                                <entry value="FALSE"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="billable"/>
+                                <entry value="billable"/>
+                                <entry value="nonbillable"/>
+                                <entry value="nonbillable"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="ExpenseType.UniqueName"/>
+            </field>
+            <field name="ApprovedDate">
+                <aqlMapping selectField="ExpenseReport.ApprovedDate"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERItemizedLineViolationCountViolation">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                                  JOIN ariba.expense.core.Violation as Viol USING Itemized.Violations"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                             ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                             ExpenseItem.ExpenseType.UniqueName = 'Itemized' AND
+                             ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                             ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"
+                      groupByFlag="true"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <aqlMapping selectField="Itemized.NumberInCollection"/>
+            </field>
+            <field name="ViolationDetails.Description">
+                <aqlMapping selectField="Viol.Description"/>
+            </field>
+            <field name="ViolationCount">
+                <aqlMapping selectField="count(*)" groupBy=""/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerERItemizedLineViolationType">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                                  JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                                  JOIN ariba.expense.core.Violation AS Viol USING Itemized.Violations"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                             ExpenseReport.StatusString IN ('Approved', 'Processing', 'Processed', 'Waiting_For_Receipts') AND
+                             ExpenseItem.ExpenseType.UniqueName = 'Itemized' AND
+                             ExpenseItem.ViolationLevel &gt; 0"
+                      incrementalClause="(ExpenseReport.TimeUpdated &gt;= :IncrementalStartDate AND
+                                   ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"
+                      orderByClause="ExpenseReport.UniqueName,ExpenseItem.NumberInCollection, Itemized.NumberInCollection"/>
+            <analysisStage destinationName="ariba.analytics.fact.ERLineViolation"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="CreateDate">
+                <aqlMapping selectField="ExpenseReport.CreateDate"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <aqlMapping selectField="Itemized.NumberInCollection"/>
+            </field>
+            <field name="ViolationType.ViolationLevel">
+                <aqlMapping selectField="Viol.Level"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Decode">
+                        <parameter name="MapKeys">
+                            <vector>
+                                <entry value="1"/>
+                                <entry value="2"/>
+                            </vector>
+                        </parameter>
+                        <parameter name="MapElements">
+                            <vector>
+                                <entry value="Warning"/>
+                                <entry value="Violate"/>
+                            </vector>
+                        </parameter>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+            <field name="ViolationType.PolicyTypeId">
+                <aqlMapping selectField="Viol.PolicyType.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <!-- Attendee related pulls  -->
+    <dataLoad name="BuyerDeleteAttendeeERLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport INCLUDE INACTIVE
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                                   ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage fromClause=":InterfaceTable JOIN FACT_ATTENDEE E ON :InterfaceTable.ERId = E.ER_ID"/>
+            <analysisStage destinationName="ariba.analytics.fact.Attendee"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ERLineNumber">
+                <interfaceSqlMapping selectColumn="E.ER_LINE_NUMBER"/>
+            </field>
+            <field name="Email">
+                <interfaceSqlMapping selectColumn="E.EMAIL"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerAttendeesERLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                    JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                    LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                    LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                    LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                    ExpenseReport.StatusString IN ('Submitted', 'Approved', 'Processing', 'Processed', 'Waiting_For_Receipts', 'Composing', 'Denied')"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                    ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Attendee"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ERLineDate">
+                <aqlMapping selectField="ExpenseItem.Date"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ERStatus">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="ExpenseType.UniqueName"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.Constant">
+                        <parameter name="Constant" value="0"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerBreakfastAttendeeLineItem" extendsLoad="BuyerAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.BreakfastExpense USING ExpenseItem.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING BreakfastExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="BreakfastExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerLunchAttendeeLineItem" extendsLoad="BuyerAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.LunchExpense USING ExpenseItem.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING LunchExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="LunchExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerDinnerAttendeeLineItem" extendsLoad="BuyerAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.DinnerExpense USING ExpenseItem.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING DinnerExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="DinnerExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerEntertainmentAttendeeLineItem" extendsLoad="BuyerAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.EntertainmentExpense USING ExpenseItem.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING EntertainmentExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="EntertainmentExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerGiftsAttendeeLineItem" extendsLoad="BuyerAttendeesERLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.GiftsExpense USING ExpenseItem.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING GiftsExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="GiftsExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <!-- Attendee pulls for Itemized items -->
+    <dataLoad name="BuyerDeleteAttendeeERItemizedItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport INCLUDE INACTIVE
+                                  JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                                   ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <interfaceSqlStage fromClause=":InterfaceTable JOIN FACT_ATTENDEE E ON :InterfaceTable.ERId = E.ER_ID"/>
+            <analysisStage destinationName="ariba.analytics.fact.Attendee"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ERLineNumber">
+                <interfaceSqlMapping selectColumn="E.ER_LINE_NUMBER"/>
+            </field>
+            <field name="Email">
+                <interfaceSqlMapping selectColumn="E.EMAIL"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <interfaceSqlMapping selectColumn="E.ER_ITEMIZED_LINE_NUMBER"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <dataLoad name="BuyerAttendeesERItemizedLineItem">
+        <loadStages>
+            <aqlStage fromClause="ariba.expense.core.ExpenseReport
+                    JOIN ariba.expense.core.ExpenseItem USING ExpenseReport.LineItems
+                    JOIN ariba.expense.core.ExpenseItem as Itemized USING ExpenseItem.SplitItems
+                    LEFT OUTER JOIN ariba.user.core.User AS Requester INCLUDE INACTIVE USING ExpenseReport.Requester
+                    LEFT OUTER JOIN ariba.l2charge.core.ExpenseType INCLUDE INACTIVE USING ExpenseItem.ExpenseType
+                    LEFT OUTER JOIN ariba.l2charge.core.ExpenseType AS ItemizedType INCLUDE INACTIVE USING Itemized.ExpenseType
+                    LEFT OUTER JOIN ariba.common.core.ProcurementUnit AS ProcurementUnit INCLUDE INACTIVE USING ExpenseReport.ProcurementUnit"
+                      whereClause="ExpenseReport.NextVersion IS NULL AND
+                    ExpenseReport.StatusString IN ('Submitted', 'Approved', 'Processing', 'Processed', 'Waiting_For_Receipts', 'Composing', 'Denied') and
+                    ExpenseType.UniqueName = 'Itemized'"
+                      incrementalClause="(:IncrementalStartDate &lt;= ExpenseReport.TimeUpdated AND
+                    ExpenseReport.TimeUpdated &lt; :IncrementalEndDate)"/>
+            <analysisStage destinationName="ariba.analytics.fact.Attendee"/>
+        </loadStages>
+        <fieldMappings>
+            <field name="ERId">
+                <aqlMapping selectField="ExpenseReport.UniqueName"
+                            sourceLookupField="UniqueName"/>
+            </field>
+            <field name="ERLineDate">
+                <aqlMapping selectField="ExpenseItem.Date"/>
+            </field>
+            <field name="ERLineNumber">
+                <aqlMapping selectField="ExpenseItem.NumberInCollection"/>
+            </field>
+            <field name="ERItemizedLineNumber">
+                <aqlMapping selectField="Itemized.NumberInCollection"/>
+            </field>
+            <field name="Requester.UserId">
+                <aqlMapping selectField="Requester.UniqueName"/>
+            </field>
+            <field name="Requester.PasswordAdapter">
+                <aqlMapping selectField="Requester.PasswordAdapter"/>
+            </field>
+            <field name="ERStatus">
+                <aqlMapping selectField="ExpenseReport.StatusString"/>
+            </field>
+            <field name="ExpenseType">
+                <aqlMapping selectField="ItemizedType.UniqueName"/>
+            </field>
+            <field name="ProcurementUnit.UniqueName">
+                <aqlMapping selectField="ProcurementUnit.UniqueName"/>
+            </field>
+        </fieldMappings>
+    </dataLoad>
+
+    <derivedDataLoad name="BuyerBreakfastAttendeeItemizedItem" extendsLoad="BuyerAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.BreakfastExpense USING Itemized.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING BreakfastExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="BreakfastExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerLunchAttendeeItemizedItem" extendsLoad="BuyerAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.LunchExpense USING Itemized.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING LunchExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="LunchExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerDinnerAttendeeItemizedItem" extendsLoad="BuyerAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.DinnerExpense USING Itemized.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING DinnerExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="DinnerExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerEntertainmentAttendeeItemizedItem" extendsLoad="BuyerAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.EntertainmentExpense USING Itemized.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING EntertainmentExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="EntertainmentExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="BuyerGiftsAttendeeItemizedItem" extendsLoad="BuyerAttendeesERItemizedLineItem">
+        <inLoadStages>
+            <inAqlStage appendToFromClause="JOIN ariba.expense.core.GiftsExpense USING Itemized.Details
+                JOIN ariba.expense.core.Attendee AS Attendee USING GiftsExpense.Attendees
+                LEFT OUTER JOIN ariba.basic.core.Money AS AttAmt USING Attendee.Amount
+                LEFT OUTER JOIN ariba.basic.core.Currency AS AttAmtCurr USING AttAmt.Currency"/>
+        </inLoadStages>
+        <fieldMappings>
+            <field name="Email">
+                <aqlMapping selectField="Attendee.EmailID"/>
+            </field>
+            <field name="Title">
+                <aqlMapping selectField="Attendee.Title"/>
+            </field>
+            <field name="FirstName">
+                <aqlMapping selectField="Attendee.FirstName"/>
+            </field>
+            <field name="LastName">
+                <aqlMapping selectField="Attendee.LastName"/>
+            </field>
+            <field name="Company">
+                <aqlMapping selectField="Attendee.Company.Name"/>
+            </field>
+            <field name="Type">
+                <aqlMapping selectField="Attendee.Type"/>
+            </field>
+            <field name="EventType">
+                <aqlMapping selectField="GiftsExpense.EventType"/>
+            </field>
+            <field name="Amount.Amount">
+                <aqlMapping selectField="AttAmt.Amount"/>
+            </field>
+            <field name="Amount.Currency">
+                <aqlMapping selectField="AttAmtCurr.UniqueName"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                        <parameter name="MapType" value="SourceSystemCurrency"/>
+                    </mapValue>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <inDataLoad name="BuyerBreakfastAttendeeLineItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerLunchAttendeeLineItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerDinnerAttendeeLineItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerEntertainmentAttendeeLineItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerGiftsAttendeeLineItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerBreakfastAttendeeItemizedItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerLunchAttendeeItemizedItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerDinnerAttendeeItemizedItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerEntertainmentAttendeeItemizedItem" version="9s4" disableLoad="true"/>
+    <inDataLoad name="BuyerGiftsAttendeeItemizedItem" version="9s4" disableLoad="true"/>
+</allDataLoads>

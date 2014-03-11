@@ -1,0 +1,700 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<dataLoad name="POLineItemCSV">
+    <loadStages>
+        <csvStage/>
+        <interfaceSqlStage fromClause=":InterfaceTable"
+                           orderByClause="UPPER(:InterfaceTable.POId),UPPER(:InterfaceTable.POLineNumber),UPPER(:InterfaceTable.SplitAccountingNumber)"/>
+        <analysisStage destinationName="ariba.analytics.fact.POLineItem"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="POId">
+            <csvMapping selectField="POId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="POLineNumber">
+            <csvMapping selectField="POLineNumber"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="ExtraPOLineKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ExtraPOKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SplitAccountingNumber">
+            <csvMapping selectField="SplitAccountingNumber"/>
+        </field>
+
+        <field name="OrderedDate">
+            <csvMapping selectField="OrderedDate"/>
+        </field>
+        <field name="Quantity">
+            <csvMapping selectField="Quantity"/>
+        </field>
+        <field name="Amount.Amount">
+            <csvMapping selectField="Amount"/>
+        </field>
+        <field name="Amount.Currency">
+            <csvMapping selectField="AmountCurrency"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <csvMapping selectField="OrderedDate"/>
+        </field>
+        <field name="OrigAmount">
+            <csvMapping selectField="Amount"/>
+        </field>
+        <field name="OrigCurrencyCode">
+            <csvMapping selectField="AmountCurrency"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Description">
+            <csvMapping selectField="Description"/>
+            <interfaceSqlMapping columnSize="1000"/>
+        </field>
+        <field name="ERPCommodity.CommodityId">
+            <csvMapping selectField="ERPCommodityId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="Part.PartKey1">
+            <csvMapping selectField="PartNumber"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Part.PartKey2">
+            <csvMapping selectField="PartRevisionNumber"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Part.PartKey3">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="UnitOfMeasure.UnitOfMeasureId">
+            <csvMapping selectField="UnitOfMeasure"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemUOM"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Supplier.SupplierId">
+            <csvMapping selectField="SupplierId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <csvMapping selectField="SupplierLocationId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="Requester.UserId">
+            <csvMapping selectField="RequesterId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Requester.PasswordAdapter">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <csvMapping selectField="AccountId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Account.CompanyCode">
+            <csvMapping selectField="AccountCompanyCode"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="CompanySite.SiteId">
+            <csvMapping selectField="CompanySiteId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="CostCenter.CostCenterId">
+            <csvMapping selectField="CostCenterId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <csvMapping selectField="CostCenterCompanyCode"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Contract.ContractId">
+            <csvMapping selectField="ContractId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="Duration">
+            <csvMapping selectField="DurationInMonths"/>
+        </field>
+        <field name="OpenPO">
+            <csvMapping selectField="OpenPOIndicator"/>
+        </field>
+        <field name="LineType">
+            <csvMapping selectField="LineType"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+
+<dataLoad name="POLineItemDeleteCSV">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.fact.POLineItem"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="POId">
+            <csvMapping selectField="POId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="POLineNumber">
+            <csvMapping selectField="POLineNumber"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="ExtraPOLineKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ExtraPOKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SplitAccountingNumber">
+            <csvMapping selectField="SplitAccountingNumber"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+
+<dataLoad name="InvoiceLineItemCSV">
+    <loadStages>
+        <csvStage/>
+        <interfaceSqlStage fromClause="
+:InterfaceTable
+LEFT OUTER JOIN DIM_SOURCE_SYSTEM SS ON ':SourceSystem' = SS.SOURCE_SYSTEM_ID
+LEFT OUTER JOIN FACT_PO_LINE_ITEM PO ON SS.ROOTID = PO.SOURCE_SYSTEM AND UPPER(:InterfaceTable.POId) = PO.PO_ID AND UPPER(:InterfaceTable.POLineNumber) = PO.PO_LINE_NUMBER AND PO.ANNONE_PARTITIONNUMBER = :PartitionNumber
+LEFT OUTER JOIN DIM_PART ON PO.PART = DIM_PART.ROOTID
+LEFT OUTER JOIN DIM_ERP_COMMODITY ON PO.ERP_COMMODITY = DIM_ERP_COMMODITY.ROOTID
+"
+                           orderByClause="UPPER(:InterfaceTable.InvoiceId),UPPER(:InterfaceTable.InvoiceLineNumber),UPPER(:InterfaceTable.SplitAccountingNumber)"/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <csvMapping selectField="InvoiceId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="InvoiceLineNumber">
+            <csvMapping selectField="InvoiceLineNumber"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="ExtraInvoiceLineKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ExtraInvoiceKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SplitAccountingNumber">
+            <csvMapping selectField="SplitAccountingNumber"/>
+        </field>
+
+        <field name="AccountingDate">
+            <csvMapping selectField="AccountingDate"/>
+        </field>
+        <field name="Quantity">
+            <csvMapping selectField="Quantity"/>
+        </field>
+        <field name="Amount.Amount">
+            <csvMapping selectField="Amount"/>
+        </field>
+        <field name="Amount.Currency">
+            <csvMapping selectField="AmountCurrency"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Amount.Date">
+            <csvMapping selectField="AccountingDate"/>
+        </field>
+        <field name="OrigAmount">
+            <csvMapping selectField="Amount"/>
+        </field>
+        <field name="OrigCurrencyCode">
+            <csvMapping selectField="AmountCurrency"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemCurrency"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Description">
+            <csvMapping selectField="Description"/>
+            <interfaceSqlMapping columnSize="1000"/>
+        </field>
+
+        <!-- ERPCommodity on Invoice gets preference over PO. -->
+        <field name="ERPCommodity.CommodityId">
+            <csvMapping selectField="ERPCommodityId"/>
+            <interfaceSqlMapping selectColumn="CASE WHEN :InterfaceTable.ERPCOMMODITY_COMMODITYID IS NOT NULL AND :InterfaceTable.ERPCOMMODITY_COMMODITYID != ' ' AND UPPER(:InterfaceTable.ERPCOMMODITY_COMMODITYID) != 'NA' THEN :InterfaceTable.ERPCOMMODITY_COMMODITYID ELSE DIM_ERP_COMMODITY.COMMODITY_ID END"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <!-- Part on Invoice gets preference over PO. -->
+        <field name="Part.PartKey1">
+            <csvMapping selectField="PartNumber"/>
+            <interfaceSqlMapping selectColumn="CASE WHEN :InterfaceTable.PART_PARTKEY1 IS NOT NULL AND :InterfaceTable.PART_PARTKEY1 != ' ' AND UPPER(:InterfaceTable.PART_PARTKEY1) != 'NA' THEN :InterfaceTable.PART_PARTKEY1 ELSE DIM_PART.PART_KEY1 END"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Part.PartKey2">
+            <csvMapping selectField="PartRevisionNumber"/>
+            <!-- Only accept PartKey2 from Invoice if PartKey1 on PO is null, empty, or 'NA' -->
+            <interfaceSqlMapping selectColumn="CASE WHEN :InterfaceTable.PART_PARTKEY1 IS NOT NULL AND :InterfaceTable.PART_PARTKEY1 != ' ' AND UPPER(:InterfaceTable.PART_PARTKEY1) != 'NA' THEN :InterfaceTable.PART_PARTKEY2 ELSE DIM_PART.PART_KEY2 END"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Part.PartKey3">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+
+        <field name="UnitOfMeasure.UnitOfMeasureId">
+            <csvMapping selectField="UnitOfMeasure"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                <mapValue implementation="ariba.analytics.mapValue.ValueForMapType">
+                    <parameter name="MapType" value="SourceSystemUOM"/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Supplier.SupplierId">
+            <csvMapping selectField="SupplierId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Supplier.SupplierLocationId">
+            <csvMapping selectField="SupplierLocationId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="Requester.UserId">
+            <csvMapping selectField="RequesterId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Requester.PasswordAdapter">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="Account.AccountId">
+            <csvMapping selectField="AccountId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Account.CompanyCode">
+            <csvMapping selectField="AccountCompanyCode"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="CompanySite.SiteId">
+            <csvMapping selectField="CompanySiteId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="CostCenter.CostCenterId">
+            <csvMapping selectField="CostCenterId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="CostCenter.CompanyCode">
+            <csvMapping selectField="CostCenterCompanyCode"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="Contract.ContractId">
+            <csvMapping selectField="ContractId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="POId">
+            <csvMapping selectField="POId"/>
+            <interfaceSqlMapping nullAllowed="false"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="POLineNumber">
+            <csvMapping selectField="POLineNumber"/>
+            <interfaceSqlMapping nullAllowed="false"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+
+        <field name="POUnitPrice">
+            <interfaceSqlMapping selectColumn="CASE WHEN PO.Quantity > 0 AND PO.Amount > 0 THEN PO.Amount / PO.Quantity ELSE 0.0 END"/>
+            <analysisMapping enabled="false"/>
+        </field>
+        <!-- No need for currency - will default to base currency.
+             Also no need for date as this is defined only as SingleCurrency.
+             But add just in case. -->
+        <field name="POAmount.Amount">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Arithmetic">
+                    <parameter name="Operator" value="multiply"/>
+                    <parameter name="Fields">
+                        <vector>
+                            <entry value="POUnitPrice"/>
+                            <entry value="Quantity"/>
+                        </vector>
+                    </parameter>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="POAmount.Date">
+            <csvMapping selectField="AccountingDate"/>
+        </field>
+
+        <field name="PODescription">
+            <interfaceSqlMapping selectColumn="PO.Description"/>
+        </field>
+        <field name="InvoiceDate">
+            <csvMapping selectField="InvoiceDate"/>
+        </field>
+        <field name="PaidDate">
+            <csvMapping selectField="PaidDate"/>
+        </field>
+        <field name="InvoiceNumber">
+            <csvMapping selectField="InvoiceNumber"/>
+        </field>
+        <field name="PaymentTerms">
+            <csvMapping selectField="APPaymentTerms"/>
+        </field>
+        <field name="LineType">
+            <csvMapping selectField="LineType"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+<dataLoad name="InvoiceLineItemDeleteCSV">
+    <loadStages>
+        <csvStage/>
+        <analysisStage destinationName="ariba.analytics.fact.InvoiceLineItem"/>
+    </loadStages>
+    <fieldMappings>
+        <field name="InvoiceId">
+            <csvMapping selectField="InvoiceId"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="InvoiceLineNumber">
+            <csvMapping selectField="InvoiceLineNumber"/>
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+            </analysisMapping>
+        </field>
+        <field name="ExtraInvoiceLineKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="ExtraInvoiceKey">
+            <analysisMapping>
+                <mapValue implementation="ariba.analytics.mapValue.Constant">
+                    <parameter name="Constant" value=""/>
+                </mapValue>
+            </analysisMapping>
+        </field>
+        <field name="SplitAccountingNumber">
+            <csvMapping selectField="SplitAccountingNumber"/>
+        </field>
+    </fieldMappings>
+</dataLoad>
+
+
+    <inDataLoad name="POLineItemCSV">
+        <fieldMappings>
+            <field name="FlexDimension1.FieldId">
+                <csvMapping selectField="FlexFieldId1"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension2.FieldId">
+                <csvMapping selectField="FlexFieldId2"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension3.FieldId">
+                <csvMapping selectField="FlexFieldId3"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension4.FieldId">
+                <csvMapping selectField="FlexFieldId4"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension5.FieldId">
+                <csvMapping selectField="FlexFieldId5"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension6.FieldId4">
+                <csvMapping selectField="FlexFieldId6" required="false"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <inDataLoad name="InvoiceLineItemCSV">
+        <fieldMappings>
+            <field name="FlexDimension1.FieldId">
+                <csvMapping selectField="FlexFieldId1"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension2.FieldId">
+                <csvMapping selectField="FlexFieldId2"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension3.FieldId">
+                <csvMapping selectField="FlexFieldId3"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension4.FieldId">
+                <csvMapping selectField="FlexFieldId4"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension5.FieldId">
+                <csvMapping selectField="FlexFieldId5"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="FlexDimension6.FieldId4">
+                <csvMapping selectField="FlexFieldId6" required="false"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </inDataLoad>
+
+    <derivedDataLoad name="POLineItemCSV2" extendsLoad="POLineItemCSV">
+        <inLoadStages>
+            <inInterfaceSqlStage orderByClause="UPPER(:InterfaceTable.POId),UPPER(:InterfaceTable.POLineNumber),UPPER(:InterfaceTable.SplitAccountingNumber),UPPER(:InterfaceTable.ExtraPOLineKey),UPPER(:InterfaceTable.ExtraPOKey)"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ExtraPOLineKey"/>
+            <deleteField name="ExtraPOKey"/>
+            <field name="ExtraPOLineKey">
+                <csvMapping selectField="ExtraPOLineKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="ExtraPOKey">
+                <csvMapping selectField="ExtraPOKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="InvoiceLineItemCSV2" extendsLoad="InvoiceLineItemCSV">
+        <inLoadStages>
+            <inInterfaceSqlStage replaceFromClause="
+            :InterfaceTable
+LEFT OUTER JOIN DIM_SOURCE_SYSTEM SS ON ':SourceSystem' = SS.SOURCE_SYSTEM_ID
+LEFT OUTER JOIN FACT_PO_LINE_ITEM PO ON SS.ROOTID = PO.SOURCE_SYSTEM AND UPPER(:InterfaceTable.POId) = PO.PO_ID
+AND UPPER(:InterfaceTable.ExtraPOKey) = PO.EXTRA_PO_KEY AND UPPER(:InterfaceTable.POLineNumber) = PO.PO_LINE_NUMBER
+AND UPPER(:InterfaceTable.ExtraPOLineKey) = PO.EXTRA_PO_LINE_KEY
+AND PO.ANNONE_PARTITIONNUMBER = :PartitionNumber
+LEFT OUTER JOIN DIM_PART ON PO.PART = DIM_PART.ROOTID
+LEFT OUTER JOIN DIM_ERP_COMMODITY ON PO.ERP_COMMODITY = DIM_ERP_COMMODITY.ROOTID"/>
+        </inLoadStages>
+        <fieldMappings>
+            <deleteField name="ExtraInvoiceLineKey"/>
+            <deleteField name="ExtraInvoiceKey"/>
+            <field name="ExtraInvoiceLineKey">
+                <csvMapping selectField="ExtraInvoiceLineKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="ExtraInvoiceKey">
+                <csvMapping selectField="ExtraInvoiceKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="ExtraPOLineKey">
+                <csvMapping selectField="ExtraPOLineKey"/>
+                <interfaceSqlMapping nullAllowed="false"/>
+                <analysisMapping enabled="false"/>
+            </field>
+            <field name="ExtraPOKey">
+                <csvMapping selectField="ExtraPOKey"/>
+                <interfaceSqlMapping nullAllowed="false"/>
+                <analysisMapping enabled="false"/>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="POLineItemDeleteCSV2" extendsLoad="POLineItemDeleteCSV">
+        <fieldMappings>
+            <deleteField name="ExtraPOLineKey"/>
+            <deleteField name="ExtraPOKey"/>
+            <field name="ExtraPOLineKey">
+                <csvMapping selectField="ExtraPOLineKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="ExtraPOKey">
+                <csvMapping selectField="ExtraPOKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+    <derivedDataLoad name="InvoiceLineItemDeleteCSV2" extendsLoad="InvoiceLineItemDeleteCSV">
+        <fieldMappings>
+            <deleteField name="ExtraInvoiceLineKey"/>
+            <deleteField name="ExtraInvoiceKey"/>
+            <field name="ExtraInvoiceLineKey">
+                <csvMapping selectField="ExtraInvoiceLineKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+            <field name="ExtraInvoiceKey">
+                <csvMapping selectField="ExtraInvoiceKey"/>
+                <analysisMapping>
+                    <mapValue implementation="ariba.analytics.mapValue.UpperCase"/>
+                </analysisMapping>
+            </field>
+        </fieldMappings>
+    </derivedDataLoad>
+
+</allDataLoads>

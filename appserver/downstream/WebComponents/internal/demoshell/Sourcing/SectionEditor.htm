@@ -1,0 +1,277 @@
+<w:ModalPageWrapper hasForm="$true">
+    <a:Content name="toc">
+
+        <style>
+        .tableRowL1
+        {
+            background-color: #DDDDDD;
+        }
+        .tableRowL2
+        {
+            background-color: #EEEEEE;
+        }
+        .tableRowL3
+        {
+            background-color: #FFFFFF;
+        }
+        .tdClass
+        {
+            border-top: 1px solid #666699;
+            font-size:9pt;
+            font-weight:plain;
+        }
+
+        .noRowLines td.tableBody {
+            border-top:none;
+        }
+        </style>
+
+        <b>Create RFX</b><br/>
+        <w:OutlineRepetition list="$rfx.children" item="$item" children="$item.subsections.Section[]"
+            selectionPath="$selectionPath" selectedObject="$selectedObject" outlineState="$outlineState">
+            <div style="padding-top:4px">\
+                <w:OutlineControl allowSelection="$true">
+                    <a:Content name="icon">\
+                        $item.id\
+                    </a:Content>\
+\
+                    <w:TruncateString value="$item.name.text" size="15"/>
+                </w:OutlineControl>\
+            </div>
+        </w:OutlineRepetition>
+        <br/>
+        <!-- data table for scrolling list -->
+        <t:DataTable csvPath="Lots.csv" enableScrolling="true" item="$lotItem" class="noRowLines noBox scrollTableWrapper"
+            showColumnHeader="$false" singleSelect="$true" showSelectionColumn="$false">
+            <t:Column key="Number">\
+                $lotItem.Number $lotItem.Title
+            </t:Column>
+        </t:DataTable>
+        <!---
+        <a:DropContainer type="lineItem" dropAction="$itemDropped" tagName="div" style="border:2px blue solid">
+                <br/>
+                <b>Drop Here!</b>
+                <br/>
+                <br/>
+        </a:DropContainer>
+        -->
+    </a:Content>
+
+    <a:Content name="body">
+
+        <t:DataTable multiSelect="$true" list="$selectedObjectList" item="$item" children="$item.subsections.children"
+                displayGroup="$displayGroup" enableScrolling="$true" rowClass="$rowClass"
+                dragAction="$itemDragged" dragType="lineItem">
+
+            <t:HeadingArea>
+                <table cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="100%" style="padding-left:4px">\
+                            <b>\
+                                $selectedObject.id
+                                <w:TruncateString value="$selectedObject.name.text" size="40"/>
+                            </b>
+                            (Section 1 of 5)
+                        </td>
+                        <td nowrap style="padding-right:4px"><a>Prev</a> | <a>Next</a></td>
+                        <td width="1%"><t:OptionsMenuButton/></td>
+                    </tr>
+                </table>
+            </t:HeadingArea>
+
+            <!-- use bogus label to match with parent -->
+            <t:Column key="id" label="Num" valign="bottom" wantsSpan="$true" valign="top">\
+                <w:OutlineControl indentationPerLevel="0" title="$item.id">
+                    <a:Content name="icon">\
+                        <a:Image filename="$iconName"/>\
+                    </a:Content>
+                </w:OutlineControl>\
+            </t:Column>
+
+            <t:Column key="name.text" label="Name" wantsSpan="$true" valign="top">
+                <a:If ifTrue="$isSection">
+                    <w:PopupMenuLink menuId="MyMenu" position="this" class="awmenuLink hoverLink hoverArrow">\
+                        <b>$item.name.text: </b>\
+                    </w:PopupMenuLink>
+                    $item.description.text
+                <a:Else/>
+                    $item.name.text $item.description.text
+                </a:If>
+            </t:Column>
+
+            <t:Column label="Value" isBlank="$isSection" valign="top" width="30%">
+                <a:If ifTrue="$isQuestion">
+                    <a:TextField value="$item.value.text"/>
+                <a:Else/>
+                    &nbsp;
+                </a:If>
+            </t:Column>
+
+            <t:RowDetail isVisible="$isItem" renderBeforeRow="$true">
+                This is a basic detail...
+            </t:RowDetail>
+            <t:RowDetail isVisible="$isItem" nestedTableLayout="$true">
+                <t:DataTable list="$item.attributes.children" item="$attribute" useParentLayout="$true"
+                        batchSize="1000">
+                    <t:Column key="name" label="Name"/>
+
+                    <t:Column label="Value">
+                        <a:TextField value="$attribute.text"/>
+                    </t:Column>
+                </t:DataTable>
+            </t:RowDetail>
+
+            <t:ButtonArea isVisible="$true">
+                <table cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="100%">
+                            <w:TextButton action="$null">Move</w:TextButton>\
+                            <w:TextButton action="$null">Delete</w:TextButton>
+                        </td>
+                        <td nowrap style="padding-right:4px">\
+                            &gt;&gt;
+                            Next Section:
+                            <b>
+                                <a:Hyperlink action="$null">\
+                                    <w:TruncateString value="$nextSection.name.text" size="40"/>\
+                                </a:Hyperlink>\
+                            </b>
+                        </td>
+                    </tr>
+                </table>
+
+            </t:ButtonArea>
+        </t:DataTable>
+     </a:Content>
+
+    <w:PopupMenu menuId="MyMenu">
+        <w:PopupMenuHeading showSeparator="$false">\
+            Action\
+        </w:PopupMenuHeading>
+
+            <w:PopupMenuItem action="$null">\
+                    Edit\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Move\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Copy\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Delete\
+            </w:PopupMenuItem>
+
+        <w:PopupMenuHeading showSeparator="$true">\
+            Specify\
+        </w:PopupMenuHeading>
+
+            <w:PopupMenuItem action="$null">\
+                    Rules\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Permissions\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Market Basket\
+            </w:PopupMenuItem>
+
+        <w:PopupMenuHeading showSeparator="$false">\
+            Add\
+        </w:PopupMenuHeading>
+
+            <w:PopupMenuItem action="$null">\
+                    Section\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Question/Term\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Requirement\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Attachment\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Line Item\
+            </w:PopupMenuItem>
+            <w:PopupMenuItem action="$null">\
+                    Formula\
+            </w:PopupMenuItem>
+    </w:PopupMenu>\
+</w:ModalPageWrapper>
+
+<server>
+    var selectionPath = null, selectedObject = null;
+    var item = null;
+    var attribute = null;
+    var displayGroup = null;
+    var outlineState = null;
+    var rfx = null;
+    var selectedObjectList = null;
+    var draggedItem = null;
+    var lotItem = null;
+
+
+    function init () {
+        rfx = ariba.ui.demoshell.XMLFactory.xmlNamed("Sections.xml", component);
+        outlineState = new ariba.ui.outline.OutlineState();
+        var rootItem = get(rfx, "children.firstElement");
+        outlineState.setExpansionPath(ariba.util.core.ListUtil.list(rootItem));
+        setSelectedObject(get(rfx, "Section"));
+    }
+
+    function nextSection () {
+        return selectedObject.getNextSibling().getNextSibling(); //.getNextChild();//  || selectedObject.getNextSibling();
+    }
+
+    function selectedObjectClassName () {
+        return selectedObject.getClass().getName();
+    }
+
+    function itemDragged () {
+        draggedItem = displayGroup.currentItem();
+        return null;
+    }
+
+    function itemDropped () {
+        var v = displayGroup.allObjects();
+        ariba.util.core.ListUtil.removeElementIdentical(v, draggedItem);
+        displayGroup.setObjectArray(v);
+        return null;
+    }
+
+    function rowClass () {
+        // return "tableRow2";
+        var level = displayGroup.outlineState().nestingLevel();
+        return (level == 0) ? "tableRowL1" : ((level == 1) ? "tableRowL2" : "tableRowL3");
+    }
+
+    function iconName () {
+        return isSection() ? "AWXFolderIcon.gif" : ((isQuestion()) ? "profile.gif" : "request.gif");
+    }
+
+    function isSection () {
+        var tag = get(item, "tagName");
+        return tag == "Section";
+    }
+
+    function isQuestion () {
+        var tag = get(item, "tagName");
+        return tag == "Question";
+    }
+
+    function isItem () {
+        var tag = get(item, "tagName");
+        return tag == "Item";
+    }
+
+    function setSelectedObject (arr) {
+        selectedObject = arr;
+        selectedObjectList = get(selectedObject, "subsections.children");
+        if (selectedObjectList == null || selectedObjectList.length == 0) {
+            selectedObjectList = new Array();
+            selectedObjectList[0] = selectedObject;
+        }
+    }
+</server>

@@ -1,0 +1,30 @@
+
+/* SECTION: PRE DIMENSION DATALOADS - DO NOT TOUCH */
+@SourceSystem@.DataLoad.CurrencyMapLoad
+@SourceSystem@.DataLoad.UOMMapLoad
+@SourceSystem@.DataLoad.CurrencyConversionRatesLoad
+@SourceSystem@.DataLoad.CommodityLoad
+@SourceSystem@.DataLoad.CatalogItemTypeLoad
+@SourceSystem@.DataLoad.CatalogAttributeTypeLoad
+@SourceSystem@.DataLoad.CatalogAttributeValueLoad
+
+/* SECTION: DIMENSION DATALOADS - DO NOT TOUCH */
+@SourceSystem@.DataLoad.DefaultInvoiceExceptionTypeLoad-Initial
+@SourceSystem@.DataLoad.DefaultERViolationLoad-Initial
+@SourceSystem@.DataLoad.UserLoad
+@SourceSystem@.DataLoad.ContractLoad
+@SourceSystem@.DataLoad.ExpenseTypeLoad
+@SourceSystem@.DataLoad.InformationPolicyTypeLoad
+@SourceSystem@.DataLoad.WarningPolicyTypeLoad
+@SourceSystem@.DataLoad.InvoiceExceptionTypeLoad
+@SourceSystem@.DataLoad.PartPOLoad
+@SourceSystem@.DataLoad.PartInvoiceLoad
+
+/* SECTION: POST FACT TASKS - DO NOT TOUCH */
+Task.ComputeRequisitionCount-PostProcess
+Task.ComputeRequisitionLineCount-PostProcess
+Task.ComputeTSCount-PostProcess
+Task.ComputeTemporaryLaborPOCount-PostProcess
+Task.ComputeTemporaryLaborPOLineCount-PostProcess
+Task.ComputeERCount-PostProcess
+Task.ComputeERLineCount-PostProcess

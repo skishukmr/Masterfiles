@@ -1,0 +1,169 @@
+
+'// -------- Constants used for window status -------
+Const PROCESS_INSERTS = "Processing Inserts"
+Const PROCESS_DELETES = "Processing Deletes"
+Const PROCESS_REVISIONS = "Processing Revisions"
+Const UPLOAD_DOCUMENT = "Uploading document"
+Const PROCESS_PROPERTIES = "Processing Properties"
+Const COMPARE_WORD_DOCS = "Comparing Word Documents"
+Const SYNC_TO_SERVER = "Synchronizing to server"
+Const SCANNING_DOCUMENT = "Scanning Document"
+Const APPLY_GENERATED_BOOKMARKS = "Applying Bookmarks"
+Const BOOKMARK_DOCUMENT = "Bookmarking Document"
+Const SCAN_SECTIONS = "Scanning Sections"
+Const VALIDATION_ERROR = "Validation Error"
+
+Const SERVER_EXCEPTION = "SERVER_EXCEPTION"
+
+
+'// -------- Logging related declaration ---------
+'// Set by event handler on page load by different pages
+Dim logWindow
+Dim logWindowDocument
+
+Dim logFile
+Dim logLevel, logPadding
+logLevel = 0
+logPadding = ""
+
+'// -------- Set this to control logging ---------
+Dim EnableLogging
+EnableLogging = False   '// if logging is to be done
+
+'// ---------- Logging util methods -------------
+
+Function isLogWindowOpen()
+   On Error Resume Next
+
+   isLogWindowOpen = False
+   If(Not IsEmpty(logWindow) And Not IsEmpty(logWindowDocument)) Then
+       isLogWindowOpen = True
+   End If
+End Function
+
+Sub logMessage(message)
+   On Error Resume Next
+
+   If(EnableLogging) Then
+       If( Not isLogWindowOpen() ) Then
+           openLogWindow
+       End If
+
+       If(isLogWindowOpen()) Then
+           logWindowDocument.Write "<br/>" & Date & " " & Time & _
+                   Right(FormatNumber(Timer,2),3) & ": " & logPadding & trim(message)
+       End If
+   End If
+End Sub
+
+Sub logBegin(message)
+   On Error Resume Next
+   If(EnableLogging) Then
+       logMessage("Begin " & message)
+       logLevel = logLevel + 1
+       logPadding = space(logLevel * 4)
+   End If
+End Sub
+
+Sub logEnd(message)
+   On Error Resume Next
+   If(EnableLogging) Then
+       if (logLevel > 0) then
+           logLevel = logLevel - 1
+       end if
+       logPadding = space(logLevel * 4)
+       logMessage("End " & message)
+   End If
+End Sub
+
+Sub openLogWindow()
+   On Error Resume Next
+
+   Set logWindow = Window.Open("about:blank", "logWindow", "width=600 height=600 scrollbars=yes resizable=yes toolbar=no, menubar=no, location=no, directories=no")
+   Set logWindowDocument = logWindow.Document
+
+   logWindowDocument.Write "</pre><br/><B> ****** DEBUG LOG TO BE USED FOR INTERNAL TESTING ONLY ****** </B><br/><pre>"
+End Sub
+
+
+Sub openLogFile()
+   On Error Resume Next
+
+   Dim Shell
+   Dim logFileObj
+   Dim FileSysObj
+   Dim FileServer
+   Dim logDirPath
+   Dim logFilePath
+
+   '// --------- Define some constants
+   Const ForReading = 1, ForWriting = 2, ForAppending = 8
+   Const logRootDir = "AribaAcmLogs"
+   Const logFileName = "vbscript.log"
+
+   Msgbox "Should not get here - openLogFile"
+   set FileSysObj = CreateObject("Scripting.FileSystemObject")
+
+   '// ToDo : Get Windows Drive programatically
+   EnvWinDir = "C:" '// Shell.ExpandEnvironmentStrings("%WINDIR%")
+
+
+   If ( EnvWinDir <> "" ) Then
+       '// msgbox "Creating folder ..."
+
+       logDirPath = EnvWinDir & "\" & logRootDir
+       logFilePath = logDirPath & "\" & logFileName
+
+       '//Make sure that some directories exists
+       If FileSysObj.FolderExists(logDirPath)= False then
+           FileSysObj.CreateFolder(logDirPath)
+       End If
+
+       '// msgbox "Created folder ..."
+
+       '//Create log of events, but first make sure the
+       '//Log doesn't get too big
+       If FileSysObj.FileExists(logFilePath) = True then
+            Set logFileObj = FileSysObj.GetFile()
+            If logFileObj.size > 128000 then FileSysObj.DeleteFile(logFilePath)
+            Else
+       End If
+
+       '// msgbox "Open log file ..."
+
+       Set logFile = FileSysObj.OpenTextFile(logFilePath, ForAppending, True, TristateFalse)
+
+       logFile.WriteBlankLines(2)
+       logFile.WriteLine "****** DEBUG LOG TO BE USED FOR INTERNAL TESTING ONLY ******"
+
+       '// msgbox "openLogFile done"
+   End If
+End Sub
+
+
+Sub closeLogFile()
+   On Error Resume Next
+   
+   Dim pos
+   pos = 1
+   '// XXX TODO - close the log file
+End Sub
+
+
+Sub setClientLogLevel (logLevel)
+   On Error Resume Next
+
+   Dim clientLogLevel
+   clientLogLevel = logLevel
+
+   If(clientLogLevel = "debug") Then
+       EnableLogging = True
+   Else
+       EnableLogging = False
+   End If
+End Sub
+
+
+Sub UpdateWindowStatus(message)
+   Window.Status = message
+End Sub

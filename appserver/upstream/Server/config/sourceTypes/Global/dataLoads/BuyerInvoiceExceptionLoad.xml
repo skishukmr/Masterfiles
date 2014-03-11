@@ -1,0 +1,261 @@
+<!DOCTYPE allDataLoads SYSTEM "../../../../ariba/analytics/core/dataLoads.dtd">
+<allDataLoads>
+
+<inDataLoad name="BuyerInvoiceHeaderException" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="ProcurementUnit.UniqueName"/>
+    </fieldMappings>
+</inDataLoad>
+
+<inDataLoad name="BuyerInvoiceLineItemException" version="8.2">
+    <inLoadStages>
+        <inAqlStage replaceFromClause="ariba.invoicing.core.InvoiceReconciliation
+                              JOIN ariba.invoicing.core.InvoiceReconciliationLineItem USING InvoiceReconciliation.LineItems
+                              LEFT OUTER JOIN ariba.procure.core.ProcureLineType INCLUDE INACTIVE USING InvoiceReconciliationLineItem.LineType
+                              LEFT OUTER JOIN ariba.invoicing.core.Invoice INCLUDE INACTIVE USING InvoiceReconciliation.Invoice
+                              LEFT OUTER JOIN ariba.common.core.SupplierLocation INCLUDE INACTIVE USING InvoiceReconciliation.SupplierLocation
+                              LEFT OUTER JOIN ariba.common.core.Supplier INCLUDE INACTIVE USING SupplierLocation.Supplier
+                              LEFT OUTER JOIN ariba.contract.core.MasterAgreement INCLUDE INACTIVE USING InvoiceReconciliationLineItem.MasterAgreement
+                              LEFT OUTER JOIN ariba.common.core.PartitionedCommodityCode INCLUDE INACTIVE USING InvoiceReconciliationLineItem.CommodityCode
+                              LEFT OUTER JOIN ariba.basic.core.Money INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Amount
+                              LEFT OUTER JOIN ariba.basic.core.Currency INCLUDE INACTIVE USING Money.Currency
+                              LEFT OUTER JOIN ariba.procure.core.LineItemProductDescription INCLUDE INACTIVE USING InvoiceReconciliationLineItem.Description
+                              LEFT OUTER JOIN ariba.basic.core.CommodityCode INCLUDE INACTIVE USING LineItemProductDescription.CommonCommodityCode"/>
+    </inLoadStages>
+    <fieldMappings>
+        <deleteField name="Contract.ContractId"/>
+        <deleteField name="ProcurementUnit.UniqueName"/>
+        <field name="Contract.ContractId">
+            <aqlMapping selectField="MasterAgreement.InitialUniqueName"/>
+        </field>
+    </fieldMappings>
+</inDataLoad>
+
+<!-- 
+	Arasan Rajendren 
+	Created Temp Loads to bypass Timeout Issues		
+-->
+
+<!-- BuyerInvoiceLineItemExceptionCountExceptions -->
+
+<derivedDataLoad name="Tmp1BuyerInvoiceLineItemExceptionCountExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2007-12-31 23:59:59')"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp2BuyerInvoiceLineItemExceptionCountExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2007-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2008-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp3BuyerInvoiceLineItemExceptionCountExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2008-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2009-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp4BuyerInvoiceLineItemExceptionCountExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2009-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2010-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp5BuyerInvoiceLineItemExceptionCountExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &gt;= CalendarDate('2010-12-31 23:59:59')"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<!-- BuyerInvoiceLineItemExceptionCountAutoRecException -->
+
+<derivedDataLoad name="Tmp1BuyerInvoiceLineItemExceptionCountAutoRecExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountAutoRecExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2007-12-31 23:59:59')"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp2BuyerInvoiceLineItemExceptionCountAutoRecExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountAutoRecExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2007-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2008-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp3BuyerInvoiceLineItemExceptionCountAutoRecExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountAutoRecExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2008-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2009-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp4BuyerInvoiceLineItemExceptionCountAutoRecExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountAutoRecExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2009-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2010-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp5BuyerInvoiceLineItemExceptionCountAutoRecExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountAutoRecExceptions">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &gt;= CalendarDate('2010-12-31 23:59:59')"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<!-- BuyerLineItemHeaderExceptionType -->
+
+<derivedDataLoad name="Tmp1BuyerLineItemHeaderExceptionType" extendsLoad="BuyerLineItemHeaderExceptionType">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2007-12-31 23:59:59')"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp2BuyerLineItemHeaderExceptionType" extendsLoad="BuyerLineItemHeaderExceptionType">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2007-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2008-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp3BuyerLineItemHeaderExceptionType" extendsLoad="BuyerLineItemHeaderExceptionType">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2008-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2009-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp4BuyerLineItemHeaderExceptionType" extendsLoad="BuyerLineItemHeaderExceptionType">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND (InvoiceReconciliation.CreateDate &gt;= CalendarDate('2009-12-31 23:59:59') AND InvoiceReconciliation.CreateDate &lt;= CalendarDate('2010-12-31 23:59:59'))"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+<derivedDataLoad name="Tmp5BuyerLineItemHeaderExceptionType" extendsLoad="BuyerLineItemHeaderExceptionType">
+	<inLoadStages>
+		<inAqlStage appendToWhereClause="AND InvoiceReconciliation.CreateDate &gt;= CalendarDate('2010-12-31 23:59:59')"/>
+	</inLoadStages>
+</derivedDataLoad>
+
+
+<!--added by rupesh -->
+
+
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderException" extendsLoad="BuyerInvoiceHeaderException">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderExceptionCountLineItem" extendsLoad="BuyerInvoiceHeaderExceptionCountLineItem">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderExceptionCountExceptions" extendsLoad="BuyerInvoiceHeaderExceptionCountExceptions">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderExceptionCountExceptionsOnLines" extendsLoad="BuyerInvoiceHeaderExceptionCountExceptionsOnLines">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderExceptionCountAutoRecExceptions" extendsLoad="BuyerInvoiceHeaderExceptionCountAutoRecExceptions">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+	
+	
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderExceptionCountAutoRecExceptionsOnLines" extendsLoad="BuyerInvoiceHeaderExceptionCountAutoRecExceptionsOnLines">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderExceptionType" extendsLoad="BuyerInvoiceHeaderExceptionType">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_BuyerInvoiceHeaderExceptionTypeOnLines" extendsLoad="BuyerInvoiceHeaderExceptionTypeOnLines">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_BuyerInvoiceLineItemException" extendsLoad="BuyerInvoiceLineItemException">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="Tmp_BuyerInvoiceLineItemExceptionCountExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountExceptions">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="Tmp_BuyerInvoiceLineItemExceptionCountAutoRecExceptions" extendsLoad="BuyerInvoiceLineItemExceptionCountAutoRecExceptions">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_BuyerLineItemHeaderExceptionType" extendsLoad="BuyerLineItemHeaderExceptionType">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+<derivedDataLoad name="Tmp_BuyerDeleteInvoiceLineItemException" extendsLoad="BuyerDeleteInvoiceLineItemException">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+	
+<derivedDataLoad name="Tmp_BuyerDeleteInvoiceHeaderException" extendsLoad="BuyerDeleteInvoiceHeaderException">
+		<inLoadStages>
+		    <inAqlStage replaceIncrementalClause="(Date('2012-07-02 12:06:32 CDT') &lt;= InvoiceReconciliation.TimeUpdated AND
+		                                          InvoiceReconciliation.TimeUpdated &lt; Date('2012-07-03 12:06:32 CDT'))"
+                                      />
+		</inLoadStages>
+	</derivedDataLoad>
+
+</allDataLoads>
